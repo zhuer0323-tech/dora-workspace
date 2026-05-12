@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>廣告沒效？可能不是廣告的問題 - 圖卡</title>
+<link rel="stylesheet" href="file:///Users/angela/.claude/skills/notion-to-card/assets/fonts/bold/GenJyuuGothic-Bold.css">
+<link rel="stylesheet" href="file:///Users/angela/.claude/skills/notion-to-card/assets/fonts/medium/GenJyuuGothic-Medium.css">
+<style>
+:root {
+  --bg: #FFF9E6;
+  --text-dark: #1a1a2e;
+  --text-body: #2d2d2d;
+  --green: #3d8b40;
+  --orange: #FF6B35;
+  --teal: #4ECDC4;
+  --yellow-hl: rgba(255, 210, 30, 0.25);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #d4d0c8;
+  font-family: "GenJyuuGothic", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  padding: 40px 20px;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 32px;
+  color: #555;
+  font-size: 15px;
+  letter-spacing: 0.05em;
+}
+
+.slide-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 48px;
+}
+
+.slide {
+  width: 1080px;
+  height: 1350px;
+  background: var(--bg);
+  border-radius: 28px;
+  box-shadow: 0 10px 48px rgba(0,0,0,0.18);
+  position: relative;
+  overflow: hidden;
+  padding: 64px 70px;
+  display: flex;
+  flex-direction: column;
+}
+
+.slide::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, #c8bc8a 1.8px, transparent 1.8px);
+  background-size: 38px 38px;
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.slide-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 48px;
+  flex-shrink: 0;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  width: 52px;
+  height: 52px;
+  background: #2d5a27;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.logo-text {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-dark);
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.logo-text small {
+  display: block;
+  font-size: 17px;
+  font-weight: 400;
+  color: #666;
+}
+
+.badge {
+  background: var(--green);
+  color: white;
+  font-size: 30px;
+  font-weight: 800;
+  padding: 10px 30px;
+  border-radius: 100px;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.browser-dots {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+.dot { width: 26px; height: 26px; border-radius: 50%; }
+.dot.red    { background: #FF5F57; }
+.dot.yellow { background: #FFBD2E; }
+.dot.green  { background: #28C840; }
+
+.slide-content {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.slide-title {
+  font-size: 88px;
+  font-weight: 900;
+  color: var(--text-dark);
+  line-height: 1.3;
+  margin-bottom: 32px;
+  letter-spacing: -0.01em;
+}
+
+.slide-title.lg { font-size: 96px; }
+.slide-title.md { font-size: 72px; }
+
+.slide-body {
+  font-size: 40px;
+  font-weight: 500;
+  color: var(--text-body);
+  line-height: 1.65;
+}
+
+.slide-body p + p { margin-top: 18px; }
+
+.points {
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+  margin-top: 20px;
+}
+
+.pt {
+  display: flex;
+  align-items: flex-start;
+  gap: 26px;
+}
+
+.pt-num {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  font-weight: 900;
+  color: white;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.pt-num.c1 { background: var(--orange); }
+.pt-num.c2 { background: var(--teal); }
+.pt-num.c3 { background: var(--green); }
+
+.pt-text {
+  font-size: 38px;
+  font-weight: 500;
+  color: var(--text-body);
+  line-height: 1.55;
+}
+
+.hl-box {
+  background: var(--yellow-hl);
+  border: 2.5px solid rgba(200, 160, 0, 0.35);
+  border-radius: 20px;
+  padding: 28px 36px;
+  font-size: 38px;
+  font-weight: 700;
+  color: var(--text-dark);
+  line-height: 1.55;
+  margin: 24px 0;
+}
+
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--text-dark);
+  color: white;
+  font-size: 34px;
+  font-weight: 700;
+  padding: 22px 44px;
+  border-radius: 100px;
+  align-self: flex-end;
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
+.illus {
+  font-size: 160px;
+  line-height: 1;
+  margin-top: auto;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.illus.right { text-align: right; }
+
+.slide-label {
+  text-align: center;
+  font-size: 20px;
+  color: #999;
+  margin-top: 14px;
+  letter-spacing: 0.08em;
+}
+
+@media print {
+  body { background: none; padding: 0; }
+  .page-header, .slide-label { display: none; }
+  .slide-wrapper { gap: 0; }
+  .slide {
+    page-break-after: always;
+    break-after: page;
+    box-shadow: none;
+    border-radius: 0;
+  }
+}
+
+@media screen and (max-width: 1200px) {
+  .slide { width: 540px; height: 675px; padding: 32px 35px; border-radius: 14px; }
+  .slide-title     { font-size: 44px; margin-bottom: 16px; }
+  .slide-title.lg  { font-size: 48px; }
+  .slide-title.md  { font-size: 36px; }
+  .slide-body      { font-size: 20px; }
+  .logo-icon       { width: 26px; height: 26px; font-size: 12px; }
+  .logo-text       { font-size: 12px; }
+  .logo-text small { font-size: 9px; }
+  .badge           { font-size: 15px; padding: 5px 16px; }
+  .dot             { width: 13px; height: 13px; }
+  .browser-dots    { gap: 7px; }
+  .pt-num          { width: 32px; height: 32px; font-size: 17px; }
+  .pt-text         { font-size: 19px; }
+  .points          { gap: 17px; }
+  .pt              { gap: 13px; }
+  .hl-box          { font-size: 19px; padding: 14px 18px; border-radius: 10px; }
+  .cta-btn         { font-size: 17px; padding: 11px 22px; }
+  .illus           { font-size: 80px; }
+  .slide-top       { margin-bottom: 24px; }
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  廣告沒效？可能不是廣告的問題 &nbsp;|&nbsp; 5 張圖卡 &nbsp;|&nbsp; 用 Safari 開啟以顯示源柔字體
+</div>
+
+<div class="slide-wrapper">
+
+<!-- ====== 第 1 頁：封面 ====== -->
+<div>
+  <div class="slide">
+    <div class="slide-top">
+      <div class="browser-dots">
+        <div class="dot red"></div>
+        <div class="dot yellow"></div>
+        <div class="dot green"></div>
+      </div>
+      <div class="logo">
+        <div class="logo-icon">🌿</div>
+        <div class="logo-text">禾言數位行銷<small>Hayan Digital Marketing</small></div>
+      </div>
+    </div>
+    <div class="slide-content">
+      <div class="slide-title">廣告沒效？<br>可能不是廣告的問題</div>
+      <div class="slide-body">
+        <p>業主最不愛聽、但最需要知道的事</p>
+        <p>做了十年廣告顧問，我見過太多了</p>
+      </div>
+      <div class="illus right">😤</div>
+      <div class="cta-btn">閱讀全文 ✉</div>
+    </div>
+  </div>
+  <div class="slide-label">1 / 5</div>
+</div>
+
+<!-- ====== 第 2 頁：引言 ====== -->
+<div>
+  <div class="slide">
+    <div class="slide-top">
+      <div></div>
+      <div class="logo">
+        <div class="logo-icon">🌿</div>
+        <div class="logo-text">禾言數位行銷<small>Hayan Digital Marketing</small></div>
+      </div>
+    </div>
+    <div class="slide-content">
+      <div class="slide-title lg">換素材、調預算<br>還是沒效果</div>
+      <div class="slide-body">
+        <p>因為問題從來不在廣告</p>
+        <p>廣告只是「把人帶進門」的工具<br>帶進來之後能不能留，是別的事在決定的</p>
+      </div>
+      <div class="illus">🤔</div>
+    </div>
+  </div>
+  <div class="slide-label">2 / 5</div>
+</div>
+
+<!-- ====== 第 3 頁：重點一 ====== -->
+<div>
+  <div class="slide">
+    <div class="slide-top">
+      <div class="badge">重點一</div>
+      <div class="logo">
+        <div class="logo-icon">🌿</div>
+        <div class="logo-text">禾言數位行銷<small>Hayan Digital Marketing</small></div>
+      </div>
+    </div>
+    <div class="slide-content">
+      <div class="slide-title md">廣告是放大器</div>
+      <div class="points">
+        <div class="pt">
+          <div class="pt-num c1">好</div>
+          <div class="pt-text">基本功好<br>廣告讓你賺更多</div>
+        </div>
+        <div class="pt">
+          <div class="pt-num c2">差</div>
+          <div class="pt-text">基本功差<br>廣告讓你更快燒錢</div>
+        </div>
+      </div>
+      <div class="slide-body" style="margin-top: 36px;">
+        <p>你現在投的廣告，放大的是優點還是缺點？</p>
+      </div>
+      <div class="illus">📊</div>
+    </div>
+  </div>
+  <div class="slide-label">3 / 5</div>
+</div>
+
+<!-- ====== 第 4 頁：重點二 ====== -->
+<div>
+  <div class="slide">
+    <div class="slide-top">
+      <div class="badge">重點二</div>
+      <div class="logo">
+        <div class="logo-icon">🌿</div>
+        <div class="logo-text">禾言數位行銷<small>Hayan Digital Marketing</small></div>
+      </div>
+    </div>
+    <div class="slide-content">
+      <div class="slide-title md">先確認這三件事</div>
+      <div class="points">
+        <div class="pt">
+          <div class="pt-num c1">1</div>
+          <div class="pt-text">商品頁面資訊清楚<br>有讓人想買的誘因</div>
+        </div>
+        <div class="pt">
+          <div class="pt-num c2">2</div>
+          <div class="pt-text">客服回覆在 1 小時內</div>
+        </div>
+        <div class="pt">
+          <div class="pt-num c3">3</div>
+          <div class="pt-text">有辦法留住回購客</div>
+        </div>
+      </div>
+      <div class="illus">✅</div>
+    </div>
+  </div>
+  <div class="slide-label">4 / 5</div>
+</div>
+
+<!-- ====== 第 5 頁：結尾 ====== -->
+<div>
+  <div class="slide">
+    <div class="slide-top">
+      <div class="badge">結尾</div>
+      <div class="logo">
+        <div class="logo-icon">🌿</div>
+        <div class="logo-text">禾言數位行銷<small>Hayan Digital Marketing</small></div>
+      </div>
+    </div>
+    <div class="slide-content">
+      <div class="slide-title">廣告有效<br>從基本功開始</div>
+      <div class="slide-body">
+        <p>頁面、客服、品牌信任度到位了<br>廣告才是真正的成長引擎</p>
+      </div>
+      <div class="hl-box">你覺得你現在<br>最需要補強的是哪個？</div>
+      <div class="slide-body" style="font-weight: 700; color: var(--green); margin-top: 4px;">
+        留言說說 👇
+      </div>
+      <div class="illus">💪</div>
+    </div>
+  </div>
+  <div class="slide-label">5 / 5</div>
+</div>
+
+</div>
+</body>
+</html>
