@@ -46,6 +46,8 @@
 ### 本專案自動允許指令
 - `export PATH=...`（設定環境變數）
 - `npm --version`
+- `curl *`（API 呼叫，包含 LINE 推播）
+- `pbcopy *`（複製到剪貼簿）
 
 ---
 
@@ -72,6 +74,38 @@ Node.js 透過 nvm 安裝，路徑：`/Users/angela/.nvm/versions/node/v24.15.0/
 ### 注意事項
 - 若 MCP 連線失敗，確認 nvm node 路徑是否存在
 - 設定存於 `~/.claude.json` 的 Dora專屬 專案區塊
+
+---
+
+## LINE 小助理（Dora賺錢小能手）
+
+- **Bot 名稱**：Dora賺錢小能手（@462xyoib）
+- **用途**：從 Claude 推播訊息到朱兒的 LINE
+- **憑證**：`LINE_PUSH_TOKEN`、`LINE_USER_ID` 存於 `~/.claude/settings.json` env 區塊
+- **推播方式**：內容寫入 `/tmp/dora_*.txt` → 用 `curl` 呼叫 LINE Messaging API
+
+### 7:30 自動早報
+- **腳本**：`000_Agent/hooks/morning-briefing.sh`
+- **排程**：`~/Library/LaunchAgents/com.dora.morning-briefing.plist`（已啟用，每天 7:30）
+- **內容**：櫻花粉 Flex Message 卡片，包含：
+  - ♈ 牡羊座今日運勢（從 astro.click108.com.tw 即時抓取）
+  - 幸運數字、幸運色、方位
+  - 📋 Notion 今日待辦（日任務、未完成）
+  - 每日輪替加油語
+- **Mac 要開機才會觸發**
+
+### Notion API 串接（直接 API，不走 MCP）
+- **Token**：`NOTION_TOKEN` 存於 `~/.claude/settings.json` env
+- **資料庫**：`NOTION_TASKS_DB` = 計畫資料庫（`072246ee-87a8-8346-b4e8-81e0e239de3d`）
+- **Integration 名稱**：Dora早報（已在「禾言專案管理」頁面授權）
+- **用途**：腳本直接查詢今日日任務，不需要 Claude 在線
+
+### /morning skill（AI 版早報，需在 Claude 內觸發）
+- 讀取 Notion 計畫資料庫今日待辦 + 本地 plans/daily log
+- 產出個人化早報並推播到 LINE
+
+### 廣告週報推播
+- 用 `/廣告週報` skill 產出週報後，自動推播到 LINE 並複製剪貼簿
 
 ---
 
