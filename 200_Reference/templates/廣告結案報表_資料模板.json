@@ -1,0 +1,67 @@
+{
+  "client": "客戶名稱",
+  "month": "月份數字（例：5）",
+  "period": "2026/05/01~2026/05/31",
+  "company": "禾言數位行銷有限公司",
+
+  "kpi": {
+    "total_spend": 0,
+    "total_impressions": 0,
+    "total_clicks": 0,
+    "total_purchases": 0,
+    "total_purchase_value": 0,
+    "roas": 0.0
+  },
+
+  "daily_data": {
+    "dates": [],
+    "impressions": [],
+    "clicks": [],
+    "purchases": []
+  },
+
+  "creatives": [
+    {
+      "format": "銷售 或 流量",
+      "name": "素材名稱",
+      "impressions": 0,
+      "clicks": 0,
+      "ctr": 0.0,
+      "video_views": 0,
+      "link_clicks": 0,
+      "link_click_cost": 0.0,
+      "purchases": 0,
+      "purchase_value": 0,
+      "roas": 0.0,
+      "spend": 0
+    }
+  ],
+
+  "audience": {
+    "age_groups": [
+      {"range": "18-24", "percentage": 0},
+      {"range": "25-34", "percentage": 0},
+      {"range": "35-44", "percentage": 0},
+      {"range": "45-54", "percentage": 0},
+      {"range": "55+",   "percentage": 0}
+    ],
+    "gender": {"female": 0, "male": 0},
+    "analysis": "受眾分析文字"
+  },
+
+  "creative_summary": "素材分析表格下方的整體觀察（2-3句）",
+
+  "conclusion": "整體廣告概述段落（3-5句，含曝光成效、購買成效、受眾洞察）",
+
+  "creative_recommendations": [
+    "素材建議 1",
+    "素材建議 2"
+  ],
+  "copy_recommendations": [
+    "文案建議 1"
+  ],
+  "campaign_recommendations": [
+    "活動建議 1",
+    "活動建議 2"
+  ]
+}
