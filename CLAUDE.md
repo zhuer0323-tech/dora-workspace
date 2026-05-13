@@ -100,17 +100,17 @@ Node.js 透過 nvm 安裝，路徑：`/Users/angela/.nvm/versions/node/v24.15.0/
 
 ## 資料層路由表（你要從哪裡找東西 / 寫到哪裡）
 
-| 任務                           | 對應資料夾                             |
-| :----------------------------- | :------------------------------------- |
-| 寫草稿（貼文、Email、文章）    | `100_Todo/drafts/`（看子資料夾分類）   |
-| 正在進行的專案計畫             | `100_Todo/projects/`                   |
-| 完成或封存的東西               | `100_Todo/archive/`                    |
-| 學我的寫作風格                 | `200_Reference/writing-samples/`       |
-| 找我過去的好作品               | `200_Reference/past-work/`             |
-| 找我常用的模板 / SOP           | `200_Reference/templates/`             |
-| 記憶、偏好、踩坑               | `000_Agent/memory/MEMORY.md`           |
-| 每日反思 / session log         | `000_Agent/memory/daily/YYYY-MM-DD.md` |
-| 我自己建的工作流（Skill）      | `000_Agent/skills/`（已 symlink 至 `~/.claude/skills`） |
+| 任務                           | 對應資料夾                             | 記憶層 |
+| :----------------------------- | :------------------------------------- | :----: |
+| 寫草稿（貼文、Email、文章）    | `100_Todo/drafts/`（看子資料夾分類）   | —      |
+| 正在進行的專案計畫             | `100_Todo/projects/`                   | —      |
+| 完成或封存的東西               | `100_Todo/archive/`                    | —      |
+| 學我的寫作風格                 | `200_Reference/writing-samples/`       | —      |
+| 找我過去的好作品               | `200_Reference/past-work/`             | —      |
+| 找我常用的模板 / SOP           | `200_Reference/templates/`             | —      |
+| 記憶、偏好、踩坑               | `000_Agent/memory/MEMORY.md`           | L1     |
+| 每日反思 / session log         | `000_Agent/memory/daily/YYYY-MM-DD.md` | L3     |
+| 我自己建的工作流（Skill）      | `000_Agent/skills/`（已 symlink 至 `~/.claude/skills`） | L2 |
 
 > 當我要你「寫一篇貼文」「回一封 Email」時：**先翻 `200_Reference/writing-samples/` 找 2-3 個我過去的範例學語氣**，再開始寫。不要憑空想像我的風格。
 
@@ -126,9 +126,26 @@ Node.js 透過 nvm 安裝，路徑：`/Users/angela/.nvm/versions/node/v24.15.0/
 
 ## 記憶系統（讓 AI 越用越懂我）
 
+### 三層記憶架構
+
+記憶依「什麼時候該被看到」分三層，**寫之前先判斷該放哪層**：
+
+| 層 | 問自己 | 存放位置 | 什麼時候被 AI 看到 |
+|:--|:--|:--|:--|
+| **L1 自動載入** | 不看到就會出錯？ | `CLAUDE.md` 或 `MEMORY.md` | 每次對話一開始就載入 |
+| **L2 按需載入** | 只有特定任務才用到？ | `000_Agent/skills/` | AI 判斷任務相關時才讀 |
+| **L3 時序層** | 某天發生的事，之後可能要回顧？ | `000_Agent/memory/daily/` | 手動 grep 或 AI 主動搜尋 |
+
+適用範例：
+- 「一律繁體中文」→ L1，寫進 `CLAUDE.md`
+- 廣告結案報表的產出 SOP → L2，抽成 Skill
+- 今天某個客戶說的話 → L3，寫進當日 daily log
+
+### Session 觸發規則
+
 - **Session 開始**：自動讀 `000_Agent/memory/MEMORY.md`，回報「上次我們做到 X，還有 Y 沒完成」
-- **Session 進行中**：發現我的新偏好、我糾正你一個做法、你學到一個踩坑 → **立即**寫進 `MEMORY.md`，不要等 session 結束
-- **Session 結束**：把今天的關鍵決策、完成/未完成的任務寫進 `000_Agent/memory/daily/YYYY-MM-DD.md`
+- **Session 進行中**：發現我的新偏好、我糾正你一個做法、你學到一個踩坑 → **立即**寫進 `MEMORY.md`（L1），不要等 session 結束
+- **Session 結束**：把今天的關鍵決策、完成/未完成的任務寫進 `000_Agent/memory/daily/YYYY-MM-DD.md`（L3）
 
 ---
 
