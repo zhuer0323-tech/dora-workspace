@@ -84,15 +84,17 @@ Node.js 透過 nvm 安裝，路徑：`/Users/angela/.nvm/versions/node/v24.15.0/
 - **憑證**：`LINE_PUSH_TOKEN`、`LINE_USER_ID` 存於 `~/.claude/settings.json` env 區塊
 - **推播方式**：內容寫入 `/tmp/dora_*.txt` → 用 `curl` 呼叫 LINE Messaging API
 
-### 7:30 自動早報
-- **腳本**：`000_Agent/hooks/morning-briefing.sh`
-- **排程**：`~/Library/LaunchAgents/com.dora.morning-briefing.plist`（已啟用，每天 7:30）
+### 8:30 自動早報（週一～週五）
+- **腳本**：`~/Library/Scripts/dora-morning-briefing.sh`
+- **憑證**：`~/Library/Scripts/dora.env`（LINE/Notion token，權限 600）
+- **排程**：`~/Library/LaunchAgents/com.dora.morning-briefing.plist`（已啟用，週一～週五 8:30，假日不觸發）
 - **內容**：櫻花粉 Flex Message 卡片，包含：
   - ♈ 牡羊座今日運勢（從 astro.click108.com.tw 即時抓取）
   - 幸運數字、幸運色、方位
   - 📋 Notion 今日待辦（日任務、未完成）
   - 每日輪替加油語
 - **Mac 要開機才會觸發**
+- **注意**：腳本與憑證必須放在 `~/Library/Scripts/`，放 `~/Downloads/` 會因 macOS TCC 權限被擋
 
 ### Notion API 串接（直接 API，不走 MCP）
 - **Token**：`NOTION_TOKEN` 存於 `~/.claude/settings.json` env
