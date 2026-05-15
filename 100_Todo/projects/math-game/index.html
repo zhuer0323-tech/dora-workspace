@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🌸 數學冒險！</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --pink: #FF85A1;
+  --light-pink: #FFD6E7;
+  --purple: #C9A0DC;
+  --mint: #A8E6CF;
+  --yellow: #FFD93D;
+  --text: #5C3D5C;
+  --shadow: 0 4px 20px rgba(200,100,150,0.18);
+}
+
+body {
+  font-family: 'Segoe UI','微軟正黑體','蘋方-繁', Arial, sans-serif;
+  background: linear-gradient(135deg, #FFD6E7 0%, #FFF0F5 55%, #EDE0F7 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  color: var(--text);
+}
+
+.container { width: 100%; max-width: 480px; min-height: 100vh; }
+
+.screen {
+  display: none;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 20px 16px 32px;
+  animation: fadeIn .35s ease;
+}
+.screen.active { display: flex; }
+
+@keyframes fadeIn { from { opacity:0; transform:translateY(16px) } to { opacity:1; transform:none } }
+@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+@keyframes shake  { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+@keyframes pop    { 0%{transform:scale(1)} 50%{transform:scale(1.18)} 100%{transform:scale(1)} }
+@keyframes appear { 0%{transform:scale(.3) rotate(-12deg);opacity:0} 70%{transform:scale(1.1) rotate(4deg)} 100%{transform:scale(1) rotate(0);opacity:1} }
+
+/* ── TITLE ── */
+#screen-title {
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  text-align: center;
+}
+.title-char { font-size: 88px; animation: bounce 2.2s infinite; }
+.title-main { font-size: 34px; font-weight: 900; color: var(--pink); letter-spacing: 5px; text-shadow: 3px 3px 0 rgba(255,100,150,.18); }
+.title-sub  { font-size: 15px; color: #9B6B9B; letter-spacing: 2px; }
+.xp-badge   { background: white; border-radius: 50px; padding: 10px 26px; font-size: 16px; font-weight: 700; color: var(--pink); box-shadow: var(--shadow); }
+
+.btn-main {
+  background: linear-gradient(135deg, var(--pink), #FF6B9D);
+  color: white; border: none; border-radius: 50px;
+  padding: 18px 52px; font-size: 20px; font-weight: 800;
+  cursor: pointer; letter-spacing: 3px;
+  box-shadow: 0 6px 20px rgba(255,100,150,.38);
+  transition: .15s;
+}
+.btn-main:active { transform: scale(.96); box-shadow: 0 2px 10px rgba(255,100,150,.25); }
+
+.btn-ghost {
+  background: white; color: var(--text);
+  border: 3px solid #F0D0F0; border-radius: 50px;
+  padding: 14px 28px; font-size: 16px; font-weight: 700;
+  cursor: pointer; transition: .15s;
+}
+.btn-ghost:active { transform: scale(.96); }
+
+/* ── COMMON HEADER ── */
+.hd { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.btn-back {
+  background: white; border: none; border-radius: 50%;
+  width: 46px; height: 46px; font-size: 20px;
+  cursor: pointer; box-shadow: var(--shadow);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: .15s;
+}
+.btn-back:active { transform: scale(.9); }
+.hd-title { font-size: 22px; font-weight: 800; }
+
+/* ── WORLDS ── */
+#screen-worlds { gap: 14px; }
+
+.world-card {
+  background: white; border-radius: 24px;
+  padding: 18px; box-shadow: var(--shadow);
+  display: flex; align-items: center; gap: 14px;
+  border: 3px solid transparent; cursor: pointer; transition: .18s;
+}
+.world-card:active { transform: scale(.97); }
+.world-card.locked  { opacity: .5; cursor: not-allowed; filter: grayscale(50%); }
+.world-card.done    { border-color: var(--mint); }
+
+.world-em { font-size: 60px; flex-shrink: 0; }
+.world-nm { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+.world-ds { font-size: 13px; color: #9B6B9B; margin-bottom: 8px; }
+.world-dots { display: flex; gap: 6px; }
+.dot { width: 16px; height: 16px; border-radius: 50%; background: #E8D5E8; border: 2px solid #D0B0D0; }
+.dot.lit { background: var(--yellow); border-color: #FFB800; }
+.lock-ic { font-size: 22px; color: #9B6B9B; }
+
+/* ── LEVELS ── */
+#screen-levels { gap: 14px; }
+
+.lv-card {
+  background: white; border-radius: 20px;
+  padding: 18px 20px; box-shadow: var(--shadow);
+  display: flex; align-items: center; gap: 14px;
+  border: 3px solid transparent; cursor: pointer; transition: .18s;
+}
+.lv-card:active { transform: scale(.97); }
+.lv-card.locked { opacity: .5; cursor: not-allowed; }
+.lv-card.done   { border-color: var(--mint); }
+
+.lv-num {
+  width: 56px; height: 56px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 900; color: white; flex-shrink: 0;
+}
+.lv-nm { font-size: 18px; font-weight: 800; margin-bottom: 3px; }
+.lv-hint { font-size: 13px; color: #9B6B9B; }
+.stars { display: flex; gap: 3px; font-size: 18px; }
+
+/* ── GAME ── */
+#screen-game { gap: 14px; }
+
+.g-header {
+  display: flex; align-items: center; justify-content: space-between;
+  background: white; border-radius: 16px; padding: 12px 16px;
+  box-shadow: var(--shadow);
+}
+.g-prog { font-size: 15px; font-weight: 700; }
+.g-score { font-size: 15px; font-weight: 700; color: var(--pink); }
+
+.timer-wrap { background: #F0E0F0; border-radius: 50px; height: 12px; overflow: hidden; }
+.timer-fill { height: 100%; border-radius: 50px; transition: width 1s linear; background: linear-gradient(90deg, var(--pink), var(--purple)); }
+.timer-fill.warn   { background: linear-gradient(90deg,#FFB800,#FF6B00); }
+.timer-fill.danger { background: linear-gradient(90deg,#FF4444,#FF0000); }
+
+.char-area { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.game-char  { font-size: 72px; transition: .25s; }
+.game-char.ding  { animation: bounce .5s; }
+.game-char.oops  { animation: shake .4s; }
+
+.q-bubble {
+  background: white; border-radius: 24px;
+  padding: 24px 28px; box-shadow: var(--shadow);
+  text-align: center; width: 100%;
+}
+.q-text { font-size: 38px; font-weight: 900; letter-spacing: 4px; }
+
+.choices { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.choice {
+  background: white; border: 3px solid #F0D0F0;
+  border-radius: 20px; padding: 20px 8px;
+  font-size: 28px; font-weight: 900; color: var(--text);
+  cursor: pointer; text-align: center;
+  box-shadow: 0 4px 12px rgba(200,100,150,.1); transition: .12s;
+  min-height: 72px; display: flex; align-items: center; justify-content: center;
+}
+.choice:active  { transform: scale(.95); }
+.choice.correct { background: var(--mint); border-color: #50C878; color: #1a5c30; animation: pop .3s; }
+.choice.wrong   { background: #FFD6D6; border-color: #FF8888; color: #8B0000; }
+.choice.reveal  { background: var(--mint); border-color: #50C878; color: #1a5c30; }
+.choice:disabled { cursor: default; }
+
+.feedback { text-align: center; font-size: 22px; font-weight: 800; min-height: 34px; }
+.feedback.ok  { color: #2E7D32; }
+.feedback.no  { color: #C62828; }
+
+/* ── STORY BUBBLE ── */
+.story-bubble {
+  background: #FFFBE6;
+  border: 2px solid var(--yellow);
+  border-radius: 18px;
+  padding: 14px 16px;
+  box-shadow: 0 3px 12px rgba(255,200,0,.15);
+}
+.story-tag {
+  display: inline-block;
+  background: var(--yellow);
+  color: #5C4000;
+  border-radius: 50px;
+  padding: 3px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+.story-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.75;
+}
+
+/* ── RESULT ── */
+#screen-result {
+  align-items: center; justify-content: center;
+  gap: 18px; text-align: center;
+}
+.res-char  { font-size: 86px; animation: appear .6s ease; }
+.res-title { font-size: 28px; font-weight: 900; animation: appear .6s .1s both; }
+
+.res-box {
+  background: white; border-radius: 24px;
+  padding: 22px 44px; box-shadow: var(--shadow);
+  animation: appear .6s .2s both;
+}
+.res-big { font-size: 58px; font-weight: 900; color: var(--pink); }
+.res-sub { font-size: 15px; color: #9B6B9B; }
+
+.xp-pill {
+  background: linear-gradient(135deg, var(--yellow), #FFB800);
+  color: #5C4000; border-radius: 50px;
+  padding: 10px 28px; font-size: 18px; font-weight: 700;
+  animation: appear .6s .3s both;
+}
+
+.ach-pill {
+  background: white; border: 2px solid var(--yellow);
+  border-radius: 16px; padding: 12px 20px;
+  font-size: 14px; font-weight: 700;
+  box-shadow: var(--shadow); animation: appear .6s .4s both;
+}
+
+.res-btns { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 290px; animation: appear .6s .45s both; }
+
+/* ── ACHIEVEMENTS ── */
+#screen-achievements { gap: 14px; }
+
+.ach-card {
+  background: white; border-radius: 20px;
+  padding: 14px 18px; box-shadow: var(--shadow);
+  display: flex; align-items: center; gap: 14px;
+}
+.ach-card.dim { opacity: .4; filter: grayscale(80%); }
+.ach-ic   { font-size: 44px; flex-shrink: 0; }
+.ach-nm   { font-size: 16px; font-weight: 800; margin-bottom: 3px; }
+.ach-ds   { font-size: 12px; color: #9B6B9B; }
+.ach-chk  { font-size: 22px; margin-left: auto; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- 標題畫面 -->
+<div class="screen active" id="screen-title">
+  <div class="title-char" id="titleChar">🐱</div>
+  <div class="title-main">數學冒險</div>
+  <div class="title-sub">跟著圓圓、暗暗、糖糖一起闖關！</div>
+  <div class="xp-badge" id="titleXP">✨ 總經驗值：0 XP</div>
+  <button class="btn-main" onclick="go('worlds')">開始冒險</button>
+  <button class="btn-ghost" onclick="go('achievements')">🏆 我的成就</button>
+</div>
+
+<!-- 世界選擇 -->
+<div class="screen" id="screen-worlds">
+  <div class="hd">
+    <button class="btn-back" onclick="go('title')">←</button>
+    <div class="hd-title">選擇世界</div>
+  </div>
+
+  <div class="world-card" id="wc0" onclick="pickWorld(0)">
+    <div class="world-em">🌸</div>
+    <div style="flex:1">
+      <div class="world-nm">加法世界</div>
+      <div class="world-ds">100 以內加法，跟圓圓一起練習！</div>
+      <div class="world-dots" id="wd0">
+        <div class="dot" id="d00"></div><div class="dot" id="d01"></div><div class="dot" id="d02"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="world-card" id="wc1" onclick="pickWorld(1)">
+    <div class="world-em">🌙</div>
+    <div style="flex:1">
+      <div class="world-nm">減法世界</div>
+      <div class="world-ds">100 以內減法，暗暗陪你挑戰！</div>
+      <div class="world-dots" id="wd1">
+        <div class="dot" id="d10"></div><div class="dot" id="d11"></div><div class="dot" id="d12"></div>
+      </div>
+    </div>
+    <div class="lock-ic" id="wl1">🔒</div>
+  </div>
+
+  <div class="world-card" id="wc2" onclick="pickWorld(2)">
+    <div class="world-em">⭐</div>
+    <div style="flex:1">
+      <div class="world-nm">乘法世界</div>
+      <div class="world-ds">2～5 的乘法，糖糖是你的好夥伴！</div>
+      <div class="world-dots" id="wd2">
+        <div class="dot" id="d20"></div><div class="dot" id="d21"></div><div class="dot" id="d22"></div>
+      </div>
+    </div>
+    <div class="lock-ic" id="wl2">🔒</div>
+  </div>
+
+  <div class="world-card" id="wc3" onclick="pickWorld(3)">
+    <div class="world-em">🌈</div>
+    <div style="flex:1">
+      <div class="world-nm">進階挑戰</div>
+      <div class="world-ds">兩步驟、反向計算、生活應用，閃閃陪你闖！</div>
+      <div class="world-dots" id="wd3">
+        <div class="dot" id="d30"></div><div class="dot" id="d31"></div><div class="dot" id="d32"></div>
+      </div>
+    </div>
+    <div class="lock-ic" id="wl3">🔒</div>
+  </div>
+</div>
+
+<!-- 關卡選擇 -->
+<div class="screen" id="screen-levels">
+  <div class="hd">
+    <button class="btn-back" onclick="go('worlds')">←</button>
+    <div class="hd-title" id="lvTitle">關卡選擇</div>
+  </div>
+  <div id="lvCards"></div>
+</div>
+
+<!-- 遊戲進行 -->
+<div class="screen" id="screen-game">
+  <div class="g-header">
+    <div class="g-prog" id="gProg">題目 1 / 10</div>
+    <div class="g-score" id="gScore">答對 0 題</div>
+  </div>
+  <div class="timer-wrap"><div class="timer-fill" id="timerBar"></div></div>
+  <div class="story-bubble" id="storyBubble" style="display:none">
+    <div class="story-tag">📖 應用題</div>
+    <div class="story-text" id="storyText"></div>
+  </div>
+  <div class="char-area">
+    <div class="game-char" id="gChar">🐱</div>
+    <div class="q-bubble"><div class="q-text" id="qText">3 + 5 = ?</div></div>
+  </div>
+  <div class="choices" id="choices"></div>
+  <div class="feedback" id="feedback"></div>
+</div>
+
+<!-- 結果畫面 -->
+<div class="screen" id="screen-result">
+  <div class="res-char" id="resChar">🎉</div>
+  <div class="res-title" id="resTitle">過關了！</div>
+  <div class="res-box">
+    <div class="res-big" id="resBig">8 / 10</div>
+    <div class="res-sub">答對題數</div>
+  </div>
+  <div class="xp-pill" id="resXP">+80 XP</div>
+  <div class="ach-pill" id="resAch" style="display:none"></div>
+  <div class="res-btns">
+    <button class="btn-main" id="resMainBtn">繼續</button>
+    <button class="btn-ghost" onclick="go('worlds')">回到世界選單</button>
+  </div>
+</div>
+
+<!-- 成就畫面 -->
+<div class="screen" id="screen-achievements">
+  <div class="hd">
+    <button class="btn-back" onclick="go('title')">←</button>
+    <div class="hd-title">我的成就</div>
+  </div>
+  <div id="achList"></div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+// ── 設定 ──────────────────────────────────────────────────────
+const WORLDS = [
+  { name:'加法世界', em:'🌸', char:'🐱', charName:'圓圓', color:'#FF85A1' },
+  { name:'減法世界', em:'🌙', char:'🐰', charName:'暗暗', color:'#C9A0DC' },
+  { name:'乘法世界', em:'⭐', char:'🐑', charName:'糖糖', color:'#FFD93D' },
+  { name:'進階挑戰', em:'🌈', char:'🦋', charName:'閃閃', color:'#FF6B35' }
+]
+
+const LV_CFG = [
+  [
+    { name:'入門', hint:'10 以內加法', diff:'easy' },
+    { name:'進階', hint:'50 以內加法', diff:'mid'  },
+    { name:'挑戰', hint:'100 以內加法',diff:'hard' }
+  ],[
+    { name:'入門', hint:'10 以內減法', diff:'easy' },
+    { name:'進階', hint:'50 以內減法', diff:'mid'  },
+    { name:'挑戰', hint:'100 以內減法',diff:'hard' }
+  ],[
+    { name:'入門', hint:'2 和 3 的乘法',diff:'easy' },
+    { name:'進階', hint:'4 和 5 的乘法',diff:'mid'  },
+    { name:'挑戰', hint:'混合 2～5 乘法',diff:'hard' }
+  ],[
+    { name:'初階：兩步驟', hint:'需要算兩個步驟的題目', diff:'two-step' },
+    { name:'中階：找答案', hint:'找出故事裡缺少的數字', diff:'reverse' },
+    { name:'高階：生活情境', hint:'用錢、長度、生活應用', diff:'life' }
+  ]
+]
+
+const ACH_DEF = [
+  { id:'first',    ic:'⭐', nm:'第一題答對！',   ds:'答對第一道題目' },
+  { id:'w0',       ic:'🌸', nm:'加法小達人',     ds:'完成加法世界所有關卡' },
+  { id:'w1',       ic:'🌙', nm:'減法小達人',     ds:'完成減法世界所有關卡' },
+  { id:'w2',       ic:'⭐', nm:'乘法小達人',     ds:'完成乘法世界所有關卡' },
+  { id:'w3',       ic:'🌈', nm:'進階挑戰達人',   ds:'完成進階挑戰世界所有關卡' },
+  { id:'champ',    ic:'👑', nm:'數學冠軍！',     ds:'完成全部四個世界' },
+  { id:'perfect',  ic:'💯', nm:'全對滿分！',     ds:'一關 10 題全部答對' },
+  { id:'speed',    ic:'⚡', nm:'神速解題！',     ds:'5 秒內答對一題' },
+  { id:'xp100',    ic:'🎖️', nm:'闖關新手',      ds:'累積 100 XP' },
+  { id:'xp500',    ic:'🏆', nm:'數學達人',      ds:'累積 500 XP' }
+]
+
+const PRAISE   = ['太棒了！','好厲害！','超強的！','完美！','答對囉！']
+const MISS     = ['加油！','沒關係！','下次一定可以！','繼續努力！']
+
+// ── 文字應用題庫（來自台灣國小考卷素材）────────────────────────
+const STORY_Q = [
+  // 世界 0：加法
+  {
+    mid: [
+      { story: '小明有 13 顆糖，媽媽又給了 9 顆，小明現在有幾顆糖？', ans: 22 },
+      { story: '書桌上有 17 枝鉛筆，又放了 8 枝，一共有幾枝鉛筆？', ans: 25 },
+      { story: '動物園有 14 隻猴子和 12 隻兔子，一共有幾隻動物？', ans: 26 },
+      { story: '哥哥有 19 元，弟弟有 16 元，兩人合起來有幾元？', ans: 35 },
+      { story: '操場上有 15 個男生和 13 個女生，一共有幾個人？', ans: 28 },
+    ],
+    hard: [
+      { story: '花園裡有 35 朵紅花和 47 朵黃花，一共有幾朵花？', ans: 82 },
+      { story: '小花有 28 元，爸爸又給了 46 元，小花現在有幾元？', ans: 74 },
+      { story: '一班有 23 個男生和 19 個女生，全班一共有幾個人？', ans: 42 },
+      { story: '書架上有 43 本書，又放進 38 本，現在有幾本書？', ans: 81 },
+      { story: '停車場上午停了 56 輛車，下午又來了 37 輛，共有幾輛車？', ans: 93 },
+      { story: '糖果盒原來有 29 顆，又買了 54 顆進來，現在有幾顆？', ans: 83 },
+      { story: '圖書館有 68 本故事書和 25 本科學書，一共有幾本書？', ans: 93 },
+    ]
+  },
+  // 世界 1：減法
+  {
+    mid: [
+      { story: '糖果盒裡有 20 顆糖，吃了 7 顆，還剩幾顆？', ans: 13 },
+      { story: '小明有 15 元，買了一個 9 元的橡皮擦，還剩幾元？', ans: 6 },
+      { story: '班上有 18 個人，有 5 個人請假，今天來了幾個人？', ans: 13 },
+      { story: '樹上有 16 隻鳥，飛走了 8 隻，還剩幾隻鳥？', ans: 8 },
+      { story: '媽媽買了 24 顆蘋果，送給鄰居 9 顆，還剩幾顆？', ans: 15 },
+    ],
+    hard: [
+      { story: '糖果盒裡有 50 顆糖，吃了 18 顆，還剩幾顆？', ans: 32 },
+      { story: '小花有 73 元，買了一枝 29 元的筆，還剩幾元？', ans: 44 },
+      { story: '停車場有 80 輛車，開走了 35 輛，還剩幾輛車？', ans: 45 },
+      { story: '媽媽買了 62 顆蘋果，送給奶奶 38 顆，自己剩幾顆？', ans: 24 },
+      { story: '圖書館有 91 本書，借出去 47 本，還剩幾本書？', ans: 44 },
+      { story: '學校有 75 個學生，有 28 個人去校外教學，留下幾個人？', ans: 47 },
+      { story: '一根棒棒糖原價 15 元，特價 9 元，便宜了幾元？', ans: 6 },
+    ]
+  },
+  // 世界 2：乘法
+  {
+    mid: [
+      { story: '一支甜筒有 3 球冰淇淋，媽媽買了 4 支，共有幾球冰淇淋？', ans: 12 },
+      { story: '每個同學有 2 顆橡皮擦，5 個同學一共有幾顆？', ans: 10 },
+      { story: '一排有 5 個椅子，有 3 排，一共有幾個椅子？', ans: 15 },
+      { story: '凱凱每天喝 2 瓶鮮奶，一週 7 天共喝了幾瓶？', ans: 14 },
+      { story: '一籃有 3 顆蛋，有 4 籃，一共有幾顆蛋？', ans: 12 },
+    ],
+    hard: [
+      { story: '一包糖果有 8 顆，媽媽買了 4 包，一共有幾顆糖果？', ans: 32 },
+      { story: '每個人手上綁著 4 顆鈴鐺，6 個人共綁了幾顆？', ans: 24 },
+      { story: '一排座位有 5 個，有 7 排，一共有幾個座位？', ans: 35 },
+      { story: '一支筆 3 元，老師買了 9 支，一共要付幾元？', ans: 27 },
+      { story: '一盒蛋有 6 顆，媽媽買了 5 盒，一共有幾顆蛋？', ans: 30 },
+      { story: '一份雞蛋糕有 6 個，買了 3 份，共有幾個雞蛋糕？', ans: 18 },
+      { story: '跆拳道每組 4 人，有 8 組，一共有幾個人參賽？', ans: 32 },
+    ]
+  },
+  // 世界 3：進階挑戰（全部為應用題，三種類型）
+  {
+    'two-step': [
+      { story: '小明原有 25 元，買了 8 元的糖後，爸爸又給了 12 元，小明現在有幾元？', ans: 29 },
+      { story: '花園裡有 30 朵花，早上又開了 15 朵，下午謝了 8 朵，現在有幾朵花？', ans: 37 },
+      { story: '班上 35 個人，有 7 人請假，後來又來了 4 個人，班上有幾個人？', ans: 32 },
+      { story: '媽媽有 80 元，買了 45 元的菜，又買了 17 元的水果，還剩幾元？', ans: 18 },
+      { story: '一盒有 6 顆糖，買了 4 盒，吃了 8 顆，還剩幾顆糖？', ans: 16 },
+      { story: '弟弟有 50 張貼紙，送了哥哥 13 張，又收到妹妹給的 7 張，現在有幾張？', ans: 44 },
+      { story: '一排 5 個椅子，有 6 排，今天加了 8 個椅子，現在共有幾個椅子？', ans: 38 },
+      { story: '媽媽買了 4 盒餅乾，每盒 9 片，吃了 12 片，還剩幾片？', ans: 24 },
+      { story: '書架有 48 本書，還了 15 本，又借了 23 本，現在有幾本書？', ans: 56 },
+      { story: '操場有 27 個男生，來了 18 個女生，走了 9 個男生，現在有幾個人？', ans: 36 },
+      { story: '糖果袋裡有 36 顆，給了 15 顆，又收到 28 顆，現在有幾顆糖？', ans: 49 },
+      { story: '小花有 3 包糖，每包 8 顆，又買了 5 顆，一共有幾顆糖？', ans: 29 },
+    ],
+    'reverse': [
+      { story: '小明有一些糖，吃了 8 顆後還剩 15 顆，原來有幾顆糖？', ans: 23 },
+      { story: '媽媽買了一些蘋果，送給鄰居 17 顆後還剩 28 顆，原來買了幾顆？', ans: 45 },
+      { story: '書架上原來有一些書，借走 23 本後還剩 41 本，原來有幾本書？', ans: 64 },
+      { story: '一個數加上 35 等於 72，這個數是多少？', ans: 37 },
+      { story: '一個數減去 24 等於 38，這個數是多少？', ans: 62 },
+      { story: '小花有一些錢，花了 29 元後還剩 46 元，原來有幾元？', ans: 75 },
+      { story: '停車場原來有一些車，開走 36 輛後還剩 57 輛，原來有幾輛車？', ans: 93 },
+      { story: '一個數加上 48 等於 83，這個數是多少？', ans: 35 },
+      { story: '3 乘以一個數等於 24，那個數是多少？', ans: 8 },
+      { story: '一個數乘以 4 等於 20，那個數是多少？', ans: 5 },
+      { story: '一個數乘以 6 等於 42，那個數是多少？', ans: 7 },
+      { story: '5 乘以一個數等於 35，那個數是多少？', ans: 7 },
+    ],
+    'life': [
+      { story: '一個麵包 8 元，一瓶果汁 15 元，買 1 個麵包和 1 瓶果汁要付幾元？', ans: 23 },
+      { story: '媽媽有 50 元，買了一個 23 元的玩具，找回幾元？', ans: 27 },
+      { story: '一盒糖果 12 元，哥哥買了 3 盒，共要付幾元？', ans: 36 },
+      { story: '小明有 45 元，想買一個 68 元的玩具，還差幾元？', ans: 23 },
+      { story: '一張貼紙 6 元，小花買了 5 張，付了 50 元，找回幾元？', ans: 20 },
+      { story: '一根木棒長 48 公分，截掉 19 公分，還剩幾公分？', ans: 29 },
+      { story: '一條繩子長 36 公分，另一條長 27 公分，兩條合起來共長幾公分？', ans: 63 },
+      { story: '小明身高 120 公分，比妹妹多 23 公分，妹妹身高幾公分？', ans: 97 },
+      { story: '一排有 8 盆花，有 6 排，一共有幾盆花？', ans: 48 },
+      { story: '學校有 5 棟樓，每棟有 8 間教室，全校共有幾間教室？', ans: 40 },
+      { story: '農場有 9 隻雞，每隻雞每天生 2 顆蛋，一天共生幾顆蛋？', ans: 18 },
+      { story: '圖書館有 87 本書，借出 34 本，還了 18 本，現在有幾本書？', ans: 71 },
+    ]
+  }
+]
+
+// ── 狀態 ─────────────────────────────────────────────────────
+let S = {
+  xp: 0,
+  ach: [],
+  worlds: [
+    { lv: [null,null,null] },
+    { lv: [null,null,null] },
+    { lv: [null,null,null] },
+    { lv: [null,null,null] }
+  ],
+  curW: 0, curL: 0
+}
+
+let G = {
+  qs: [], qi: 0, score: 0,
+  timer: null, timeLeft: 15, done: false,
+  newAch: []
+}
+
+// ── 儲存 ─────────────────────────────────────────────────────
+function save() { try { localStorage.setItem('mathAdv', JSON.stringify(S)) } catch(e){} }
+function load() {
+  try {
+    const d=localStorage.getItem('mathAdv')
+    if(d) {
+      S=JSON.parse(d)
+      // 相容舊存檔：補上第 4 世界
+      if(!S.worlds[3]) S.worlds.push({ lv:[null,null,null] })
+    }
+  } catch(e){}
+}
+
+// ── 問題產生 ──────────────────────────────────────────────────
+function genQ(world, level, diff) {
+  // 第 4 世界：全部為應用題
+  if (world === 3) {
+    const bank = STORY_Q[3] && STORY_Q[3][diff] ? shuffle([...STORY_Q[3][diff]]) : []
+    return bank.slice(0, 10).map(sq => {
+      const q = { type:'story', story:sq.story, text:'答案是多少？', ans:sq.ans }
+      q.opts = makeOpts(q.ans)
+      return q
+    })
+  }
+
+  // 世界 0-2：計算題為主，進階難度混入應用題
+  const storyCount = diff==='hard' ? 4 : diff==='mid' ? 2 : 0
+  const bank = STORY_Q[world] && STORY_Q[world][diff] ? shuffle([...STORY_Q[world][diff]]) : []
+  const stories = bank.slice(0, Math.min(storyCount, bank.length))
+
+  const slots = new Set()
+  while (slots.size < stories.length) slots.add(Math.floor(Math.random()*10))
+
+  let si = 0
+  const qs = []
+  for (let i=0; i<10; i++) {
+    let q
+    if (slots.has(i) && si < stories.length) {
+      const sq = stories[si++]
+      q = { type:'story', story:sq.story, text:'答案是多少？', ans:sq.ans }
+    } else {
+      if (world===0) q=addQ(diff)
+      else if (world===1) q=subQ(diff)
+      else q=mulQ(level)
+    }
+    q.opts = makeOpts(q.ans)
+    qs.push(q)
+  }
+  return qs
+}
+
+function addQ(diff) {
+  let a, b
+  if (diff==='easy')      { a=r(1,5); b=r(1,5-a+1)||1 }
+  else if (diff==='mid')  { a=r(5,29); b=r(1,20) }
+  else                    { a=r(10,59); b=r(10,100-a) }
+  return { text:`${a} + ${b} = ?`, ans: a+b }
+}
+
+function subQ(diff) {
+  let a, b
+  if (diff==='easy')      { b=r(1,4); a=r(b+1,9) }
+  else if (diff==='mid')  { b=r(1,19); a=r(b+1,50) }
+  else                    { b=r(10,49); a=r(b+1,99) }
+  return { text:`${a} - ${b} = ?`, ans: a-b }
+}
+
+function mulQ(level) {
+  const pools = [[2,3],[4,5],[2,3,4,5]]
+  const a = pools[level][Math.floor(Math.random()*pools[level].length)]
+  const b = r(1,9)
+  return { text:`${a} × ${b} = ?`, ans: a*b }
+}
+
+function makeOpts(correct) {
+  const set = new Set([correct])
+  let tries=0
+  while(set.size<4 && tries<60) {
+    tries++
+    const d = r(-8,8) || 1
+    const w = correct+d
+    if (w>0 && w!==correct) set.add(w)
+  }
+  let fill=1
+  while(set.size<4) { if(!set.has(correct+fill)) set.add(correct+fill); fill++ }
+  return shuffle([...set])
+}
+
+function r(a,b) { return Math.floor(Math.random()*(b-a+1))+a }
+function shuffle(a) {
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]] }
+  return a
+}
+
+// ── 畫面切換 ──────────────────────────────────────────────────
+function go(name) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'))
+  document.getElementById('screen-'+name).classList.add('active')
+  if(name==='title')        refreshTitle()
+  if(name==='worlds')       refreshWorlds()
+  if(name==='achievements') renderAch()
+}
+
+// ── 標題畫面 ──────────────────────────────────────────────────
+function refreshTitle() {
+  document.getElementById('titleXP').textContent = `✨ 總經驗值：${S.xp} XP`
+}
+
+// ── 世界畫面 ──────────────────────────────────────────────────
+function refreshWorlds() {
+  WORLDS.forEach((_,wi)=>{
+    const unlocked = wi===0 || worldDone(wi-1)
+    const card = document.getElementById('wc'+wi)
+    card.classList.toggle('locked', !unlocked)
+    card.classList.toggle('done', worldDone(wi))
+    const lock = document.getElementById('wl'+wi)
+    if(lock) lock.style.display = unlocked ? 'none' : 'block'
+    S.worlds[wi].lv.forEach((sc,li)=>{
+      const d=document.getElementById(`d${wi}${li}`)
+      if(d) d.classList.toggle('lit', sc!==null && sc>=7)
+    })
+  })
+}
+
+function worldDone(wi) { return S.worlds[wi].lv.every(s=>s!==null && s>=7) }
+
+function pickWorld(wi) {
+  if(wi!==0 && !worldDone(wi-1)) {
+    const c=document.getElementById('wc'+wi)
+    c.style.animation='shake .4s'
+    setTimeout(()=>c.style.animation='',500)
+    return
+  }
+  S.curW=wi
+  openLevels(wi)
+}
+
+// ── 關卡畫面 ──────────────────────────────────────────────────
+function openLevels(wi) {
+  const w=WORLDS[wi]
+  document.getElementById('lvTitle').textContent=w.name
+  const con=document.getElementById('lvCards')
+  con.innerHTML=''
+
+  LV_CFG[wi].forEach((cfg,li)=>{
+    const prev = li===0 || (S.worlds[wi].lv[li-1]!==null && S.worlds[wi].lv[li-1]>=7)
+    const locked=!prev
+    const sc=S.worlds[wi].lv[li]
+    const done=sc!==null && sc>=7
+
+    const card=document.createElement('div')
+    card.className='lv-card'+(locked?' locked':'')+(done?' done':'')
+    card.style.marginBottom='12px'
+
+    const cols=['#FF85A1','#C9A0DC','#50C878']
+    const stars=sc===null ? (locked?'🔒':'☆☆☆') : '⭐'.repeat(sc>=10?3:sc>=8?2:1)+'☆'.repeat(sc>=10?0:sc>=8?1:2)
+
+    card.innerHTML=`
+      <div class="lv-num" style="background:linear-gradient(135deg,${cols[li]}cc,${cols[li]}66)">${li+1}</div>
+      <div style="flex:1">
+        <div class="lv-nm">第 ${li+1} 關：${cfg.name}</div>
+        <div class="lv-hint">${cfg.hint}</div>
+      </div>
+      <div class="stars">${stars}</div>`
+
+    if(!locked) card.onclick=()=>startGame(wi,li)
+    con.appendChild(card)
+  })
+
+  go('levels')
+}
+
+// ── 遊戲邏輯 ──────────────────────────────────────────────────
+function startGame(wi,li) {
+  S.curW=wi; S.curL=li
+  const cfg=LV_CFG[wi][li]
+  G = { qs:genQ(wi,li,cfg.diff), qi:0, score:0, timer:null, timeLeft:15, done:false, newAch:[] }
+  // 確保計時條在非進階世界時顯示
+  document.getElementById('timerBar').style.display = wi===3 ? 'none' : 'block'
+  go('game')
+  renderQ()
+}
+
+function renderQ() {
+  const q=G.qs[G.qi]
+  document.getElementById('gProg').textContent=`題目 ${G.qi+1} / 10`
+  document.getElementById('gScore').textContent=`答對 ${G.score} 題`
+  document.getElementById('gChar').textContent=WORLDS[S.curW].char
+  document.getElementById('gChar').className='game-char'
+
+  // 應用題：顯示故事泡泡；一般計算題：隱藏
+  const storyBubble=document.getElementById('storyBubble')
+  if (q.type==='story') {
+    document.getElementById('storyText').textContent=q.story
+    storyBubble.style.display='block'
+    document.getElementById('qText').textContent='答案是多少？'
+  } else {
+    storyBubble.style.display='none'
+    document.getElementById('qText').textContent=q.text
+  }
+
+  const con=document.getElementById('choices')
+  con.innerHTML=''
+  q.opts.forEach(v=>{
+    const btn=document.createElement('button')
+    btn.className='choice'
+    btn.textContent=v
+    btn.dataset.v=v
+    btn.onclick=()=>answer(v,q.ans)
+    con.appendChild(btn)
+  })
+
+  document.getElementById('feedback').textContent=''
+  document.getElementById('feedback').className='feedback'
+  G.done=false
+  tickTimer()
+}
+
+function tickTimer() {
+  clearInterval(G.timer)
+  const bar=document.getElementById('timerBar')
+
+  // 進階挑戰世界：拿掉計時，讓孩子好好想
+  if(S.curW===3) {
+    bar.style.display='none'
+    return
+  }
+
+  bar.style.display='block'
+  G.timeLeft=15
+  bar.style.width='100%'
+  bar.className='timer-fill'
+
+  G.timer=setInterval(()=>{
+    G.timeLeft--
+    bar.style.width=(G.timeLeft/15*100)+'%'
+    if(G.timeLeft<=5) bar.className='timer-fill danger'
+    else if(G.timeLeft<=8) bar.className='timer-fill warn'
+    if(G.timeLeft<=0){ clearInterval(G.timer); if(!G.done) timeout() }
+  },1000)
+}
+
+function timeout() {
+  G.done=true
+  const ans=G.qs[G.qi].ans
+  document.querySelectorAll('.choice').forEach(b=>{
+    b.disabled=true
+    if(parseInt(b.dataset.v)===ans) b.classList.add('reveal')
+  })
+  setFB(`答案是 ${ans}，下次加油！`,'no')
+  document.getElementById('gChar').className='game-char oops'
+  setTimeout(next,2000)
+}
+
+function answer(chosen,correct) {
+  if(G.done) return
+  G.done=true
+  clearInterval(G.timer)
+  const t=15-G.timeLeft
+  const ok=chosen===correct
+
+  document.querySelectorAll('.choice').forEach(b=>{
+    b.disabled=true
+    const v=parseInt(b.dataset.v)
+    if(v===correct) b.classList.add('correct')
+    else if(v===chosen && !ok) b.classList.add('wrong')
+  })
+
+  if(ok) {
+    G.score++
+    document.getElementById('gChar').className='game-char ding'
+    setFB(PRAISE[Math.floor(Math.random()*PRAISE.length)],'ok')
+    if(t<=5) unlock('speed')
+    unlock('first')
+  } else {
+    document.getElementById('gChar').className='game-char oops'
+    setFB(MISS[Math.floor(Math.random()*MISS.length)],'no')
+  }
+  setTimeout(next,1500)
+}
+
+function setFB(msg,cls) {
+  const el=document.getElementById('feedback')
+  el.textContent=msg
+  el.className='feedback '+cls
+}
+
+function next() {
+  G.qi++
+  if(G.qi>=10) endGame()
+  else renderQ()
+}
+
+function endGame() {
+  const wi=S.curW, li=S.curL, sc=G.score
+  const prev=S.worlds[wi].lv[li]
+  if(prev===null||sc>prev) S.worlds[wi].lv[li]=sc
+
+  const xp=sc*10+(sc===10?50:0)
+  S.xp+=xp
+
+  if(sc===10) unlock('perfect')
+  if(worldDone(0)) unlock('w0')
+  if(worldDone(1)) unlock('w1')
+  if(worldDone(2)) unlock('w2')
+  if(worldDone(3)) unlock('w3')
+  if(S.ach.includes('w0')&&S.ach.includes('w1')&&S.ach.includes('w2')&&S.ach.includes('w3')) unlock('champ')
+  if(S.xp>=100) unlock('xp100')
+  if(S.xp>=500) unlock('xp500')
+  save()
+
+  const pass=sc>=7
+  document.getElementById('resChar').textContent = pass?(sc===10?'🥳':'🎉'):'💪'
+  document.getElementById('resTitle').textContent = sc===10?'完美滿分！！！':pass?'過關了！太棒了！':'再試一次！你可以的！'
+  document.getElementById('resTitle').style.color = pass?'#2E7D32':'#C62828'
+  document.getElementById('resBig').textContent = `${sc} / 10`
+  document.getElementById('resXP').textContent = `+${xp} XP 經驗值`
+
+  const achEl=document.getElementById('resAch')
+  if(G.newAch.length>0){
+    const a=ACH_DEF.find(x=>x.id===G.newAch[0])
+    achEl.textContent=`🏆 新成就：${a.ic} ${a.nm}`
+    achEl.style.display='block'
+  } else { achEl.style.display='none' }
+
+  const btn=document.getElementById('resMainBtn')
+  if(pass && li<2) {
+    btn.textContent='繼續下一關 →'
+    btn.onclick=()=>startGame(wi,li+1)
+  } else if(pass && li===2 && wi<3) {
+    btn.textContent=`前往 ${WORLDS[wi+1].name} →`
+    btn.onclick=()=>{ S.curW=wi+1; openLevels(wi+1) }
+  } else if(pass && li===2 && wi===3) {
+    btn.textContent='🎊 恭喜全部通關！數學冠軍！'
+    btn.onclick=()=>go('title')
+  } else {
+    btn.textContent='重新挑戰 ↺'
+    btn.onclick=()=>startGame(wi,li)
+  }
+
+  go('result')
+}
+
+function unlock(id) {
+  if(!S.ach.includes(id)){ S.ach.push(id); G.newAch.push(id) }
+}
+
+// ── 成就畫面 ──────────────────────────────────────────────────
+function renderAch() {
+  const con=document.getElementById('achList')
+  con.innerHTML=''
+  ACH_DEF.forEach(a=>{
+    const got=S.ach.includes(a.id)
+    const card=document.createElement('div')
+    card.className='ach-card'+(got?'':' dim')
+    card.style.marginBottom='10px'
+    card.innerHTML=`
+      <div class="ach-ic">${a.ic}</div>
+      <div><div class="ach-nm">${a.nm}</div><div class="ach-ds">${a.ds}</div></div>
+      <div class="ach-chk">${got?'✅':''}</div>`
+    con.appendChild(card)
+  })
+}
+
+// ── 啟動 ──────────────────────────────────────────────────────
+load()
+refreshTitle()
+</script>
+</body>
+</html>
