@@ -211,6 +211,33 @@ body {
 .modal-sub    { font-size:14px;color:#9B6B9B;margin-bottom:20px; }
 .name-input   { width:100%;border:3px solid #F0D0F0;border-radius:16px;padding:14px 16px;font-size:22px;font-weight:700;text-align:center;color:var(--text);outline:none;margin-bottom:16px;font-family:inherit; }
 .name-input:focus { border-color:var(--pink); }
+
+/* ── REPORT MODAL ── */
+.report-card {
+  background:white;border-radius:24px;padding:28px 22px;
+  width:92%;max-width:380px;text-align:center;
+  box-shadow:0 8px 40px rgba(0,0,0,.25);animation:appear .4s ease;
+  max-height:88vh;overflow-y:auto;
+}
+.report-title { font-size:20px;font-weight:900;color:var(--pink);margin-bottom:4px; }
+.report-date  { font-size:12px;color:#9B6B9B;margin-bottom:16px; }
+.report-stat-row {
+  display:flex;align-items:center;justify-content:space-between;
+  background:#FFF5F8;border-radius:14px;padding:11px 16px;margin-bottom:7px;
+}
+.report-stat-label { font-size:14px;font-weight:700;color:#7B5B7B; }
+.report-stat-value { font-size:17px;font-weight:900;color:var(--pink); }
+.report-tasks-title { font-size:13px;font-weight:900;color:#5C4000;margin:14px 0 8px;text-align:left; }
+.report-task-row {
+  display:flex;align-items:center;gap:8px;
+  font-size:13px;font-weight:600;padding:5px 0;
+  border-bottom:1px solid #F5F0F5;text-align:left;
+}
+.report-task-row:last-child { border-bottom:none; }
+.report-task-row.done { color:#50C878; }
+.report-btns { display:flex;flex-direction:column;gap:10px;margin-top:18px; }
+.report-status { font-size:13px;color:#9B6B9B;min-height:20px; }
+#reportCopyArea { display:none; }
 </style>
 </head>
 <body>
@@ -224,6 +251,26 @@ body {
     <div class="modal-sub">輸入你的名字，開始冒險吧！</div>
     <input class="name-input" id="nameInput" maxlength="6" placeholder="你的名字" />
     <button class="btn-main" onclick="saveName()" style="width:100%">出發！🚀</button>
+  </div>
+</div>
+
+<!-- 今日報告 modal -->
+<div class="modal-overlay" id="reportModal">
+  <div class="report-card">
+    <div class="report-title">📊 今日學習報告</div>
+    <div class="report-date" id="reportDate"></div>
+    <div id="reportStats"></div>
+    <div class="report-tasks-title">📋 今日任務</div>
+    <div id="reportTasks"></div>
+    <div class="report-btns">
+      <button class="btn-main" id="reportSendBtn" onclick="handleReportSend()">傳送到家長 LINE 📱</button>
+      <div class="report-status" id="reportStatus"></div>
+      <div id="reportCopyArea">
+        <textarea id="reportCopyText" style="width:100%;border:2px solid #F0D0F0;border-radius:12px;padding:10px;font-size:12px;height:156px;resize:none;font-family:inherit;color:#5C3D5C;margin-top:4px" readonly></textarea>
+        <button class="btn-ghost" id="reportCopyBtn" style="width:100%;margin-top:6px" onclick="copyReport()">複製文字 📋</button>
+      </div>
+      <button class="btn-ghost" onclick="closeReport()">關閉</button>
+    </div>
   </div>
 </div>
 
@@ -242,6 +289,7 @@ body {
     <button class="btn-ghost" style="flex:1" onclick="go('achievements')">🏆 成就</button>
     <button class="btn-ghost" style="flex:1" onclick="go('leaderboard')">👑 名人堂</button>
   </div>
+  <button class="btn-ghost" style="width:100%;max-width:320px;border-color:#FFD93D;color:#5C4000;font-weight:900" onclick="showReport()">📊 今天玩完了</button>
 </div>
 
 <!-- 世界選擇 -->
@@ -619,7 +667,7 @@ const STORY_Q = [
 
 // ── 狀態 ─────────────────────────────────────────────────────
 let S = {
-  xp:0, ach:[], playerName:'', daily:null,
+  xp:0, ach:[], playerName:'', daily:null, dailyLog:null,
   worlds:[
     {lv:[null,null,null]},{lv:[null,null,null]},
     {lv:[null,null,null]},{lv:[null,null,null]},{lv:[null,null,null]}
@@ -627,6 +675,10 @@ let S = {
   curW:0, curL:0
 }
 let G = { qs:[], qi:0, score:0, timer:null, timeLeft:15, done:false, newAch:[], combo:0 }
+
+const LINE_TOKEN = '8A5lk+1g4hmdDnGQtCEPHEvytk0jEst1jCBMpO3lLmQUJaL+oiI6bCSSYKSaq9U33ENsslpPFWLJnJrOsWF3va/tE9WbFgtVHGfyuvwPIMpPiC8RNlkr90bqL3elCMXQgLBv0FwL/CtiKbzNEcuzEAdB04t89/1O/w1cDnyilFU='
+const LINE_USER  = 'U8d7a818a627208a95a0ca2a2f6cee51e'
+const SESSION_START = Date.now()
 
 function save() { try { localStorage.setItem('mathAdv2', JSON.stringify(S)) } catch(e){} }
 function load() {
@@ -729,6 +781,13 @@ function showXPFloat(amt, refEl) {
 
 // ── 今日任務 ──────────────────────────────────────────────────
 function today() { return new Date().toISOString().slice(0,10) }
+
+function initDailyLog() {
+  if(!S.dailyLog || S.dailyLog.date!==today()) {
+    S.dailyLog={ date:today(), correct:0, wrong:0, levels:0, xpEarned:0, lineSent:false }
+    save()
+  }
+}
 
 function initDailyTasks() {
   if(!S.daily || S.daily.date!==today()) {
@@ -1007,6 +1066,7 @@ function tickTimer() {
 
 function timeout() {
   G.done=true; G.combo=0
+  if(S.dailyLog) S.dailyLog.wrong++
   const ans=G.qs[G.qi].ans
   document.querySelectorAll('.choice').forEach(b=>{
     b.disabled=true
@@ -1028,6 +1088,7 @@ function answer(chosen,correct) {
   })
   if(ok) {
     G.score++; G.combo++
+    if(S.dailyLog) S.dailyLog.correct++
     document.getElementById('gChar').className='game-char ding'
     setFB(PRAISE[Math.floor(Math.random()*PRAISE.length)],'ok')
     if(t<=5&&S.curW<4) unlock('speed')
@@ -1043,6 +1104,7 @@ function answer(chosen,correct) {
     if(G.combo===5) trackTask('cb5')
   } else {
     G.combo=0
+    if(S.dailyLog) S.dailyLog.wrong++
     document.getElementById('gChar').className='game-char oops'
     setFB(MISS[Math.floor(Math.random()*MISS.length)],'no')
   }
@@ -1061,6 +1123,7 @@ function endGame() {
   const prev=S.worlds[wi].lv[li]
   if(prev===null||sc>prev) S.worlds[wi].lv[li]=sc
   const xp=sc*10+(sc===10?50:0); S.xp+=xp
+  if(S.dailyLog){S.dailyLog.levels++;S.dailyLog.xpEarned+=xp}
   if(sc===10) unlock('perfect')
   if(sc>=7) spawnFireworks()
   if(worldDone(0)) unlock('w0')
@@ -1108,8 +1171,102 @@ function renderAch() {
   })
 }
 
+// ── 家長 LINE 報告 ────────────────────────────────────────────
+function buildReportText() {
+  const name = S.playerName||'小孩'
+  const log  = S.dailyLog||{}
+  const mins = Math.max(1,Math.round((Date.now()-SESSION_START)/60000))
+  const tasks= S.daily?S.daily.tasks:[]
+  const tLines= tasks.length
+    ? tasks.map(t=>`  ${t.done?'✅':'⬜'} ${t.text} (${Math.min(t.progress||0,t.goal)}/${t.goal})`).join('\n')
+    : '  (今天還沒有任務)'
+  return `📊 ${name} 今日學習報告
+━━━━━━━━━━━━━
+🕐 學習時間：${mins} 分鐘
+✅ 答對：${log.correct||0} 題
+❌ 答錯：${log.wrong||0} 題
+⭐ 今日獲得：+${log.xpEarned||0} XP
+📚 完成關卡：${log.levels||0} 關
+
+📋 今日任務
+${tLines}
+━━━━━━━━━━━
+加油！繼續保持！💪`
+}
+
+function showReport() {
+  const log  = S.dailyLog||{}
+  const mins = Math.max(1,Math.round((Date.now()-SESSION_START)/60000))
+  document.getElementById('reportDate').textContent=today()+' · '+(S.playerName||'玩家')
+  document.getElementById('reportStats').innerHTML=[
+    {l:'🕐 學習時間',v:mins+' 分鐘'},
+    {l:'✅ 答對題數',v:(log.correct||0)+' 題'},
+    {l:'❌ 答錯題數',v:(log.wrong||0)+' 題'},
+    {l:'⭐ 今日 XP',  v:'+'+(log.xpEarned||0)+' XP'},
+    {l:'📚 完成關卡',v:(log.levels||0)+' 關'},
+  ].map(s=>`<div class="report-stat-row"><span class="report-stat-label">${s.l}</span><span class="report-stat-value">${s.v}</span></div>`).join('')
+  const tasks=S.daily?S.daily.tasks:[]
+  document.getElementById('reportTasks').innerHTML=tasks.length
+    ? tasks.map(t=>`<div class="report-task-row${t.done?' done':''}"><span>${t.done?'✅':'⬜'}</span><span style="flex:1">${t.text}</span><span style="color:#9B6B9B;font-size:11px">${Math.min(t.progress||0,t.goal)}/${t.goal}</span></div>`).join('')
+    : '<div style="color:#9B6B9B;font-size:13px;padding:8px 0">今天還沒有任務記錄</div>'
+  const btn=document.getElementById('reportSendBtn')
+  const statusEl=document.getElementById('reportStatus')
+  document.getElementById('reportCopyArea').style.display='none'
+  if(log.lineSent){
+    btn.textContent='✅ 今天已傳給家長了'; btn.disabled=true
+    statusEl.style.color='#2E7D32'; statusEl.textContent='家長已收到今日報告！'
+  } else {
+    btn.textContent='傳送到家長 LINE 📱'; btn.disabled=false
+    statusEl.textContent=''
+  }
+  document.getElementById('reportModal').classList.add('active')
+}
+
+function closeReport() { document.getElementById('reportModal').classList.remove('active') }
+
+async function handleReportSend() {
+  const btn=document.getElementById('reportSendBtn')
+  const statusEl=document.getElementById('reportStatus')
+  btn.disabled=true; btn.textContent='傳送中...'
+  statusEl.textContent=''
+  const text=buildReportText()
+  try {
+    const res=await fetch('https://api.line.me/v2/bot/message/push',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+LINE_TOKEN},
+      body:JSON.stringify({to:LINE_USER,messages:[{type:'text',text}]})
+    })
+    if(res.ok){
+      S.dailyLog.lineSent=true; save()
+      btn.textContent='✅ 已傳給家長！'
+      statusEl.style.color='#2E7D32'; statusEl.textContent='家長的 LINE 已收到今日報告！'
+    } else { throw new Error('HTTP '+res.status) }
+  } catch(e) {
+    btn.disabled=false; btn.textContent='傳送到家長 LINE 📱'
+    statusEl.style.color='#C62828'; statusEl.textContent='無法自動傳送，請複製後貼到 LINE'
+    const ca=document.getElementById('reportCopyArea')
+    ca.style.display='block'
+    document.getElementById('reportCopyText').value=text
+  }
+}
+
+function copyReport() {
+  const text=document.getElementById('reportCopyText').value
+  const btn=document.getElementById('reportCopyBtn')
+  navigator.clipboard.writeText(text).then(()=>{
+    btn.textContent='✅ 已複製！開啟 LINE 貼上即可'
+    setTimeout(()=>btn.textContent='複製文字 📋',3000)
+  }).catch(()=>{
+    document.getElementById('reportCopyText').select()
+    document.execCommand('copy')
+    btn.textContent='✅ 已複製！'
+    setTimeout(()=>btn.textContent='複製文字 📋',3000)
+  })
+}
+
 // ── 啟動 ──────────────────────────────────────────────────────
 load()
+initDailyLog()
 initDailyTasks()
 refreshTitle()
 renderDailyTasks()
