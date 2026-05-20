@@ -37,7 +37,6 @@ class GameHandler(SimpleHTTPRequestHandler):
             try:
                 length = int(self.headers.get('Content-Length', 0))
                 body   = json.loads(self.rfile.read(length))
-                text   = body.get('text', '').strip()
             except Exception as e:
                 self._json(400, {'error': f'bad request: {e}'})
                 return
@@ -46,10 +45,18 @@ class GameHandler(SimpleHTTPRequestHandler):
                 self._json(500, {'error': 'LINE 憑證未設定，請確認 ~/Library/Scripts/dora.env'})
                 return
 
-            payload = json.dumps({
-                'to': LINE_USER,
-                'messages': [{'type': 'text', 'text': text}]
-            })
+            # 支援 Flex Message（優先）或純文字
+            if 'flex' in body:
+                flex_data = body['flex']
+                message = {
+                    'type': 'flex',
+                    'altText': flex_data.get('altText', '今日學習報告'),
+                    'contents': flex_data['contents']
+                }
+            else:
+                message = {'type': 'text', 'text': body.get('text', '').strip()}
+
+            payload = json.dumps({'to': LINE_USER, 'messages': [message]}, ensure_ascii=False)
             cmd = [
                 'curl', '-s', '-o', '/dev/null', '-w', '%{http_code}',
                 '-X', 'POST',

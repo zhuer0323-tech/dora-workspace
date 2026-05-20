@@ -1194,6 +1194,89 @@ ${tLines}
 加油！繼續保持！💪`
 }
 
+function buildFlexMessage() {
+  const name    = S.playerName||'小孩'
+  const log     = S.dailyLog||{}
+  const mins    = Math.max(1,Math.round((Date.now()-SESSION_START)/60000))
+  const correct = log.correct||0
+  const wrong   = log.wrong||0
+  const levels  = log.levels||0
+  const xp      = log.xpEarned||0
+  const tasks   = S.daily?S.daily.tasks:[]
+
+  const total    = correct+wrong
+  const accuracy = total>0 ? Math.round(correct/total*100) : 0
+  const encourage= total===0 ? '今天剛開始！明天一起努力！🎮'
+    : accuracy>=80 ? '超棒的！今天表現真的很好！🌟'
+    : accuracy>=60 ? '繼續加油！每天進步一點點！💪'
+    : '沒關係！練習讓人進步！加油！✨'
+  const altText = `📊 ${name} 今日學習報告 | 答對 ${correct} 題・學習 ${mins} 分鐘`
+
+  function stat(icon, label, value, color) {
+    return {
+      type:'box',layout:'horizontal',margin:'sm',
+      contents:[
+        {type:'text',text:icon+' '+label,size:'sm',color:'#9B6B9B',flex:5},
+        {type:'text',text:value,size:'sm',color:color||'#5C3D5C',flex:3,align:'end',weight:'bold'}
+      ]
+    }
+  }
+
+  function taskRow(t) {
+    const prog = Math.min(t.progress||0, t.goal)
+    const pct  = Math.round(prog/t.goal*100)
+    const barColor = t.done ? '#50C878' : '#FFD93D'
+    const inner = []
+    if(pct>0)     inner.push({type:'box',layout:'vertical',flex:pct,backgroundColor:barColor,cornerRadius:'3px',contents:[{type:'filler'}]})
+    if(pct<100)   inner.push({type:'box',layout:'vertical',flex:100-pct,contents:[{type:'filler'}]})
+    if(!inner.length) inner.push({type:'filler'})
+    return {
+      type:'box',layout:'vertical',margin:'sm',
+      contents:[
+        {type:'box',layout:'horizontal',contents:[
+          {type:'text',text:(t.done?'✅':'⬜')+' '+t.text,size:'xs',flex:1,
+           color:t.done?'#2E7D32':'#5C3D5C',wrap:true},
+          {type:'text',text:t.done?'完成！':`${prog}/${t.goal}`,
+           size:'xs',align:'end',color:t.done?'#50C878':'#9B6B9B'}
+        ]},
+        {type:'box',layout:'horizontal',height:'6px',
+         backgroundColor:'#F0E0F0',cornerRadius:'3px',margin:'xs',
+         contents:inner}
+      ]
+    }
+  }
+
+  const body = [
+    stat('🕐','學習時間',  mins+' 分鐘'),
+    stat('✅','答對題數',   correct+' 題',  '#2E7D32'),
+    stat('❌','答錯題數',   wrong+' 題',    wrong>0?'#C62828':'#9B6B9B'),
+    stat('⭐','今日 XP',   '+'+xp+' XP',   '#FF8C00'),
+    stat('📚','完成關卡',  levels+' 關',    '#1565C0'),
+    {type:'separator',margin:'lg',color:'#FFD6E7'},
+    {type:'text',text:'📋 今日任務',weight:'bold',size:'sm',color:'#5C4000',margin:'lg'}
+  ]
+  if(tasks.length) tasks.forEach(t=>body.push(taskRow(t)))
+  else body.push({type:'text',text:'今天還沒有任務記錄',size:'xs',color:'#9B6B9B',align:'center',margin:'sm'})
+
+  const contents = {
+    type:'bubble',
+    header:{
+      type:'box',layout:'vertical',backgroundColor:'#FF85A1',paddingAll:'18px',
+      contents:[
+        {type:'text',text:'📊 今日學習報告',color:'#FFFFFF',weight:'bold',size:'xl',align:'center'},
+        {type:'text',text:today()+' · '+name,color:'#FFD6E7',size:'sm',align:'center',margin:'sm'}
+      ]
+    },
+    body:{type:'box',layout:'vertical',paddingAll:'16px',contents:body},
+    footer:{
+      type:'box',layout:'vertical',backgroundColor:'#FFF5F8',paddingAll:'14px',
+      contents:[{type:'text',text:encourage,align:'center',weight:'bold',color:'#FF85A1',size:'sm',wrap:true}]
+    },
+    styles:{footer:{separator:true,separatorColor:'#FFD6E7'}}
+  }
+  return {altText, contents}
+}
+
 function showReport() {
   const log  = S.dailyLog||{}
   const mins = Math.max(1,Math.round((Date.now()-SESSION_START)/60000))
@@ -1229,14 +1312,15 @@ async function handleReportSend() {
   const statusEl=document.getElementById('reportStatus')
   btn.disabled=true; btn.textContent='傳送中...'
   statusEl.textContent=''
-  const text=buildReportText()
+  const flexMsg      = buildFlexMessage()
+  const fallbackText = buildReportText()
 
   // 優先透過本地伺服器中轉（game-server.py），避免 CORS 問題
   try {
     const res=await fetch('/api/send-line',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({text})
+      body:JSON.stringify({flex:flexMsg})
     })
     if(res.ok){
       const data=await res.json()
@@ -1256,7 +1340,7 @@ async function handleReportSend() {
     statusEl.style.color='#C62828'; statusEl.textContent='無法傳送：'+hint
     const ca=document.getElementById('reportCopyArea')
     ca.style.display='block'
-    document.getElementById('reportCopyText').value=text
+    document.getElementById('reportCopyText').value=fallbackText
   }
 }
 
