@@ -1230,20 +1230,30 @@ async function handleReportSend() {
   btn.disabled=true; btn.textContent='傳送中...'
   statusEl.textContent=''
   const text=buildReportText()
+
+  // 優先透過本地伺服器中轉（game-server.py），避免 CORS 問題
   try {
-    const res=await fetch('https://api.line.me/v2/bot/message/push',{
+    const res=await fetch('/api/send-line',{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+LINE_TOKEN},
-      body:JSON.stringify({to:LINE_USER,messages:[{type:'text',text}]})
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({text})
     })
     if(res.ok){
-      S.dailyLog.lineSent=true; save()
-      btn.textContent='✅ 已傳給家長！'
-      statusEl.style.color='#2E7D32'; statusEl.textContent='家長的 LINE 已收到今日報告！'
-    } else { throw new Error('HTTP '+res.status) }
+      const data=await res.json()
+      if(data.ok){
+        S.dailyLog.lineSent=true; save()
+        btn.textContent='✅ 已傳給家長！'
+        statusEl.style.color='#2E7D32'; statusEl.textContent='家長的 LINE 已收到今日報告！'
+        return
+      }
+      throw new Error(data.error||'伺服器回傳錯誤')
+    }
+    throw new Error('HTTP '+res.status)
   } catch(e) {
+    // 伺服器未啟動或失敗 → 顯示複製備援
     btn.disabled=false; btn.textContent='傳送到家長 LINE 📱'
-    statusEl.style.color='#C62828'; statusEl.textContent='無法自動傳送，請複製後貼到 LINE'
+    const hint = e.message.includes('fetch') ? '請用「啟動遊戲.command」開啟遊戲以啟用自動傳送' : e.message
+    statusEl.style.color='#C62828'; statusEl.textContent='無法傳送：'+hint
     const ca=document.getElementById('reportCopyArea')
     ca.style.display='block'
     document.getElementById('reportCopyText').value=text
