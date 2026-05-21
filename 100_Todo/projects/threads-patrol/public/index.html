@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Threads 海巡</title>
+  <style>
+    :root {
+      --bg:        #f4f5f9;
+      --surface:   #ffffff;
+      --sidebar:   #ffffff;
+      --border:    #e8eaef;
+      --border-md: #d1d5e0;
+      --shadow:    0 1px 4px rgba(60,60,120,.07), 0 4px 16px rgba(60,60,120,.05);
+      --shadow-sm: 0 1px 3px rgba(60,60,120,.08);
+      --accent:    #6c5ce7;
+      --accent-lt: #f0effe;
+      --accent-md: #e0dcfd;
+      --accent-dk: #5a4bd1;
+      --green:     #059669;
+      --green-lt:  #ecfdf5;
+      --red:       #dc2626;
+      --red-lt:    #fef2f2;
+      --text:      #1a1a2e;
+      --text-md:   #4b5263;
+      --text-sm:   #8b8fa8;
+      --text-xs:   #c4c6d4;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+    }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 10px; }
+    .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--accent); border-top-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─────── SIDEBAR ─────── */
+    .sidebar {
+      width: 224px;
+      flex-shrink: 0;
+      background: var(--sidebar);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar-logo {
+      padding: 20px 18px 18px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo-icon {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, #6c5ce7, #a78bfa);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(108,92,231,.35);
+    }
+    .logo-name { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: -.01em; }
+    .logo-sub  { font-size: 11px; color: var(--text-sm); margin-top: 1px; }
+
+    .nav { flex: 1; padding: 10px 10px; display: flex; flex-direction: column; gap: 1px; }
+    .nav-label { font-size: 10px; font-weight: 700; color: var(--text-xs); text-transform: uppercase; letter-spacing: .08em; padding: 10px 8px 5px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 9px;
+      padding: 9px 12px; border-radius: 8px;
+      cursor: pointer; color: var(--text-md); font-size: 13.5px; font-weight: 500;
+      transition: background .12s, color .12s;
+    }
+    .nav-item:hover  { background: var(--bg); color: var(--text); }
+    .nav-item.active { background: var(--accent-lt); color: var(--accent); font-weight: 600; }
+    .nav-icon { font-size: 15px; width: 20px; text-align: center; }
+
+    .sidebar-footer {
+      padding: 16px 16px;
+      border-top: 1px solid var(--border);
+    }
+    .count-card {
+      background: linear-gradient(135deg, var(--accent) 0%, #a78bfa 100%);
+      border-radius: 12px;
+      padding: 13px 16px;
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(108,92,231,.3);
+    }
+    .count-num   { font-size: 26px; font-weight: 700; line-height: 1; }
+    .count-label { font-size: 11px; opacity: .85; margin-top: 3px; }
+
+    /* ─────── MAIN ─────── */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    .topbar {
+      height: 54px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center;
+      padding: 0 24px;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .topbar-title { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -.01em; }
+    .chips { display: flex; gap: 8px; }
+    .chip {
+      font-size: 12px; font-weight: 600;
+      padding: 4px 12px; border-radius: 999px;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .chip-purple { background: var(--accent-lt); color: var(--accent); border: 1px solid var(--accent-md); }
+    .chip-green  { background: var(--green-lt);  color: var(--green);  border: 1px solid #a7f3d0; }
+
+    /* ─────── PAGES ─────── */
+    .page { display: none; flex: 1; overflow: hidden; flex-direction: column; }
+    .page.active { display: flex; }
+
+    /* ─────── BUTTONS ─────── */
+    .btn { font-family: inherit; border-radius: 9px; cursor: pointer; transition: all .15s; font-size: 13px; font-weight: 600; }
+    .btn-primary {
+      background: var(--accent);
+      border: none; color: #fff; padding: 10px 22px;
+      box-shadow: 0 2px 8px rgba(108,92,231,.28);
+    }
+    .btn-primary:hover  { background: var(--accent-dk); box-shadow: 0 4px 12px rgba(108,92,231,.38); }
+    .btn-primary:active { transform: translateY(1px); }
+    .btn-primary:disabled { background: var(--border-md); color: var(--text-sm); cursor: default; box-shadow: none; }
+    .btn-ghost {
+      background: transparent; border: 1.5px solid var(--border-md);
+      color: var(--text-md); padding: 8px 14px;
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-lt); }
+    .btn-ghost:disabled { opacity: .45; cursor: default; }
+    .btn-send {
+      background: var(--accent); border: none; color: #fff;
+      padding: 9px 22px; font-weight: 700;
+      font-family: inherit; border-radius: 9px; font-size: 13px; cursor: pointer;
+      box-shadow: 0 2px 8px rgba(108,92,231,.25);
+      transition: all .15s;
+    }
+    .btn-send:hover { background: var(--accent-dk); }
+    .btn-send:disabled { background: var(--border-md); color: var(--text-sm); cursor: default; box-shadow: none; }
+    .btn-xs {
+      font-size: 11px; font-weight: 600; font-family: inherit;
+      border-radius: 6px; padding: 4px 10px;
+      cursor: pointer; border: 1.5px solid var(--border-md);
+      background: transparent; color: var(--text-sm); transition: all .15s;
+    }
+    .btn-xs:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-lt); }
+
+    /* ─────── INPUTS ─────── */
+    .f-input {
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: 9px; padding: 10px 14px; color: var(--text);
+      font-size: 14px; outline: none; font-family: inherit;
+      transition: border-color .18s, box-shadow .18s;
+    }
+    .f-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(108,92,231,.1); }
+    .f-input::placeholder { color: var(--text-xs); }
+    .f-textarea {
+      background: var(--bg); border: 1.5px solid var(--border);
+      border-radius: 9px; padding: 11px 14px; color: var(--text);
+      font-size: 13.5px; line-height: 1.75; resize: vertical;
+      outline: none; font-family: inherit;
+      transition: border-color .18s, box-shadow .18s;
+    }
+    .f-textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(108,92,231,.1); background: var(--surface); }
+    .f-textarea::placeholder { color: var(--text-xs); }
+
+    /* ══════════════ PATROL PAGE ══════════════ */
+    .patrol-search {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 14px 22px; display: flex; gap: 10px; align-items: center; flex-shrink: 0;
+    }
+    .patrol-search .f-input { flex: 1; }
+    .s-status { font-size: 13px; color: var(--text-sm); white-space: nowrap; min-width: 0; }
+    .s-status.loading { color: var(--accent); }
+    .s-status.error   { color: var(--red); }
+    .s-status.ok      { color: var(--green); font-weight: 600; }
+
+    .patrol-body { flex: 1; display: flex; overflow: hidden; }
+
+    /* Post list */
+    .post-panel {
+      width: 310px; flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .panel-top {
+      padding: 10px 14px 9px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    }
+    .panel-lbl { font-size: 11px; font-weight: 700; color: var(--text-sm); text-transform: uppercase; letter-spacing: .06em; }
+    .post-scroll { flex: 1; overflow-y: auto; }
+    .post-empty { padding: 44px 20px; text-align: center; color: var(--text-xs); font-size: 13px; line-height: 2; }
+
+    .post-item {
+      padding: 12px 14px; border-bottom: 1px solid var(--border);
+      cursor: pointer; display: flex; gap: 10px; align-items: flex-start;
+      transition: background .1s;
+    }
+    .post-item:hover  { background: var(--bg); }
+    .post-item.active { background: var(--accent-lt); }
+    .post-chk {
+      width: 17px; height: 17px; border-radius: 50%;
+      border: 2px solid var(--border-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; color: transparent; flex-shrink: 0; margin-top: 2px;
+      transition: all .15s; cursor: pointer;
+    }
+    .post-chk.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .post-author  { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+    .post-snippet { font-size: 12px; color: var(--text-md); line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+    .gen-bar { border-top: 1px solid var(--border); padding: 12px; flex-shrink: 0; display: none; }
+    .gen-bar .btn-primary { width: 100%; padding: 10px; }
+
+    /* Preview */
+    .preview-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
+    .preview-empty {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      color: var(--text-xs); font-size: 14px; gap: 12px; text-align: center;
+    }
+    .preview-empty-icon { font-size: 40px; opacity: .4; }
+    .preview-scroll { flex: 1; overflow-y: auto; padding: 22px; display: none; flex-direction: column; gap: 14px; }
+    .preview-scroll.show { display: flex; }
+
+    .p-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px 22px;
+      box-shadow: var(--shadow-sm);
+    }
+    .p-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .p-author { font-size: 14px; font-weight: 700; color: var(--text); }
+    .p-link { font-size: 12px; color: var(--text-sm); text-decoration: none; font-weight: 500; }
+    .p-link:hover { color: var(--accent); }
+    .p-text { font-size: 14px; color: var(--text-md); line-height: 1.78; }
+
+    .sel-row { display: flex; align-items: center; gap: 10px; }
+    .btn-toggle {
+      font-family: inherit; border-radius: 9px; font-size: 13px; font-weight: 600;
+      padding: 8px 18px; cursor: pointer; transition: all .15s;
+      background: var(--surface); border: 1.5px solid var(--border-md); color: var(--text-md);
+    }
+    .btn-toggle:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-lt); }
+    .btn-toggle.on { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(108,92,231,.25); }
+    .toggle-hint { font-size: 12px; color: var(--text-sm); }
+
+    .reply-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 20px 22px;
+      box-shadow: var(--shadow-sm); display: none;
+    }
+    .reply-card.sent { border-color: #a7f3d0; background: var(--green-lt); }
+    .rc-title { font-size: 11px; font-weight: 700; color: var(--text-sm); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 14px; }
+    .f-label  { font-size: 12px; font-weight: 600; color: var(--text-md); margin-bottom: 6px; }
+    .reply-actions { display: flex; align-items: center; gap: 10px; }
+    .r-status { font-size: 12px; font-weight: 600; margin-left: auto; }
+    .r-status.sending { color: var(--accent); }
+    .r-status.sent    { color: var(--green); }
+    .r-status.fail    { color: var(--red); }
+
+    /* ══════════════ DASHBOARD ══════════════ */
+    .dash-body { flex: 1; overflow-y: auto; padding: 24px; }
+    .stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 28px; }
+    .s-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 20px 22px;
+      box-shadow: var(--shadow-sm);
+    }
+    .s-card-lbl { font-size: 12px; color: var(--text-sm); font-weight: 500; margin-bottom: 8px; }
+    .s-card-val { font-size: 32px; font-weight: 800; letter-spacing: -.03em; margin-bottom: 4px; }
+    .s-card-val.c-purple { color: var(--accent); }
+    .s-card-val.c-green  { color: var(--green); }
+    .s-card-val.c-text   { color: var(--text); }
+    .s-card-sub { font-size: 12px; color: var(--text-sm); }
+    .sec-title { font-size: 12px; font-weight: 700; color: var(--text-sm); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 12px; }
+    .data-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+    .data-table th { text-align: left; font-size: 11px; font-weight: 700; color: var(--text-sm); text-transform: uppercase; letter-spacing: .06em; padding: 10px 16px; background: var(--bg); border-bottom: 1px solid var(--border); }
+    .data-table td { padding: 12px 16px; font-size: 13px; color: var(--text-md); border-bottom: 1px solid var(--border); }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr:hover td { background: var(--bg); }
+    .kw-badge { background: var(--accent-lt); color: var(--accent); border: 1px solid var(--accent-md); border-radius: 999px; padding: 2px 10px; font-size: 11px; font-weight: 700; }
+    .ext-link { color: var(--text-sm); text-decoration: none; font-weight: 500; }
+    .ext-link:hover { color: var(--accent); }
+
+    /* ══════════════ HISTORY ══════════════ */
+    .hist-body { flex: 1; overflow-y: auto; padding: 24px; }
+
+    /* ══════════════ KEYWORDS ══════════════ */
+    .kw-body { flex: 1; overflow-y: auto; padding: 24px; }
+    .kw-flex { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
+    .kw-tag {
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: 10px; padding: 10px 14px;
+      display: flex; align-items: center; gap: 10px;
+      box-shadow: var(--shadow-sm);
+    }
+    .kw-tag-text { font-size: 14px; color: var(--text); font-weight: 600; }
+    .kw-del { background: transparent; border: none; color: var(--text-xs); font-size: 14px; cursor: pointer; padding: 0 2px; transition: color .15s; line-height: 1; }
+    .kw-del:hover { color: var(--red); }
+    .kw-add { display: flex; gap: 10px; margin-top: 8px; }
+    .kw-add .f-input { max-width: 300px; }
+
+    /* ══════════════ SETTINGS ══════════════ */
+    .settings-body { flex: 1; overflow-y: auto; padding: 24px; }
+    .setting-sec { max-width: 600px; margin-bottom: 28px; }
+    .setting-lbl  { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .setting-desc { font-size: 12px; color: var(--text-sm); margin-bottom: 10px; line-height: 1.7; }
+    .save-ok { font-size: 13px; font-weight: 600; color: var(--green); margin-top: 10px; display: none; }
+
+    /* Empty state shared */
+    .t-empty { text-align: center; padding: 40px; color: var(--text-xs); font-size: 13px; }
+  </style>
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🧵</div>
+    <div>
+      <div class="logo-name">Threads 海巡</div>
+      <div class="logo-sub">AI 社群助手</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="nav-item active" id="nav-patrol"    onclick="goto('patrol')">   <span class="nav-icon">🔍</span> 海巡獲客</div>
+    <div class="nav-item"        id="nav-dashboard" onclick="goto('dashboard')"><span class="nav-icon">📊</span> 儀表板</div>
+    <div class="nav-item"        id="nav-history"   onclick="goto('history')">  <span class="nav-icon">📜</span> 回覆歷史</div>
+    <div class="nav-item"        id="nav-keywords"  onclick="goto('keywords')"> <span class="nav-icon">🔑</span> 關鍵字管理</div>
+    <div class="nav-item"        id="nav-settings"  onclick="goto('settings')"> <span class="nav-icon">⚙️</span> 帳號設定</div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="count-card">
+      <div class="count-num" id="sideCount">0</div>
+      <div class="count-label">今日已回覆則數</div>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main ── -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbarTitle">海巡獲客</div>
+    <div class="chips">
+      <span class="chip chip-purple" id="chipKw">🔑 關鍵字 0 個</span>
+      <span class="chip chip-green"  id="chipToday">✅ 今日 0 則</span>
+    </div>
+  </div>
+
+  <!-- ══ PATROL ══ -->
+  <div class="page active" id="page-patrol">
+    <div class="patrol-search">
+      <input class="f-input" id="searchInput" placeholder="輸入關鍵字搜尋 Threads 貼文，例如：Meta 廣告、ROAS…" autocomplete="off">
+      <button class="btn btn-primary" id="searchBtn">搜尋</button>
+      <span class="s-status" id="searchStatus"></span>
+    </div>
+    <div class="patrol-body">
+      <div class="post-panel">
+        <div class="panel-top">
+          <span class="panel-lbl" id="panelLbl">貼文清單</span>
+          <button class="btn-xs" id="selAllBtn">全選</button>
+        </div>
+        <div class="post-scroll" id="postScroll">
+          <div class="post-empty">搜尋後這裡<br>會顯示找到的貼文</div>
+        </div>
+        <div class="gen-bar" id="genBar">
+          <button class="btn btn-primary" id="genAllBtn">為選取的 0 篇生成草稿</button>
+        </div>
+      </div>
+      <div class="preview-panel">
+        <div class="preview-empty" id="previewEmpty">
+          <div class="preview-empty-icon">👈</div>
+          <div>點選左側貼文<br>這裡顯示全文與回覆草稿</div>
+        </div>
+        <div class="preview-scroll" id="previewScroll">
+          <div class="p-card">
+            <div class="p-card-top">
+              <span class="p-author" id="fullAuthor"></span>
+              <a class="p-link" id="fullLink" href="#" target="_blank">查看原文 →</a>
+            </div>
+            <div class="p-text" id="fullText"></div>
+          </div>
+          <div class="sel-row">
+            <button class="btn-toggle" id="toggleBtn" onclick="toggleSel()">選取此篇</button>
+            <span class="toggle-hint">選取後點「生成草稿」</span>
+          </div>
+          <div class="reply-card" id="replyCard">
+            <div class="rc-title">AI 回覆草稿</div>
+            <div class="f-label">補充方向（選填）</div>
+            <textarea class="f-textarea" id="extraInfo" rows="2" style="width:100%;margin-bottom:14px" placeholder="想帶入的觀點或資訊，AI 會調整草稿方向…"></textarea>
+            <div class="f-label">回覆草稿</div>
+            <textarea class="f-textarea" id="replyTA" rows="4" style="width:100%;margin-bottom:14px" placeholder="草稿生成中…"></textarea>
+            <div class="reply-actions">
+              <button class="btn btn-ghost" id="regenBtn" onclick="regenCurrent()">重新生成</button>
+              <button class="btn-send" id="sendBtn" onclick="sendCurrent()">發出回覆</button>
+              <span class="r-status" id="rStatus"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ DASHBOARD ══ -->
+  <div class="page" id="page-dashboard">
+    <div class="dash-body">
+      <div class="stats-row">
+        <div class="s-card">
+          <div class="s-card-lbl">今日回覆</div>
+          <div class="s-card-val c-purple" id="dashToday">0</div>
+          <div class="s-card-sub">則貼文</div>
+        </div>
+        <div class="s-card">
+          <div class="s-card-lbl">歷史總計</div>
+          <div class="s-card-val c-text" id="dashTotal">0</div>
+          <div class="s-card-sub">則回覆</div>
+        </div>
+        <div class="s-card">
+          <div class="s-card-lbl">監控關鍵字</div>
+          <div class="s-card-val c-green" id="dashKw">0</div>
+          <div class="s-card-sub">個</div>
+        </div>
+      </div>
+      <div class="sec-title" style="margin-bottom:12px">最近回覆記錄</div>
+      <table class="data-table">
+        <thead><tr><th>時間</th><th>關鍵字</th><th>回覆內容</th><th>連結</th></tr></thead>
+        <tbody id="actBody"><tr><td colspan="4" class="t-empty">載入中…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ HISTORY ══ -->
+  <div class="page" id="page-history">
+    <div class="hist-body">
+      <table class="data-table">
+        <colgroup>
+          <col style="width:90px"><col style="width:110px"><col style="width:220px"><col><col style="width:56px">
+        </colgroup>
+        <thead><tr><th>日期</th><th>關鍵字</th><th>貼文內容</th><th>AI 回覆</th><th style="text-align:center">連結</th></tr></thead>
+        <tbody id="histBody"><tr><td colspan="5" class="t-empty">載入中…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ KEYWORDS ══ -->
+  <div class="page" id="page-keywords">
+    <div class="kw-body">
+      <div class="sec-title" style="margin-bottom:14px">目前監控的關鍵字</div>
+      <div class="kw-flex" id="kwFlex"></div>
+      <div class="sec-title" style="margin-bottom:10px">新增關鍵字</div>
+      <div class="kw-add">
+        <input class="f-input" id="kwInput" placeholder="輸入關鍵字後按 Enter 或點新增…" autocomplete="off">
+        <button class="btn btn-primary" onclick="addKw()">新增</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SETTINGS ══ -->
+  <div class="page" id="page-settings">
+    <div class="settings-body">
+      <div class="setting-sec">
+        <div class="setting-lbl">帳號個性設定</div>
+        <div class="setting-desc">描述你的帳號背景與說話風格，AI 生成回覆時會參考這段描述。<br>建議包含：領域、經驗年資、慣用語氣。</div>
+        <textarea class="f-textarea" id="personaInput" style="width:100%;min-height:130px" placeholder="例如：我是有五年以上數位行銷經驗的行銷人，擅長 Meta 廣告投放與 ROAS 優化…"></textarea>
+      </div>
+      <div class="setting-sec">
+        <div class="setting-lbl">每日回覆上限</div>
+        <div class="setting-desc">建議不超過 50 則，避免帳號行為異常。</div>
+        <input class="f-input" type="number" id="limitInput" min="1" max="100" style="width:110px">
+      </div>
+      <button class="btn btn-primary" onclick="saveSettings()">儲存設定</button>
+      <div class="save-ok" id="saveOk">✅ 設定已儲存</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════ State ═══════════
+let posts=[], selected=new Set(), activeIdx=null, drafts={}, kwList=[], cfgData={};
+const TITLES = { patrol:'海巡獲客', dashboard:'儀表板', history:'回覆歷史', keywords:'關鍵字管理', settings:'帳號設定' };
+
+// ═══════════ Routing ═══════════
+function goto(page) {
+  document.querySelectorAll('.page,.nav-item').forEach(el=>el.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.getElementById('nav-'+page).classList.add('active');
+  document.getElementById('topbarTitle').textContent = TITLES[page];
+  if (page==='dashboard') loadDash();
+  if (page==='history')   loadHist();
+  if (page==='keywords')  loadKw();
+  if (page==='settings')  loadSettings();
+}
+
+// ═══════════ Helpers ═══════════
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function setStatus(msg, type=''){
+  const el=document.getElementById('searchStatus');
+  el.className='s-status'+(type?' '+type:''); el.innerHTML=msg;
+}
+function fmtTime(iso){
+  return new Date(iso).toLocaleString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+}
+
+// ═══════════ Init ═══════════
+async function refreshTop(){
+  try {
+    const [sr,cr]=await Promise.all([fetch('/api/stats'),fetch('/api/config')]);
+    const s=await sr.json(); cfgData=await cr.json();
+    document.getElementById('sideCount').textContent=s.todayCount;
+    document.getElementById('chipToday').textContent=`✅ 今日 ${s.todayCount} 則`;
+    const n=(cfgData.keywords||[]).length;
+    document.getElementById('chipKw').textContent=`🔑 關鍵字 ${n} 個`;
+  } catch {}
+}
+refreshTop();
+
+// ═══════════ Search ═══════════
+document.getElementById('searchInput').addEventListener('keydown',e=>{ if(e.key==='Enter') doSearch(); });
+document.getElementById('searchBtn').onclick=doSearch;
+
+async function doSearch(){
+  const kw=document.getElementById('searchInput').value.trim(); if(!kw) return;
+  const btn=document.getElementById('searchBtn');
+  btn.disabled=true; btn.textContent='搜尋中…';
+  setStatus('<span class="spinner"></span> 瀏覽器視窗會自動開啟，約 15–20 秒…','loading');
+  posts=[]; selected.clear(); activeIdx=null; drafts={};
+  renderList(); hidePreview();
+  try {
+    const r=await fetch('/api/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:kw})});
+    const d=await r.json(); if(d.error) throw new Error(d.error);
+    posts=d.posts; renderList();
+    setStatus(`找到 ${posts.length} 篇貼文，點選要回覆的`,'ok');
+  } catch(err){ setStatus('搜尋失敗：'+err.message,'error'); }
+  finally{ btn.disabled=false; btn.textContent='搜尋'; }
+}
+
+// ═══════════ Post List ═══════════
+function renderList(){
+  const wrap=document.getElementById('postScroll');
+  document.getElementById('panelLbl').textContent=posts.length?`貼文清單（${posts.length}）`:'貼文清單';
+  if(!posts.length){ wrap.innerHTML='<div class="post-empty">搜尋後這裡<br>會顯示找到的貼文</div>'; document.getElementById('genBar').style.display='none'; return; }
+  wrap.innerHTML=posts.map((p,i)=>`
+    <div class="post-item" id="item-${i}" onclick="viewPost(${i})">
+      <div class="post-chk" id="chk-${i}" onclick="event.stopPropagation();clickChk(${i})">✓</div>
+      <div>
+        <div class="post-author">@${esc(p.author)}</div>
+        <div class="post-snippet">${esc(p.text)}</div>
+      </div>
+    </div>`).join('');
+  updateSelUI();
+}
+function clickChk(i){ const url=posts[i].url; selected.has(url)?selected.delete(url):selected.add(url); syncChk(i); updateSelUI(); if(activeIdx===i) syncToggle(); }
+function syncChk(i){ const on=selected.has(posts[i].url); const el=document.getElementById('chk-'+i); if(el) el.className='post-chk'+(on?' on':''); }
+function updateSelUI(){
+  posts.forEach((_,i)=>syncChk(i));
+  const n=selected.size;
+  document.getElementById('selAllBtn').textContent=(n===posts.length&&n>0)?'取消全選':'全選';
+  const bar=document.getElementById('genBar');
+  if(n>0){ bar.style.display='block'; document.getElementById('genAllBtn').textContent=`為選取的 ${n} 篇生成草稿`; }
+  else bar.style.display='none';
+}
+document.getElementById('selAllBtn').onclick=()=>{
+  if(selected.size===posts.length&&posts.length>0) selected.clear(); else posts.forEach(p=>selected.add(p.url));
+  updateSelUI(); if(activeIdx!==null) syncToggle();
+};
+
+// ═══════════ Preview ═══════════
+function viewPost(i){
+  activeIdx=i; const p=posts[i];
+  document.querySelectorAll('.post-item').forEach((el,j)=>el.classList.toggle('active',j===i));
+  document.getElementById('fullAuthor').textContent='@'+p.author;
+  document.getElementById('fullLink').href=p.url;
+  document.getElementById('fullText').textContent=p.text;
+  syncToggle();
+  const rc=document.getElementById('replyCard'), ta=document.getElementById('replyTA'), st=document.getElementById('rStatus');
+  if(drafts[p.url]!==undefined){
+    rc.style.display='block'; rc.classList.remove('sent');
+    ta.value=drafts[p.url]; ta.disabled=false;
+    document.getElementById('sendBtn').disabled=false; document.getElementById('regenBtn').disabled=false;
+    st.textContent=''; st.className='r-status';
+  } else { rc.style.display='none'; ta.value=''; }
+  showPreview();
+}
+function syncToggle(){
+  if(activeIdx===null) return;
+  const on=selected.has(posts[activeIdx].url);
+  const btn=document.getElementById('toggleBtn');
+  btn.className='btn-toggle'+(on?' on':'');
+  btn.textContent=on?'✓ 已選取':'選取此篇';
+}
+function toggleSel(){ if(activeIdx!==null) clickChk(activeIdx); }
+function showPreview(){ document.getElementById('previewEmpty').style.display='none'; document.getElementById('previewScroll').classList.add('show'); }
+function hidePreview(){ document.getElementById('previewEmpty').style.display='flex'; document.getElementById('previewScroll').classList.remove('show'); }
+
+// ═══════════ Generate ═══════════
+document.getElementById('genAllBtn').onclick=async()=>{
+  const targets=posts.filter(p=>selected.has(p.url));
+  const extra=document.getElementById('extraInfo').value.trim();
+  for(const p of targets){
+    const cur=activeIdx!==null&&posts[activeIdx].url===p.url;
+    if(cur){
+      const rc=document.getElementById('replyCard'), ta=document.getElementById('replyTA');
+      rc.style.display='block'; rc.classList.remove('sent');
+      ta.value=''; ta.placeholder='生成中…'; ta.disabled=true;
+      document.getElementById('sendBtn').disabled=true; document.getElementById('regenBtn').disabled=true;
+      document.getElementById('rStatus').textContent='';
+    }
+    const reply=await fetchDraft(p.text,extra);
+    drafts[p.url]=reply;
+    if(cur){
+      const ta=document.getElementById('replyTA');
+      ta.value=reply; ta.placeholder=''; ta.disabled=false;
+      document.getElementById('sendBtn').disabled=false; document.getElementById('regenBtn').disabled=false;
+    }
+  }
+  if(targets.length>0&&(activeIdx===null||!selected.has(posts[activeIdx].url)))
+    viewPost(posts.findIndex(p=>p.url===targets[0].url));
+};
+
+async function fetchDraft(postText,extraInfo){
+  try{
+    const r=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({postText,extraInfo})});
+    const d=await r.json(); return d.error?'':d.reply;
+  }catch{ return ''; }
+}
+
+async function regenCurrent(){
+  if(activeIdx===null) return;
+  const p=posts[activeIdx], extra=document.getElementById('extraInfo').value.trim();
+  const ta=document.getElementById('replyTA');
+  ta.value=''; ta.placeholder='生成中…'; ta.disabled=true;
+  document.getElementById('sendBtn').disabled=true; document.getElementById('regenBtn').disabled=true;
+  document.getElementById('rStatus').textContent=''; document.getElementById('replyCard').classList.remove('sent');
+  const reply=await fetchDraft(p.text,extra);
+  drafts[p.url]=reply; ta.value=reply; ta.placeholder=''; ta.disabled=false;
+  document.getElementById('sendBtn').disabled=false; document.getElementById('regenBtn').disabled=false;
+}
+
+async function sendCurrent(){
+  if(activeIdx===null) return;
+  const p=posts[activeIdx], reply=document.getElementById('replyTA').value.trim(); if(!reply) return;
+  const sb=document.getElementById('sendBtn'), rb=document.getElementById('regenBtn'), st=document.getElementById('rStatus');
+  sb.disabled=true; rb.disabled=true;
+  st.className='r-status sending'; st.innerHTML='<span class="spinner"></span> 發送中…';
+  try{
+    const r=await fetch('/api/reply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:p.url,reply})});
+    const d=await r.json(); if(d.error) throw new Error(d.error);
+    st.className='r-status sent'; st.textContent='✅ 已發出';
+    document.getElementById('replyCard').classList.add('sent');
+    refreshTop();
+  }catch(err){
+    st.className='r-status fail'; st.textContent='❌ '+err.message;
+    sb.disabled=false; rb.disabled=false;
+  }
+}
+
+// ═══════════ Dashboard ═══════════
+async function loadDash(){
+  try{
+    const [sr,hr,cr]=await Promise.all([fetch('/api/stats'),fetch('/api/history'),fetch('/api/config')]);
+    const s=await sr.json(), h=await hr.json(), c=await cr.json();
+    document.getElementById('dashToday').textContent=s.todayCount;
+    document.getElementById('dashTotal').textContent=h.history.length;
+    document.getElementById('dashKw').textContent=(c.keywords||[]).length;
+    const rows=h.history.slice(0,8);
+    document.getElementById('actBody').innerHTML=rows.length
+      ?rows.map(r=>`<tr>
+          <td>${fmtTime(r.repliedAt)}</td>
+          <td>${r.keyword?`<span class="kw-badge">${esc(r.keyword)}</span>`:'—'}</td>
+          <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)">${esc(r.reply||'')}</td>
+          <td><a class="ext-link" href="${r.url}" target="_blank">查看 →</a></td>
+        </tr>`).join('')
+      :'<tr><td colspan="4" class="t-empty">還沒有回覆記錄</td></tr>';
+  }catch{}
+}
+
+// ═══════════ History ═══════════
+async function loadHist(){
+  try{
+    const r=await fetch('/api/history'); const d=await r.json(); const rows=d.history||[];
+    document.getElementById('histBody').innerHTML=rows.length
+      ?rows.map(h=>`<tr>
+          <td style="white-space:nowrap">${fmtTime(h.repliedAt)}</td>
+          <td>${h.keyword?`<span class="kw-badge">${esc(h.keyword)}</span>`:'—'}</td>
+          <td style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(h.postText||'')}">${esc((h.postText||'').slice(0,55))}…</td>
+          <td style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)" title="${esc(h.reply||'')}">${esc(h.reply||'')}</td>
+          <td style="text-align:center"><a class="ext-link" href="${h.url}" target="_blank">→</a></td>
+        </tr>`).join('')
+      :'<tr><td colspan="5" class="t-empty">還沒有回覆記錄</td></tr>';
+  }catch(err){
+    document.getElementById('histBody').innerHTML=`<tr><td colspan="5" style="color:var(--red);padding:16px">載入失敗：${err.message}</td></tr>`;
+  }
+}
+
+// ═══════════ Keywords ═══════════
+async function loadKw(){
+  try{ const r=await fetch('/api/config'); cfgData=await r.json(); kwList=[...(cfgData.keywords||[])]; renderKw(); }catch{}
+}
+function renderKw(){
+  const g=document.getElementById('kwFlex');
+  g.innerHTML=kwList.length
+    ?kwList.map((kw,i)=>`<div class="kw-tag"><span class="kw-tag-text">${esc(kw)}</span><button class="kw-del" onclick="delKw(${i})" title="刪除">✕</button></div>`).join('')
+    :'<span style="color:var(--text-xs);font-size:13px">還沒有關鍵字，請在下方新增</span>';
+}
+document.getElementById('kwInput').addEventListener('keydown',e=>{ if(e.key==='Enter') addKw(); });
+async function addKw(){
+  const inp=document.getElementById('kwInput'), kw=inp.value.trim();
+  if(!kw||kwList.includes(kw)) return;
+  kwList.push(kw); inp.value=''; renderKw(); await saveKwList();
+}
+async function delKw(i){ kwList.splice(i,1); renderKw(); await saveKwList(); }
+async function saveKwList(){
+  await fetch('/api/config',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({keywords:kwList})});
+  refreshTop();
+}
+
+// ═══════════ Settings ═══════════
+async function loadSettings(){
+  try{ const r=await fetch('/api/config'); cfgData=await r.json(); document.getElementById('personaInput').value=cfgData.accountPersona||''; document.getElementById('limitInput').value=cfgData.dailyLimit||30; }catch{}
+}
+async function saveSettings(){
+  const persona=document.getElementById('personaInput').value.trim();
+  const limit=parseInt(document.getElementById('limitInput').value,10)||30;
+  await fetch('/api/config',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({accountPersona:persona,dailyLimit:limit})});
+  const el=document.getElementById('saveOk'); el.style.display='block'; setTimeout(()=>el.style.display='none',2500);
+  refreshTop();
+}
+</script>
+</body>
+</html>

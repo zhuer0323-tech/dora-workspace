@@ -1,0 +1,8 @@
+node_modules/
+.env
+cookies.json
+replied.json
+browser-profile/
+patrol-status.json
+.DS_Store
+未命名檔案夾/

@@ -1,0 +1,17 @@
+{
+  "name": "threads-patrol",
+  "version": "1.0.0",
+  "description": "Threads 海巡回文工具",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "login": "node login.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "dotenv": "^16.0.0",
+    "express": "^5.2.1",
+    "groq-sdk": "^1.2.0",
+    "playwright": "^1.60.0"
+  }
+}
