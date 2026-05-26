@@ -233,19 +233,22 @@
       color: var(--text-xs); font-size: 14px; gap: 12px; text-align: center;
     }
     .preview-empty-icon { font-size: 40px; opacity: .4; }
-    .preview-scroll { flex: 1; overflow-y: auto; padding: 22px; display: none; flex-direction: column; gap: 14px; }
+    .preview-scroll { flex: 1; overflow-y: auto; padding: 18px 22px; display: none; flex-direction: column; gap: 12px; }
     .preview-scroll.show { display: flex; }
 
+    /* ── 網頁預覽 ── */
     .p-card {
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 14px; padding: 18px 22px;
+      border-radius: 14px; overflow: hidden;
       box-shadow: var(--shadow-sm);
     }
-    .p-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-    .p-author { font-size: 14px; font-weight: 700; color: var(--text); }
     .p-link { font-size: 12px; color: var(--text-sm); text-decoration: none; font-weight: 500; }
     .p-link:hover { color: var(--accent); }
-    .p-text { font-size: 14px; color: var(--text-md); line-height: 1.78; }
+    .frame-loading {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      height: 160px; font-size: 13px; color: var(--text-sm);
+    }
+    .post-frame { width: 100%; height: 560px; border: none; display: none; }
 
     .sel-row { display: flex; align-items: center; gap: 10px; }
     .btn-toggle {
@@ -387,11 +390,10 @@
         </div>
         <div class="preview-scroll" id="previewScroll">
           <div class="p-card">
-            <div class="p-card-top">
-              <span class="p-author" id="fullAuthor"></span>
-              <a class="p-link" id="fullLink" href="#" target="_blank">查看原文 →</a>
+            <div class="frame-loading" id="ssLoading">
+              <span class="spinner"></span> 載入 Threads 貼文畫面中…
             </div>
-            <div class="p-text" id="fullText"></div>
+            <iframe class="post-frame" id="postFrame" src="about:blank"></iframe>
           </div>
           <div class="sel-row">
             <button class="btn-toggle" id="toggleBtn" onclick="toggleSel()">選取此篇</button>
@@ -581,9 +583,14 @@ document.getElementById('selAllBtn').onclick=()=>{
 function viewPost(i){
   activeIdx=i; const p=posts[i];
   document.querySelectorAll('.post-item').forEach((el,j)=>el.classList.toggle('active',j===i));
-  document.getElementById('fullAuthor').textContent='@'+p.author;
-  document.getElementById('fullLink').href=p.url;
-  document.getElementById('fullText').textContent=p.text;
+  // 網頁代理載入
+  const loading=document.getElementById('ssLoading'), frame=document.getElementById('postFrame');
+  loading.style.display='flex'; frame.style.display='none'; frame.src='about:blank';
+  frame.onload=()=>{
+    if(frame.src==='about:blank'||frame.src===window.location.href) return;
+    loading.style.display='none'; frame.style.display='block';
+  };
+  frame.src='/api/proxy?url='+encodeURIComponent(p.url);
   syncToggle();
   const rc=document.getElementById('replyCard'), ta=document.getElementById('replyTA'), st=document.getElementById('rStatus');
   if(drafts[p.url]!==undefined){

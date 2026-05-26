@@ -57,6 +57,33 @@ async function getContext() {
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
+const proxyCache = new Map();
+
+// ── 代理貼文頁面（給 iframe 用）──
+app.get('/api/proxy', async (req, res) => {
+  const { url } = req.query;
+  if (!url) return res.status(400).send('缺少 URL');
+  if (proxyCache.has(url)) {
+    res.set('Content-Type', 'text/html; charset=utf-8');
+    return res.send(proxyCache.get(url));
+  }
+  try {
+    const context = await getContext();
+    const page = await context.newPage();
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await sleep(3000);
+    let html = await page.content();
+    await page.close();
+    // 讓相對路徑的 CSS / 圖片能從 Threads CDN 正確載入
+    html = html.replace(/<head>/i, '<head><base href="https://www.threads.com/">');
+    proxyCache.set(url, html);
+    res.set('Content-Type', 'text/html; charset=utf-8');
+    res.send(html);
+  } catch (err) {
+    res.status(500).send(`<p style="font-family:sans-serif;padding:20px;color:#dc2626">載入失敗：${err.message}</p>`);
+  }
+});
+
 // ── 搜尋貼文 ──
 app.post('/api/search', async (req, res) => {
   const { keyword } = req.body;
@@ -70,18 +97,19 @@ app.post('/api/search', async (req, res) => {
       { waitUntil: 'domcontentloaded', timeout: 30000 }
     );
     await sleep(5000);
-    for (let i = 0; i < 4; i++) {
-      await page.evaluate(() => window.scrollBy(0, 500));
-      await sleep(1200);
+    for (let i = 0; i < 10; i++) {
+      await page.evaluate(() => window.scrollBy(0, 600));
+      await sleep(900);
     }
 
     const posts = await page.evaluate(() => {
       const results = [];
-      const seen = new Set();
+      const seenUrl = new Set();
+      const seenText = new Set();
       document.querySelectorAll('a[href*="/post/"]').forEach(link => {
         const url = link.href;
-        if (!url || seen.has(url)) return;
-        seen.add(url);
+        if (!url || seenUrl.has(url)) return;
+        seenUrl.add(url);
 
         let el = link, text = '';
         for (let i = 0; i < 12; i++) {
@@ -93,14 +121,17 @@ app.post('/api/search', async (req, res) => {
 
         if (text) {
           const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-          // 嘗試抓帳號名稱（第一行）
           const author = lines[0] || '';
-          // 正文從第2行開始，過濾掉時間、翻譯、純數字
           const content = lines.slice(1)
             .filter(l => !/^\d+[smhd]$/.test(l) && l !== 'Translate' && !/^\d+$/.test(l) && l.length > 3)
             .join(' ')
             .slice(0, 300);
-          if (content.length > 15) results.push({ url, author, text: content });
+          // 以前80字做內文指紋，去除相似重複貼文
+          const fingerprint = content.replace(/\s+/g, '').slice(0, 80);
+          if (content.length > 15 && !seenText.has(fingerprint)) {
+            seenText.add(fingerprint);
+            results.push({ url, author, text: content });
+          }
         }
       });
       return results.slice(0, 20);
