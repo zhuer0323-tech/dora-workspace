@@ -4,6 +4,7 @@ const { chromium } = require('playwright');
 const Groq = require('groq-sdk');
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
 const app = express();
 const PORT = 3939;
@@ -20,8 +21,27 @@ app.use(express.static(path.join(__dirname, 'public')));
 // 保持一個全域 browser context，避免每次都重新開瀏覽器
 let browserContext = null;
 
+function killOrphanBrowsers() {
+  try {
+    const psOutput = execSync('ps aux', { encoding: 'utf-8' });
+    const pids = psOutput.split('\n')
+      .filter(line => line.includes('threads-patrol/browser-profile') && !line.includes(` ${process.pid} `))
+      .map(line => line.trim().split(/\s+/)[1])
+      .filter(Boolean);
+    if (pids.length > 0) {
+      console.log(`[Browser] 清除殘留進程: PID ${pids.join(', ')}`);
+      execSync(`kill ${pids.join(' ')} 2>/dev/null || true`, { shell: true });
+      return pids.length;
+    }
+  } catch {}
+  return 0;
+}
+
 async function getContext() {
   if (browserContext) return browserContext;
+  // 清除殘留的舊瀏覽器進程，避免 profile 被佔用
+  const killed = killOrphanBrowsers();
+  if (killed > 0) await sleep(2000);
   try { fs.unlinkSync(path.join(PROFILE_DIR, 'SingletonLock')); } catch {}
   browserContext = await chromium.launchPersistentContext(PROFILE_DIR, {
     headless: false,
