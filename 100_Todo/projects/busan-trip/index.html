@@ -574,9 +574,10 @@
 <body>
 
 <!-- Header -->
-<div class="header" style="flex-direction:column;align-items:center;gap:3px;padding:12px 20px 10px;">
+<div class="header" style="flex-direction:column;align-items:center;gap:3px;padding:12px 20px 10px;position:relative;">
   <h1 style="font-size:16px;letter-spacing:0.5px;">✈️ 釜山六天五夜自由行</h1>
   <div class="subtitle">林家2026家庭旅遊GOGO!</div>
+  <div id="syncDot" title="離線模式" style="position:absolute;top:50%;right:14px;transform:translateY(-50%);width:9px;height:9px;border-radius:50%;background:#ccc;cursor:default;"></div>
 </div>
 
 <!-- Pages -->
@@ -788,6 +789,7 @@ function uploadBanner(input) {
     const data = e.target.result;
     localStorage.setItem('busan_banner', data);
     renderBanner(data);
+    fbPush('banner', data);
     showToast('照片已更新！');
   };
   reader.readAsDataURL(file);
@@ -813,6 +815,115 @@ function renderBanner(data) {
 
 const savedBanner = localStorage.getItem('busan_banner');
 if (savedBanner) renderBanner(savedBanner);
+
+// ===== Firebase 即時同步 =====
+// 填入你的 Firebase 設定來啟用多裝置同步，null 表示僅使用本機儲存
+const FIREBASE_CONFIG = null;
+// const FIREBASE_CONFIG = {
+//   apiKey: "填入你的 apiKey",
+//   authDomain: "填入你的 authDomain",
+//   databaseURL: "填入你的 databaseURL（Asia Southeast 1）",
+//   projectId: "填入你的 projectId",
+//   storageBucket: "填入你的 storageBucket",
+//   messagingSenderId: "填入你的 messagingSenderId",
+//   appId: "填入你的 appId"
+// };
+
+const TRIP_ROOM = 'busan2026';
+let _db = null, _dbRef = null, _dbSet = null, _fbReady = false;
+
+function fbPush(path, data) {
+  if (!_fbReady || !_db) return;
+  _dbSet(_dbRef(_db, `${TRIP_ROOM}/${path}`), data)
+    .catch(err => console.warn('Firebase write error:', err));
+}
+
+function updateSyncDot(state) {
+  const dot = document.getElementById('syncDot');
+  if (!dot) return;
+  const map = { ok: ['#4caf50', '已同步'], error: ['#f44336', '同步失敗'], connecting: ['#ff9800', '連線中'] };
+  const [color, label] = map[state] || ['#ccc', '離線模式'];
+  dot.style.background = color;
+  dot.title = label;
+}
+
+async function initFirebaseSync() {
+  if (!FIREBASE_CONFIG) return;
+  updateSyncDot('connecting');
+  try {
+    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+    const { getDatabase, ref, set, get, onValue } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+    const app = initializeApp(FIREBASE_CONFIG);
+    _db = getDatabase(app);
+    _dbRef = ref; _dbSet = set;
+
+    // 從 Firebase 載入資料（優先於 localStorage）
+    const snap = await get(ref(_db, TRIP_ROOM));
+    const d = snap.exists() ? snap.val() : {};
+
+    if (d.schedule) {
+      scheduleData = d.schedule;
+      localStorage.setItem('busan_schedule', JSON.stringify(scheduleData));
+      renderSchedule();
+    }
+    const remoteExp = d.expenses ? (Array.isArray(d.expenses) ? d.expenses : Object.values(d.expenses)) : null;
+    if (remoteExp && remoteExp.length > 0) {
+      expenses = remoteExp;
+      localStorage.setItem('busan_expenses', JSON.stringify(expenses));
+      renderExpenses();
+    }
+    if (d.banner) {
+      localStorage.setItem('busan_banner', d.banner);
+      renderBanner(d.banner);
+    }
+
+    _fbReady = true;
+    updateSyncDot('ok');
+
+    // Firebase 沒有資料時，把本機資料推上去（初次使用）
+    if (!d.schedule) fbPush('schedule', scheduleData);
+    if (!remoteExp || remoteExp.length === 0) {
+      if (expenses.length > 0) fbPush('expenses', expenses);
+    }
+    if (!d.banner) {
+      const lb = localStorage.getItem('busan_banner');
+      if (lb) fbPush('banner', lb);
+    }
+
+    // 監聽即時變更（其他裝置的修改）
+    onValue(ref(_db, `${TRIP_ROOM}/schedule`), snap => {
+      if (!snap.exists()) return;
+      const incoming = snap.val();
+      if (JSON.stringify(incoming) === JSON.stringify(scheduleData)) return;
+      scheduleData = incoming;
+      localStorage.setItem('busan_schedule', JSON.stringify(scheduleData));
+      renderSchedule();
+      showToast('行程已同步更新');
+    });
+
+    onValue(ref(_db, `${TRIP_ROOM}/expenses`), snap => {
+      const raw = snap.exists() ? snap.val() : [];
+      const incoming = Array.isArray(raw) ? raw : Object.values(raw);
+      if (JSON.stringify(incoming) === JSON.stringify(expenses)) return;
+      expenses = incoming;
+      localStorage.setItem('busan_expenses', JSON.stringify(expenses));
+      renderExpenses();
+      showToast('記帳已同步更新');
+    });
+
+    onValue(ref(_db, `${TRIP_ROOM}/banner`), snap => {
+      if (!snap.exists()) return;
+      const incoming = snap.val();
+      if (incoming === localStorage.getItem('busan_banner')) return;
+      localStorage.setItem('busan_banner', incoming);
+      renderBanner(incoming);
+    });
+
+  } catch(e) {
+    console.error('Firebase sync error:', e);
+    updateSyncDot('error');
+  }
+}
 
 // ===== 設定 =====
 const TRIP_START = '2026-07-07'; // 出發日期，可以修改
@@ -965,10 +1076,16 @@ if (!scheduleData) {
   localStorage.setItem('busan_schedule', JSON.stringify(scheduleData));
 }
 
-function saveSchedule() { localStorage.setItem('busan_schedule', JSON.stringify(scheduleData)); }
+function saveSchedule() {
+  localStorage.setItem('busan_schedule', JSON.stringify(scheduleData));
+  fbPush('schedule', scheduleData);
+}
 
 function resetSchedule() {
+  const msg = _fbReady ? '確定要重置行程？\n（所有家人的行程都會重置）' : '確定要重置行程？';
+  if (!confirm(msg)) return;
   localStorage.removeItem('busan_schedule');
+  if (_fbReady) fbPush('schedule', null);
   location.reload();
 }
 
@@ -1280,7 +1397,10 @@ fetchRate();
 let expenses = JSON.parse(localStorage.getItem('busan_expenses') || '[]');
 let pendingReceiptThumb = null;
 
-function saveExpenses() { localStorage.setItem('busan_expenses', JSON.stringify(expenses)); }
+function saveExpenses() {
+  localStorage.setItem('busan_expenses', JSON.stringify(expenses));
+  fbPush('expenses', expenses);
+}
 
 function handleReceiptPhoto(input) {
   const file = input.files[0];
@@ -1545,6 +1665,9 @@ function showOutfit(temp, isRain, wind) {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
+
+// ===== 啟動 Firebase 同步 =====
+initFirebaseSync();
 </script>
 </body>
 </html>
