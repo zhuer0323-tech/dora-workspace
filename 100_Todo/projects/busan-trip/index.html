@@ -548,9 +548,9 @@
 <body>
 
 <!-- Header -->
-<div class="header" style="flex-direction:column;align-items:center;gap:2px;padding:12px 20px 10px;">
+<div class="header" style="flex-direction:column;align-items:center;gap:3px;padding:12px 20px 10px;">
   <h1 style="font-size:16px;letter-spacing:0.5px;">✈️ 釜山六天五夜自由行</h1>
-  <div class="subtitle" id="headerDate">載入中...</div>
+  <div class="subtitle">林家2026家庭旅遊GOGO!</div>
 </div>
 
 <!-- Pages -->
@@ -626,18 +626,6 @@
   <div class="card">
     <div class="card-title">快速換算</div>
     <div style="margin-bottom:12px;">
-      <div class="form-label">輸入台幣（TWD）→ 換算韓元</div>
-      <div class="converter-row">
-        <input type="number" id="twdInput" placeholder="0" oninput="convertTWD()">
-        <div class="arrow">→</div>
-      </div>
-      <div class="result-box" id="twdResult">
-        — KRW
-        <small>輸入台幣金額後自動換算</small>
-      </div>
-    </div>
-    <hr style="border-color:var(--border);margin:16px 0;">
-    <div>
       <div class="form-label">輸入韓元（KRW）→ 換算台幣</div>
       <div class="converter-row">
         <input type="number" id="krwInput" placeholder="0" oninput="convertKRW()">
@@ -646,6 +634,18 @@
       <div class="result-box" id="krwResult">
         — TWD
         <small>輸入韓元金額後自動換算</small>
+      </div>
+    </div>
+    <hr style="border-color:var(--border);margin:16px 0;">
+    <div>
+      <div class="form-label">輸入台幣（TWD）→ 換算韓元</div>
+      <div class="converter-row">
+        <input type="number" id="twdInput" placeholder="0" oninput="convertTWD()">
+        <div class="arrow">→</div>
+      </div>
+      <div class="result-box" id="twdResult">
+        — KRW
+        <small>輸入台幣金額後自動換算</small>
       </div>
     </div>
   </div>
