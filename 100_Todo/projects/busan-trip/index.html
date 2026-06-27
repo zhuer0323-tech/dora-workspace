@@ -199,19 +199,35 @@
   input:focus, select:focus { border-color: var(--accent); background: #fff; }
 
   /* ── 行程頁面 ── */
-  .day-header {
+  /* 天數橫向分頁 */
+  .day-tabs {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 16px 0 8px;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
-  .day-label {
-    font-weight: 800;
-    font-size: 14px;
-    color: var(--accent);
-    background: var(--accent2);
-    padding: 4px 12px;
+  .day-tabs::-webkit-scrollbar { display: none; }
+  .day-tab {
+    flex-shrink: 0;
+    padding: 8px 14px;
     border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--card);
+    color: var(--text2);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    box-shadow: var(--shadow);
+  }
+  .day-tab.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 2px 8px rgba(233,30,140,0.3);
   }
   .schedule-item {
     background: var(--card);
@@ -733,6 +749,7 @@ function initDaySelects() {
 initDaySelects();
 
 // ===== 行程 =====
+let activeDayTab = 1;
 let scheduleData = JSON.parse(localStorage.getItem('busan_schedule') || 'null');
 if (!scheduleData) {
   scheduleData = {
@@ -822,41 +839,57 @@ function resetSchedule() {
   location.reload();
 }
 
+function switchDayTab(day) {
+  activeDayTab = day;
+  renderSchedule();
+}
+
 function renderSchedule() {
   const list = document.getElementById('scheduleList');
   list.innerHTML = '';
-  for (let day = 1; day <= TRIP_DAYS; day++) {
-    const items = scheduleData[day] || [];
-    const dh = document.createElement('div');
-    dh.className = 'day-header';
-    dh.innerHTML = `<div><div class="day-label">${getDayLabel(day)}</div></div>`;
-    list.appendChild(dh);
 
-    if (items.length === 0) {
-      const empty = document.createElement('div');
-      empty.style.cssText = 'color:var(--text2);font-size:13px;padding:8px 0 12px;';
-      empty.textContent = '尚無行程，點右上角＋新增';
-      list.appendChild(empty);
-      continue;
-    }
-
-    items.forEach((item, idx) => {
-      const div = document.createElement('div');
-      div.className = 'schedule-item';
-      div.innerHTML = `
-        <div class="info">
-          <div class="time">${item.time}</div>
-          <div class="place">${item.place}</div>
-          ${item.note ? `<div class="note">${item.note}</div>` : ''}
-        </div>
-        <div class="schedule-actions">
-          ${item.map ? `<button class="btn-map" onclick="openNaverMap('${item.map}')">🗺️ 地圖</button>` : ''}
-          <button class="delete-btn" onclick="deleteScheduleItem(${day},${idx})">🗑️</button>
-        </div>
-      `;
-      list.appendChild(div);
-    });
+  // 橫向天數分頁
+  const tabsDiv = document.createElement('div');
+  tabsDiv.className = 'day-tabs';
+  for (let d = 1; d <= TRIP_DAYS; d++) {
+    const date = new Date(TRIP_START);
+    date.setDate(date.getDate() + d - 1);
+    const mm = date.getMonth() + 1;
+    const dd2 = date.getDate();
+    const tab = document.createElement('button');
+    tab.className = 'day-tab' + (d === activeDayTab ? ' active' : '');
+    tab.textContent = `Day ${d}・${mm}/${dd2}`;
+    tab.onclick = () => switchDayTab(d);
+    tabsDiv.appendChild(tab);
   }
+  list.appendChild(tabsDiv);
+
+  // 目前選中天的行程
+  const items = scheduleData[activeDayTab] || [];
+  if (items.length === 0) {
+    const empty = document.createElement('div');
+    empty.style.cssText = 'color:var(--text2);font-size:13px;padding:24px 0;text-align:center;';
+    empty.textContent = '這天尚無行程，點右上角＋新增';
+    list.appendChild(empty);
+    return;
+  }
+
+  items.forEach((item, idx) => {
+    const div = document.createElement('div');
+    div.className = 'schedule-item';
+    div.innerHTML = `
+      <div class="info">
+        <div class="time">${item.time}</div>
+        <div class="place">${item.place}</div>
+        ${item.note ? `<div class="note">${item.note}</div>` : ''}
+      </div>
+      <div class="schedule-actions">
+        ${item.map ? `<button class="btn-map" onclick="openNaverMap('${item.map}')">🗺️ 地圖</button>` : ''}
+        <button class="delete-btn" onclick="deleteScheduleItem(${activeDayTab},${idx})">🗑️</button>
+      </div>
+    `;
+    list.appendChild(div);
+  });
 }
 renderSchedule();
 
