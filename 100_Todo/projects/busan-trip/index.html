@@ -336,6 +336,18 @@
   }
   .reminder-opt.sel { border-color: var(--accent); background: var(--accent2); color: var(--accent); }
   .reminder-cancel { width: 100%; padding: 12px; border: none; background: none; color: var(--text2); font-size: 14px; cursor: pointer; margin-top: 6px; }
+  .reminder-sheet { max-height: 88vh; overflow-y: auto; }
+  .btn-edit {
+    background: var(--accent2);
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    color: var(--accent);
+    border: 1.5px solid var(--accent3);
+    cursor: pointer;
+    white-space: nowrap;
+    font-weight: 600;
+  }
 
   /* 新增行程表單 */
   .add-form {
@@ -978,6 +990,58 @@ function closeReminder() {
   if (o) o.remove();
 }
 
+function editItem(day, idx) {
+  if (document.getElementById('editOverlay')) return;
+  const item = scheduleData[day][idx];
+  const esc = s => (s || '').replace(/"/g, '&quot;');
+  const overlay = document.createElement('div');
+  overlay.className = 'reminder-overlay';
+  overlay.id = 'editOverlay';
+  overlay.innerHTML = `
+    <div class="reminder-sheet">
+      <div class="reminder-title">✏️ 編輯行程</div>
+      <div style="margin-bottom:10px;">
+        <div class="form-label">時間</div>
+        <input type="time" id="editTime" value="${item.time}">
+      </div>
+      <div style="margin-bottom:10px;">
+        <div class="form-label">地點名稱</div>
+        <input type="text" id="editPlace" value="${esc(item.place)}" placeholder="例：海雲台海水浴場">
+      </div>
+      <div style="margin-bottom:10px;">
+        <div class="form-label">說明 / 注意事項</div>
+        <textarea id="editNote" rows="3" style="resize:vertical;">${esc(item.note)}</textarea>
+      </div>
+      <div style="margin-bottom:16px;">
+        <div class="form-label">Naver Map 搜尋關鍵字</div>
+        <input type="text" id="editMap" value="${esc(item.map)}" placeholder="例：해운대 해수욕장">
+      </div>
+      <button class="btn" style="width:100%;margin-bottom:10px;" onclick="saveItemEdit(${day},${idx})">儲存更新</button>
+      <button class="reminder-cancel" onclick="closeEditModal()">取消</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function closeEditModal() {
+  const o = document.getElementById('editOverlay');
+  if (o) o.remove();
+}
+
+function saveItemEdit(day, idx) {
+  const time = document.getElementById('editTime').value;
+  const place = document.getElementById('editPlace').value.trim();
+  const note = document.getElementById('editNote').value.trim();
+  const map = document.getElementById('editMap').value.trim();
+  if (!place) { showToast('請輸入地點名稱'); return; }
+  scheduleData[day][idx] = { time, place, note, map };
+  scheduleData[day].sort((a, b) => a.time.localeCompare(b.time));
+  saveSchedule();
+  closeEditModal();
+  renderSchedule();
+  showToast('行程已更新！');
+}
+
 function confirmReminder(timeStr, place) {
   const mins = window._remMins || 20;
   const [h, m] = timeStr.split(':').map(Number);
@@ -1067,6 +1131,7 @@ function renderSchedule() {
         <div class="item-actions">
           ${safeMap ? `<button class="btn-map" onclick="openNaverMap('${safeMap}')">🗺️ 地圖</button>` : ''}
           ${hasTaxi ? `<button class="btn-taxi" onclick="setTaxiReminder(${activeDayTab},${idx},'${item.time}','${safePlace}')">🚗 叫車提醒</button>` : ''}
+          <button class="btn-edit" onclick="editItem(${activeDayTab},${idx})">✏️ 編輯</button>
           <button class="delete-btn" style="margin-left:auto;" onclick="deleteScheduleItem(${activeDayTab},${idx})">🗑️</button>
         </div>
       </div>
