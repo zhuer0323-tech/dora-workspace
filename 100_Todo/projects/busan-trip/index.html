@@ -569,6 +569,26 @@
   }
   .cat-bar-fill { height: 100%; border-radius: 4px; }
   .cat-bar-amt { flex-shrink: 0; width: 72px; text-align: right; color: var(--text2); font-size: 12px; }
+
+  /* ── 行前準備頁面 ── */
+  .checklist-cat { font-size: 11px; font-weight: 800; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; margin: 14px 0 6px; padding-bottom: 4px; border-bottom: 1.5px solid var(--accent3); }
+  .checklist-cat:first-child { margin-top: 0; }
+  .check-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
+  .check-item:last-child { border-bottom: none; }
+  .check-item input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); flex-shrink: 0; cursor: pointer; }
+  .check-item-label { font-size: 14px; color: var(--text); flex: 1; }
+  .check-item-note { font-size: 11px; color: var(--text2); }
+  .check-item.done .check-item-label { text-decoration: line-through; color: var(--text2); }
+  .checklist-progress { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .progress-bar { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.3s; }
+  .progress-label { font-size: 12px; color: var(--text2); font-weight: 700; white-space: nowrap; }
+  .tip-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .tip-item:last-child { border-bottom: none; }
+  .tip-icon { font-size: 22px; flex-shrink: 0; width: 28px; text-align: center; margin-top: 1px; }
+  .tip-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .tip-body { font-size: 12px; color: var(--text2); line-height: 1.7; }
+  .tip-tag { display: inline-block; background: var(--accent2); color: var(--accent); font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 6px; border: 1px solid var(--accent3); margin-right: 4px; }
 </style>
 </head>
 <body>
@@ -761,6 +781,68 @@
   </div>
 </div></div>
 
+<div id="page-prep" class="page"><div class="page-inner">
+
+  <div class="card">
+    <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;">
+      行李清單
+      <button class="btn btn-sm btn-outline" style="font-size:11px;padding:4px 10px;" onclick="resetChecklist()">全部重置</button>
+    </div>
+    <div class="checklist-progress">
+      <div class="progress-bar"><div class="progress-fill" id="checkProgress" style="width:0%"></div></div>
+      <div class="progress-label" id="checkLabel">0 / 0</div>
+    </div>
+    <div id="checklistWrap"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">釜山旅遊注意事項</div>
+    <div class="tips-list">
+      <div class="tip-item">
+        <div class="tip-icon">🌡️</div>
+        <div><div class="tip-title">天氣</div><div class="tip-body">7月釜山平均 28–33°C，潮濕悶熱。早晚偶爾有陣雨，建議帶輕便雨傘或雨衣。防曬乳 SPF50+ 必備。室內冷氣超強，薄外套別忘了帶。</div></div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-icon">🚕</div>
+        <div><div class="tip-title">交通</div><div class="tip-body">叫車用 <span class="tip-tag">Kakao T</span> 或 <span class="tip-tag">Uber</span>，App 可選中文介面。地鐵搭乘建議買 <span class="tip-tag">T-money 卡</span>（機場入境大廳或便利商店購買），可搭地鐵、公車、計程車。</div></div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-icon">💵</div>
+        <div><div class="tip-title">換錢</div><div class="tip-body">建議在釜山的 <span class="tip-tag">MONEY BOX 換錢所</span>換，匯率比台灣或機場好。Day1 行程已安排去換。部分景點/餐廳可刷卡，但小吃攤位多為現金。</div></div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-icon">📱</div>
+        <div><div class="tip-title">網路通訊</div><div class="tip-body">建議提前在台灣訂好韓國 <span class="tip-tag">eSIM</span> 或 <span class="tip-tag">SIM 卡</span>（7天吃到飽約台幣200–400元）。也可在金海機場入境大廳取 WiFi 機。</div></div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-icon">🧾</div>
+        <div><div class="tip-title">購物退稅</div><div class="tip-body">單次消費滿 <span class="tip-tag">₩30,000</span> 以上，出示護照可申請退稅（稅率約 10%）。在有 TAX FREE 標誌的店消費，離境前在機場退稅櫃台辦理。</div></div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-icon">🔌</div>
+        <div><div class="tip-title">插頭電壓</div><div class="tip-body">韓國使用 <span class="tip-tag">220V 圓形兩孔</span> 插頭（C型）。台灣電器大多支援110-220V，帶一個轉接頭即可。行動電源不能托運，只能隨身帶上飛機。</div></div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-icon">🍜</div>
+        <div><div class="tip-title">飲食注意</div><div class="tip-body">韓國料理以辣為主，點餐時可說「<span class="tip-tag">덜 맵게 주세요</span>（請少辣）」。部分餐廳提供英文菜單，Google 翻譯拍照翻譯很好用。素食者選擇有限。</div></div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-icon">🎫</div>
+        <div><div class="tip-title">VBS（Virtual Busan Pass）</div><div class="tip-body">已預購的 VBS Pass 大多數景點在<span class="tip-tag">現場掃碼</span>兌換，部分需提前預約時段。出發前確認每個景點的兌換方式，海雲台藍線公園、樂天樂園、X The Sky 都可用。</div></div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-icon">🚇</div>
+        <div><div class="tip-title">禮儀規範</div><div class="tip-body">手扶梯靠右站（左側讓人通行）。地鐵車廂內禁止飲食。老弱博愛座附近手機要靜音。在傳統韓屋或汗蒸幕需脫鞋。</div></div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-icon">🆘</div>
+        <div><div class="tip-title">緊急聯絡</div><div class="tip-body">韓國警察 <span class="tip-tag">112</span> ／ 消防救護 <span class="tip-tag">119</span><br>駐韓國台北代表部：<span class="tip-tag">+82-2-399-2780</span>（24小時）<br>遺失護照請先報警取得報案證明，再聯絡代表部補發。</div></div>
+      </div>
+    </div>
+  </div>
+
+</div></div>
+
 <!-- Bottom Nav -->
 <nav class="bottom-nav">
   <button class="nav-btn active" onclick="switchPage('schedule',this)">
@@ -774,6 +856,9 @@
   </button>
   <button class="nav-btn" onclick="switchPage('weather',this)">
     🌤️<span>天氣</span>
+  </button>
+  <button class="nav-btn" onclick="switchPage('prep',this)">
+    🧳<span>行前</span>
   </button>
 </nav>
 
@@ -874,6 +959,11 @@ async function initFirebaseSync() {
       localStorage.setItem('busan_banner', d.banner);
       renderBanner(d.banner);
     }
+    if (d.checklist) {
+      checklistState = d.checklist;
+      localStorage.setItem('busan_checklist', JSON.stringify(checklistState));
+      renderChecklist();
+    }
 
     _fbReady = true;
     updateSyncDot('ok');
@@ -915,6 +1005,16 @@ async function initFirebaseSync() {
       if (incoming === localStorage.getItem('busan_banner')) return;
       localStorage.setItem('busan_banner', incoming);
       renderBanner(incoming);
+    });
+
+    onValue(ref(_db, `${TRIP_ROOM}/checklist`), snap => {
+      if (!_fbReady) return;
+      const incoming = snap.exists() ? snap.val() : {};
+      if (JSON.stringify(incoming) === JSON.stringify(checklistState)) return;
+      checklistState = incoming;
+      localStorage.setItem('busan_checklist', JSON.stringify(checklistState));
+      renderChecklist();
+      showToast('行李清單已同步');
     });
 
   } catch(e) {
@@ -1657,6 +1757,119 @@ function showOutfit(temp, isRain, wind) {
   document.getElementById('outfitMain').textContent = main;
   document.getElementById('outfitTip').textContent = tip;
   document.getElementById('outfitCard').style.display = 'block';
+}
+
+// ===== 行李清單 =====
+const CHECKLIST_DATA = [
+  { cat: '📋 證件 & 金融', items: [
+    { id: 'c1', label: '護照（有效期6個月以上）' },
+    { id: 'c2', label: '電子機票截圖', note: '濟州航空' },
+    { id: 'c3', label: '信用卡（Visa / Master）' },
+    { id: 'c4', label: '台幣現金（換韓元用）' },
+    { id: 'c5', label: 'VBS Pass 確認可使用' },
+    { id: 'c6', label: '緊急聯絡資訊截圖備存' },
+  ]},
+  { cat: '👕 衣物', items: [
+    { id: 'w1', label: '夏季衣物（6天份）' },
+    { id: 'w2', label: '薄外套或防風衣', note: '冷氣超強必備' },
+    { id: 'w3', label: '泳衣', note: 'Hill SPA / 汗蒸幕' },
+    { id: 'w4', label: '舒適走路鞋（防水更好）' },
+    { id: 'w5', label: '拖鞋', note: '汗蒸幕室內用' },
+    { id: 'w6', label: '內衣褲（多備1-2件）' },
+  ]},
+  { cat: '💊 藥品', items: [
+    { id: 'm1', label: '腸胃藥', note: '換水土不適用' },
+    { id: 'm2', label: '感冒藥' },
+    { id: 'm3', label: '止痛藥' },
+    { id: 'm4', label: 'OK繃 / 藥膏' },
+    { id: 'm5', label: '暈車藥', note: '搭藍線公園膠囊列車' },
+    { id: 'm6', label: '防蚊液' },
+  ]},
+  { cat: '🔌 電子 & 配件', items: [
+    { id: 'e1', label: '手機充電線 + 充電頭' },
+    { id: 'e2', label: '行動電源', note: '隨身帶，不可托運' },
+    { id: 'e3', label: '圓形兩孔轉接頭', note: '韓國220V C型插頭' },
+    { id: 'e4', label: '相機 + 記憶卡 + 充電線' },
+    { id: 'e5', label: '耳機' },
+  ]},
+  { cat: '🧴 盥洗保養', items: [
+    { id: 'b1', label: '防曬乳 SPF50+', note: '7月釜山非常曬' },
+    { id: 'b2', label: '洗面乳 / 保養品（分裝）' },
+    { id: 'b3', label: '牙刷 + 牙膏' },
+    { id: 'b4', label: '洗髮精 / 沐浴乳（分裝）' },
+    { id: 'b5', label: '護唇膏 / 乳液' },
+  ]},
+  { cat: '🎒 旅行雜物', items: [
+    { id: 't1', label: '輕便雨傘 / 摺疊雨衣' },
+    { id: 't2', label: '行李箱鎖' },
+    { id: 't3', label: '頸枕 + 眼罩', note: '飛機上用' },
+    { id: 't4', label: '環保購物袋', note: '韓國超市要收袋子費' },
+    { id: 't5', label: '隨身小包 / 腰包' },
+    { id: 't6', label: '零食 / 台灣伴手禮（送人用）' },
+  ]},
+];
+
+let checklistState = JSON.parse(localStorage.getItem('busan_checklist') || '{}');
+
+function saveChecklist() {
+  localStorage.setItem('busan_checklist', JSON.stringify(checklistState));
+  fbPush('checklist', checklistState);
+}
+
+function toggleCheck(id) {
+  checklistState[id] = !checklistState[id];
+  saveChecklist();
+  const row = document.querySelector(`.check-item[data-id="${id}"]`);
+  const cb = document.getElementById('cb_' + id);
+  if (row && cb) {
+    cb.checked = checklistState[id];
+    row.classList.toggle('done', checklistState[id]);
+  }
+  updateCheckProgress();
+}
+
+function updateCheckProgress() {
+  const all = CHECKLIST_DATA.flatMap(c => c.items);
+  const total = all.length;
+  const done = all.filter(i => checklistState[i.id]).length;
+  const pct = total ? Math.round(done / total * 100) : 0;
+  const fill = document.getElementById('checkProgress');
+  const label = document.getElementById('checkLabel');
+  if (fill) fill.style.width = pct + '%';
+  if (label) label.textContent = `${done} / ${total}`;
+}
+
+function renderChecklist() {
+  const wrap = document.getElementById('checklistWrap');
+  if (!wrap) return;
+  wrap.innerHTML = CHECKLIST_DATA.map(cat => `
+    <div class="checklist-cat">${cat.cat}</div>
+    ${cat.items.map(item => `
+      <div class="check-item${checklistState[item.id] ? ' done' : ''}" data-id="${item.id}" onclick="toggleCheck('${item.id}')">
+        <input type="checkbox" id="cb_${item.id}" ${checklistState[item.id] ? 'checked' : ''} onclick="event.stopPropagation();toggleCheck('${item.id}')">
+        <div>
+          <div class="check-item-label">${item.label}</div>
+          ${item.note ? `<div class="check-item-note">${item.note}</div>` : ''}
+        </div>
+      </div>
+    `).join('')}
+  `).join('');
+  updateCheckProgress();
+}
+
+function resetChecklist() {
+  if (!confirm('確定要重置所有勾選嗎？')) return;
+  checklistState = {};
+  saveChecklist();
+  renderChecklist();
+  showToast('行李清單已重置');
+}
+
+renderChecklist();
+
+// Firebase 同步行李清單
+if (typeof _dbOnValue !== 'undefined') {
+  // 在 initFirebaseSync 裡面才有 onValue，這裡用全域監聽
 }
 
 // ===== PWA Service Worker =====
