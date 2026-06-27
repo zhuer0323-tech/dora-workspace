@@ -6,56 +6,104 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="釜山自由行">
-<meta name="theme-color" content="#e94560">
+<meta name="theme-color" content="#f48fb1">
 <link rel="manifest" href="manifest.json">
 <title>釜山自由行</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #0f0f1a;
-    --card: #1a1a2e;
-    --accent: #e94560;
-    --accent2: #0f3460;
-    --text: #eaeaea;
-    --text2: #a0a0b0;
-    --border: #2a2a3e;
-    --green: #4ade80;
-    --yellow: #facc15;
-    --blue: #60a5fa;
+    --bg: #fff5f8;
+    --card: #ffffff;
+    --accent: #e91e8c;
+    --accent2: #fce4ec;
+    --accent3: #f8bbd0;
+    --text: #3d1c2e;
+    --text2: #b07090;
+    --border: #f8d7e8;
+    --green: #43a047;
+    --yellow: #e65100;
+    --blue: #7c4dff;
+    --shadow: 0 2px 12px rgba(233,30,140,0.08);
   }
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
-    padding-bottom: 70px;
+    padding-bottom: 76px;
     overflow-x: hidden;
   }
+
   /* Header */
   .header {
-    background: linear-gradient(135deg, #e94560, #0f3460);
-    padding: 16px 20px 12px;
+    background: linear-gradient(120deg, #f48fb1 0%, #f06292 50%, #e91e8c 100%);
+    padding: 14px 20px 12px;
     position: sticky;
     top: 0;
     z-index: 100;
     display: flex;
     align-items: center;
     gap: 10px;
-    box-shadow: 0 2px 12px rgba(233,69,96,0.3);
+    box-shadow: 0 2px 16px rgba(233,30,140,0.25);
   }
-  .header h1 { font-size: 18px; font-weight: 700; }
-  .header .subtitle { font-size: 12px; color: rgba(255,255,255,0.75); margin-top: 2px; }
-  .header-icon { font-size: 28px; }
+  .header h1 { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: 0.5px; }
+  .header .subtitle { font-size: 11px; color: rgba(255,255,255,0.85); margin-top: 2px; }
+  .header-icon { font-size: 26px; }
+
+  /* Banner 照片區 */
+  .banner-wrap {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    background: linear-gradient(135deg, #fce4ec, #f8bbd0);
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .banner-wrap img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .banner-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 8px;
+    color: #e91e8c;
+  }
+  .banner-placeholder .icon { font-size: 40px; opacity: 0.6; }
+  .banner-placeholder .text { font-size: 14px; font-weight: 600; opacity: 0.8; }
+  .banner-placeholder .sub { font-size: 11px; opacity: 0.5; }
+  .banner-btn {
+    position: absolute;
+    bottom: 10px; right: 10px;
+    background: rgba(255,255,255,0.92);
+    border: none;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #e91e8c;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  #bannerInput { display: none; }
 
   /* Bottom Nav */
   .bottom-nav {
     position: fixed;
     bottom: 0; left: 0; right: 0;
-    background: var(--card);
+    background: #fff;
     border-top: 1px solid var(--border);
     display: flex;
     z-index: 200;
     padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 -2px 12px rgba(233,30,140,0.08);
   }
   .nav-btn {
     flex: 1;
@@ -71,77 +119,84 @@
     gap: 2px;
     transition: color 0.2s;
   }
-  .nav-btn span { font-size: 10px; }
+  .nav-btn span { font-size: 10px; font-weight: 600; }
   .nav-btn.active { color: var(--accent); }
 
   /* Pages */
-  .page { display: none; padding: 16px; }
+  .page { display: none; }
   .page.active { display: block; }
+  .page-inner { padding: 14px 14px 0; }
 
   /* Cards */
   .card {
     background: var(--card);
-    border-radius: 12px;
+    border-radius: 14px;
     padding: 16px;
     margin-bottom: 12px;
     border: 1px solid var(--border);
+    box-shadow: var(--shadow);
   }
   .card-title {
-    font-size: 13px;
+    font-size: 11px;
     color: var(--text2);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 1.2px;
     margin-bottom: 10px;
-    font-weight: 600;
+    font-weight: 700;
   }
 
   /* Buttons */
   .btn {
-    background: var(--accent);
+    background: linear-gradient(135deg, #f06292, #e91e8c);
     color: #fff;
     border: none;
-    border-radius: 8px;
-    padding: 10px 16px;
+    border-radius: 10px;
+    padding: 11px 16px;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     transition: opacity 0.2s;
+    box-shadow: 0 2px 8px rgba(233,30,140,0.25);
   }
-  .btn:active { opacity: 0.8; }
+  .btn:active { opacity: 0.85; }
   .btn-outline {
     background: none;
-    border: 1px solid var(--accent);
+    border: 1.5px solid var(--accent);
     color: var(--accent);
+    box-shadow: none;
   }
   .btn-sm {
-    padding: 6px 12px;
+    padding: 7px 14px;
     font-size: 12px;
-    border-radius: 6px;
+    border-radius: 8px;
   }
   .btn-map {
     background: #03c75a;
     font-size: 12px;
     padding: 6px 12px;
-    border-radius: 6px;
+    border-radius: 8px;
     color: #fff;
     border: none;
     cursor: pointer;
     white-space: nowrap;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(3,199,90,0.3);
   }
 
   /* Inputs */
   input, select, textarea {
     background: var(--bg);
-    border: 1px solid var(--border);
+    border: 1.5px solid var(--border);
     color: var(--text);
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 10px 12px;
     font-size: 14px;
     width: 100%;
     outline: none;
     -webkit-appearance: none;
+    transition: border-color 0.2s;
   }
-  input:focus, select:focus { border-color: var(--accent); }
+  input:focus, select:focus { border-color: var(--accent); background: #fff; }
 
   /* ── 行程頁面 ── */
   .day-header {
@@ -151,14 +206,16 @@
     margin: 16px 0 8px;
   }
   .day-label {
-    font-weight: 700;
-    font-size: 15px;
+    font-weight: 800;
+    font-size: 14px;
     color: var(--accent);
+    background: var(--accent2);
+    padding: 4px 12px;
+    border-radius: 20px;
   }
-  .day-date { font-size: 12px; color: var(--text2); }
   .schedule-item {
     background: var(--card);
-    border-radius: 10px;
+    border-radius: 12px;
     padding: 12px 14px;
     margin-bottom: 8px;
     border-left: 3px solid var(--accent);
@@ -166,33 +223,32 @@
     justify-content: space-between;
     align-items: flex-start;
     gap: 8px;
+    box-shadow: var(--shadow);
   }
   .schedule-item .info { flex: 1; }
-  .schedule-item .time { font-size: 12px; color: var(--accent); font-weight: 600; margin-bottom: 2px; }
-  .schedule-item .place { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+  .schedule-item .time { font-size: 11px; color: var(--accent); font-weight: 700; margin-bottom: 3px; }
+  .schedule-item .place { font-size: 14px; font-weight: 700; margin-bottom: 2px; color: var(--text); }
   .schedule-item .note { font-size: 12px; color: var(--text2); }
   .schedule-actions { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
 
   /* 新增行程表單 */
   .add-form {
     background: var(--card);
-    border-radius: 12px;
+    border-radius: 14px;
     padding: 16px;
     margin-bottom: 12px;
-    border: 1px solid var(--accent);
+    border: 1.5px solid var(--accent);
     display: none;
+    box-shadow: var(--shadow);
   }
   .add-form.open { display: block; }
   .form-row { display: flex; gap: 8px; margin-bottom: 8px; }
   .form-row > * { flex: 1; }
-  .form-label { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+  .form-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; font-weight: 600; }
 
   /* ── 匯率頁面 ── */
-  .rate-display {
-    text-align: center;
-    padding: 20px 0;
-  }
-  .rate-big { font-size: 36px; font-weight: 700; color: var(--accent); }
+  .rate-display { text-align: center; padding: 20px 0; }
+  .rate-big { font-size: 40px; font-weight: 800; color: var(--accent); }
   .rate-sub { font-size: 13px; color: var(--text2); margin-top: 4px; }
   .rate-updated { font-size: 11px; color: var(--text2); margin-top: 8px; }
   .converter-row {
@@ -204,22 +260,20 @@
   .converter-row .arrow { font-size: 20px; color: var(--text2); flex-shrink: 0; }
   .result-box {
     background: var(--accent2);
-    border-radius: 8px;
-    padding: 12px;
+    border-radius: 10px;
+    padding: 14px;
     text-align: center;
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--yellow);
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--accent);
     margin-top: 8px;
+    border: 1px solid var(--accent3);
   }
-  .result-box small { display: block; font-size: 12px; color: var(--text2); font-weight: 400; margin-top: 2px; }
+  .result-box small { display: block; font-size: 12px; color: var(--text2); font-weight: 400; margin-top: 4px; }
 
   /* ── 消費頁面 ── */
-  .expense-total {
-    text-align: center;
-    padding: 12px 0 8px;
-  }
-  .total-krw { font-size: 28px; font-weight: 700; color: var(--yellow); }
+  .expense-total { text-align: center; padding: 12px 0 8px; }
+  .total-krw { font-size: 32px; font-weight: 800; color: var(--accent); }
   .total-twd { font-size: 15px; color: var(--text2); margin-top: 4px; }
   .expense-item {
     display: flex;
@@ -229,40 +283,30 @@
     border-bottom: 1px solid var(--border);
   }
   .expense-item:last-child { border-bottom: none; }
-  .expense-cat { font-size: 12px; color: var(--text2); }
-  .expense-name { font-size: 14px; font-weight: 500; }
+  .expense-name { font-size: 14px; font-weight: 600; }
   .expense-amt { text-align: right; }
-  .expense-krw { font-size: 14px; font-weight: 600; }
+  .expense-krw { font-size: 14px; font-weight: 700; color: var(--accent); }
   .expense-twd { font-size: 11px; color: var(--text2); }
   .cat-tag {
     display: inline-block;
     padding: 2px 8px;
     border-radius: 10px;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 700;
   }
-  .cat-餐飲 { background: rgba(250,204,21,0.2); color: var(--yellow); }
-  .cat-交通 { background: rgba(96,165,250,0.2); color: var(--blue); }
-  .cat-購物 { background: rgba(233,69,96,0.2); color: var(--accent); }
-  .cat-住宿 { background: rgba(74,222,128,0.2); color: var(--green); }
-  .cat-其他 { background: rgba(160,160,176,0.2); color: var(--text2); }
-  .day-total {
-    background: var(--accent2);
-    border-radius: 8px;
-    padding: 8px 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 4px 0 12px;
-    font-size: 13px;
-  }
+  .cat-餐飲 { background: #fff3e0; color: #e65100; }
+  .cat-交通 { background: #ede7f6; color: #7c4dff; }
+  .cat-購物 { background: #fce4ec; color: #e91e8c; }
+  .cat-住宿 { background: #e8f5e9; color: #43a047; }
+  .cat-其他 { background: #f3e5f5; color: #8e24aa; }
   .delete-btn {
     background: none;
     border: none;
     color: var(--text2);
-    font-size: 16px;
+    font-size: 15px;
     cursor: pointer;
     padding: 4px;
+    opacity: 0.6;
   }
 
   /* ── 天氣頁面 ── */
@@ -273,7 +317,7 @@
     padding: 8px 0 16px;
   }
   .weather-icon { font-size: 64px; line-height: 1; }
-  .weather-temp { font-size: 48px; font-weight: 700; }
+  .weather-temp { font-size: 48px; font-weight: 800; color: var(--text); }
   .weather-desc { font-size: 15px; color: var(--text2); margin-top: 4px; }
   .weather-detail {
     display: grid;
@@ -283,21 +327,16 @@
   }
   .weather-detail-item {
     background: var(--accent2);
-    border-radius: 10px;
+    border-radius: 12px;
     padding: 12px 8px;
     text-align: center;
+    border: 1px solid var(--accent3);
   }
-  .detail-val { font-size: 18px; font-weight: 700; }
-  .detail-label { font-size: 11px; color: var(--text2); margin-top: 2px; }
-  .outfit-box {
-    background: linear-gradient(135deg, var(--accent2), #1a1a2e);
-    border-radius: 12px;
-    padding: 16px;
-    border: 1px solid var(--border);
-  }
-  .outfit-title { font-size: 13px; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
-  .outfit-main { font-size: 16px; font-weight: 600; margin-bottom: 8px; line-height: 1.5; }
-  .outfit-tip { font-size: 13px; color: var(--text2); line-height: 1.6; }
+  .detail-val { font-size: 20px; font-weight: 800; color: var(--accent); }
+  .detail-label { font-size: 11px; color: var(--text2); margin-top: 3px; font-weight: 600; }
+  .outfit-title { font-size: 11px; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+  .outfit-main { font-size: 17px; font-weight: 700; margin-bottom: 8px; line-height: 1.6; color: var(--accent); }
+  .outfit-tip { font-size: 13px; color: var(--text2); line-height: 1.7; }
   .forecast-row {
     display: flex;
     gap: 8px;
@@ -305,17 +344,17 @@
     padding-bottom: 4px;
   }
   .forecast-item {
-    background: var(--card);
-    border-radius: 10px;
+    background: var(--accent2);
+    border-radius: 12px;
     padding: 12px 10px;
     text-align: center;
     min-width: 64px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--accent3);
     flex-shrink: 0;
   }
-  .forecast-time { font-size: 11px; color: var(--text2); margin-bottom: 6px; }
+  .forecast-time { font-size: 11px; color: var(--text2); margin-bottom: 6px; font-weight: 600; }
   .forecast-icon { font-size: 22px; margin-bottom: 4px; }
-  .forecast-temp { font-size: 14px; font-weight: 600; }
+  .forecast-temp { font-size: 14px; font-weight: 700; color: var(--accent); }
 
   /* 分日統計 */
   .day-stat {
@@ -328,7 +367,7 @@
   }
   .day-stat:last-child { border-bottom: none; }
   .day-stat-day { color: var(--text2); font-size: 13px; }
-  .day-stat-amt { font-weight: 600; color: var(--yellow); }
+  .day-stat-amt { font-weight: 700; color: var(--accent); }
 
   /* 空狀態 */
   .empty-state {
@@ -342,18 +381,20 @@
   /* Toast */
   .toast {
     position: fixed;
-    bottom: 80px;
+    bottom: 88px;
     left: 50%;
     transform: translateX(-50%) translateY(20px);
-    background: #333;
+    background: rgba(60,20,40,0.85);
     color: #fff;
-    padding: 10px 20px;
-    border-radius: 20px;
+    padding: 10px 22px;
+    border-radius: 22px;
     font-size: 13px;
+    font-weight: 600;
     opacity: 0;
     transition: all 0.3s;
     z-index: 999;
     white-space: nowrap;
+    backdrop-filter: blur(6px);
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
@@ -371,19 +412,10 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* 分類費用圓餅 */
-  .cat-summary {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .cat-bar-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13px;
-  }
-  .cat-bar-label { width: 36px; flex-shrink: 0; font-size: 12px; }
+  /* 分類費用長條 */
+  .cat-summary { display: flex; flex-direction: column; gap: 10px; }
+  .cat-bar-row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  .cat-bar-label { width: 36px; flex-shrink: 0; font-size: 12px; font-weight: 700; }
   .cat-bar-track {
     flex: 1;
     height: 8px;
@@ -392,7 +424,7 @@
     overflow: hidden;
   }
   .cat-bar-fill { height: 100%; border-radius: 4px; }
-  .cat-bar-amt { flex-shrink: 0; width: 70px; text-align: right; color: var(--text2); }
+  .cat-bar-amt { flex-shrink: 0; width: 72px; text-align: right; color: var(--text2); font-size: 12px; }
 </style>
 </head>
 <body>
@@ -408,8 +440,23 @@
 
 <!-- Pages -->
 <div id="page-schedule" class="page active">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-    <div style="font-size:20px;font-weight:700;">行程表</div>
+
+  <!-- Banner 照片區 -->
+  <div class="banner-wrap" onclick="document.getElementById('bannerInput').click()" id="bannerWrap">
+    <div class="banner-placeholder" id="bannerPlaceholder">
+      <div class="icon">📸</div>
+      <div class="text">放上你的家庭照片</div>
+      <div class="sub">點擊選擇照片</div>
+    </div>
+    <button class="banner-btn" id="bannerBtn" onclick="event.stopPropagation();document.getElementById('bannerInput').click()">
+      📷 更換照片
+    </button>
+  </div>
+  <input type="file" id="bannerInput" accept="image/*" onchange="uploadBanner(this)">
+
+  <div class="page-inner">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 10px;">
+    <div style="font-size:18px;font-weight:800;color:var(--text);">行程表</div>
     <button class="btn btn-sm" onclick="toggleAddForm()">＋ 新增</button>
   </div>
 
@@ -444,9 +491,10 @@
   </div>
 
   <div id="scheduleList"></div>
+  </div><!-- /page-inner -->
 </div>
 
-<div id="page-rate" class="page">
+<div id="page-rate" class="page"><div class="page-inner">
   <div class="card">
     <div class="card-title">即時匯率</div>
     <div class="rate-display">
@@ -483,9 +531,9 @@
       </div>
     </div>
   </div>
-</div>
+</div></div>
 
-<div id="page-expense" class="page">
+<div id="page-expense" class="page"><div class="page-inner">
   <div class="card">
     <div class="card-title">旅程總花費</div>
     <div class="expense-total">
@@ -537,9 +585,9 @@
     <div class="card-title">分類統計</div>
     <div class="cat-summary" id="catSummary"></div>
   </div>
-</div>
+</div></div>
 
-<div id="page-weather" class="page">
+<div id="page-weather" class="page"><div class="page-inner">
   <div class="card" id="weatherCard">
     <div class="card-title">釜山即時天氣</div>
     <div class="loading"><span class="spinner"></span>抓取天氣中...</div>
@@ -556,10 +604,10 @@
     <div class="forecast-row" id="forecastRow"></div>
   </div>
 
-  <div style="text-align:center;margin-top:8px;">
+  <div style="text-align:center;margin-top:8px;padding-bottom:14px;">
     <button class="btn btn-outline btn-sm" onclick="fetchWeather()">重新整理天氣</button>
   </div>
-</div>
+</div></div>
 
 <!-- Bottom Nav -->
 <nav class="bottom-nav">
@@ -580,6 +628,41 @@
 <div class="toast" id="toast"></div>
 
 <script>
+// ===== Banner 照片 =====
+function uploadBanner(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const data = e.target.result;
+    localStorage.setItem('busan_banner', data);
+    renderBanner(data);
+    showToast('照片已更新！');
+  };
+  reader.readAsDataURL(file);
+}
+
+function renderBanner(data) {
+  const wrap = document.getElementById('bannerWrap');
+  const placeholder = document.getElementById('bannerPlaceholder');
+  if (data) {
+    let img = wrap.querySelector('img');
+    if (!img) {
+      img = document.createElement('img');
+      wrap.insertBefore(img, placeholder);
+    }
+    img.src = data;
+    placeholder.style.display = 'none';
+  } else {
+    const img = wrap.querySelector('img');
+    if (img) img.remove();
+    placeholder.style.display = 'flex';
+  }
+}
+
+const savedBanner = localStorage.getItem('busan_banner');
+if (savedBanner) renderBanner(savedBanner);
+
 // ===== 設定 =====
 const TRIP_START = '2026-07-01'; // 出發日期，可以修改
 const TRIP_DAYS = 6;
