@@ -426,6 +426,32 @@
     padding: 4px;
     opacity: 0.6;
   }
+  .btn-camera {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 10px;
+    border-radius: 12px;
+    border: 2px dashed var(--accent3);
+    background: var(--accent2);
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 8px;
+    transition: all 0.2s;
+  }
+  .btn-camera.has-photo { border-style: solid; background: #fce4ec; }
+  .receipt-preview { width: 100%; max-height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; display: block; }
+  .receipt-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; cursor: pointer; flex-shrink: 0; }
+  .receipt-modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .receipt-modal-img { max-width: 94vw; max-height: 88vh; border-radius: 12px; object-fit: contain; }
+  .receipt-modal-close { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: #fff; font-size: 22px; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
   /* ── 天氣頁面 ── */
   .weather-main {
@@ -686,6 +712,13 @@
         <select id="expDay"></select>
       </div>
     </div>
+    <input type="file" id="receiptInput" accept="image/*" capture="environment" style="display:none" onchange="handleReceiptPhoto(this)">
+    <div id="receiptPreviewWrap" style="display:none;">
+      <img id="receiptPreviewImg" class="receipt-preview" src="" alt="收據預覽">
+    </div>
+    <button class="btn-camera" id="cameraBtn" onclick="document.getElementById('receiptInput').click()">
+      📷 拍照上傳收據（選填）
+    </button>
     <button class="btn" style="width:100%;" onclick="addExpense()">記帳</button>
   </div>
 
@@ -1245,8 +1278,44 @@ fetchRate();
 
 // ===== 消費記錄 =====
 let expenses = JSON.parse(localStorage.getItem('busan_expenses') || '[]');
+let pendingReceiptThumb = null;
 
 function saveExpenses() { localStorage.setItem('busan_expenses', JSON.stringify(expenses)); }
+
+function handleReceiptPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      const maxW = 800;
+      const ratio = Math.min(1, maxW / img.width);
+      canvas.width = Math.round(img.width * ratio);
+      canvas.height = Math.round(img.height * ratio);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      pendingReceiptThumb = canvas.toDataURL('image/jpeg', 0.7);
+      const previewImg = document.getElementById('receiptPreviewImg');
+      previewImg.src = pendingReceiptThumb;
+      document.getElementById('receiptPreviewWrap').style.display = 'block';
+      const btn = document.getElementById('cameraBtn');
+      btn.textContent = '📷 重新拍照';
+      btn.classList.add('has-photo');
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearReceiptPhoto() {
+  pendingReceiptThumb = null;
+  document.getElementById('receiptPreviewWrap').style.display = 'none';
+  document.getElementById('receiptInput').value = '';
+  const btn = document.getElementById('cameraBtn');
+  btn.textContent = '📷 拍照上傳收據（選填）';
+  btn.classList.remove('has-photo');
+}
 
 function addExpense() {
   const krw = parseInt(document.getElementById('expKrw').value);
@@ -1255,12 +1324,23 @@ function addExpense() {
   const day = parseInt(document.getElementById('expDay').value);
   if (!krw || krw <= 0) { showToast('請輸入金額'); return; }
   if (!name) { showToast('請輸入消費名稱'); return; }
-  expenses.push({ krw, name, cat, day, ts: Date.now() });
+  const entry = { krw, name, cat, day, ts: Date.now() };
+  if (pendingReceiptThumb) entry.receipt = pendingReceiptThumb;
+  expenses.push(entry);
   saveExpenses();
   renderExpenses();
   document.getElementById('expKrw').value = '';
   document.getElementById('expName').value = '';
+  clearReceiptPhoto();
   showToast('記帳成功！');
+}
+
+function showReceiptModal(src) {
+  const overlay = document.createElement('div');
+  overlay.className = 'receipt-modal-overlay';
+  overlay.innerHTML = `<button class="receipt-modal-close" onclick="this.parentElement.remove()">✕</button><img class="receipt-modal-img" src="${src}" alt="收據">`;
+  overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+  document.body.appendChild(overlay);
 }
 
 function deleteExpense(idx) {
@@ -1283,14 +1363,15 @@ function renderExpenses() {
     const sorted = [...expenses].map((e,i) => ({...e, origIdx: i})).sort((a,b) => b.ts - a.ts);
     listEl.innerHTML = sorted.map(e => `
       <div class="expense-item">
-        <div>
+        <div style="flex:1;min-width:0;">
           <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
             <span class="cat-tag cat-${e.cat}">${e.cat}</span>
             <span style="font-size:11px;color:var(--text2);">${getDayLabel(e.day).split('（')[0]}</span>
           </div>
           <div class="expense-name">${e.name}</div>
         </div>
-        <div class="expense-amt">
+        ${e.receipt ? `<img class="receipt-thumb" src="${e.receipt}" alt="收據" onclick="showReceiptModal('${e.receipt}')">` : ''}
+        <div class="expense-amt" style="margin-left:8px;">
           <div class="expense-krw">₩ ${fmt(e.krw)}</div>
           <div class="expense-twd">${fmtTWD(e.krw, currentRate)}</div>
         </div>
