@@ -229,23 +229,113 @@
     border-color: var(--accent);
     box-shadow: 0 2px 8px rgba(233,30,140,0.3);
   }
+  /* 行程 item */
   .schedule-item {
     background: var(--card);
     border-radius: 12px;
-    padding: 12px 14px;
     margin-bottom: 8px;
     border-left: 3px solid var(--accent);
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 8px;
     box-shadow: var(--shadow);
+    overflow: hidden;
   }
-  .schedule-item .info { flex: 1; }
-  .schedule-item .time { font-size: 11px; color: var(--accent); font-weight: 700; margin-bottom: 3px; }
-  .schedule-item .place { font-size: 14px; font-weight: 700; margin-bottom: 2px; color: var(--text); }
-  .schedule-item .note { font-size: 12px; color: var(--text2); }
-  .schedule-actions { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+  .item-header {
+    display: flex;
+    align-items: center;
+    padding: 12px 14px;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .item-time {
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--accent);
+    width: 60px;
+    flex-shrink: 0;
+    line-height: 1;
+    letter-spacing: -0.5px;
+  }
+  .item-body { flex: 1; min-width: 0; }
+  .item-place { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .item-note-preview {
+    font-size: 12px;
+    color: var(--text2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .item-toggle {
+    font-size: 11px;
+    color: var(--text2);
+    flex-shrink: 0;
+    transition: transform 0.25s;
+  }
+  .item-toggle.open { transform: rotate(180deg); }
+  .item-detail {
+    display: none;
+    padding: 10px 14px 14px;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+  }
+  .item-detail.open { display: block; }
+  .detail-block { margin-bottom: 10px; }
+  .detail-label {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+  }
+  .detail-text { font-size: 13px; color: var(--text); line-height: 1.8; }
+  .item-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; align-items: center; }
+  .btn-taxi {
+    background: #1565c0;
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(21,101,192,0.3);
+  }
+  /* 叫車提醒 modal */
+  .reminder-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 500;
+    display: flex;
+    align-items: flex-end;
+    padding: 0 16px 20px;
+  }
+  .reminder-sheet {
+    background: #fff;
+    border-radius: 20px;
+    padding: 24px;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  .reminder-title { font-size: 16px; font-weight: 800; margin-bottom: 4px; color: var(--text); }
+  .reminder-sub { font-size: 13px; color: var(--text2); margin-bottom: 18px; }
+  .reminder-options { display: flex; gap: 10px; margin-bottom: 16px; }
+  .reminder-opt {
+    flex: 1;
+    padding: 12px 6px;
+    border-radius: 12px;
+    border: 2px solid var(--border);
+    background: var(--bg);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    color: var(--text);
+  }
+  .reminder-opt.sel { border-color: var(--accent); background: var(--accent2); color: var(--accent); }
+  .reminder-cancel { width: 100%; padding: 12px; border: none; background: none; color: var(--text2); font-size: 14px; cursor: pointer; margin-top: 6px; }
 
   /* 新增行程表單 */
   .add-form {
@@ -446,12 +536,9 @@
 <body>
 
 <!-- Header -->
-<div class="header">
-  <div class="header-icon">✈️</div>
-  <div>
-    <h1>釜山自由行</h1>
-    <div class="subtitle" id="headerDate">載入中...</div>
-  </div>
+<div class="header" style="flex-direction:column;align-items:center;gap:2px;padding:12px 20px 10px;">
+  <h1 style="font-size:16px;letter-spacing:0.5px;">✈️ 釜山六天五夜自由行</h1>
+  <div class="subtitle" id="headerDate">載入中...</div>
 </div>
 
 <!-- Pages -->
@@ -689,11 +776,11 @@ const BUSAN_LAT = 35.1796;
 const BUSAN_LON = 129.0756;
 
 // ===== 工具函數 =====
-function showToast(msg) {
+function showToast(msg, duration = 2500) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+  setTimeout(() => t.classList.remove('show'), duration);
 }
 
 function fmt(n) { return n.toLocaleString('zh-TW'); }
@@ -844,6 +931,80 @@ function switchDayTab(day) {
   renderSchedule();
 }
 
+function toggleItem(day, idx) {
+  const detail = document.getElementById(`detail-${day}-${idx}`);
+  const arrow = document.getElementById(`arrow-${day}-${idx}`);
+  if (!detail) return;
+  detail.classList.toggle('open');
+  if (arrow) arrow.classList.toggle('open');
+}
+
+function needsTaxi(item) {
+  const text = (item.place + ' ' + item.note).toLowerCase();
+  return /uber|搭車|計程|機場|taxi|前往.*車|出發前往/.test(text);
+}
+
+function setTaxiReminder(day, idx, timeStr, place) {
+  if (document.getElementById('reminderOverlay')) return;
+  const overlay = document.createElement('div');
+  overlay.className = 'reminder-overlay';
+  overlay.id = 'reminderOverlay';
+  overlay.innerHTML = `
+    <div class="reminder-sheet">
+      <div class="reminder-title">🚗 叫車提醒</div>
+      <div class="reminder-sub">${place}（${timeStr} 出發）</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:14px;">出發前幾分鐘提醒你叫車？</div>
+      <div class="reminder-options">
+        <div class="reminder-opt" onclick="selReminder(this,10)">10 分鐘</div>
+        <div class="reminder-opt sel" onclick="selReminder(this,20)">20 分鐘</div>
+        <div class="reminder-opt" onclick="selReminder(this,30)">30 分鐘</div>
+      </div>
+      <button class="btn" style="width:100%;" onclick="confirmReminder('${timeStr}','${place}')">確認設定</button>
+      <button class="reminder-cancel" onclick="closeReminder()">取消</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  window._remMins = 20;
+}
+
+function selReminder(el, mins) {
+  document.querySelectorAll('.reminder-opt').forEach(o => o.classList.remove('sel'));
+  el.classList.add('sel');
+  window._remMins = mins;
+}
+
+function closeReminder() {
+  const o = document.getElementById('reminderOverlay');
+  if (o) o.remove();
+}
+
+function confirmReminder(timeStr, place) {
+  const mins = window._remMins || 20;
+  const [h, m] = timeStr.split(':').map(Number);
+  const remH = h, remM = m - mins;
+  const now = new Date();
+  const target = new Date();
+  target.setHours(remH, remM < 0 ? remM + 60 : remM, 0, 0);
+  if (remM < 0) target.setHours(target.getHours() - 1);
+  closeReminder();
+  const diff = target - now;
+  if (diff <= 0) {
+    showToast('時間已過！記得現在就叫車 🚗', 4000);
+    return;
+  }
+  const remLabel = `${String(remH).padStart(2,'0')}:${String(remM < 0 ? remM+60 : remM).padStart(2,'0')}`;
+  showToast(`已設定！${remLabel} 會提醒你叫車 🚗`, 3500);
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+  setTimeout(() => {
+    showToast(`🚗 快去叫車！${place} 再 ${mins} 分鐘出發！`, 6000);
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('釜山出發提醒 🚗', { body: `${place} 再 ${mins} 分鐘出發，記得叫車！` });
+    }
+  }, diff);
+}
+
 function renderSchedule() {
   const list = document.getElementById('scheduleList');
   list.innerHTML = '';
@@ -878,17 +1039,36 @@ function renderSchedule() {
   }
 
   items.forEach((item, idx) => {
+    const noteLines = item.note ? item.note.split('・').map(s => s.trim()).filter(Boolean) : [];
+    const detailHtml = noteLines.length > 1
+      ? noteLines.map(l => `・${l}`).join('<br>')
+      : (item.note || '');
+    const safeMap = (item.map || '').replace(/'/g, "\\'");
+    const safePlace = item.place.replace(/'/g, "\\'");
+    const hasTaxi = needsTaxi(item);
+
     const div = document.createElement('div');
     div.className = 'schedule-item';
     div.innerHTML = `
-      <div class="info">
-        <div class="time">${item.time}</div>
-        <div class="place">${item.place}</div>
-        ${item.note ? `<div class="note">${item.note}</div>` : ''}
+      <div class="item-header" onclick="toggleItem(${activeDayTab},${idx})">
+        <div class="item-time">${item.time}</div>
+        <div class="item-body">
+          <div class="item-place">${item.place}</div>
+          ${item.note ? `<div class="item-note-preview">${item.note}</div>` : ''}
+        </div>
+        <div class="item-toggle" id="arrow-${activeDayTab}-${idx}">▼</div>
       </div>
-      <div class="schedule-actions">
-        ${item.map ? `<button class="btn-map" onclick="openNaverMap('${item.map}')">🗺️ 地圖</button>` : ''}
-        <button class="delete-btn" onclick="deleteScheduleItem(${activeDayTab},${idx})">🗑️</button>
+      <div class="item-detail" id="detail-${activeDayTab}-${idx}">
+        ${detailHtml ? `
+        <div class="detail-block">
+          <div class="detail-label">說明 / 注意事項</div>
+          <div class="detail-text">${detailHtml}</div>
+        </div>` : `<div style="color:var(--text2);font-size:13px;padding:4px 0 8px;">暫無詳細說明</div>`}
+        <div class="item-actions">
+          ${safeMap ? `<button class="btn-map" onclick="openNaverMap('${safeMap}')">🗺️ 地圖</button>` : ''}
+          ${hasTaxi ? `<button class="btn-taxi" onclick="setTaxiReminder(${activeDayTab},${idx},'${item.time}','${safePlace}')">🚗 叫車提醒</button>` : ''}
+          <button class="delete-btn" style="margin-left:auto;" onclick="deleteScheduleItem(${activeDayTab},${idx})">🗑️</button>
+        </div>
       </div>
     `;
     list.appendChild(div);
