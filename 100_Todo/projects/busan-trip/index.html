@@ -817,17 +817,15 @@ const savedBanner = localStorage.getItem('busan_banner');
 if (savedBanner) renderBanner(savedBanner);
 
 // ===== Firebase 即時同步 =====
-// 填入你的 Firebase 設定來啟用多裝置同步，null 表示僅使用本機儲存
-const FIREBASE_CONFIG = null;
-// const FIREBASE_CONFIG = {
-//   apiKey: "填入你的 apiKey",
-//   authDomain: "填入你的 authDomain",
-//   databaseURL: "填入你的 databaseURL（Asia Southeast 1）",
-//   projectId: "填入你的 projectId",
-//   storageBucket: "填入你的 storageBucket",
-//   messagingSenderId: "填入你的 messagingSenderId",
-//   appId: "填入你的 appId"
-// };
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAWOXPFBmb-lU90dpBOq2B8Gn7LsR2p-jM",
+  authDomain: "busan-trip-2026-201f8.firebaseapp.com",
+  databaseURL: "https://busan-trip-2026-201f8-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "busan-trip-2026-201f8",
+  storageBucket: "busan-trip-2026-201f8.firebasestorage.app",
+  messagingSenderId: "300878890409",
+  appId: "1:300878890409:web:c80543dc5c43f6d81bb0b8"
+};
 
 const TRIP_ROOM = 'busan2026';
 let _db = null, _dbRef = null, _dbSet = null, _fbReady = false;
