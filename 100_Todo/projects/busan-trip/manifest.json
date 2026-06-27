@@ -1,0 +1,22 @@
+{
+  "name": "釜山自由行",
+  "short_name": "釜山",
+  "description": "釜山旅遊工具：行程、地圖、匯率、記帳、天氣",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#e94560",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

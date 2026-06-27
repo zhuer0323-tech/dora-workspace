@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="釜山自由行">
+<meta name="theme-color" content="#e94560">
+<link rel="manifest" href="manifest.json">
+<title>釜山自由行</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f0f1a;
+    --card: #1a1a2e;
+    --accent: #e94560;
+    --accent2: #0f3460;
+    --text: #eaeaea;
+    --text2: #a0a0b0;
+    --border: #2a2a3e;
+    --green: #4ade80;
+    --yellow: #facc15;
+    --blue: #60a5fa;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 70px;
+    overflow-x: hidden;
+  }
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #e94560, #0f3460);
+    padding: 16px 20px 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 2px 12px rgba(233,69,96,0.3);
+  }
+  .header h1 { font-size: 18px; font-weight: 700; }
+  .header .subtitle { font-size: 12px; color: rgba(255,255,255,0.75); margin-top: 2px; }
+  .header-icon { font-size: 28px; }
+
+  /* Bottom Nav */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    display: flex;
+    z-index: 200;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .nav-btn {
+    flex: 1;
+    padding: 10px 4px 8px;
+    background: none;
+    border: none;
+    color: var(--text2);
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    transition: color 0.2s;
+  }
+  .nav-btn span { font-size: 10px; }
+  .nav-btn.active { color: var(--accent); }
+
+  /* Pages */
+  .page { display: none; padding: 16px; }
+  .page.active { display: block; }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border);
+  }
+  .card-title {
+    font-size: 13px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  /* Buttons */
+  .btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .btn:active { opacity: 0.8; }
+  .btn-outline {
+    background: none;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+  }
+  .btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 6px;
+  }
+  .btn-map {
+    background: #03c75a;
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  /* Inputs */
+  input, select, textarea {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    width: 100%;
+    outline: none;
+    -webkit-appearance: none;
+  }
+  input:focus, select:focus { border-color: var(--accent); }
+
+  /* ── 行程頁面 ── */
+  .day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 16px 0 8px;
+  }
+  .day-label {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--accent);
+  }
+  .day-date { font-size: 12px; color: var(--text2); }
+  .schedule-item {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    border-left: 3px solid var(--accent);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .schedule-item .info { flex: 1; }
+  .schedule-item .time { font-size: 12px; color: var(--accent); font-weight: 600; margin-bottom: 2px; }
+  .schedule-item .place { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+  .schedule-item .note { font-size: 12px; color: var(--text2); }
+  .schedule-actions { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+
+  /* 新增行程表單 */
+  .add-form {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 1px solid var(--accent);
+    display: none;
+  }
+  .add-form.open { display: block; }
+  .form-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .form-row > * { flex: 1; }
+  .form-label { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+
+  /* ── 匯率頁面 ── */
+  .rate-display {
+    text-align: center;
+    padding: 20px 0;
+  }
+  .rate-big { font-size: 36px; font-weight: 700; color: var(--accent); }
+  .rate-sub { font-size: 13px; color: var(--text2); margin-top: 4px; }
+  .rate-updated { font-size: 11px; color: var(--text2); margin-top: 8px; }
+  .converter-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .converter-row .arrow { font-size: 20px; color: var(--text2); flex-shrink: 0; }
+  .result-box {
+    background: var(--accent2);
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--yellow);
+    margin-top: 8px;
+  }
+  .result-box small { display: block; font-size: 12px; color: var(--text2); font-weight: 400; margin-top: 2px; }
+
+  /* ── 消費頁面 ── */
+  .expense-total {
+    text-align: center;
+    padding: 12px 0 8px;
+  }
+  .total-krw { font-size: 28px; font-weight: 700; color: var(--yellow); }
+  .total-twd { font-size: 15px; color: var(--text2); margin-top: 4px; }
+  .expense-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .expense-item:last-child { border-bottom: none; }
+  .expense-cat { font-size: 12px; color: var(--text2); }
+  .expense-name { font-size: 14px; font-weight: 500; }
+  .expense-amt { text-align: right; }
+  .expense-krw { font-size: 14px; font-weight: 600; }
+  .expense-twd { font-size: 11px; color: var(--text2); }
+  .cat-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .cat-餐飲 { background: rgba(250,204,21,0.2); color: var(--yellow); }
+  .cat-交通 { background: rgba(96,165,250,0.2); color: var(--blue); }
+  .cat-購物 { background: rgba(233,69,96,0.2); color: var(--accent); }
+  .cat-住宿 { background: rgba(74,222,128,0.2); color: var(--green); }
+  .cat-其他 { background: rgba(160,160,176,0.2); color: var(--text2); }
+  .day-total {
+    background: var(--accent2);
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 4px 0 12px;
+    font-size: 13px;
+  }
+  .delete-btn {
+    background: none;
+    border: none;
+    color: var(--text2);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+  }
+
+  /* ── 天氣頁面 ── */
+  .weather-main {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 0 16px;
+  }
+  .weather-icon { font-size: 64px; line-height: 1; }
+  .weather-temp { font-size: 48px; font-weight: 700; }
+  .weather-desc { font-size: 15px; color: var(--text2); margin-top: 4px; }
+  .weather-detail {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .weather-detail-item {
+    background: var(--accent2);
+    border-radius: 10px;
+    padding: 12px 8px;
+    text-align: center;
+  }
+  .detail-val { font-size: 18px; font-weight: 700; }
+  .detail-label { font-size: 11px; color: var(--text2); margin-top: 2px; }
+  .outfit-box {
+    background: linear-gradient(135deg, var(--accent2), #1a1a2e);
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid var(--border);
+  }
+  .outfit-title { font-size: 13px; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+  .outfit-main { font-size: 16px; font-weight: 600; margin-bottom: 8px; line-height: 1.5; }
+  .outfit-tip { font-size: 13px; color: var(--text2); line-height: 1.6; }
+  .forecast-row {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .forecast-item {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 12px 10px;
+    text-align: center;
+    min-width: 64px;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .forecast-time { font-size: 11px; color: var(--text2); margin-bottom: 6px; }
+  .forecast-icon { font-size: 22px; margin-bottom: 4px; }
+  .forecast-temp { font-size: 14px; font-weight: 600; }
+
+  /* 分日統計 */
+  .day-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .day-stat:last-child { border-bottom: none; }
+  .day-stat-day { color: var(--text2); font-size: 13px; }
+  .day-stat-amt { font-weight: 600; color: var(--yellow); }
+
+  /* 空狀態 */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text2);
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-text { font-size: 14px; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #333;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 999;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Loading */
+  .loading { text-align: center; padding: 20px; color: var(--text2); font-size: 14px; }
+  .spinner {
+    display: inline-block;
+    width: 20px; height: 20px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* 分類費用圓餅 */
+  .cat-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .cat-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+  }
+  .cat-bar-label { width: 36px; flex-shrink: 0; font-size: 12px; }
+  .cat-bar-track {
+    flex: 1;
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .cat-bar-fill { height: 100%; border-radius: 4px; }
+  .cat-bar-amt { flex-shrink: 0; width: 70px; text-align: right; color: var(--text2); }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-icon">✈️</div>
+  <div>
+    <h1>釜山自由行</h1>
+    <div class="subtitle" id="headerDate">載入中...</div>
+  </div>
+</div>
+
+<!-- Pages -->
+<div id="page-schedule" class="page active">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+    <div style="font-size:20px;font-weight:700;">行程表</div>
+    <button class="btn btn-sm" onclick="toggleAddForm()">＋ 新增</button>
+  </div>
+
+  <div class="add-form" id="addForm">
+    <div class="form-label">新增行程</div>
+    <div class="form-row" style="margin-bottom:8px;">
+      <div>
+        <div class="form-label">第幾天</div>
+        <select id="newDay"></select>
+      </div>
+      <div>
+        <div class="form-label">時間</div>
+        <input type="time" id="newTime" value="10:00">
+      </div>
+    </div>
+    <div style="margin-bottom:8px;">
+      <div class="form-label">地點名稱</div>
+      <input type="text" id="newPlace" placeholder="例：海雲台海水浴場">
+    </div>
+    <div style="margin-bottom:8px;">
+      <div class="form-label">備註（可略）</div>
+      <input type="text" id="newNote" placeholder="例：退潮後最好玩">
+    </div>
+    <div style="margin-bottom:12px;">
+      <div class="form-label">Naver Map 搜尋關鍵字（可略）</div>
+      <input type="text" id="newMapQuery" placeholder="例：해운대 해수욕장">
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn" style="flex:1;" onclick="addScheduleItem()">加入行程</button>
+      <button class="btn btn-outline" style="flex:0;" onclick="toggleAddForm()">取消</button>
+    </div>
+  </div>
+
+  <div id="scheduleList"></div>
+</div>
+
+<div id="page-rate" class="page">
+  <div class="card">
+    <div class="card-title">即時匯率</div>
+    <div class="rate-display">
+      <div class="rate-big" id="rateDisplay">載入中...</div>
+      <div class="rate-sub">1 TWD = ? KRW</div>
+      <div class="rate-updated" id="rateUpdated"></div>
+    </div>
+    <button class="btn" style="width:100%;margin-top:4px;" onclick="fetchRate()">重新抓取最新匯率</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">快速換算</div>
+    <div style="margin-bottom:12px;">
+      <div class="form-label">輸入台幣（TWD）→ 換算韓元</div>
+      <div class="converter-row">
+        <input type="number" id="twdInput" placeholder="0" oninput="convertTWD()">
+        <div class="arrow">→</div>
+      </div>
+      <div class="result-box" id="twdResult">
+        — KRW
+        <small>輸入台幣金額後自動換算</small>
+      </div>
+    </div>
+    <hr style="border-color:var(--border);margin:16px 0;">
+    <div>
+      <div class="form-label">輸入韓元（KRW）→ 換算台幣</div>
+      <div class="converter-row">
+        <input type="number" id="krwInput" placeholder="0" oninput="convertKRW()">
+        <div class="arrow">→</div>
+      </div>
+      <div class="result-box" id="krwResult">
+        — TWD
+        <small>輸入韓元金額後自動換算</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="page-expense" class="page">
+  <div class="card">
+    <div class="card-title">旅程總花費</div>
+    <div class="expense-total">
+      <div class="total-krw" id="totalKrw">₩ 0</div>
+      <div class="total-twd" id="totalTwd">≈ NT$ 0</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">新增消費</div>
+    <div style="margin-bottom:8px;">
+      <div class="form-label">金額（韓元 KRW）</div>
+      <input type="number" id="expKrw" placeholder="例：15000">
+    </div>
+    <div style="margin-bottom:8px;">
+      <div class="form-label">消費名稱</div>
+      <input type="text" id="expName" placeholder="例：炸醬麵">
+    </div>
+    <div class="form-row" style="margin-bottom:12px;">
+      <div>
+        <div class="form-label">分類</div>
+        <select id="expCat">
+          <option>餐飲</option>
+          <option>交通</option>
+          <option>購物</option>
+          <option>住宿</option>
+          <option>其他</option>
+        </select>
+      </div>
+      <div>
+        <div class="form-label">哪一天</div>
+        <select id="expDay"></select>
+      </div>
+    </div>
+    <button class="btn" style="width:100%;" onclick="addExpense()">記帳</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">消費明細</div>
+    <div id="expenseList"><div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-text">還沒有消費記錄</div></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">各日消費</div>
+    <div id="dayStats"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">分類統計</div>
+    <div class="cat-summary" id="catSummary"></div>
+  </div>
+</div>
+
+<div id="page-weather" class="page">
+  <div class="card" id="weatherCard">
+    <div class="card-title">釜山即時天氣</div>
+    <div class="loading"><span class="spinner"></span>抓取天氣中...</div>
+  </div>
+
+  <div class="card" id="outfitCard" style="display:none;">
+    <div class="outfit-title">今日穿搭建議</div>
+    <div class="outfit-main" id="outfitMain"></div>
+    <div class="outfit-tip" id="outfitTip"></div>
+  </div>
+
+  <div class="card" id="forecastCard" style="display:none;">
+    <div class="card-title">今日預報</div>
+    <div class="forecast-row" id="forecastRow"></div>
+  </div>
+
+  <div style="text-align:center;margin-top:8px;">
+    <button class="btn btn-outline btn-sm" onclick="fetchWeather()">重新整理天氣</button>
+  </div>
+</div>
+
+<!-- Bottom Nav -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" onclick="switchPage('schedule',this)">
+    🗓️<span>行程</span>
+  </button>
+  <button class="nav-btn" onclick="switchPage('rate',this)">
+    💱<span>匯率</span>
+  </button>
+  <button class="nav-btn" onclick="switchPage('expense',this)">
+    💰<span>記帳</span>
+  </button>
+  <button class="nav-btn" onclick="switchPage('weather',this)">
+    🌤️<span>天氣</span>
+  </button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== 設定 =====
+const TRIP_START = '2026-07-01'; // 出發日期，可以修改
+const TRIP_DAYS = 6;
+const WEATHER_API_KEY = 'YOUR_OPENWEATHER_KEY'; // 填入 OpenWeatherMap API Key
+const BUSAN_LAT = 35.1796;
+const BUSAN_LON = 129.0756;
+
+// ===== 工具函數 =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function fmt(n) { return n.toLocaleString('zh-TW'); }
+function fmtTWD(krw, rate) {
+  if (!rate) return '—';
+  return 'NT$ ' + Math.round(krw / rate).toLocaleString('zh-TW');
+}
+
+function getDayLabel(dayNum) {
+  if (!TRIP_START) return `第 ${dayNum} 天`;
+  const d = new Date(TRIP_START);
+  d.setDate(d.getDate() + dayNum - 1);
+  const mm = d.getMonth() + 1;
+  const dd = d.getDate();
+  const weekdays = ['日','一','二','三','四','五','六'];
+  return `第 ${dayNum} 天（${mm}/${dd} 週${weekdays[d.getDay()]}）`;
+}
+
+// ===== 頁面切換 =====
+function switchPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'weather') fetchWeather();
+  if (name === 'rate') fetchRate();
+  if (name === 'expense') renderExpenses();
+}
+
+// ===== Header 日期 =====
+function updateHeaderDate() {
+  const d = new Date();
+  const days = ['日','一','二','三','四','五','六'];
+  document.getElementById('headerDate').textContent =
+    `${d.getMonth()+1}/${d.getDate()} 週${days[d.getDay()]}`;
+}
+updateHeaderDate();
+
+// ===== Day 選單初始化 =====
+function initDaySelects() {
+  ['newDay','expDay'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = '';
+    for (let i = 1; i <= TRIP_DAYS; i++) {
+      const o = document.createElement('option');
+      o.value = i;
+      o.textContent = getDayLabel(i);
+      el.appendChild(o);
+    }
+  });
+}
+initDaySelects();
+
+// ===== 行程 =====
+let scheduleData = JSON.parse(localStorage.getItem('busan_schedule') || 'null');
+if (!scheduleData) {
+  scheduleData = {
+    1: [
+      { time:'10:00', place:'抵達金海機場', note:'入境、換SIM卡、取交通卡', map:'김해국제공항' },
+      { time:'13:00', place:'西面站美食街', note:'午餐，推薦豬肉湯飯', map:'서면 맛집' },
+      { time:'15:00', place:'西面購物區', note:'咖啡廳、百貨探索', map:'서면 쇼핑' },
+      { time:'19:00', place:'西面夜市', note:'晚餐、街頭小食', map:'서면 야시장' },
+    ],
+    2: [
+      { time:'09:00', place:'海雲台海水浴場', note:'釜山最美海灘', map:'해운대 해수욕장' },
+      { time:'12:00', place:'海雲台市場', note:'海鮮、魚板、蔬菜煎餅', map:'해운대시장' },
+      { time:'15:00', place:'冬柏島', note:'散步、海景', map:'동백섬' },
+      { time:'18:00', place:'Centum City 新世界百貨', note:'購物、美食', map:'신세계백화점 센텀시티' },
+    ],
+    3: [
+      { time:'09:30', place:'甘川文化村', note:'彩色階梯小鎮、打卡必去', map:'감천문화마을' },
+      { time:'12:30', place:'松島海水浴場', note:'午餐＋海景', map:'송도해수욕장' },
+      { time:'15:00', place:'影島天空步道', note:'玻璃棧道', map:'영도 하늘전망대' },
+      { time:'18:00', place:'南浦洞光復路', note:'BIFF廣場、街頭小食', map:'남포동 광복로' },
+    ],
+    4: [
+      { time:'09:00', place:'太宗台', note:'釜山最南端的壯闊岩壁', map:'태종대' },
+      { time:'13:00', place:'草梁洞壁畫村', note:'韓戰時期避難地', map:'초량이바구길' },
+      { time:'15:30', place:'釜山駅周邊', note:'Lotte Mart 採購伴手禮', map:'부산역 롯데마트' },
+      { time:'19:00', place:'機張市場烤螃蟹', note:'新鮮螃蟹，需提前確認是否開業', map:'기장 시장 게장' },
+    ],
+    5: [
+      { time:'10:00', place:'廣安里海水浴場', note:'廣安大橋景色最美', map:'광안리 해수욕장' },
+      { time:'13:00', place:'民樂生魚片中心', note:'午餐，超新鮮生魚片', map:'민락수변공원 횟집' },
+      { time:'16:00', place:'UN紀念公園', note:'安靜散步', map:'유엔기념공원' },
+      { time:'19:00', place:'廣安里夜景', note:'夜晚廣安大橋點燈最美', map:'광안대교 야경' },
+    ],
+    6: [
+      { time:'08:00', place:'民宿退房', note:'整理行李', map:'' },
+      { time:'10:00', place:'在地早午餐', note:'最後一頓韓式早餐', map:'부산 아침식사' },
+      { time:'12:00', place:'前往金海機場', note:'提前 2 小時抵達', map:'김해국제공항' },
+      { time:'15:30', place:'搭機返台', note:'平安回家！', map:'' },
+    ]
+  };
+  localStorage.setItem('busan_schedule', JSON.stringify(scheduleData));
+}
+
+function saveSchedule() { localStorage.setItem('busan_schedule', JSON.stringify(scheduleData)); }
+
+function renderSchedule() {
+  const list = document.getElementById('scheduleList');
+  list.innerHTML = '';
+  for (let day = 1; day <= TRIP_DAYS; day++) {
+    const items = scheduleData[day] || [];
+    const dh = document.createElement('div');
+    dh.className = 'day-header';
+    dh.innerHTML = `<div><div class="day-label">${getDayLabel(day)}</div></div>`;
+    list.appendChild(dh);
+
+    if (items.length === 0) {
+      const empty = document.createElement('div');
+      empty.style.cssText = 'color:var(--text2);font-size:13px;padding:8px 0 12px;';
+      empty.textContent = '尚無行程，點右上角＋新增';
+      list.appendChild(empty);
+      continue;
+    }
+
+    items.forEach((item, idx) => {
+      const div = document.createElement('div');
+      div.className = 'schedule-item';
+      div.innerHTML = `
+        <div class="info">
+          <div class="time">${item.time}</div>
+          <div class="place">${item.place}</div>
+          ${item.note ? `<div class="note">${item.note}</div>` : ''}
+        </div>
+        <div class="schedule-actions">
+          ${item.map ? `<button class="btn-map" onclick="openNaverMap('${item.map}')">🗺️ 地圖</button>` : ''}
+          <button class="delete-btn" onclick="deleteScheduleItem(${day},${idx})">🗑️</button>
+        </div>
+      `;
+      list.appendChild(div);
+    });
+  }
+}
+renderSchedule();
+
+function toggleAddForm() {
+  const f = document.getElementById('addForm');
+  f.classList.toggle('open');
+}
+
+function addScheduleItem() {
+  const day = parseInt(document.getElementById('newDay').value);
+  const time = document.getElementById('newTime').value;
+  const place = document.getElementById('newPlace').value.trim();
+  const note = document.getElementById('newNote').value.trim();
+  const mapQuery = document.getElementById('newMapQuery').value.trim();
+  if (!place) { showToast('請輸入地點名稱'); return; }
+  if (!scheduleData[day]) scheduleData[day] = [];
+  scheduleData[day].push({ time, place, note, map: mapQuery });
+  scheduleData[day].sort((a,b) => a.time.localeCompare(b.time));
+  saveSchedule();
+  renderSchedule();
+  document.getElementById('newPlace').value = '';
+  document.getElementById('newNote').value = '';
+  document.getElementById('newMapQuery').value = '';
+  toggleAddForm();
+  showToast('行程已新增！');
+}
+
+function deleteScheduleItem(day, idx) {
+  scheduleData[day].splice(idx, 1);
+  saveSchedule();
+  renderSchedule();
+  showToast('已刪除');
+}
+
+function openNaverMap(query) {
+  const encoded = encodeURIComponent(query);
+  window.open(`https://map.naver.com/v5/search/${encoded}`, '_blank');
+}
+
+// ===== 匯率 =====
+let currentRate = parseFloat(localStorage.getItem('busan_rate')) || null;
+let rateTime = localStorage.getItem('busan_rate_time') || null;
+
+async function fetchRate() {
+  const now = Date.now();
+  if (currentRate && rateTime && (now - parseInt(rateTime)) < 3600000) {
+    displayRate(currentRate, parseInt(rateTime));
+    return;
+  }
+  document.getElementById('rateDisplay').textContent = '載入中...';
+  try {
+    // 使用免費 API（不需要 key）
+    const res = await fetch('https://api.exchangerate-api.com/v4/latest/TWD');
+    const data = await res.json();
+    const rate = data.rates.KRW;
+    currentRate = rate;
+    rateTime = Date.now().toString();
+    localStorage.setItem('busan_rate', rate.toString());
+    localStorage.setItem('busan_rate_time', rateTime);
+    displayRate(rate, Date.now());
+  } catch(e) {
+    // 備用 API
+    try {
+      const res2 = await fetch('https://open.er-api.com/v6/latest/TWD');
+      const data2 = await res2.json();
+      const rate = data2.rates.KRW;
+      currentRate = rate;
+      rateTime = Date.now().toString();
+      localStorage.setItem('busan_rate', rate.toString());
+      localStorage.setItem('busan_rate_time', rateTime);
+      displayRate(rate, Date.now());
+    } catch(e2) {
+      document.getElementById('rateDisplay').textContent = currentRate ? currentRate.toFixed(2) : '無法取得';
+      document.getElementById('rateUpdated').textContent = '網路錯誤，顯示快取匯率';
+    }
+  }
+}
+
+function displayRate(rate, ts) {
+  document.getElementById('rateDisplay').textContent = rate.toFixed(2);
+  const d = new Date(ts);
+  document.getElementById('rateUpdated').textContent =
+    `更新時間：${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
+  renderExpenses();
+}
+
+function convertTWD() {
+  const twd = parseFloat(document.getElementById('twdInput').value) || 0;
+  const el = document.getElementById('twdResult');
+  if (!currentRate) { el.innerHTML = '請先抓取匯率<small>點上方「重新抓取」</small>'; return; }
+  const krw = Math.round(twd * currentRate);
+  el.innerHTML = `₩ ${fmt(krw)}<small>${twd} TWD = ${fmt(krw)} KRW</small>`;
+}
+
+function convertKRW() {
+  const krw = parseFloat(document.getElementById('krwInput').value) || 0;
+  const el = document.getElementById('krwResult');
+  if (!currentRate) { el.innerHTML = '請先抓取匯率<small>點上方「重新抓取」</small>'; return; }
+  const twd = Math.round(krw / currentRate);
+  el.innerHTML = `NT$ ${fmt(twd)}<small>${fmt(krw)} KRW = ${twd} TWD</small>`;
+}
+
+fetchRate();
+
+// ===== 消費記錄 =====
+let expenses = JSON.parse(localStorage.getItem('busan_expenses') || '[]');
+
+function saveExpenses() { localStorage.setItem('busan_expenses', JSON.stringify(expenses)); }
+
+function addExpense() {
+  const krw = parseInt(document.getElementById('expKrw').value);
+  const name = document.getElementById('expName').value.trim();
+  const cat = document.getElementById('expCat').value;
+  const day = parseInt(document.getElementById('expDay').value);
+  if (!krw || krw <= 0) { showToast('請輸入金額'); return; }
+  if (!name) { showToast('請輸入消費名稱'); return; }
+  expenses.push({ krw, name, cat, day, ts: Date.now() });
+  saveExpenses();
+  renderExpenses();
+  document.getElementById('expKrw').value = '';
+  document.getElementById('expName').value = '';
+  showToast('記帳成功！');
+}
+
+function deleteExpense(idx) {
+  expenses.splice(idx, 1);
+  saveExpenses();
+  renderExpenses();
+  showToast('已刪除');
+}
+
+function renderExpenses() {
+  const totalKrw = expenses.reduce((s, e) => s + e.krw, 0);
+  document.getElementById('totalKrw').textContent = '₩ ' + fmt(totalKrw);
+  document.getElementById('totalTwd').textContent = currentRate ? '≈ NT$ ' + fmt(Math.round(totalKrw / currentRate)) : '（匯率載入中）';
+
+  // 明細（從新到舊）
+  const listEl = document.getElementById('expenseList');
+  if (expenses.length === 0) {
+    listEl.innerHTML = '<div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-text">還沒有消費記錄</div></div>';
+  } else {
+    const sorted = [...expenses].map((e,i) => ({...e, origIdx: i})).sort((a,b) => b.ts - a.ts);
+    listEl.innerHTML = sorted.map(e => `
+      <div class="expense-item">
+        <div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+            <span class="cat-tag cat-${e.cat}">${e.cat}</span>
+            <span style="font-size:11px;color:var(--text2);">${getDayLabel(e.day).split('（')[0]}</span>
+          </div>
+          <div class="expense-name">${e.name}</div>
+        </div>
+        <div class="expense-amt">
+          <div class="expense-krw">₩ ${fmt(e.krw)}</div>
+          <div class="expense-twd">${fmtTWD(e.krw, currentRate)}</div>
+        </div>
+        <button class="delete-btn" onclick="deleteExpense(${e.origIdx})">🗑️</button>
+      </div>
+    `).join('');
+  }
+
+  // 各日統計
+  const dayEl = document.getElementById('dayStats');
+  const dayTotals = {};
+  for (let i = 1; i <= TRIP_DAYS; i++) dayTotals[i] = 0;
+  expenses.forEach(e => { dayTotals[e.day] = (dayTotals[e.day] || 0) + e.krw; });
+  dayEl.innerHTML = Object.entries(dayTotals).filter(([,v]) => v > 0).map(([d,v]) => `
+    <div class="day-stat">
+      <div>${getDayLabel(parseInt(d))}</div>
+      <div>
+        <div class="day-stat-amt">₩ ${fmt(v)}</div>
+        <div style="font-size:11px;color:var(--text2);text-align:right;">${fmtTWD(v, currentRate)}</div>
+      </div>
+    </div>
+  `).join('') || '<div style="color:var(--text2);font-size:13px;">尚無資料</div>';
+
+  // 分類統計
+  const catEl = document.getElementById('catSummary');
+  const cats = ['餐飲','交通','購物','住宿','其他'];
+  const catColors = { '餐飲':'#facc15','交通':'#60a5fa','購物':'#e94560','住宿':'#4ade80','其他':'#a0a0b0' };
+  const catTotals = {};
+  cats.forEach(c => catTotals[c] = 0);
+  expenses.forEach(e => { catTotals[e.cat] = (catTotals[e.cat] || 0) + e.krw; });
+  const maxCat = Math.max(...Object.values(catTotals), 1);
+  catEl.innerHTML = cats.map(c => `
+    <div class="cat-bar-row">
+      <div class="cat-bar-label" style="color:${catColors[c]};">${c}</div>
+      <div class="cat-bar-track">
+        <div class="cat-bar-fill" style="width:${Math.round(catTotals[c]/maxCat*100)}%;background:${catColors[c]};"></div>
+      </div>
+      <div class="cat-bar-amt">₩ ${fmt(catTotals[c])}</div>
+    </div>
+  `).join('');
+}
+renderExpenses();
+
+// ===== 天氣 =====
+function getOutfitAdvice(temp, desc, windSpeed) {
+  const d = desc.toLowerCase();
+  const isRain = d.includes('rain') || d.includes('drizzle') || d.includes('shower');
+  const isCloud = d.includes('cloud') || d.includes('overcast');
+
+  let main = '';
+  let tip = '';
+
+  if (temp >= 28) {
+    main = '🌞 輕薄短袖 + 短褲 / 裙子';
+    tip = '天氣熱，建議防曬乳必備，戴帽子遮陽。';
+  } else if (temp >= 23) {
+    main = '🌤 短袖 + 薄外套（傍晚備用）';
+    tip = '白天涼爽，早晚溫差可能大，帶件薄外套備用。';
+  } else if (temp >= 18) {
+    main = '🍃 長袖薄外套 + 長褲';
+    tip = '氣溫舒適，長袖或薄夾克就很夠。';
+  } else if (temp >= 13) {
+    main = '🧥 厚外套 + 長褲';
+    tip = '天氣涼，建議穿有點厚度的外套，圍巾可以帶著。';
+  } else {
+    main = '🧣 厚大衣 + 毛帽圍巾';
+    tip = '天氣冷，注意保暖！帽子、圍巾、手套都用上。';
+  }
+
+  if (isRain) { main += '\n☂️ 記得帶傘！'; tip += '今天有雨，防水外套或雨衣更實用。'; }
+  if (windSpeed > 7 && !isRain) { tip += '今天風大，建議穿擋風的外層。'; }
+
+  return { main, tip };
+}
+
+function weatherIcon(desc) {
+  const d = desc.toLowerCase();
+  if (d.includes('thunder')) return '⛈️';
+  if (d.includes('snow')) return '❄️';
+  if (d.includes('rain') || d.includes('drizzle')) return '🌧️';
+  if (d.includes('cloud') && d.includes('broken')) return '🌥️';
+  if (d.includes('cloud') || d.includes('overcast')) return '☁️';
+  if (d.includes('mist') || d.includes('fog')) return '🌫️';
+  return '☀️';
+}
+
+async function fetchWeather() {
+  const card = document.getElementById('weatherCard');
+  card.innerHTML = '<div class="card-title">釜山即時天氣</div><div class="loading"><span class="spinner"></span>抓取天氣中...</div>';
+  document.getElementById('outfitCard').style.display = 'none';
+  document.getElementById('forecastCard').style.display = 'none';
+
+  if (WEATHER_API_KEY === 'YOUR_OPENWEATHER_KEY') {
+    card.innerHTML = `
+      <div class="card-title">釜山即時天氣</div>
+      <div style="text-align:center;padding:20px;color:var(--text2);font-size:14px;line-height:1.8;">
+        需要填入免費天氣 API Key<br>
+        <span style="font-size:12px;">前往 <a href="https://openweathermap.org/api" target="_blank" style="color:var(--accent);">openweathermap.org</a> 免費申請</span><br>
+        <span style="font-size:12px;">申請後把 index.html 第一行的 <code style="color:var(--yellow);">YOUR_OPENWEATHER_KEY</code> 換掉</span>
+      </div>
+    `;
+    // 顯示示範穿搭
+    showOutfit(22, '부산 Clear sky', 3);
+    return;
+  }
+
+  try {
+    const [curRes, foreRes] = await Promise.all([
+      fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${BUSAN_LAT}&lon=${BUSAN_LON}&appid=${WEATHER_API_KEY}&units=metric&lang=zh_tw`),
+      fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${BUSAN_LAT}&lon=${BUSAN_LON}&appid=${WEATHER_API_KEY}&units=metric&lang=zh_tw&cnt=8`)
+    ]);
+    const cur = await curRes.json();
+    const fore = await foreRes.json();
+
+    const temp = Math.round(cur.main.temp);
+    const feels = Math.round(cur.main.feels_like);
+    const humidity = cur.main.humidity;
+    const wind = cur.wind.speed;
+    const desc = cur.weather[0].description;
+
+    card.innerHTML = `
+      <div class="card-title">釜山即時天氣</div>
+      <div class="weather-main">
+        <div class="weather-icon">${weatherIcon(cur.weather[0].main + ' ' + desc)}</div>
+        <div>
+          <div class="weather-temp">${temp}°</div>
+          <div class="weather-desc">${desc}</div>
+        </div>
+      </div>
+      <div class="weather-detail">
+        <div class="weather-detail-item">
+          <div class="detail-val">${feels}°</div>
+          <div class="detail-label">體感</div>
+        </div>
+        <div class="weather-detail-item">
+          <div class="detail-val">${humidity}%</div>
+          <div class="detail-label">濕度</div>
+        </div>
+        <div class="weather-detail-item">
+          <div class="detail-val">${wind}<span style="font-size:12px;">m/s</span></div>
+          <div class="detail-label">風速</div>
+        </div>
+      </div>
+    `;
+
+    showOutfit(temp, desc, wind);
+
+    // 預報
+    const foreEl = document.getElementById('forecastRow');
+    foreEl.innerHTML = fore.list.map(f => {
+      const t = new Date(f.dt * 1000);
+      const h = t.getHours();
+      const period = h < 12 ? `${h}AM` : h === 12 ? '中午' : `${h-12}PM`;
+      return `
+        <div class="forecast-item">
+          <div class="forecast-time">${period}</div>
+          <div class="forecast-icon">${weatherIcon(f.weather[0].main)}</div>
+          <div class="forecast-temp">${Math.round(f.main.temp)}°</div>
+        </div>
+      `;
+    }).join('');
+    document.getElementById('forecastCard').style.display = 'block';
+
+  } catch(e) {
+    card.innerHTML = `<div class="card-title">釜山即時天氣</div><div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">天氣資料抓取失敗<br><span style="font-size:12px;">請確認網路連線</span></div></div>`;
+    showOutfit(20, 'clear', 2);
+  }
+}
+
+function showOutfit(temp, desc, wind) {
+  const { main, tip } = getOutfitAdvice(temp, desc, wind);
+  document.getElementById('outfitMain').textContent = main;
+  document.getElementById('outfitTip').textContent = tip;
+  document.getElementById('outfitCard').style.display = 'block';
+}
+
+// ===== PWA Service Worker =====
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
