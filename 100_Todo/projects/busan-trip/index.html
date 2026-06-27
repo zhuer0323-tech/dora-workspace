@@ -863,6 +863,9 @@ function renderSchedule() {
     tabsDiv.appendChild(tab);
   }
   list.appendChild(tabsDiv);
+  // 讓選中的 tab 自動捲入可見範圍
+  const activeTab = tabsDiv.querySelector('.day-tab.active');
+  if (activeTab) activeTab.scrollIntoView({ inline: 'start', block: 'nearest' });
 
   // 目前選中天的行程
   const items = scheduleData[activeDayTab] || [];
