@@ -457,7 +457,10 @@
   <div class="page-inner">
   <div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 10px;">
     <div style="font-size:18px;font-weight:800;color:var(--text);">行程表</div>
-    <button class="btn btn-sm" onclick="toggleAddForm()">＋ 新增</button>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-outline btn-sm" onclick="resetSchedule()" style="font-size:11px;">重置行程</button>
+      <button class="btn btn-sm" onclick="toggleAddForm()">＋ 新增</button>
+    </div>
   </div>
 
   <div class="add-form" id="addForm">
@@ -664,7 +667,7 @@ const savedBanner = localStorage.getItem('busan_banner');
 if (savedBanner) renderBanner(savedBanner);
 
 // ===== 設定 =====
-const TRIP_START = '2026-07-01'; // 出發日期，可以修改
+const TRIP_START = '2026-07-07'; // 出發日期，可以修改
 const TRIP_DAYS = 6;
 const BUSAN_LAT = 35.1796;
 const BUSAN_LON = 129.0756;
@@ -734,46 +737,90 @@ let scheduleData = JSON.parse(localStorage.getItem('busan_schedule') || 'null');
 if (!scheduleData) {
   scheduleData = {
     1: [
-      { time:'10:00', place:'抵達金海機場', note:'入境、換SIM卡、取交通卡', map:'김해국제공항' },
-      { time:'13:00', place:'西面站美食街', note:'午餐，推薦豬肉湯飯', map:'서면 맛집' },
-      { time:'15:00', place:'西面購物區', note:'咖啡廳、百貨探索', map:'서면 쇼핑' },
-      { time:'19:00', place:'西面夜市', note:'晚餐、街頭小食', map:'서면 야시장' },
+      { time:'02:50', place:'桃園機場出發', note:'濟州航空・T2 航廈起飛', map:'' },
+      { time:'06:10', place:'金海機場抵達', note:'出海關・領行李・領VBS，約一小時', map:'김해국제공항' },
+      { time:'08:30', place:'搭Uber前往海雲台', note:'車程約40分鐘', map:'' },
+      { time:'09:30', place:'住宿：엘본더스테이오피스텔', note:'先放行李（16:00才能入住）', map:'엘본더스테이오피스텔 해운대' },
+      { time:'10:00', place:'MONEY BOX 換韓元', note:'步行5分鐘・用台幣兌換即可', map:'머니박스 해운대점' },
+      { time:'10:30', place:'Hill SPA 24h', note:'Klook買票 $951/3人・4小時體驗券・預計14點結束', map:'HILL SPA 해운대' },
+      { time:'15:00', place:'膠囊列車・藍線公園尾浦站', note:'預約15:00-15:30・提前20分抵達・尾浦→青沙浦・整趟30分', map:'해운대블루라인파크 미포정거장' },
+      { time:'15:40', place:'青沙浦逛逛', note:'小廉倉拍照・紅白燈塔', map:'청사포 등대' },
+      { time:'16:30', place:'Diart Coffee', note:'超好吃土耳其麵包・停留約1小時', map:'DIART coffee 청사포' },
+      { time:'17:00', place:'青沙浦踏石觀景台', note:'청사포 다릿돌전망대', map:'청사포 다릿돌전망대' },
+      { time:'17:30', place:'海岸列車返回尾浦', note:'用VBS兌換（現場）・整趟30-40分鐘', map:'해운대 해변열차' },
+      { time:'19:00', place:'晚餐：Haeundae Madang', note:'韓式豬肉燒烤 해운대 마당집', map:'해운대 마당집' },
+      { time:'20:00', place:'海雲台市場', note:'逛菜市場・買小吃帶回飯店', map:'부산해운대시장' },
+      { time:'21:00', place:'海雲台海灘散步', note:'消化一下再回飯店休息', map:'해운대 해수욕장' },
     ],
     2: [
-      { time:'09:00', place:'海雲台海水浴場', note:'釜山最美海灘', map:'해운대 해수욕장' },
-      { time:'12:00', place:'海雲台市場', note:'海鮮、魚板、蔬菜煎餅', map:'해운대시장' },
-      { time:'15:00', place:'冬柏島', note:'散步、海景', map:'동백섬' },
-      { time:'18:00', place:'Centum City 新世界百貨', note:'購物、美食', map:'신세계백화점 센텀시티' },
+      { time:'08:30', place:'起床・超商買早餐', note:'', map:'' },
+      { time:'09:05', place:'搭車前往甘川文化村', note:'車程約35分鐘', map:'' },
+      { time:'09:40', place:'甘川文化村', note:'甘川浪漫韓服(9點營業)・翻翻書(10點)・小王子拍照・吃午餐・12:30離開', map:'감천문화마을' },
+      { time:'12:45', place:'松島海上纜車', note:'車程15分鐘・單趟15分鐘・可挑玻璃車廂・可搭來回', map:'송도해상케이블카' },
+      { time:'13:10', place:'松島龍宮空中步道', note:'在纜車站旁', map:'송도용궁구름다리' },
+      { time:'14:00', place:'松島雷射槍', note:'在纜車同棟', map:'' },
+      { time:'15:10', place:'足浴咖啡廳 Footbath Cafe View', note:'車程9分鐘・英島흰여울길・休息放鬆1小時', map:'족욕카페뷰 영도' },
+      { time:'16:20', place:'ARTE MUSEUM Busan', note:'車程9分鐘・영도・拍照欣賞・停留2.5小時', map:'아르떼뮤지엄 부산' },
+      { time:'18:45', place:'晚餐：名聲一隻雞', note:'車程11分鐘・影島・抽號碼牌排隊', map:'명성통닭 영도' },
+      { time:'20:30', place:'X The Sky', note:'用VBS兌換（現場給櫃台）・晚上9點關門', map:'엑스더스카이 부산' },
+      { time:'22:00', place:'回住宿', note:'海雲台 엘본더스테이오피스텔', map:'' },
     ],
     3: [
-      { time:'09:30', place:'甘川文化村', note:'彩色階梯小鎮、打卡必去', map:'감천문화마을' },
-      { time:'12:30', place:'松島海水浴場', note:'午餐＋海景', map:'송도해수욕장' },
-      { time:'15:00', place:'影島天空步道', note:'玻璃棧道', map:'영도 하늘전망대' },
-      { time:'18:00', place:'南浦洞光復路', note:'BIFF廣場、街頭小食', map:'남포동 광복로' },
+      { time:'08:30', place:'起床・超商買早餐', note:'', map:'' },
+      { time:'09:05', place:'搭車前往Skyline Luge', note:'車程約16分鐘', map:'' },
+      { time:'09:30', place:'Skyline Luge', note:'VBS可玩兩次滑車', map:'스카이라인루지 부산' },
+      { time:'11:00', place:'樂天 Premium Outlets', note:'走路過去・逛街買東西・吃午餐', map:'롯데프리미엄아울렛 동부산점' },
+      { time:'13:00', place:'樂天樂園', note:'VBS兌換票・會說話的樹・天鵝湖・碰碰車・遊行・17:00離開', map:'부산 롯데월드 어드벤처' },
+      { time:'17:10', place:'海東龍宮寺', note:'車程6分鐘・蓋在海邊的廟宇', map:'해동용궁사' },
+      { time:'18:30', place:'晚餐：五福豬肉湯飯', note:'海雲台・오복돼지국밥', map:'오복돼지국밥 해운대구남로15' },
+      { time:'19:30', place:'海雲台藥局', note:'Threads @98_parisa_63 推薦', map:'해운대 약국' },
+      { time:'20:30', place:'回住宿・整理行李', note:'明天換飯店，先整理行李', map:'' },
     ],
     4: [
-      { time:'09:00', place:'太宗台', note:'釜山最南端的壯闊岩壁', map:'태종대' },
-      { time:'13:00', place:'草梁洞壁畫村', note:'韓戰時期避難地', map:'초량이바구길' },
-      { time:'15:30', place:'釜山駅周邊', note:'Lotte Mart 採購伴手禮', map:'부산역 롯데마트' },
-      { time:'19:00', place:'機張市場烤螃蟹', note:'新鮮螃蟹，需提前確認是否開業', map:'기장 시장 게장' },
+      { time:'08:30', place:'起床・超商買早餐', note:'', map:'' },
+      { time:'11:00', place:'退房・寄放行李', note:'', map:'' },
+      { time:'11:30', place:'午餐', note:'附近找好吃的', map:'해운대 맛집' },
+      { time:'13:00', place:'海里團路逛逛', note:'', map:'해리단길' },
+      { time:'13:30', place:'Busan Bada Sand', note:'伴手禮店・부산바다샌드', map:'부산바다샌드' },
+      { time:'14:00', place:'Hippy Mond Living', note:'選品小物店・히피몬드 리빙', map:'히피몬드 리빙' },
+      { time:'14:30', place:'Duplit 咖啡廳', note:'듀플릿', map:'듀플릿 카페' },
+      { time:'16:00', place:'回飯店拿行李・出發南浦洞', note:'車程約35分鐘', map:'' },
+      { time:'16:45', place:'Magnum Nampo Hotel 入住', note:'南浦麥格農酒店・매그넘 남포 호텔', map:'매그넘 남포 호텔' },
+      { time:'17:30', place:'BIFF廣場', note:'糖餅・各種街頭小吃', map:'비프광장' },
+      { time:'18:00', place:'국제약국', note:'國際藥局・必買藥品', map:'국제약국 부산' },
+      { time:'18:30', place:'南浦洞美食', note:'南浦雪濃湯 or 烤肉的男人二選一', map:'남포동 맛집' },
+      { time:'19:30', place:'光復路時尚街', note:'逛街購物', map:'광복로 패션거리' },
+      { time:'20:00', place:'樂天百貨光復店', note:'13樓空中花園看夜景（至20:30）', map:'롯데백화점 광복점' },
+      { time:'21:00', place:'樂天超市光復店 B1', note:'零食餅乾購物（至23:00）', map:'롯데마트 광복점' },
+      { time:'22:00', place:'釜山塔夜景', note:'', map:'부산타워' },
     ],
     5: [
-      { time:'10:00', place:'廣安里海水浴場', note:'廣安大橋景色最美', map:'광안리 해수욕장' },
-      { time:'13:00', place:'民樂生魚片中心', note:'午餐，超新鮮生魚片', map:'민락수변공원 횟집' },
-      { time:'16:00', place:'UN紀念公園', note:'安靜散步', map:'유엔기념공원' },
-      { time:'19:00', place:'廣安里夜景', note:'夜晚廣安大橋點燈最美', map:'광안대교 야경' },
+      { time:'08:30', place:'起床・超商買早餐', note:'', map:'' },
+      { time:'10:00', place:'搭車前往西面', note:'車程約30分鐘', map:'' },
+      { time:'10:30', place:'Genius Clinic 醫美', note:'已預約10:30・預留3小時在診所', map:'지니어스클리닉 부산진구' },
+      { time:'13:30', place:'西面商圈＋地下街', note:'逛逛購物', map:'서면 지하상가' },
+      { time:'14:30', place:'西面美食', note:'豬肉湯飯(松亭三代)・辣炒年糕・烤肉的男子・17:00-18:00撤', map:'서면 돼지국밥 거리' },
+      { time:'18:30', place:'前往廣安里', note:'', map:'광안리 해수욕장' },
+      { time:'20:00', place:'廣安里無人機表演', note:'20點或22點一場（現場確認）', map:'광안리 드론쇼' },
+      { time:'21:30', place:'回飯店', note:'南浦洞・整理行李・睡覺', map:'' },
     ],
     6: [
-      { time:'08:00', place:'民宿退房', note:'整理行李', map:'' },
-      { time:'10:00', place:'在地早午餐', note:'最後一頓韓式早餐', map:'부산 아침식사' },
-      { time:'12:00', place:'前往金海機場', note:'提前 2 小時抵達', map:'김해국제공항' },
-      { time:'15:30', place:'搭機返台', note:'平安回家！', map:'' },
+      { time:'04:00', place:'起床整理', note:'', map:'' },
+      { time:'05:45', place:'出發前往金海機場', note:'車程約30分鐘', map:'' },
+      { time:'06:20', place:'金海機場', note:'提前3小時抵達・搭濟州航空', map:'김해국제공항' },
+      { time:'09:30', place:'釜山起飛', note:'濟州航空班機', map:'' },
+      { time:'11:00', place:'桃園機場抵達', note:'平安回家！', map:'' },
     ]
   };
   localStorage.setItem('busan_schedule', JSON.stringify(scheduleData));
 }
 
 function saveSchedule() { localStorage.setItem('busan_schedule', JSON.stringify(scheduleData)); }
+
+function resetSchedule() {
+  localStorage.removeItem('busan_schedule');
+  location.reload();
+}
 
 function renderSchedule() {
   const list = document.getElementById('scheduleList');
