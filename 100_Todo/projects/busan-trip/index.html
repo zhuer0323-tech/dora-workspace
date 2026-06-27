@@ -583,7 +583,6 @@
 // ===== 設定 =====
 const TRIP_START = '2026-07-01'; // 出發日期，可以修改
 const TRIP_DAYS = 6;
-const WEATHER_API_KEY = 'YOUR_OPENWEATHER_KEY'; // 填入 OpenWeatherMap API Key
 const BUSAN_LAT = 35.1796;
 const BUSAN_LON = 129.0756;
 
@@ -924,11 +923,22 @@ function renderExpenses() {
 renderExpenses();
 
 // ===== 天氣 =====
-function getOutfitAdvice(temp, desc, windSpeed) {
-  const d = desc.toLowerCase();
-  const isRain = d.includes('rain') || d.includes('drizzle') || d.includes('shower');
-  const isCloud = d.includes('cloud') || d.includes('overcast');
+// WMO 天氣代碼對應說明和圖示
+function wmoInfo(code) {
+  if (code === 0) return { desc: '晴天', icon: '☀️', rain: false };
+  if (code <= 2) return { desc: '局部多雲', icon: '🌤️', rain: false };
+  if (code === 3) return { desc: '陰天', icon: '☁️', rain: false };
+  if (code <= 48) return { desc: '有霧', icon: '🌫️', rain: false };
+  if (code <= 57) return { desc: '毛毛雨', icon: '🌦️', rain: true };
+  if (code <= 67) return { desc: '有雨', icon: '🌧️', rain: true };
+  if (code <= 77) return { desc: '下雪', icon: '❄️', rain: false };
+  if (code <= 82) return { desc: '陣雨', icon: '🌧️', rain: true };
+  if (code <= 86) return { desc: '雪陣雨', icon: '🌨️', rain: false };
+  if (code >= 95) return { desc: '雷雨', icon: '⛈️', rain: true };
+  return { desc: '多雲', icon: '🌥️', rain: false };
+}
 
+function getOutfitAdvice(temp, isRain, windKph) {
   let main = '';
   let tip = '';
 
@@ -950,20 +960,9 @@ function getOutfitAdvice(temp, desc, windSpeed) {
   }
 
   if (isRain) { main += '\n☂️ 記得帶傘！'; tip += '今天有雨，防水外套或雨衣更實用。'; }
-  if (windSpeed > 7 && !isRain) { tip += '今天風大，建議穿擋風的外層。'; }
+  if (windKph > 25 && !isRain) { tip += '今天風大，建議穿擋風的外層。'; }
 
   return { main, tip };
-}
-
-function weatherIcon(desc) {
-  const d = desc.toLowerCase();
-  if (d.includes('thunder')) return '⛈️';
-  if (d.includes('snow')) return '❄️';
-  if (d.includes('rain') || d.includes('drizzle')) return '🌧️';
-  if (d.includes('cloud') && d.includes('broken')) return '🌥️';
-  if (d.includes('cloud') || d.includes('overcast')) return '☁️';
-  if (d.includes('mist') || d.includes('fog')) return '🌫️';
-  return '☀️';
 }
 
 async function fetchWeather() {
@@ -972,41 +971,27 @@ async function fetchWeather() {
   document.getElementById('outfitCard').style.display = 'none';
   document.getElementById('forecastCard').style.display = 'none';
 
-  if (WEATHER_API_KEY === 'YOUR_OPENWEATHER_KEY') {
-    card.innerHTML = `
-      <div class="card-title">釜山即時天氣</div>
-      <div style="text-align:center;padding:20px;color:var(--text2);font-size:14px;line-height:1.8;">
-        需要填入免費天氣 API Key<br>
-        <span style="font-size:12px;">前往 <a href="https://openweathermap.org/api" target="_blank" style="color:var(--accent);">openweathermap.org</a> 免費申請</span><br>
-        <span style="font-size:12px;">申請後把 index.html 第一行的 <code style="color:var(--yellow);">YOUR_OPENWEATHER_KEY</code> 換掉</span>
-      </div>
-    `;
-    // 顯示示範穿搭
-    showOutfit(22, '부산 Clear sky', 3);
-    return;
-  }
-
   try {
-    const [curRes, foreRes] = await Promise.all([
-      fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${BUSAN_LAT}&lon=${BUSAN_LON}&appid=${WEATHER_API_KEY}&units=metric&lang=zh_tw`),
-      fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${BUSAN_LAT}&lon=${BUSAN_LON}&appid=${WEATHER_API_KEY}&units=metric&lang=zh_tw&cnt=8`)
-    ]);
-    const cur = await curRes.json();
-    const fore = await foreRes.json();
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${BUSAN_LAT}&longitude=${BUSAN_LON}`
+      + `&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m`
+      + `&hourly=temperature_2m,weather_code&timezone=Asia%2FSeoul&forecast_days=1`;
+    const res = await fetch(url);
+    const data = await res.json();
 
-    const temp = Math.round(cur.main.temp);
-    const feels = Math.round(cur.main.feels_like);
-    const humidity = cur.main.humidity;
-    const wind = cur.wind.speed;
-    const desc = cur.weather[0].description;
+    const cur = data.current;
+    const temp = Math.round(cur.temperature_2m);
+    const feels = Math.round(cur.apparent_temperature);
+    const humidity = cur.relative_humidity_2m;
+    const wind = cur.wind_speed_10m;
+    const wmo = wmoInfo(cur.weather_code);
 
     card.innerHTML = `
       <div class="card-title">釜山即時天氣</div>
       <div class="weather-main">
-        <div class="weather-icon">${weatherIcon(cur.weather[0].main + ' ' + desc)}</div>
+        <div class="weather-icon">${wmo.icon}</div>
         <div>
           <div class="weather-temp">${temp}°</div>
-          <div class="weather-desc">${desc}</div>
+          <div class="weather-desc">${wmo.desc}</div>
         </div>
       </div>
       <div class="weather-detail">
@@ -1019,25 +1004,32 @@ async function fetchWeather() {
           <div class="detail-label">濕度</div>
         </div>
         <div class="weather-detail-item">
-          <div class="detail-val">${wind}<span style="font-size:12px;">m/s</span></div>
+          <div class="detail-val">${wind}<span style="font-size:12px;">km/h</span></div>
           <div class="detail-label">風速</div>
         </div>
       </div>
     `;
 
-    showOutfit(temp, desc, wind);
+    showOutfit(temp, wmo.rain, wind);
 
-    // 預報
+    // 今日逐時預報
+    const hours = data.hourly.time;
+    const temps = data.hourly.temperature_2m;
+    const codes = data.hourly.weather_code;
+    const now = new Date();
     const foreEl = document.getElementById('forecastRow');
-    foreEl.innerHTML = fore.list.map(f => {
-      const t = new Date(f.dt * 1000);
-      const h = t.getHours();
-      const period = h < 12 ? `${h}AM` : h === 12 ? '中午' : `${h-12}PM`;
+    foreEl.innerHTML = hours.slice(0, 24).filter((_, i) => {
+      const h = new Date(hours[i]).getHours();
+      return h >= now.getHours() && h % 3 === 0;
+    }).slice(0, 7).map((t, _, arr, i) => {
+      const idx = hours.indexOf(t);
+      const h = new Date(t).getHours();
+      const label = h === 0 ? '午夜' : h < 12 ? `${h}AM` : h === 12 ? '中午' : `${h-12}PM`;
       return `
         <div class="forecast-item">
-          <div class="forecast-time">${period}</div>
-          <div class="forecast-icon">${weatherIcon(f.weather[0].main)}</div>
-          <div class="forecast-temp">${Math.round(f.main.temp)}°</div>
+          <div class="forecast-time">${label}</div>
+          <div class="forecast-icon">${wmoInfo(codes[idx]).icon}</div>
+          <div class="forecast-temp">${Math.round(temps[idx])}°</div>
         </div>
       `;
     }).join('');
@@ -1045,12 +1037,12 @@ async function fetchWeather() {
 
   } catch(e) {
     card.innerHTML = `<div class="card-title">釜山即時天氣</div><div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">天氣資料抓取失敗<br><span style="font-size:12px;">請確認網路連線</span></div></div>`;
-    showOutfit(20, 'clear', 2);
+    showOutfit(20, false, 10);
   }
 }
 
-function showOutfit(temp, desc, wind) {
-  const { main, tip } = getOutfitAdvice(temp, desc, wind);
+function showOutfit(temp, isRain, wind) {
+  const { main, tip } = getOutfitAdvice(temp, isRain, wind);
   document.getElementById('outfitMain').textContent = main;
   document.getElementById('outfitTip').textContent = tip;
   document.getElementById('outfitCard').style.display = 'block';
