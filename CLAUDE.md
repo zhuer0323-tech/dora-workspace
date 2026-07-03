@@ -65,6 +65,11 @@ Node.js 透過 nvm 安裝，路徑：`/Users/angela/.nvm/versions/node/v24.15.0/
 - 用途：操控瀏覽器（點擊、截圖、填表單），適合需要登入或動態渲染的網頁
 - 不需要 API Key，全域安裝於 nvm node 路徑下
 
+**ffmpeg / ffprobe**
+- 版本 8.1.2 靜態執行檔（Apple Silicon），裝於 `~/.local/bin`（無 Homebrew，來源 ffmpeg.martin-riedl.de）
+- PATH 已設定於 `~/.zshrc`
+- 供 `100_Todo/projects/video-autopilot-kit/`（短影音自動化）影片後製使用
+
 ### claude.ai 整合工具
 - **Gmail**：搜尋信件、讀取內容、建立草稿、管理標籤
 - **Notion**：搜尋/讀取/建立/編輯頁面與資料庫、管理留言

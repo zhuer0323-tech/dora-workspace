@@ -1,0 +1,46 @@
+# ── 個人化檔案（採用者填的，不該進公開 repo）──
+profiles/
+config.py
+*.local.*
+
+# ── 媒體 / 素材（版權 + 體積，絕不入庫）──
+*.mp4
+*.mov
+*.mkv
+*.mp3
+*.wav
+*.m4a
+*.png
+*.jpg
+*.jpeg
+*.gif
+assets/
+videos/
+raw/
+export/
+_intake_bak/
+*_bak/
+
+# ── CapCut / 草稿 ──
+*draft_content.json
+*draft_info.json
+com.lveditor.draft/
+
+# ── Python ──
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# ── OS / editor ──
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.tmp
+
+# stray repro/scratch files
+_repro*
+_scratch*
+*.repro.py
