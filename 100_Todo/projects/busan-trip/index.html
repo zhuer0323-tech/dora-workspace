@@ -1576,11 +1576,11 @@ function convertKRW() {
   el.innerHTML = `NT$ ${fmt(twd)}<small>${fmt(krw)} KRW = ${twd} TWD</small>`;
 }
 
-fetchRate();
-
 // ===== 消費記錄 =====
 let expenses = JSON.parse(localStorage.getItem('busan_expenses') || '[]');
 let pendingReceiptThumb = null;
+
+fetchRate();
 
 function saveExpenses() {
   localStorage.setItem('busan_expenses', JSON.stringify(expenses));
