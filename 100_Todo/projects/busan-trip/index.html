@@ -605,7 +605,7 @@
 <div class="header" style="flex-direction:column;align-items:center;gap:3px;padding:12px 20px 10px;position:relative;">
   <h1 style="font-size:16px;letter-spacing:0.5px;">✈️ 釜山六天五夜自由行</h1>
   <div class="subtitle">林家2026家庭旅遊GOGO!</div>
-  <div id="syncDot" title="離線模式" style="position:absolute;top:50%;right:14px;transform:translateY(-50%);width:9px;height:9px;border-radius:50%;background:#ccc;cursor:default;"></div>
+  <div id="syncDot" title="離線模式" onclick="showToast(this.title)" style="position:absolute;top:50%;right:14px;transform:translateY(-50%);width:9px;height:9px;border-radius:50%;background:#ccc;cursor:pointer;"></div>
 </div>
 
 <!-- Pages -->
@@ -990,13 +990,13 @@ function fbPush(path, data) {
     .catch(err => console.warn('Firebase write error:', err));
 }
 
-function updateSyncDot(state) {
+function updateSyncDot(state, detail) {
   const dot = document.getElementById('syncDot');
   if (!dot) return;
   const map = { ok: ['#4caf50', '已同步'], error: ['#f44336', '同步失敗'], connecting: ['#ff9800', '連線中'] };
   const [color, label] = map[state] || ['#ccc', '離線模式'];
   dot.style.background = color;
-  dot.title = label;
+  dot.title = detail ? `${label}：${detail}` : label;
 }
 
 async function initFirebaseSync() {
@@ -1104,7 +1104,9 @@ async function initFirebaseSync() {
 
   } catch(e) {
     console.error('Firebase sync error:', e);
-    updateSyncDot('error');
+    const detail = e && e.message ? e.message : String(e);
+    updateSyncDot('error', detail);
+    showToast('同步失敗：' + detail, 6000);
   }
 }
 
