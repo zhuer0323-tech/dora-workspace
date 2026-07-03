@@ -570,6 +570,14 @@
   .cat-bar-fill { height: 100%; border-radius: 4px; }
   .cat-bar-amt { flex-shrink: 0; width: 72px; text-align: right; color: var(--text2); font-size: 12px; }
 
+  /* ── 釜山 Pass 倒數卡片 ── */
+  .pass-timer { font-size: 32px; font-weight: 900; color: var(--accent); text-align: center; letter-spacing: 1px; margin: 6px 0; }
+  .pass-sub { font-size: 12px; color: var(--text2); text-align: center; }
+  .pass-card.urgent { border-color: #e53935; background: #ffebee; }
+  .pass-card.urgent .pass-timer { color: #c62828; }
+  .pass-card.urgent .card-title { color: #c62828; }
+  .pass-expired { text-align: center; color: var(--text2); font-size: 14px; padding: 8px 0; }
+
   /* ── 行前準備頁面 ── */
   .checklist-cat { font-size: 11px; font-weight: 800; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; margin: 14px 0 6px; padding-bottom: 4px; border-bottom: 1.5px solid var(--accent3); }
   .checklist-cat:first-child { margin-top: 0; }
@@ -617,6 +625,11 @@
   <input type="file" id="bannerInput" accept="image/*" onchange="uploadBanner(this)">
 
   <div class="page-inner">
+  <div class="card pass-card" id="passCard" style="margin-top:14px;">
+    <div class="card-title">釜山 Pass 倒數</div>
+    <div id="passContent"></div>
+  </div>
+
   <div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 10px;">
     <div style="font-size:18px;font-weight:800;color:var(--text);">行程表</div>
     <div style="display:flex;gap:8px;">
@@ -901,6 +914,62 @@ function renderBanner(data) {
 const savedBanner = localStorage.getItem('busan_banner');
 if (savedBanner) renderBanner(savedBanner);
 
+// ===== 釜山 Pass 倒數 =====
+const PASS_DURATION_MS = 48 * 60 * 60 * 1000;
+const PASS_URGENT_MS = 3 * 60 * 60 * 1000;
+let passData = JSON.parse(localStorage.getItem('busan_pass') || 'null'); // { activatedAt, notified }
+let passTimerInterval = null;
+
+function activateBusanPass() {
+  if (passData && passData.activatedAt) return;
+  if (!confirm('確定要啟用釜山 Pass 嗎？\n啟用後開始 48 小時倒數，全家都會看到同一個倒數。')) return;
+  passData = { activatedAt: Date.now(), notified: false };
+  localStorage.setItem('busan_pass', JSON.stringify(passData));
+  fbPush('busanPass', passData);
+  renderPassCard();
+  showToast('釜山 Pass 已啟用，開始倒數 48 小時！');
+}
+
+function renderPassCard() {
+  const card = document.getElementById('passCard');
+  const content = document.getElementById('passContent');
+  if (!card || !content) return;
+
+  if (!passData || !passData.activatedAt) {
+    card.classList.remove('urgent');
+    content.innerHTML = `
+      <div class="pass-sub" style="margin-bottom:10px;">現場啟用釜山 Pass 的那一刻按下去，開始 48 小時倒數</div>
+      <button class="btn" style="width:100%;" onclick="activateBusanPass()">🎫 啟用 Pass</button>
+    `;
+    if (passTimerInterval) { clearInterval(passTimerInterval); passTimerInterval = null; }
+    return;
+  }
+
+  const remaining = passData.activatedAt + PASS_DURATION_MS - Date.now();
+
+  if (remaining <= 0) {
+    card.classList.remove('urgent');
+    content.innerHTML = `<div class="pass-expired">⏰ Pass 已到期</div>`;
+    if (passTimerInterval) { clearInterval(passTimerInterval); passTimerInterval = null; }
+    return;
+  }
+
+  card.classList.toggle('urgent', remaining <= PASS_URGENT_MS);
+
+  const h = Math.floor(remaining / 3600000);
+  const m = Math.floor((remaining % 3600000) / 60000);
+  const s = Math.floor((remaining % 60000) / 1000);
+  const pad = n => String(n).padStart(2, '0');
+  content.innerHTML = `
+    <div class="pass-timer">${pad(h)}:${pad(m)}:${pad(s)}</div>
+    <div class="pass-sub">${remaining <= PASS_URGENT_MS ? '即將到期，把握時間使用！' : '距離 Pass 到期還剩'}</div>
+  `;
+
+  if (!passTimerInterval) passTimerInterval = setInterval(renderPassCard, 1000);
+}
+
+renderPassCard();
+
 // ===== Firebase 即時同步 =====
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyAWOXPFBmb-lU90dpBOq2B8Gn7LsR2p-jM",
@@ -964,6 +1033,11 @@ async function initFirebaseSync() {
       localStorage.setItem('busan_checklist', JSON.stringify(checklistState));
       renderChecklist();
     }
+    if (d.busanPass) {
+      passData = d.busanPass;
+      localStorage.setItem('busan_pass', JSON.stringify(passData));
+      renderPassCard();
+    }
 
     _fbReady = true;
     updateSyncDot('ok');
@@ -977,6 +1051,7 @@ async function initFirebaseSync() {
       const lb = localStorage.getItem('busan_banner');
       if (lb) fbPush('banner', lb);
     }
+    if (!d.busanPass && passData) fbPush('busanPass', passData);
 
     // 監聽即時變更（其他裝置的修改）
     onValue(ref(_db, `${TRIP_ROOM}/schedule`), snap => {
@@ -1015,6 +1090,16 @@ async function initFirebaseSync() {
       localStorage.setItem('busan_checklist', JSON.stringify(checklistState));
       renderChecklist();
       showToast('行李清單已同步');
+    });
+
+    onValue(ref(_db, `${TRIP_ROOM}/busanPass`), snap => {
+      if (!snap.exists()) return;
+      const incoming = snap.val();
+      if (JSON.stringify(incoming) === JSON.stringify(passData)) return;
+      passData = incoming;
+      localStorage.setItem('busan_pass', JSON.stringify(passData));
+      renderPassCard();
+      showToast('Pass 狀態已同步');
     });
 
   } catch(e) {
