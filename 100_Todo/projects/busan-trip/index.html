@@ -887,8 +887,7 @@ function uploadBanner(input) {
     const data = e.target.result;
     localStorage.setItem('busan_banner', data);
     renderBanner(data);
-    fbPush('banner', data);
-    showToast('照片已更新！');
+    showToast('照片已更新！（僅存在這台裝置上）');
   };
   reader.readAsDataURL(file);
 }
@@ -1010,6 +1009,8 @@ async function initFirebaseSync() {
     _dbRef = ref; _dbSet = set;
 
     // 從 Firebase 載入資料（優先於 localStorage）
+    // 注意：封面照片不透過 Firebase 同步（每人手機本機各自保留），
+    // 因為照片體積大，每次整包下載會很快超過免費方案的流量額度
     const snap = await get(ref(_db, TRIP_ROOM));
     const d = snap.exists() ? snap.val() : {};
 
@@ -1023,10 +1024,6 @@ async function initFirebaseSync() {
       expenses = remoteExp;
       localStorage.setItem('busan_expenses', JSON.stringify(expenses));
       renderExpenses();
-    }
-    if (d.banner) {
-      localStorage.setItem('busan_banner', d.banner);
-      renderBanner(d.banner);
     }
     if (d.checklist) {
       checklistState = d.checklist;
@@ -1046,10 +1043,6 @@ async function initFirebaseSync() {
     if (!d.schedule) fbPush('schedule', scheduleData);
     if (!remoteExp || remoteExp.length === 0) {
       if (expenses.length > 0) fbPush('expenses', expenses);
-    }
-    if (!d.banner) {
-      const lb = localStorage.getItem('busan_banner');
-      if (lb) fbPush('banner', lb);
     }
     if (!d.busanPass && passData) fbPush('busanPass', passData);
 
@@ -1072,14 +1065,6 @@ async function initFirebaseSync() {
       localStorage.setItem('busan_expenses', JSON.stringify(expenses));
       renderExpenses();
       showToast('記帳已同步更新');
-    });
-
-    onValue(ref(_db, `${TRIP_ROOM}/banner`), snap => {
-      if (!snap.exists()) return;
-      const incoming = snap.val();
-      if (incoming === localStorage.getItem('busan_banner')) return;
-      localStorage.setItem('busan_banner', incoming);
-      renderBanner(incoming);
     });
 
     onValue(ref(_db, `${TRIP_ROOM}/checklist`), snap => {
