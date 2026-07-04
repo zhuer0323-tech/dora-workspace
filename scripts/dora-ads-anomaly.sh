@@ -36,6 +36,7 @@ BRAND_CONFIG = {
     "李老闆": ("🛒", "sales"),
     "漁三":   ("🎣", "engagement"),
     "優逸":   ("💬", "messages"),
+    "TOTO":  ("🏆", "engagement"),
 }
 
 now_utc  = datetime.now(timezone.utc)
