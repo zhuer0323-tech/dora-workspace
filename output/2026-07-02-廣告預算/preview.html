@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>圖卡編輯 — 廣告預算怎麼設定才不浪費？</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #EDEAE4;
+    font-family: 'Noto Sans TC', sans-serif;
+  }
+  .app {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+    padding: 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 24px; color: #4A4038; margin-bottom: 24px; }
+
+  /* ---- 左側：卡片預覽 ---- */
+  .previews { display: flex; flex-direction: column; gap: 28px; }
+  .stage {
+    width: 360px;
+    height: 450px;
+    overflow: hidden;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    background: #fff;
+    position: relative;
+  }
+  .stage-label {
+    font-size: 13px;
+    color: #7A6F63;
+    margin-bottom: 8px;
+  }
+  .scaler { transform: scale(0.33333); transform-origin: top left; }
+
+  /* ---- 右側：表單控制面板 ---- */
+  .panel-form {
+    position: sticky;
+    top: 40px;
+    width: 440px;
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  }
+  .group { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid #EEE; }
+  .group:last-child { border-bottom: none; }
+  .group h2 { font-size: 16px; color: #E8622C; margin-bottom: 14px; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 12px; color: #7A6F63; margin-bottom: 4px; }
+  .field input, .field textarea, .field select {
+    width: 100%;
+    border: 1px solid #DDD;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 14px;
+    font-family: inherit;
+    color: #2B2420;
+    resize: vertical;
+    background: #fff;
+  }
+  .field textarea { height: 56px; }
+  .field input[type="file"] { border: none; padding: 4px 0; font-size: 12px; }
+  .hint { font-size: 11px; color: #AAA; margin-top: 20px; line-height: 1.6; }
+
+  /* =========================================================
+     卡片共用底圖（格紋）
+  ========================================================= */
+  .grid-bg {
+    background-color: #F3F1EC;
+    background-image:
+      linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  /* =========================================================
+     卡片 1 — Cover
+  ========================================================= */
+  .card-1 { width: 1080px; height: 1350px; position: relative; overflow: hidden; padding: 64px; }
+  .c1-sparkle { position: absolute; width: 120px; height: 120px; background: #FFC93C; clip-path: polygon(50% 0%, 61% 35%, 100% 50%, 61% 65%, 50% 100%, 39% 65%, 0% 50%, 39% 35%); }
+  .c1-sparkle.tl { top: -30px; left: -30px; }
+  .c1-sparkle.br { bottom: -30px; right: -30px; width: 150px; height: 150px; }
+  .c1-frame { position: relative; width: 100%; height: 100%; background: #FFFBF5; border: 5px solid #2B2420; border-radius: 48px; padding: 56px 64px; display: flex; flex-direction: column; align-items: center; }
+  .c1-dots { position: absolute; top: 44px; left: 56px; display: flex; gap: 16px; }
+  .c1-dot { width: 34px; height: 34px; border-radius: 50%; }
+  .c1-dot.d1 { background: #E8622C; }
+  .c1-dot.d2 { background: #FFC93C; }
+  .c1-dot.d3 { background: #E8DFD2; }
+  .c1-logo { position: absolute; top: 32px; right: 56px; height: 84px; }
+  .c1-bubble { position: relative; margin-top: 160px; background: #FCE6CF; border: 5px solid #2B2420; border-radius: 40px; padding: 60px 56px; width: 100%; }
+  .c1-bubble::after { content: ''; position: absolute; left: 84px; bottom: -44px; width: 0; height: 0; border-left: 32px solid transparent; border-right: 32px solid transparent; border-top: 48px solid #2B2420; }
+  .c1-bubble::before { content: ''; position: absolute; left: 91px; bottom: -32px; width: 0; height: 0; border-left: 25px solid transparent; border-right: 25px solid transparent; border-top: 37px solid #FCE6CF; z-index: 1; }
+  .c1-bubble-title { font-weight: 900; font-size: 78px; color: #2B2420; line-height: 1.4; white-space: pre-line; }
+  .c1-bullets { margin-top: 96px; display: flex; flex-direction: column; gap: 28px; width: 100%; }
+  .c1-bullet-item { display: flex; align-items: center; gap: 24px; font-size: 46px; font-weight: 700; color: #2B2420; }
+  .c1-bullet-dot { width: 20px; height: 20px; border-radius: 50%; background: #E8622C; flex-shrink: 0; }
+  .c1-icon-wrap { margin-top: 64px; flex: 1; display: flex; align-items: center; justify-content: center; }
+  .c1-cta-pill { position: absolute; bottom: 56px; right: 64px; background: #FFC93C; border: 4px solid #2B2420; border-radius: 60px; padding: 22px 44px; font-weight: 900; font-size: 38px; color: #2B2420; }
+
+  /* =========================================================
+     卡片共用（緞帶 / logo角 / 弧形裝飾 / 面板 / 底部文字條）
+  ========================================================= */
+  .ribbon { position: absolute; top: 176px; left: -16px; background: linear-gradient(90deg, #E8622C, #F0862C); color: #FFFBF5; font-weight: 900; font-size: 42px; padding: 22px 64px 22px 44px; clip-path: polygon(0 0, 88% 0, 100% 50%, 88% 100%, 0 100%); z-index: 3; box-shadow: 0 8px 0 rgba(0,0,0,0.08); }
+  .corner-logo { position: absolute; top: 44px; right: 56px; height: 84px; z-index: 4; }
+  .arc-deco { position: absolute; left: 40px; right: 40px; bottom: 60px; top: 300px; background: #FFC93C; border-radius: 24px 24px 500px 500px / 24px 24px 260px 260px; z-index: 0; }
+  .panel { position: absolute; left: 76px; right: 76px; top: 300px; bottom: 96px; background: #FFFBF5; border-radius: 8px 8px 460px 460px / 8px 8px 240px 240px; z-index: 1; padding: 76px 68px 64px; display: flex; flex-direction: column; align-items: center; }
+  .panel-title { font-weight: 900; font-size: 68px; color: #2B2420; text-align: center; line-height: 1.4; margin-bottom: 48px; white-space: pre-line; }
+  .footer-bar { position: absolute; left: 0; right: 0; bottom: 0; text-align: center; padding: 30px 40px; font-weight: 700; font-size: 32px; color: #2B2420; background: #FDEBD8; z-index: 2; }
+
+  .card-2, .card-3, .card-4, .card-5 { width: 1080px; height: 1350px; position: relative; overflow: hidden; }
+
+  /* 卡片 2 — 勾選清單 */
+  .c2-checklist { display: flex; flex-direction: column; gap: 24px; width: 100%; }
+  .c2-check-item { display: flex; align-items: center; gap: 20px; background: #FFC93C; border: 4px solid #2B2420; border-radius: 20px; padding: 24px 32px; }
+  .c2-check-text { font-weight: 900; font-size: 38px; color: #2B2420; line-height: 1.3; }
+  .c2-icon-wrap { margin-top: 44px; }
+
+  /* 卡片 3 — 階梯流程 */
+  .c3-panel-title { margin-bottom: 64px; }
+  .c3-steps { display: flex; align-items: flex-end; justify-content: center; gap: 16px; width: 100%; flex: 1; }
+  .c3-step { display: flex; flex-direction: column; align-items: center; width: 240px; }
+  .c3-step-name { font-weight: 900; font-size: 34px; color: #2B2420; margin-bottom: 14px; text-align: center; }
+  .c3-step-desc { font-weight: 500; font-size: 25px; color: #6B5D4F; text-align: center; line-height: 1.5; margin-bottom: 20px; white-space: pre-line; }
+  .c3-step-block { width: 100%; border-radius: 20px 20px 0 0; border: 4px solid #2B2420; border-bottom: none; display: flex; align-items: flex-start; justify-content: center; padding-top: 20px; }
+  .c3-step-block .num { font-weight: 900; font-size: 48px; color: #FFFBF5; }
+  .c3-step1 .c3-step-block { height: 130px; background: #F0A44C; }
+  .c3-step2 .c3-step-block { height: 200px; background: #EC7B34; }
+  .c3-step3 .c3-step-block { height: 270px; background: #E8622C; }
+  .c3-arrow { align-self: center; font-size: 52px; font-weight: 900; color: #2B2420; margin-bottom: 90px; }
+
+  /* 卡片 4 — 重點螢光框 */
+  .c4-panel { padding-top: 92px; justify-content: center; }
+  .c4-highlight { background: #FFC93C; border: 4px solid #2B2420; border-radius: 28px; padding: 52px 48px; font-weight: 900; font-size: 50px; color: #2B2420; text-align: center; line-height: 1.6; margin-bottom: 56px; width: 100%; white-space: pre-line; }
+  .c4-icon-wrap { margin-bottom: 44px; }
+  .c4-question { font-weight: 900; font-size: 44px; color: #E8622C; text-align: center; line-height: 1.5; }
+
+  /* 卡片 5 — CTA */
+  .c5-panel { padding-top: 84px; }
+  .c5-panel-title { margin-bottom: 32px; }
+  .c5-icon-wrap { margin-bottom: 24px; }
+  .c5-question { font-weight: 900; font-size: 40px; color: #2B2420; text-align: center; margin-bottom: 28px; }
+  .c5-cta-pill { background: #FFC93C; border: 4px solid #2B2420; border-radius: 60px; padding: 26px 52px; font-weight: 900; font-size: 40px; color: #2B2420; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="previews">
+    <h1>廣告預算怎麼設定才不浪費？ — 禾言數位行銷</h1>
+
+    <!-- 卡片 1 -->
+    <div>
+      <div class="stage-label">1 / 5 · Cover</div>
+      <div class="stage"><div class="scaler">
+        <div class="card-1 grid-bg">
+          <div class="c1-sparkle tl"></div>
+          <div class="c1-sparkle br"></div>
+          <div class="c1-frame">
+            <div class="c1-dots"><span class="c1-dot d1"></span><span class="c1-dot d2"></span><span class="c1-dot d3"></span></div>
+            <img class="c1-logo" src="file:///Users/angela/Downloads/S__21823579_0.jpg" alt="禾言數位行銷">
+            <div class="c1-bubble"><p class="c1-bubble-title" id="c1-title">廣告預算怎麼設定
+才不浪費？</p></div>
+            <div class="c1-bullets">
+              <div class="c1-bullet-item"><span class="c1-bullet-dot"></span><span id="c1-sub1">每個月都在砸廣告預算</span></div>
+              <div class="c1-bullet-item"><span class="c1-bullet-dot"></span><span id="c1-sub2">你知道錢燒到哪去了嗎？</span></div>
+            </div>
+            <div class="c1-icon-wrap">
+              <svg id="c1-icon-svg" width="180" height="180" viewBox="0 0 24 24" fill="none" stroke="#E8622C" stroke-width="1.6">
+                <path d="M3 11v2a1 1 0 0 0 1 1h2l4.5 3.5a.5.5 0 0 0 .8-.4V6.9a.5.5 0 0 0-.8-.4L6 10H4a1 1 0 0 0-1 1z"/>
+                <path d="M15 8a4 4 0 0 1 0 8"/>
+                <path d="M17.5 5.5a8 8 0 0 1 0 13"/>
+                <path d="M10.5 14v3a1.5 1.5 0 0 0 3 0v-2"/>
+              </svg>
+              <img id="c1-icon-img" style="display:none; width:180px; height:180px; object-fit:contain; border-radius:16px;">
+            </div>
+            <span class="c1-cta-pill" id="c1-cta">往下滑看解法 ▶</span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- 卡片 2 -->
+    <div>
+      <div class="stage-label">2 / 5 · 問題出在哪？</div>
+      <div class="stage"><div class="scaler">
+        <div class="card-2 grid-bg">
+          <img class="corner-logo" src="file:///Users/angela/Downloads/S__21823579_0.jpg" alt="禾言數位行銷">
+          <div class="ribbon">問題</div>
+          <div class="arc-deco"></div>
+          <div class="panel">
+            <p class="panel-title" id="c2-title">憑感覺花預算
+小心越燒越心慌</p>
+            <div class="c2-checklist">
+              <div class="c2-check-item"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#2B2420" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg><span class="c2-check-text" id="c2-b1">憑感覺抓一個數字就下手</span></div>
+              <div class="c2-check-item"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#2B2420" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg><span class="c2-check-text" id="c2-b2">錢燒完，訂單卻沒進來</span></div>
+              <div class="c2-check-item"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#2B2420" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg><span class="c2-check-text" id="c2-b3">開始懷疑廣告根本沒用</span></div>
+            </div>
+            <div class="c2-icon-wrap">
+              <svg id="c2-icon-svg" width="130" height="130" viewBox="0 0 24 24" fill="none" stroke="#E8622C" stroke-width="1.5">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.8-2.5 2-2.5 4"/>
+                <circle cx="12" cy="16.5" r="0.6" fill="#E8622C"/>
+              </svg>
+              <img id="c2-icon-img" style="display:none; width:130px; height:130px; object-fit:contain; border-radius:16px;">
+            </div>
+          </div>
+          <div class="footer-bar" id="c2-footer">其實不是廣告的問題，是預算邏輯錯了</div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- 卡片 3 -->
+    <div>
+      <div class="stage-label">3 / 5 · 預算三階段</div>
+      <div class="stage"><div class="scaler">
+        <div class="card-3 grid-bg">
+          <img class="corner-logo" src="file:///Users/angela/Downloads/S__21823579_0.jpg" alt="禾言數位行銷">
+          <div class="ribbon">解法</div>
+          <div class="arc-deco"></div>
+          <div class="panel">
+            <p class="panel-title c3-panel-title" id="c3-title">預算怎麼分
+三階段？</p>
+            <div class="c3-steps">
+              <div class="c3-step c3-step1">
+                <div class="c3-step-name" id="c3-s1n">測試期</div>
+                <div class="c3-step-desc" id="c3-s1d">30% 預算
+測素材與受眾</div>
+                <div class="c3-step-block"><span class="num">1</span></div>
+              </div>
+              <span class="c3-arrow">→</span>
+              <div class="c3-step c3-step2">
+                <div class="c3-step-name" id="c3-s2n">放大期</div>
+                <div class="c3-step-desc" id="c3-s2d">找到有效組合
+集中放大</div>
+                <div class="c3-step-block"><span class="num">2</span></div>
+              </div>
+              <span class="c3-arrow">→</span>
+              <div class="c3-step c3-step3">
+                <div class="c3-step-name" id="c3-s3n">維護期</div>
+                <div class="c3-step-desc" id="c3-s3d">別讓「感覺在跑」
+持續燒錢</div>
+                <div class="c3-step-block"><span class="num">3</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="footer-bar" id="c3-footer">讓錢先測試、再放大，才不會白花</div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- 卡片 4 -->
+    <div>
+      <div class="stage-label">4 / 5 · 核心原則</div>
+      <div class="stage"><div class="scaler">
+        <div class="card-4 grid-bg">
+          <img class="corner-logo" src="file:///Users/angela/Downloads/S__21823579_0.jpg" alt="禾言數位行銷">
+          <div class="ribbon">原則</div>
+          <div class="arc-deco"></div>
+          <div class="panel c4-panel">
+            <p class="panel-title" id="c4-title">核心原則</p>
+            <div class="c4-highlight" id="c4-highlight">讓數據決定錢要花去哪
+不是憑「感覺」下決定</div>
+            <div class="c4-icon-wrap">
+              <svg id="c4-icon-svg" width="110" height="110" viewBox="0 0 24 24" fill="none" stroke="#E8622C" stroke-width="1.5">
+                <path d="M12 3v18"/>
+                <path d="M4 7l4-2 4 2"/>
+                <path d="M12 7l4-2 4 2"/>
+                <path d="M2 7l2 6a2 2 0 0 0 4 0l-2-6"/>
+                <path d="M14 7l2 6a2 2 0 0 0 4 0l-2-6"/>
+              </svg>
+              <img id="c4-icon-img" style="display:none; width:110px; height:110px; object-fit:contain; border-radius:16px;">
+            </div>
+            <p class="c4-question" id="c4-question">你現在是「測試」還是「浪費」？</p>
+          </div>
+          <div class="footer-bar" id="c4-footer">讓數字說話，才能把預算花在刀口上</div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- 卡片 5 -->
+    <div>
+      <div class="stage-label">5 / 5 · CTA</div>
+      <div class="stage"><div class="scaler">
+        <div class="card-5 grid-bg">
+          <img class="corner-logo" src="file:///Users/angela/Downloads/S__21823579_0.jpg" alt="禾言數位行銷">
+          <div class="ribbon">結尾</div>
+          <div class="arc-deco"></div>
+          <div class="panel c5-panel">
+            <p class="panel-title c5-panel-title" id="c5-title">品牌成長從來不是直線
+是每一次抓對預算的累積</p>
+            <div class="c5-icon-wrap">
+              <svg id="c5-icon-svg" width="130" height="130" viewBox="0 0 24 24" fill="none" stroke="#E8622C" stroke-width="1.5">
+                <path d="M3 21h18"/>
+                <path d="M5 21V15h4v6"/>
+                <path d="M11 21V10h4v11"/>
+                <path d="M17 21V6h4v15"/>
+              </svg>
+              <img id="c5-icon-img" style="display:none; width:130px; height:130px; object-fit:contain; border-radius:16px;">
+            </div>
+            <p class="c5-question" id="c5-question">不知道方向怎麼訂嗎？</p>
+            <span class="c5-cta-pill" id="c5-cta">立即私訊禾言小編 👇</span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- ================= 右側表單 ================= -->
+  <div class="panel-form">
+    <div class="group">
+      <h2>卡片 1 · Cover</h2>
+      <div class="field"><label>標題（換行請按 Enter）</label><textarea data-target="c1-title" data-multiline="1">廣告預算怎麼設定
+才不浪費？</textarea></div>
+      <div class="field"><label>副標第一行</label><input data-target="c1-sub1" value="每個月都在砸廣告預算"></div>
+      <div class="field"><label>副標第二行</label><input data-target="c1-sub2" value="你知道錢燒到哪去了嗎？"></div>
+      <div class="field"><label>CTA 按鈕文字</label><input data-target="c1-cta" value="往下滑看解法 ▶"></div>
+      <div class="field"><label>圖示</label>
+        <select class="icon-select" data-icon-svg="c1-icon-svg" data-icon-img="c1-icon-img">
+          <option value="megaphone" selected>📣 喇叭（預設）</option>
+          <option value="question">❓ 問號</option>
+          <option value="dollar">💰 金錢</option>
+          <option value="chart">📊 長條圖</option>
+          <option value="funnel">🔻 漏斗</option>
+          <option value="lightbulb">💡 燈泡</option>
+          <option value="target">🎯 標靶</option>
+          <option value="trending">📈 上升趨勢</option>
+          <option value="clock">⏰ 時鐘</option>
+          <option value="shield">✅ 盾牌勾選</option>
+        </select>
+      </div>
+      <div class="field"><label>或上傳自訂圖片</label><input type="file" accept="image/*" class="icon-upload" data-icon-svg="c1-icon-svg" data-icon-img="c1-icon-img"></div>
+    </div>
+
+    <div class="group">
+      <h2>卡片 2 · 問題出在哪？</h2>
+      <div class="field"><label>標題（換行請按 Enter）</label><textarea data-target="c2-title" data-multiline="1">憑感覺花預算
+小心越燒越心慌</textarea></div>
+      <div class="field"><label>勾選項目 1</label><input data-target="c2-b1" value="憑感覺抓一個數字就下手"></div>
+      <div class="field"><label>勾選項目 2</label><input data-target="c2-b2" value="錢燒完，訂單卻沒進來"></div>
+      <div class="field"><label>勾選項目 3</label><input data-target="c2-b3" value="開始懷疑廣告根本沒用"></div>
+      <div class="field"><label>底部標語</label><input data-target="c2-footer" value="其實不是廣告的問題，是預算邏輯錯了"></div>
+      <div class="field"><label>圖示</label>
+        <select class="icon-select" data-icon-svg="c2-icon-svg" data-icon-img="c2-icon-img">
+          <option value="question" selected>❓ 問號（預設）</option>
+          <option value="megaphone">📣 喇叭</option>
+          <option value="dollar">💰 金錢</option>
+          <option value="chart">📊 長條圖</option>
+          <option value="funnel">🔻 漏斗</option>
+          <option value="lightbulb">💡 燈泡</option>
+          <option value="target">🎯 標靶</option>
+          <option value="trending">📈 上升趨勢</option>
+          <option value="clock">⏰ 時鐘</option>
+          <option value="shield">✅ 盾牌勾選</option>
+        </select>
+      </div>
+      <div class="field"><label>或上傳自訂圖片</label><input type="file" accept="image/*" class="icon-upload" data-icon-svg="c2-icon-svg" data-icon-img="c2-icon-img"></div>
+    </div>
+
+    <div class="group">
+      <h2>卡片 3 · 預算三階段</h2>
+      <div class="field"><label>標題（換行請按 Enter）</label><textarea data-target="c3-title" data-multiline="1">預算怎麼分
+三階段？</textarea></div>
+      <div class="field"><label>階段 1 名稱</label><input data-target="c3-s1n" value="測試期"></div>
+      <div class="field"><label>階段 1 說明（換行請按 Enter）</label><textarea data-target="c3-s1d" data-multiline="1">30% 預算
+測素材與受眾</textarea></div>
+      <div class="field"><label>階段 2 名稱</label><input data-target="c3-s2n" value="放大期"></div>
+      <div class="field"><label>階段 2 說明（換行請按 Enter）</label><textarea data-target="c3-s2d" data-multiline="1">找到有效組合
+集中放大</textarea></div>
+      <div class="field"><label>階段 3 名稱</label><input data-target="c3-s3n" value="維護期"></div>
+      <div class="field"><label>階段 3 說明（換行請按 Enter）</label><textarea data-target="c3-s3d" data-multiline="1">別讓「感覺在跑」
+持續燒錢</textarea></div>
+      <div class="field"><label>底部標語</label><input data-target="c3-footer" value="讓錢先測試、再放大，才不會白花"></div>
+    </div>
+
+    <div class="group">
+      <h2>卡片 4 · 核心原則</h2>
+      <div class="field"><label>標題</label><input data-target="c4-title" value="核心原則"></div>
+      <div class="field"><label>螢光重點框文字（換行請按 Enter）</label><textarea data-target="c4-highlight" data-multiline="1">讓數據決定錢要花去哪
+不是憑「感覺」下決定</textarea></div>
+      <div class="field"><label>反思提問</label><input data-target="c4-question" value="你現在是「測試」還是「浪費」？"></div>
+      <div class="field"><label>底部標語</label><input data-target="c4-footer" value="讓數字說話，才能把預算花在刀口上"></div>
+      <div class="field"><label>圖示</label>
+        <select class="icon-select" data-icon-svg="c4-icon-svg" data-icon-img="c4-icon-img">
+          <option value="funnel" selected>🔻 漏斗（預設）</option>
+          <option value="megaphone">📣 喇叭</option>
+          <option value="question">❓ 問號</option>
+          <option value="dollar">💰 金錢</option>
+          <option value="chart">📊 長條圖</option>
+          <option value="lightbulb">💡 燈泡</option>
+          <option value="target">🎯 標靶</option>
+          <option value="trending">📈 上升趨勢</option>
+          <option value="clock">⏰ 時鐘</option>
+          <option value="shield">✅ 盾牌勾選</option>
+        </select>
+      </div>
+      <div class="field"><label>或上傳自訂圖片</label><input type="file" accept="image/*" class="icon-upload" data-icon-svg="c4-icon-svg" data-icon-img="c4-icon-img"></div>
+    </div>
+
+    <div class="group">
+      <h2>卡片 5 · CTA</h2>
+      <div class="field"><label>標題（換行請按 Enter）</label><textarea data-target="c5-title" data-multiline="1">品牌成長從來不是直線
+是每一次抓對預算的累積</textarea></div>
+      <div class="field"><label>反思提問</label><input data-target="c5-question" value="不知道方向怎麼訂嗎？"></div>
+      <div class="field"><label>CTA 按鈕文字</label><input data-target="c5-cta" value="立即私訊禾言小編 👇"></div>
+      <div class="field"><label>圖示</label>
+        <select class="icon-select" data-icon-svg="c5-icon-svg" data-icon-img="c5-icon-img">
+          <option value="chart" selected>📊 長條圖（預設）</option>
+          <option value="megaphone">📣 喇叭</option>
+          <option value="question">❓ 問號</option>
+          <option value="dollar">💰 金錢</option>
+          <option value="funnel">🔻 漏斗</option>
+          <option value="lightbulb">💡 燈泡</option>
+          <option value="target">🎯 標靶</option>
+          <option value="trending">📈 上升趨勢</option>
+          <option value="clock">⏰ 時鐘</option>
+          <option value="shield">✅ 盾牌勾選</option>
+        </select>
+      </div>
+      <div class="field"><label>或上傳自訂圖片</label><input type="file" accept="image/*" class="icon-upload" data-icon-svg="c5-icon-svg" data-icon-img="c5-icon-img"></div>
+    </div>
+
+    <p class="hint">改完文字/圖示會即時同步到左邊的卡片預覽。上傳圖片會取代該處的線條圖示。確認 OK 後跟我說「匯出」，我會依照這裡最新的內容產出正式 PNG。</p>
+  </div>
+
+</div>
+
+<script>
+  document.querySelectorAll('[data-target]').forEach(function (el) {
+    var target = document.getElementById(el.getAttribute('data-target'));
+    var multiline = el.getAttribute('data-multiline') === '1';
+    el.addEventListener('input', function () {
+      target.innerHTML = multiline
+        ? el.value.replace(/&/g, '&amp;').replace(/</g, '&lt;').split('\n').join('<br>')
+        : el.value.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    });
+  });
+
+  var ICONS = {
+    megaphone: '<path d="M3 11v2a1 1 0 0 0 1 1h2l4.5 3.5a.5.5 0 0 0 .8-.4V6.9a.5.5 0 0 0-.8-.4L6 10H4a1 1 0 0 0-1 1z"/><path d="M15 8a4 4 0 0 1 0 8"/><path d="M17.5 5.5a8 8 0 0 1 0 13"/><path d="M10.5 14v3a1.5 1.5 0 0 0 3 0v-2"/>',
+    question: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.8-2.5 2-2.5 4"/><circle cx="12" cy="16.5" r="0.6" fill="#E8622C"/>',
+    dollar: '<circle cx="12" cy="12" r="9"/><path d="M12 6v12"/><path d="M15.5 9.3c0-1.5-1.6-2.3-3.5-2.3s-3.5 1-3.5 2.5c0 1.4 1.6 1.9 3.5 2.4s3.5 1 3.5 2.4-1.6 2.5-3.5 2.5-3.5-.8-3.5-2.3"/>',
+    chart: '<path d="M3 21h18"/><path d="M5 21V15h4v6"/><path d="M11 21V10h4v11"/><path d="M17 21V6h4v15"/>',
+    funnel: '<path d="M12 3v18"/><path d="M4 7l4-2 4 2"/><path d="M12 7l4-2 4 2"/><path d="M2 7l2 6a2 2 0 0 0 4 0l-2-6"/><path d="M14 7l2 6a2 2 0 0 0 4 0l-2-6"/>',
+    lightbulb: '<path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-3 11c.6.5 1 1.2 1 2h4c0-.8.4-1.5 1-2a6 6 0 0 0-3-11z"/>',
+    target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1" fill="#E8622C"/>',
+    trending: '<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
+    clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>',
+    shield: '<path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6z"/><path d="M9 12l2 2 4-4"/>'
+  };
+
+  document.querySelectorAll('.icon-select').forEach(function (sel) {
+    var svg = document.getElementById(sel.getAttribute('data-icon-svg'));
+    var img = document.getElementById(sel.getAttribute('data-icon-img'));
+    sel.addEventListener('change', function () {
+      svg.innerHTML = ICONS[sel.value] || '';
+      svg.style.display = 'block';
+      img.style.display = 'none';
+    });
+  });
+
+  document.querySelectorAll('.icon-upload').forEach(function (input) {
+    var svg = document.getElementById(input.getAttribute('data-icon-svg'));
+    var img = document.getElementById(input.getAttribute('data-icon-img'));
+    input.addEventListener('change', function () {
+      var file = input.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        img.src = e.target.result;
+        img.style.display = 'block';
+        svg.style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+</script>
+</body>
+</html>

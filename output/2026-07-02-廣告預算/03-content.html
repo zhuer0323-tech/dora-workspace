@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<title>Content — Hayen Chat Style — Steps</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  .card {
+    width: 1080px;
+    height: 1350px;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Noto Sans TC', sans-serif;
+    background-color: #F3F1EC;
+    background-image:
+      linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  .logo { position: absolute; top: 44px; right: 56px; height: 84px; z-index: 4; }
+
+  .ribbon {
+    position: absolute;
+    top: 176px;
+    left: -16px;
+    background: linear-gradient(90deg, #E8622C, #F0862C);
+    color: #FFFBF5;
+    font-weight: 900;
+    font-size: 42px;
+    padding: 22px 64px 22px 44px;
+    clip-path: polygon(0 0, 88% 0, 100% 50%, 88% 100%, 0 100%);
+    z-index: 3;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.08);
+  }
+
+  .arc-deco {
+    position: absolute;
+    left: 40px;
+    right: 40px;
+    bottom: 60px;
+    top: 300px;
+    background: #FFC93C;
+    border-radius: 24px 24px 500px 500px / 24px 24px 260px 260px;
+    z-index: 0;
+  }
+
+  .panel {
+    position: absolute;
+    left: 76px;
+    right: 76px;
+    top: 300px;
+    bottom: 96px;
+    background: #FFFBF5;
+    border-radius: 8px 8px 460px 460px / 8px 8px 240px 240px;
+    z-index: 1;
+    padding: 76px 68px 64px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .title {
+    font-weight: 900;
+    font-size: 68px;
+    color: #2B2420;
+    text-align: center;
+    line-height: 1.4;
+    margin-bottom: 64px;
+  }
+
+  .steps {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 16px;
+    width: 100%;
+    flex: 1;
+  }
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 240px;
+  }
+  .step-name {
+    font-weight: 900;
+    font-size: 34px;
+    color: #2B2420;
+    margin-bottom: 14px;
+    text-align: center;
+  }
+  .step-desc {
+    font-weight: 500;
+    font-size: 25px;
+    color: #6B5D4F;
+    text-align: center;
+    line-height: 1.5;
+    margin-bottom: 20px;
+  }
+  .step-block {
+    width: 100%;
+    border-radius: 20px 20px 0 0;
+    border: 4px solid #2B2420;
+    border-bottom: none;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 20px;
+  }
+  .step-block .num {
+    font-weight: 900;
+    font-size: 48px;
+    color: #FFFBF5;
+  }
+  .step1 .step-block { height: 130px; background: #F0A44C; }
+  .step2 .step-block { height: 200px; background: #EC7B34; }
+  .step3 .step-block { height: 270px; background: #E8622C; }
+
+  .arrow {
+    align-self: center;
+    font-size: 52px;
+    font-weight: 900;
+    color: #2B2420;
+    margin-bottom: 90px;
+  }
+
+  .footer-bar {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    text-align: center;
+    padding: 30px 40px;
+    font-weight: 700;
+    font-size: 32px;
+    color: #2B2420;
+    background: #FDEBD8;
+    z-index: 2;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <img class="logo" src="file:///Users/angela/Downloads/S__21823579_0.jpg" alt="禾言數位行銷">
+  <div class="ribbon">解法</div>
+
+  <div class="arc-deco"></div>
+  <div class="panel">
+    <p class="title">預算怎麼分<br>三階段？</p>
+
+    <div class="steps">
+      <div class="step step1">
+        <div class="step-name">測試期</div>
+        <div class="step-desc">30% 預算<br>測素材與受眾</div>
+        <div class="step-block"><span class="num">1</span></div>
+      </div>
+      <span class="arrow">→</span>
+      <div class="step step2">
+        <div class="step-name">放大期</div>
+        <div class="step-desc">找到有效組合<br>集中放大</div>
+        <div class="step-block"><span class="num">2</span></div>
+      </div>
+      <span class="arrow">→</span>
+      <div class="step step3">
+        <div class="step-name">維護期</div>
+        <div class="step-desc">別讓「感覺在跑」<br>持續燒錢</div>
+        <div class="step-block"><span class="num">3</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bar">讓錢先測試、再放大，才不會白花</div>
+</div>
+</body>
+</html>

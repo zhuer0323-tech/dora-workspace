@@ -32,6 +32,8 @@
 
 ## 執行權限設定
 
+> 以下封鎖與允許規則已於 2026-07-06 落地到 `.claude/settings.local.json` 的 permissions（deny/allow），由系統強制執行，不再只靠文字宣告。修改時兩邊要同步。
+
 ### 預設模式
 - 編輯檔案：自動允許
 - 其他工具：逐次確認
@@ -87,7 +89,7 @@ Node.js 透過 nvm 安裝，路徑：`/Users/angela/.nvm/versions/node/v24.15.0/
 - **Bot 名稱**：Dora賺錢小能手（@462xyoib）
 - **用途**：從 Claude 推播訊息到朱兒的 LINE
 - **憑證**：`LINE_PUSH_TOKEN`、`LINE_USER_ID` 存於 `~/.claude/settings.json` env 區塊
-- **推播方式**：內容寫入 `/tmp/dora_*.txt` → 用 `curl` 呼叫 LINE Messaging API
+- **推播方式**：內容寫入 `/tmp/dora_*.txt` → 執行共用腳本 `scripts/dora-line-push.sh <文字檔>`（morning 與廣告週報 skill 均使用；改 token 或格式只改這一處）
 
 ### 8:30 自動早報（週一～週五）
 - **腳本**：`~/Library/Scripts/dora-morning-briefing.sh`
@@ -108,7 +110,8 @@ Node.js 透過 nvm 安裝，路徑：`/Users/angela/.nvm/versions/node/v24.15.0/
 - **用途**：腳本直接查詢今日日任務，不需要 Claude 在線
 
 ### /morning skill（AI 版早報，需在 Claude 內觸發）
-- 讀取 Notion 計畫資料庫今日待辦 + 本地 plans/daily log
+- 唯一的 AI 早報入口（舊的 `.claude/commands/morning.md` 已於 2026-07-06 併入此 skill）
+- 讀取 Notion 計畫資料庫今日待辦 + 專案管理進行中專案 + 本地 plans/daily log
 - 產出個人化早報並推播到 LINE
 
 ### 廣告週報推播

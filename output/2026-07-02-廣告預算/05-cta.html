@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<title>CTA — Hayen Chat Style</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  .card {
+    width: 1080px;
+    height: 1350px;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Noto Sans TC', sans-serif;
+    background-color: #F3F1EC;
+    background-image:
+      linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  .logo { position: absolute; top: 44px; right: 56px; height: 84px; z-index: 4; }
+
+  .ribbon {
+    position: absolute;
+    top: 176px;
+    left: -16px;
+    background: linear-gradient(90deg, #E8622C, #F0862C);
+    color: #FFFBF5;
+    font-weight: 900;
+    font-size: 42px;
+    padding: 22px 64px 22px 44px;
+    clip-path: polygon(0 0, 88% 0, 100% 50%, 88% 100%, 0 100%);
+    z-index: 3;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.08);
+  }
+
+  .arc-deco {
+    position: absolute;
+    left: 40px;
+    right: 40px;
+    bottom: 60px;
+    top: 300px;
+    background: #FFC93C;
+    border-radius: 24px 24px 500px 500px / 24px 24px 260px 260px;
+    z-index: 0;
+  }
+
+  .panel {
+    position: absolute;
+    left: 76px;
+    right: 76px;
+    top: 300px;
+    bottom: 96px;
+    background: #FFFBF5;
+    border-radius: 8px 8px 460px 460px / 8px 8px 240px 240px;
+    z-index: 1;
+    padding: 84px 68px 64px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .title {
+    font-weight: 900;
+    font-size: 66px;
+    color: #2B2420;
+    text-align: center;
+    line-height: 1.4;
+    margin-bottom: 32px;
+  }
+  .subtitle {
+    font-weight: 700;
+    font-size: 38px;
+    color: #6B5D4F;
+    text-align: center;
+    line-height: 1.6;
+    margin-bottom: 40px;
+  }
+
+  .icon-wrap { margin-bottom: 24px; }
+
+  .question {
+    font-weight: 900;
+    font-size: 40px;
+    color: #2B2420;
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  .cta-pill {
+    background: #FFC93C;
+    border: 4px solid #2B2420;
+    border-radius: 60px;
+    padding: 26px 52px;
+    font-weight: 900;
+    font-size: 40px;
+    color: #2B2420;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <img class="logo" src="file:///Users/angela/Downloads/S__21823579_0.jpg" alt="禾言數位行銷">
+  <div class="ribbon">結尾</div>
+
+  <div class="arc-deco"></div>
+  <div class="panel">
+    <p class="title">品牌成長從來不是直線<br>是每一次抓對預算的累積</p>
+    <div class="icon-wrap">
+      <svg width="130" height="130" viewBox="0 0 24 24" fill="none" stroke="#E8622C" stroke-width="1.5">
+        <path d="M3 21h18"/>
+        <path d="M5 21V15h4v6"/>
+        <path d="M11 21V10h4v11"/>
+        <path d="M17 21V6h4v15"/>
+      </svg>
+    </div>
+    <p class="question">不知道方向怎麼訂嗎？</p>
+    <span class="cta-pill">立即私訊禾言小編 👇</span>
+  </div>
+</div>
+</body>
+</html>

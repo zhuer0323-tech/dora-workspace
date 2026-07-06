@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<title>Cover — Hayen Chat Style</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  .card {
+    width: 1080px;
+    height: 1350px;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Noto Sans TC', sans-serif;
+    background-color: #F3F1EC;
+    background-image:
+      linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px);
+    background-size: 32px 32px;
+    padding: 64px;
+  }
+  .sparkle {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    background: #FFC93C;
+    clip-path: polygon(50% 0%, 61% 35%, 100% 50%, 61% 65%, 50% 100%, 39% 65%, 0% 50%, 39% 35%);
+  }
+  .sparkle.tl { top: -30px; left: -30px; }
+  .sparkle.br { bottom: -30px; right: -30px; width: 150px; height: 150px; }
+
+  .frame {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: #FFFBF5;
+    border: 5px solid #2B2420;
+    border-radius: 48px;
+    padding: 56px 64px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .dots { position: absolute; top: 44px; left: 56px; display: flex; gap: 16px; }
+  .dot { width: 34px; height: 34px; border-radius: 50%; }
+  .dot.d1 { background: #E8622C; }
+  .dot.d2 { background: #FFC93C; }
+  .dot.d3 { background: #E8DFD2; }
+
+  .logo { position: absolute; top: 32px; right: 56px; height: 84px; }
+
+  .bubble {
+    position: relative;
+    margin-top: 160px;
+    background: #FCE6CF;
+    border: 5px solid #2B2420;
+    border-radius: 40px;
+    padding: 60px 56px;
+    width: 100%;
+  }
+  .bubble::after {
+    content: '';
+    position: absolute;
+    left: 84px;
+    bottom: -44px;
+    width: 0; height: 0;
+    border-left: 32px solid transparent;
+    border-right: 32px solid transparent;
+    border-top: 48px solid #2B2420;
+  }
+  .bubble::before {
+    content: '';
+    position: absolute;
+    left: 91px;
+    bottom: -32px;
+    width: 0; height: 0;
+    border-left: 25px solid transparent;
+    border-right: 25px solid transparent;
+    border-top: 37px solid #FCE6CF;
+    z-index: 1;
+  }
+  .bubble-title {
+    font-weight: 900;
+    font-size: 78px;
+    color: #2B2420;
+    line-height: 1.4;
+  }
+
+  .bullets {
+    margin-top: 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    width: 100%;
+  }
+  .bullet-item {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    font-size: 46px;
+    font-weight: 700;
+    color: #2B2420;
+  }
+  .bullet-dot {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #E8622C;
+    flex-shrink: 0;
+  }
+
+  .icon-wrap { margin-top: 64px; flex: 1; display: flex; align-items: center; justify-content: center; }
+
+  .cta-pill {
+    position: absolute;
+    bottom: 56px;
+    right: 64px;
+    background: #FFC93C;
+    border: 4px solid #2B2420;
+    border-radius: 60px;
+    padding: 22px 44px;
+    font-weight: 900;
+    font-size: 38px;
+    color: #2B2420;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="sparkle tl"></div>
+  <div class="sparkle br"></div>
+  <div class="frame">
+    <div class="dots">
+      <span class="dot d1"></span>
+      <span class="dot d2"></span>
+      <span class="dot d3"></span>
+    </div>
+    <img class="logo" src="file:///Users/angela/Downloads/S__21823579_0.jpg" alt="禾言數位行銷">
+
+    <div class="bubble">
+      <p class="bubble-title">廣告預算怎麼設定<br>才不浪費？</p>
+    </div>
+
+    <div class="bullets">
+      <div class="bullet-item"><span class="bullet-dot"></span>每個月都在砸廣告預算</div>
+      <div class="bullet-item"><span class="bullet-dot"></span>你知道錢燒到哪去了嗎？</div>
+    </div>
+
+    <div class="icon-wrap">
+      <svg width="180" height="180" viewBox="0 0 24 24" fill="none" stroke="#E8622C" stroke-width="1.6">
+        <path d="M3 11v2a1 1 0 0 0 1 1h2l4.5 3.5a.5.5 0 0 0 .8-.4V6.9a.5.5 0 0 0-.8-.4L6 10H4a1 1 0 0 0-1 1z"/>
+        <path d="M15 8a4 4 0 0 1 0 8"/>
+        <path d="M17.5 5.5a8 8 0 0 1 0 13"/>
+        <path d="M10.5 14v3a1.5 1.5 0 0 0 3 0v-2"/>
+      </svg>
+    </div>
+
+    <span class="cta-pill">往下滑看解法 ▶</span>
+  </div>
+</div>
+</body>
+</html>

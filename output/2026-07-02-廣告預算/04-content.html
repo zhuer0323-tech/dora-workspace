@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<title>Content — Hayen Chat Style — Highlight</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  .card {
+    width: 1080px;
+    height: 1350px;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Noto Sans TC', sans-serif;
+    background-color: #F3F1EC;
+    background-image:
+      linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  .logo { position: absolute; top: 44px; right: 56px; height: 84px; z-index: 4; }
+
+  .ribbon {
+    position: absolute;
+    top: 176px;
+    left: -16px;
+    background: linear-gradient(90deg, #E8622C, #F0862C);
+    color: #FFFBF5;
+    font-weight: 900;
+    font-size: 42px;
+    padding: 22px 64px 22px 44px;
+    clip-path: polygon(0 0, 88% 0, 100% 50%, 88% 100%, 0 100%);
+    z-index: 3;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.08);
+  }
+
+  .arc-deco {
+    position: absolute;
+    left: 40px;
+    right: 40px;
+    bottom: 60px;
+    top: 300px;
+    background: #FFC93C;
+    border-radius: 24px 24px 500px 500px / 24px 24px 260px 260px;
+    z-index: 0;
+  }
+
+  .panel {
+    position: absolute;
+    left: 76px;
+    right: 76px;
+    top: 300px;
+    bottom: 96px;
+    background: #FFFBF5;
+    border-radius: 8px 8px 460px 460px / 8px 8px 240px 240px;
+    z-index: 1;
+    padding: 92px 68px 64px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .title {
+    font-weight: 900;
+    font-size: 68px;
+    color: #2B2420;
+    text-align: center;
+    line-height: 1.4;
+    margin-bottom: 56px;
+  }
+
+  .highlight {
+    background: #FFC93C;
+    border: 4px solid #2B2420;
+    border-radius: 28px;
+    padding: 52px 48px;
+    font-weight: 900;
+    font-size: 50px;
+    color: #2B2420;
+    text-align: center;
+    line-height: 1.6;
+    margin-bottom: 56px;
+    width: 100%;
+  }
+
+  .icon-wrap { margin-bottom: 44px; }
+
+  .question {
+    font-weight: 900;
+    font-size: 44px;
+    color: #E8622C;
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  .footer-bar {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    text-align: center;
+    padding: 30px 40px;
+    font-weight: 700;
+    font-size: 32px;
+    color: #2B2420;
+    background: #FDEBD8;
+    z-index: 2;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <img class="logo" src="file:///Users/angela/Downloads/S__21823579_0.jpg" alt="禾言數位行銷">
+  <div class="ribbon">原則</div>
+
+  <div class="arc-deco"></div>
+  <div class="panel">
+    <p class="title">核心原則</p>
+
+    <div class="highlight">讓數據決定錢要花去哪<br>不是憑「感覺」下決定</div>
+
+    <div class="icon-wrap">
+      <svg width="110" height="110" viewBox="0 0 24 24" fill="none" stroke="#E8622C" stroke-width="1.5">
+        <path d="M12 3v18"/>
+        <path d="M4 7l4-2 4 2"/>
+        <path d="M12 7l4-2 4 2"/>
+        <path d="M2 7l2 6a2 2 0 0 0 4 0l-2-6"/>
+        <path d="M14 7l2 6a2 2 0 0 0 4 0l-2-6"/>
+      </svg>
+    </div>
+
+    <p class="question">你現在是「測試」還是「浪費」？</p>
+  </div>
+
+  <div class="footer-bar">讓數字說話，才能把預算花在刀口上</div>
+</div>
+</body>
+</html>
