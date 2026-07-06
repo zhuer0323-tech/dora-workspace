@@ -1,0 +1,73 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(export PATH=\"/opt/homebrew/bin:/usr/local/bin:$PATH\")",
+      "Bash(npm --version)",
+      "Bash(gem list:*)",
+      "Read(//usr/local/bin/**)",
+      "Read(//Users/angela/.rbenv/shims/**)",
+      "Bash(mux)",
+      "Bash(tmuxinator)",
+      "Bash(tmux -V)",
+      "Bash(brew list:*)",
+      "Bash(brew info:*)",
+      "Bash(/opt/homebrew/bin/brew list:*)",
+      "Bash(/usr/local/bin/brew list:*)",
+      "Bash(curl:*)",
+      "Bash(pbcopy:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(rm -r:*)",
+      "Bash(rm -f:*)",
+      "Bash(rm -fr:*)",
+      "Bash(rm -R:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean -f:*)",
+      "Bash(git branch -D:*)",
+      "Bash(sudo:*)",
+      "Bash(reboot:*)",
+      "Bash(shutdown:*)",
+      "Bash(diskutil erase:*)",
+      "Bash(mkfs:*)",
+      "Bash(dd:*)",
+      "Bash(chmod 777:*)",
+      "Bash(chmod -R 777:*)",
+      "Bash(truncate:*)"
+    ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /Users/angela/Downloads/Dora專屬/000_Agent/hooks/inject-context.sh"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /Users/angela/Downloads/Dora專屬/000_Agent/hooks/save-snapshot.sh"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /Users/angela/Downloads/Dora專屬/000_Agent/hooks/write-session-end.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
