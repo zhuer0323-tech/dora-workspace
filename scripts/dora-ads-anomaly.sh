@@ -71,18 +71,10 @@ def find_action(items, *types):
             return a
     return {}
 
-def get_insights(cid):
-    resp = api(
-        f"{cid}/insights",
-        f'&fields=spend,actions,action_values,reach'
-        f'&time_range={{"since":"{report_date}","until":"{report_date}"}}'
-    )
-    data = resp.get("data", [])
-    return data[0] if data else {}
-
 def match_brand(name):
+    lowered = name.lower()
     for keyword, cfg in BRAND_CONFIG.items():
-        if keyword in name:
+        if keyword.lower() in lowered:
             return keyword, cfg[0], cfg[1]
     return None, None, None
 
@@ -153,37 +145,96 @@ def make_campaign_box(name, emoji, lines):
     return {"type": "box", "layout": "vertical", "margin": "lg", "contents": contents}
 
 # 收集各品牌活動廣告
-campaign_boxes = []
+# 抓兩份清單再合併：回報日有花費的活動（含已暫停/結束）+ 目前進行中的活動
+campaign_boxes  = []
+brand_reported  = set()   # 已有數據區塊的品牌
+brand_active    = set()   # 有進行中活動的品牌
+account_errors  = []
 
 for acc_id, _ in AD_ACCOUNTS:
+    # 回報日有跑量的活動：帳號層級一次撈齊成效，不受活動目前狀態影響
+    rows = {}
+    try:
+        resp = api(
+            f"{acc_id}/insights",
+            f'&level=campaign&fields=campaign_id,campaign_name,spend,actions,action_values,reach'
+            f'&time_range={{"since":"{report_date}","until":"{report_date}"}}&limit=200'
+        )
+        for row in resp.get("data", []):
+            rows[row["campaign_id"]] = row
+    except Exception as e:
+        account_errors.append(f"{acc_id} insights: {e}")
+        print(f"Warning: {acc_id} insights error: {e}", file=sys.stderr)
+
+    # 目前進行中的活動清單
+    active = {}
     try:
         resp = api(
             f"{acc_id}/campaigns",
             '&fields=id,name&filtering=[{"field":"effective_status","operator":"IN","value":["ACTIVE"]}]&limit=100'
         )
         for c in resp.get("data", []):
-            cname = c.get("name", "")
-            brand, emoji, mtype = match_brand(cname)
-            if not brand:
-                continue
-            row = get_insights(c["id"])
-            if not row:
-                continue
-            lines = metric_lines(row, mtype)
+            active[c["id"]] = c.get("name", "")
+    except Exception as e:
+        account_errors.append(f"{acc_id} campaigns: {e}")
+        print(f"Warning: {acc_id} campaigns error: {e}", file=sys.stderr)
+
+    for cid in list(rows.keys()) + [cid for cid in active if cid not in rows]:
+        cname = rows[cid].get("campaign_name", "") if cid in rows else active[cid]
+        brand, emoji, mtype = match_brand(cname)
+        if not brand:
+            continue
+        if cid in active:
+            brand_active.add(brand)
+        if cid in rows:
+            lines = metric_lines(rows[cid], mtype)
             if campaign_boxes:
                 campaign_boxes.append({"type": "separator", "margin": "lg"})
             campaign_boxes.append(make_campaign_box(cname, emoji, lines))
-    except Exception as e:
-        print(f"Warning: {acc_id} error: {e}", file=sys.stderr)
-        continue
+            brand_reported.add(brand)
+
+# 有進行中活動但當日尚無花費的品牌 → 固定顯示占位，不再無聲消失
+for brand, (emoji, _) in BRAND_CONFIG.items():
+    if brand in brand_active and brand not in brand_reported:
+        if campaign_boxes:
+            campaign_boxes.append({"type": "separator", "margin": "lg"})
+        campaign_boxes.append(make_campaign_box(f"{brand}（進行中）", emoji, ["本日尚無花費"]))
 
 if not campaign_boxes:
+    if account_errors:
+        payload = {
+            "to": LINE_USER,
+            "messages": [{
+                "type": "text",
+                "text": f"⚠️ 廣告日報產生失敗（{report_date} {report_label}）\n所有帳號資料抓取都失敗，請檢查 Meta Token 是否過期或網路狀態。"
+            }]
+        }
+        print(json.dumps(payload, ensure_ascii=False))
+        sys.exit(0)
     print("NO_DATA")
     sys.exit(0)
 
 rd      = datetime.fromisoformat(report_date)
 days_zh = {0:"週一",1:"週二",2:"週三",3:"週四",4:"週五",5:"週六",6:"週日"}
 rd_str  = f"{rd.strftime('%Y/%m/%d')}（{days_zh[rd.weekday()]}）{report_label}"
+
+footer_contents = []
+if account_errors:
+    footer_contents.append({
+        "type": "text",
+        "text": "⚠️ 部分帳號資料抓取失敗，數據可能不完整",
+        "size": "xs",
+        "color": "#CC3333",
+        "align": "center"
+    })
+footer_contents.append({
+    "type": "text",
+    "text": "廣告穩穩跑，成效天天好！",
+    "size": "xs",
+    "color": "#7C5CBF",
+    "align": "center",
+    "margin": "sm" if account_errors else "none"
+})
 
 payload = {
     "to": LINE_USER,
@@ -229,15 +280,7 @@ payload = {
                     "layout": "vertical",
                     "backgroundColor": "#F0EBF8",
                     "paddingAll": "12px",
-                    "contents": [
-                        {
-                            "type": "text",
-                            "text": "廣告穩穩跑，成效天天好！",
-                            "size": "xs",
-                            "color": "#7C5CBF",
-                            "align": "center"
-                        }
-                    ]
+                    "contents": footer_contents
                 }
             }
         }
