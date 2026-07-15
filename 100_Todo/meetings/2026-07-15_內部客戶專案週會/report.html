@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>內部客戶專案週會｜會議報告</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #f6f7f9;
+    --card: #ffffff;
+    --ink: #1f2937;
+    --soft: #6b7280;
+    --line: #e5e7eb;
+    --tint-blue: #eef4f9;
+    --tint-green: #eff6f0;
+    --tint-cream: #faf6ea;
+    --ok: #15803d;
+    --warn: #c2410c;
+    --info: #3b6ea5;
+  }
+  body {
+    font-family: "PingFang TC", "Heiti TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg); color: var(--ink);
+    line-height: 1.65; padding: 28px 18px 70px;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+
+  /* ===== 頁首 ===== */
+  .chip-top { display: inline-block; background: #e8eef5; color: #33506b; font-weight: 700; font-size: 13px; padding: 4px 12px; border-radius: 999px; }
+  .meta-top { display: inline-block; margin-left: 8px; color: var(--soft); font-size: 13px; }
+  h1 { font-size: 28px; font-weight: 800; letter-spacing: .5px; margin-top: 10px; }
+  .subtitle { color: var(--soft); font-size: 15px; margin-top: 4px; max-width: 860px; }
+
+  /* ===== 卡片網格 ===== */
+  .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; margin-top: 24px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px; grid-column: span 12; }
+  .c4 { grid-column: span 4; } .c5 { grid-column: span 5; } .c7 { grid-column: span 7; } .c8 { grid-column: span 8; }
+  .tint-blue { background: var(--tint-blue); border-color: #dbe7f0; }
+  .tint-green { background: var(--tint-green); border-color: #dcebe0; }
+  .tint-cream { background: var(--tint-cream); border-color: #efe6cd; }
+
+  .sec-title { font-size: 16px; font-weight: 800; display: flex; align-items: center; gap: 9px; margin-bottom: 14px; }
+  .sec-title::before { content: ""; width: 4px; height: 18px; border-radius: 2px; background: #334155; }
+
+  /* ===== 品牌數據 stat 卡 ===== */
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .tile { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; background: #fdfdfe; }
+  .t-brand { font-size: 13px; font-weight: 700; color: var(--soft); }
+  .t-value { font-size: 30px; font-weight: 800; letter-spacing: -.5px; margin: 2px 0; }
+  .t-value small { font-size: 14px; font-weight: 700; color: var(--soft); margin-left: 2px; }
+  .t-sub { font-size: 13px; color: var(--soft); }
+  .t-note { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12.5px; font-weight: 600; }
+  .warn { color: var(--warn); } .ok { color: var(--ok); } .info { color: var(--info); }
+
+  /* ===== 通則數字（右側欄）===== */
+  .kv { list-style: none; }
+  .kv li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 9px 0; border-bottom: 1px solid rgba(0,0,0,.06); font-size: 14px; }
+  .kv li:last-child { border-bottom: none; }
+  .kv .v { font-weight: 800; white-space: nowrap; }
+  .aside-note { margin-top: 12px; font-size: 13px; color: var(--soft); font-style: italic; }
+
+  /* ===== 執行決策 ===== */
+  .dec { list-style: none; }
+  .dec li { padding: 12px 0; border-bottom: 1px dashed rgba(0,0,0,.12); }
+  .dec li:last-child { border-bottom: none; }
+  .dec b { display: block; font-size: 15px; margin-bottom: 2px; }
+  .dec p { font-size: 14px; color: #374151; }
+  .chips { margin-top: 7px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; font-size: 12.5px; font-weight: 600; color: #374151; }
+
+  /* ===== 討論主題（編號清單）===== */
+  .topics { list-style: none; }
+  .topics li { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,.05); }
+  .topics li:last-child { border-bottom: none; }
+  .t-num { width: 26px; height: 26px; flex-shrink: 0; border-radius: 50%; background: #e8eef5; color: #33506b; font-weight: 800; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+  .topics b { display: block; font-size: 14.5px; }
+  .topics span { font-size: 13px; color: var(--soft); }
+
+  /* ===== 待辦（勾選框）===== */
+  .todo { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px; }
+  .todo li { position: relative; padding: 10px 0 10px 30px; border-bottom: 1px dashed var(--line); font-size: 14.5px; font-weight: 600; }
+  .todo li::before { content: ""; position: absolute; left: 2px; top: 15px; width: 15px; height: 15px; border: 1.5px solid #9ca3af; border-radius: 4px; background: #fff; }
+  .todo .due { display: block; font-size: 13px; color: var(--soft); font-weight: 500; }
+
+  /* ===== 未決事項 ===== */
+  .open { list-style: none; }
+  .open li { padding: 8px 0 8px 26px; position: relative; font-size: 14px; border-bottom: 1px dashed rgba(0,0,0,.1); }
+  .open li:last-child { border-bottom: none; }
+  .open li::before { content: "?"; position: absolute; left: 4px; color: #b3831d; font-weight: 800; }
+
+  footer { margin-top: 36px; text-align: center; color: var(--soft); font-size: 12px; }
+
+  @media (max-width: 900px) {
+    .c4, .c5, .c7, .c8 { grid-column: span 12; }
+    .tiles { grid-template-columns: repeat(2, 1fr); }
+    .todo { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 560px) {
+    body { padding: 18px 10px 50px; }
+    h1 { font-size: 23px; }
+    .tiles { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <span class="chip-top">內部週會</span>
+    <span class="meta-top">2026-07-15（週三） ・ 時長約 53 分鐘</span>
+    <h1>內部客戶專案週會</h1>
+    <div class="subtitle">過完各客戶當月動作：李老闆催儲值、漁三 KOL 預算吃緊、優逸轉高單價、TOTO 衝留言數、北緣與十八子肉兩個新案趕素材，並定案公司自媒體「一週兩支影片」策略。</div>
+  </header>
+
+  <div class="grid">
+
+    <!-- 品牌數據回顧 -->
+    <div class="card c8">
+      <div class="sec-title">品牌數據回顧</div>
+      <div class="tiles">
+        <div class="tile">
+          <div class="t-brand">李老闆（儲值餘額）</div>
+          <div class="t-value">1.5<small>萬</small></div>
+          <div class="t-sub">帳上額度 16 萬</div>
+          <div class="t-note warn">餘額快見底、款項未匯，本週優先催匯</div>
+        </div>
+        <div class="tile">
+          <div class="t-brand">漁三（KOL 累積・第三個月）</div>
+          <div class="t-value">75,000<small>／上限 92,000</small></div>
+          <div class="t-sub">已用約 8 成</div>
+          <div class="t-note warn">快到頂，短影音預算先不轉過去</div>
+        </div>
+        <div class="tile">
+          <div class="t-brand">漁三（Meta 本週已投）</div>
+          <div class="t-value">5,677<small>／週預算 12,000</small></div>
+          <div class="t-sub">單篇 3,000＋新篇 4,000</div>
+          <div class="t-note info">本週餘額由 KOL 補到 1.2 萬</div>
+        </div>
+        <div class="tile">
+          <div class="t-brand">TOTO（留言數）</div>
+          <div class="t-value">2,437<small>則</small></div>
+          <div class="t-sub">上次調整後 +300 多則</div>
+          <div class="t-note info">距追平去年差幾百則，繼續衝（對照圖會後補）</div>
+        </div>
+        <div class="tile">
+          <div class="t-brand">優逸（新素材單次成本）</div>
+          <div class="t-value">100+<small>元</small></div>
+          <div class="t-sub">重投篇預算 13,000</div>
+          <div class="t-note warn">成本過高跑不動，回用舊素材、轉高單價</div>
+        </div>
+        <div class="tile">
+          <div class="t-brand">Miso（KOL 已排）</div>
+          <div class="t-value">3<small>位</small></div>
+          <div class="t-sub">六、七、八月發文</div>
+          <div class="t-note ok">進度正常、沒有超花</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 通則與其他數字 -->
+    <div class="card c4 tint-blue">
+      <div class="sec-title">通則與其他數字</div>
+      <ul class="kv">
+        <li><span>KOL 需簽約門檻（單筆）</span><span class="v">超過 2 萬</span></li>
+        <li><span>衛浴 KOL 報價（7/24 前）</span><span class="v">邀 20~30 收 10</span></li>
+        <li><span>吉品家 顧問費／實投</span><span class="v">3 萬／1.5 萬</span></li>
+        <li><span>慕斯 一檔費用</span><span class="v">1 萬</span></li>
+        <li><span>公司廣告 日預算</span><span class="v">300</span></li>
+        <li><span>自媒體 影片產量</span><span class="v">每週 2 支</span></li>
+      </ul>
+      <div class="aside-note">Google 代理商上期少算款項，後續慢慢補回，下次留意。</div>
+    </div>
+
+    <!-- 執行決策 -->
+    <div class="card c7 tint-green">
+      <div class="sec-title">執行決策</div>
+      <ul class="dec">
+        <li>
+          <b>漁三：本月貼文主題「商務客」</b>
+          <p>營造多人一起吃板前＋包廂（與商業午餐區隔）；KOL 預算吃緊，暫緩短影音預算轉入，先跟窗口確認影片主題。</p>
+        </li>
+        <li>
+          <b>優逸：改走高單價客群</b>
+          <p>原素材成效仍最好、新素材跑不動；素材以影片方向為主，週五面談前備好文字版建議。</p>
+        </li>
+        <li>
+          <b>北緣（金融）：先過 Meta 驗證，7/27 那週上檔</b>
+          <p>用舊帳號＋電腦獨立瀏覽器設定檔另開廣告帳號；粉專先備 2~3 張圖。</p>
+          <div class="chips"><span class="chip">不寫保證</span><span class="chip">不提到錢</span><span class="chip">不用金錢符號</span></div>
+        </li>
+        <li>
+          <b>十八子肉：簽半年、兩個月一階段</b>
+          <p>7/22 實體會議；預計 8/10 那週開始投放。</p>
+        </li>
+        <li>
+          <b>顧問專案：改為每兩週回報</b>
+          <p>地政士、吉品家、婚禮顧問、美甲協會四案，每兩週回報廣告概況到客戶群組；木地板案簽約後加入。</p>
+        </li>
+        <li>
+          <b>公司自媒體：一週兩支影片、影片放 Reels</b>
+          <p>找客戶背書訪談（7/30 那週拍）；公司廣告日預算先走 300。</p>
+          <div class="chips"><span class="chip">50% 廣告行銷</span><span class="chip">30% 人設</span><span class="chip">20% 創業思維</span></div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- 討論主題一覽 -->
+    <div class="card c5">
+      <div class="sec-title">討論主題一覽</div>
+      <ul class="topics">
+        <li><span class="t-num">1</span><div><b>現有客戶逐一過件</b><span>李老闆催儲值｜漁三社群＋KOL＋Meta｜優逸素材方向｜TOTO 留言數｜Miso KOL 排程</span></div></li>
+        <li><span class="t-num">2</span><div><b>新案開發</b><span>北緣（金融驗證＋合規）｜十八子肉（7/22 會議）｜衛浴 KOL 報價｜慕斯 7/27 上檔｜花徑 9 月重啟</span></div></li>
+        <li><span class="t-num">3</span><div><b>顧問專案體系</b><span>課程＋月會＋重點整理；地政士走 Google Pmax、婚禮顧問要改回覆、美甲協會推課程</span></div></li>
+        <li><span class="t-num">4</span><div><b>公司自媒體策略</b><span>一週兩支、內容配比、客戶背書訪談、剪輯分工</span></div></li>
+        <li><span class="t-num">5</span><div><b>行政與其他</b><span>官網（WordPress vs AI 架站）｜會計帳號與境外稅筆電｜Google 款項｜手機密碼與卡片交接</span></div></li>
+      </ul>
+    </div>
+
+    <!-- 待辦事項 -->
+    <div class="card c8">
+      <div class="sec-title">待辦事項與行動追蹤</div>
+      <ul class="todo">
+        <li>追蹤李老闆匯款，沒動靜就私下 LINE 聯繫<span class="due">期限：明天～週一</span></li>
+        <li>跟漁三窗口確認影片主題；定短影音預算去向<span class="due">期限：明天</span></li>
+        <li>優逸素材建議文字檔（高單價方向、影片為主）<span class="due">期限：週五前</span></li>
+        <li>自媒體：出下週兩支影片企劃<span class="due">期限：7/21</span></li>
+        <li>十八子肉：素材建議＋階段簡報＋兩張圖<span class="due">期限：7/22 前</span></li>
+        <li>衛浴 KOL 業配報價（邀 20~30、收 10 個）<span class="due">期限：7/24 前</span></li>
+        <li>北緣：粉專驗證 → 素材建議 → 開帳號 → 備 2~3 張圖<span class="due">期限：7/27 那週</span></li>
+        <li>公司介紹簡報某幾頁重畫<span class="due">期限：7/27 那週</span></li>
+        <li>自媒體拍攝（企劃內容 7/23；客戶案例 7/30 那週）<span class="due">期限：7/23、7/30</span></li>
+        <li>漁三「商務客」主題圖片貼文<span class="due">期限：本月內</span></li>
+        <li>顧問專案 4 案每兩週回報廣告概況<span class="due">常態</span></li>
+        <li>手機密碼確認、過期卡片換回<span class="due">儘快</span></li>
+      </ul>
+    </div>
+
+    <!-- 未決事項 -->
+    <div class="card c4 tint-cream">
+      <div class="sec-title">未決事項・下次追蹤</div>
+      <ul class="open">
+        <li>漁三短影音預算是否轉 KOL（等窗口回覆主題想法）</li>
+        <li>TOTO 留言數與去年同期精確對照（會後補圖）</li>
+        <li>北緣 Meta 驗證層級（出資者 vs 免責聲明）</li>
+        <li>公司官網：WordPress 自架 vs AI 架站（SEO 考量）</li>
+        <li>花徑 9 月重啟細節、木地板案簽約進度</li>
+        <li>手機密碼（0607？0000？）與過期卡片交接</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <footer>本報告由會議錄音自動整理產生 ・ 逐字稿與筆記在同資料夾</footer>
+</div>
+
+<div class="edit-bar" contenteditable="false">
+  <span id="editHint" hidden>編輯模式：直接點文字修改</span>
+  <button id="saveBtn" hidden>💾 儲存</button>
+  <button id="editBtn">✏️ 編輯</button>
+</div>
+<style>
+  .edit-bar { position: fixed; right: 16px; bottom: 16px; display: flex; gap: 8px; align-items: center; z-index: 99; }
+  .edit-bar button { border: none; border-radius: 999px; padding: 10px 16px; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.15); background: #1f2937; color: #fff; font-family: inherit; }
+  .edit-bar #saveBtn { background: #c2410c; }
+  #editHint { background: #fff; border: 1px solid #e5e7eb; border-radius: 999px; padding: 6px 12px; font-size: 12px; color: #6b7280; }
+  body[contenteditable="true"] { outline: 3px dashed rgba(194,65,12,.25); outline-offset: -3px; }
+  @media print { .edit-bar { display: none; } }
+</style>
+<script>
+(function(){
+  var editBtn = document.getElementById('editBtn');
+  var saveBtn = document.getElementById('saveBtn');
+  var hint = document.getElementById('editHint');
+  var fileHandle = null;
+
+  editBtn.addEventListener('click', function(){
+    var turnOn = document.body.getAttribute('contenteditable') !== 'true';
+    if (turnOn) {
+      document.body.setAttribute('contenteditable', 'true');
+      editBtn.textContent = '✅ 完成';
+      saveBtn.hidden = false;
+      hint.hidden = false;
+      hint.textContent = '編輯模式：直接點文字修改';
+    } else {
+      document.body.removeAttribute('contenteditable');
+      editBtn.textContent = '✏️ 編輯';
+      hint.hidden = true;
+    }
+  });
+
+  // 匯出目前頁面（含使用者改過的文字），存檔前先移除編輯狀態
+  function serialize(){
+    var wasEditing = document.body.getAttribute('contenteditable');
+    document.body.removeAttribute('contenteditable');
+    var s1 = saveBtn.hidden, s2 = hint.hidden, s3 = editBtn.textContent;
+    saveBtn.hidden = true; hint.hidden = true; editBtn.textContent = '✏️ 編輯';
+    var html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    if (wasEditing) document.body.setAttribute('contenteditable', wasEditing);
+    saveBtn.hidden = s1; hint.hidden = s2; editBtn.textContent = s3;
+    return html;
+  }
+
+  saveBtn.addEventListener('click', async function(){
+    var html = serialize();
+    if (window.showSaveFilePicker) {
+      try {
+        if (!fileHandle) {
+          fileHandle = await window.showSaveFilePicker({
+            suggestedName: 'report.html',
+            types: [{ description: 'HTML 檔', accept: { 'text/html': ['.html'] } }]
+          });
+        }
+        var w = await fileHandle.createWritable();
+        await w.write(html);
+        await w.close();
+        hint.hidden = false;
+        hint.textContent = '已儲存 ✓';
+        setTimeout(function(){ hint.textContent = '編輯模式：直接點文字修改'; }, 2000);
+        return;
+      } catch (e) {
+        if (e && e.name === 'AbortError') return;
+        fileHandle = null;
+      }
+    }
+    // 瀏覽器不支援直接覆寫時，改成下載一份新檔
+    var blob = new Blob([html], { type: 'text/html' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'report.html';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+})();
+</script>
+</body>
+</html>

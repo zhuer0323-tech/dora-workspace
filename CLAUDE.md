@@ -72,6 +72,11 @@ Node.js 透過 nvm 安裝，路徑：`/Users/angela/.nvm/versions/node/v24.15.0/
 - PATH 已設定於 `~/.zshrc`
 - 供 `100_Todo/projects/video-autopilot-kit/`（短影音自動化）影片後製使用
 
+**uv / mlx-whisper**（2026-07-15 裝）
+- uv 裝於 `~/.local/bin`（curl 安裝腳本，不動系統設定）；mlx-whisper 以 `uv tool install` 安裝
+- 辨識模型 whisper-large-v3-turbo（約 1.6GB，快取於 `~/.cache/huggingface`，下載過後離線可用）
+- 供 `/會議分析` skill 本機語音轉文字（腳本 `scripts/meeting-transcribe.sh`；錄音不上傳網路）
+
 ### claude.ai 整合工具
 - **Gmail**：搜尋信件、讀取內容、建立草稿、管理標籤
 - **Notion**：搜尋/讀取/建立/編輯頁面與資料庫、管理留言
