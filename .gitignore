@@ -1,3 +1,6 @@
 .DS_Store
 .playwright-mcp/
 .claude/settings.local.json
+
+# 會議錄音的逐字稿與筆記含客戶機密，絕不推上公開倉庫（網頁版走 Firebase，不經 git）
+100_Todo/meetings/

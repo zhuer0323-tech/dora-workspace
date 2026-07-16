@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>會議報告</title>
+<!--
+  會議報告閱讀站（同步版）
+  - 內容不寫死在這頁：依網址 ?m=會議代碼 從 Firebase Realtime Database 的 meetings/<代碼> 讀取
+  - 任何人可點「編輯」改字、按「儲存同步」寫回雲端；其他人重新整理即看到最新版
+  - 「存成圖片」用同資料夾的 html2canvas.min.js（已打包，不依賴外部 CDN）
+  - 發布新會議：workspace 的 scripts/publish-meeting-report.sh
+-->
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #f6f7f9;
+    --card: #ffffff;
+    --ink: #1f2937;
+    --soft: #6b7280;
+    --line: #e5e7eb;
+    --tint-blue: #eef4f9;
+    --tint-green: #eff6f0;
+    --tint-cream: #faf6ea;
+    --ok: #15803d;
+    --warn: #c2410c;
+    --info: #3b6ea5;
+  }
+  body {
+    font-family: "PingFang TC", "Heiti TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg); color: var(--ink);
+    line-height: 1.65; padding: 28px 18px 90px;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+
+  /* ===== 同步狀態列 ===== */
+  .sync-meta { max-width: 1080px; margin: 0 auto 14px; font-size: 12.5px; color: var(--soft); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: #9ca3af; flex-shrink: 0; }
+  .sync-dot.ok { background: #15803d; } .sync-dot.err { background: #c2410c; }
+
+  /* ===== 頁首 ===== */
+  .chip-top { display: inline-block; background: #e8eef5; color: #33506b; font-weight: 700; font-size: 13px; padding: 4px 12px; border-radius: 999px; }
+  .meta-top { display: inline-block; margin-left: 8px; color: var(--soft); font-size: 13px; }
+  h1 { font-size: 28px; font-weight: 800; letter-spacing: .5px; margin-top: 10px; }
+  .subtitle { color: var(--soft); font-size: 15px; margin-top: 4px; max-width: 860px; }
+
+  /* ===== 卡片網格 ===== */
+  .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; margin-top: 24px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px; grid-column: span 12; }
+  .c4 { grid-column: span 4; } .c5 { grid-column: span 5; } .c7 { grid-column: span 7; } .c8 { grid-column: span 8; }
+  .tint-blue { background: var(--tint-blue); border-color: #dbe7f0; }
+  .tint-green { background: var(--tint-green); border-color: #dcebe0; }
+  .tint-cream { background: var(--tint-cream); border-color: #efe6cd; }
+
+  .sec-title { font-size: 16px; font-weight: 800; display: flex; align-items: center; gap: 9px; margin-bottom: 14px; }
+  .sec-title::before { content: ""; width: 4px; height: 18px; border-radius: 2px; background: #334155; }
+
+  /* ===== 品牌數據 stat 卡 ===== */
+  .tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .tile { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; background: #fdfdfe; }
+  .t-brand { font-size: 13px; font-weight: 700; color: var(--soft); }
+  .t-value { font-size: 30px; font-weight: 800; letter-spacing: -.5px; margin: 2px 0; }
+  .t-value small { font-size: 14px; font-weight: 700; color: var(--soft); margin-left: 2px; }
+  .t-sub { font-size: 13px; color: var(--soft); }
+  .t-note { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12.5px; font-weight: 600; }
+  .warn { color: var(--warn); } .ok { color: var(--ok); } .info { color: var(--info); }
+
+  /* ===== 通則數字（右側欄）===== */
+  .kv { list-style: none; }
+  .kv li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 9px 0; border-bottom: 1px solid rgba(0,0,0,.06); font-size: 14px; }
+  .kv li:last-child { border-bottom: none; }
+  .kv .v { font-weight: 800; white-space: nowrap; }
+  .aside-note { margin-top: 12px; font-size: 13px; color: var(--soft); font-style: italic; }
+
+  /* ===== 執行決策 ===== */
+  .dec { list-style: none; }
+  .dec li { padding: 12px 0; border-bottom: 1px dashed rgba(0,0,0,.12); }
+  .dec li:last-child { border-bottom: none; }
+  .dec b { display: block; font-size: 15px; margin-bottom: 2px; }
+  .dec p { font-size: 14px; color: #374151; }
+  .chips { margin-top: 7px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; font-size: 12.5px; font-weight: 600; color: #374151; }
+
+  /* ===== 討論主題（編號清單）===== */
+  .topics { list-style: none; }
+  .topics li { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,.05); }
+  .topics li:last-child { border-bottom: none; }
+  .t-num { width: 26px; height: 26px; flex-shrink: 0; border-radius: 50%; background: #e8eef5; color: #33506b; font-weight: 800; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+  .topics b { display: block; font-size: 14.5px; }
+  .topics span { font-size: 13px; color: var(--soft); }
+
+  /* ===== 待辦（勾選框）===== */
+  .todo { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px; }
+  .todo li { position: relative; padding: 10px 0 10px 30px; border-bottom: 1px dashed var(--line); font-size: 14.5px; font-weight: 600; }
+  .todo li::before { content: ""; position: absolute; left: 2px; top: 15px; width: 15px; height: 15px; border: 1.5px solid #9ca3af; border-radius: 4px; background: #fff; }
+  .todo .due { display: block; font-size: 13px; color: var(--soft); font-weight: 500; }
+
+  /* ===== 未決事項 ===== */
+  .open { list-style: none; }
+  .open li { padding: 8px 0 8px 26px; position: relative; font-size: 14px; border-bottom: 1px dashed rgba(0,0,0,.1); }
+  .open li:last-child { border-bottom: none; }
+  .open li::before { content: "?"; position: absolute; left: 4px; color: #b3831d; font-weight: 800; }
+
+  footer { margin-top: 36px; text-align: center; color: var(--soft); font-size: 12px; }
+
+  /* ===== 載入 / 錯誤狀態 ===== */
+  .state { text-align: center; padding: 80px 20px; color: var(--soft); font-size: 15px; }
+
+  /* ===== 工具列 ===== */
+  .tool-bar { position: fixed; right: 16px; bottom: 16px; display: flex; gap: 8px; align-items: center; z-index: 99; flex-wrap: wrap; justify-content: flex-end; }
+  .tool-bar button { border: none; border-radius: 999px; padding: 10px 16px; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.15); background: #1f2937; color: #fff; font-family: inherit; }
+  .tool-bar #saveBtn { background: #c2410c; }
+  .tool-bar #cancelBtn { background: #6b7280; }
+  .tool-bar #imgBtn { background: #3b6ea5; }
+  .wrap[contenteditable="true"] { outline: 3px dashed rgba(194,65,12,.25); outline-offset: 6px; }
+
+  /* ===== 提示訊息（toast）===== */
+  .toast { position: fixed; left: 50%; bottom: 74px; transform: translateX(-50%); background: #1f2937; color: #fff; font-size: 13.5px; font-weight: 600; padding: 10px 18px; border-radius: 999px; box-shadow: 0 4px 14px rgba(0,0,0,.25); opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 100; max-width: 90vw; text-align: center; }
+  .toast.show { opacity: 1; }
+
+  @media (max-width: 900px) {
+    .c4, .c5, .c7, .c8 { grid-column: span 12; }
+    .tiles { grid-template-columns: repeat(2, 1fr); }
+    .todo { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 560px) {
+    body { padding: 18px 10px 80px; }
+    h1 { font-size: 23px; }
+    .tiles { grid-template-columns: 1fr; }
+  }
+  @media print { .tool-bar, .sync-meta, .toast { display: none; } }
+</style>
+</head>
+<body>
+
+<div class="sync-meta" id="syncMeta" hidden>
+  <span class="sync-dot" id="syncDot"></span>
+  <span id="syncText">載入中…</span>
+</div>
+
+<div class="wrap" id="wrap">
+  <div class="state">報告載入中…</div>
+</div>
+
+<div class="tool-bar">
+  <button id="imgBtn">🖼 存成圖片</button>
+  <button id="cancelBtn" hidden>✖ 取消</button>
+  <button id="saveBtn" hidden>💾 儲存同步</button>
+  <button id="editBtn">✏️ 編輯</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="html2canvas.min.js"></script>
+<script>
+(function(){
+  var DB = 'https://busan-trip-2026-201f8-default-rtdb.asia-southeast1.firebasedatabase.app';
+  var slug = new URLSearchParams(location.search).get('m');
+  var wrap = document.getElementById('wrap');
+  var editBtn = document.getElementById('editBtn');
+  var saveBtn = document.getElementById('saveBtn');
+  var cancelBtn = document.getElementById('cancelBtn');
+  var imgBtn = document.getElementById('imgBtn');
+  var syncMeta = document.getElementById('syncMeta');
+  var syncDot = document.getElementById('syncDot');
+  var syncText = document.getElementById('syncText');
+  var toastEl = document.getElementById('toast');
+  var toastTimer = null;
+  var docTitle = '會議報告';
+  var backupHTML = null;
+  var loaded = false;
+
+  function toast(msg, ms){
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove('show'); }, ms || 2600);
+  }
+
+  function fmtTime(ts){
+    if (!ts) return '';
+    var d = new Date(ts);
+    function p(n){ return (n < 10 ? '0' : '') + n; }
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+
+  function setSync(state, text){
+    syncMeta.hidden = false;
+    syncDot.className = 'sync-dot' + (state ? ' ' + state : '');
+    syncText.textContent = text;
+  }
+
+  function refreshTitle(){
+    var h1 = wrap.querySelector('h1');
+    if (h1 && h1.textContent.trim()) docTitle = h1.textContent.trim();
+    document.title = docTitle + '｜會議報告';
+  }
+
+  function showState(msg){
+    wrap.innerHTML = '<div class="state">' + msg + '</div>';
+  }
+
+  if (!window.fetch) { showState('這個瀏覽器版本太舊，請改用手機或電腦的新版瀏覽器開啟'); return; }
+
+  if (!slug || !/^[\w-]+$/.test(slug)) {
+    showState('網址少了會議代碼（?m=…），請跟朱兒拿完整連結');
+    editBtn.hidden = true; imgBtn.hidden = true;
+    return;
+  }
+
+  function load(){
+    fetch(DB + '/meetings/' + slug + '.json')
+      .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function(data){
+        if (!data || !data.html) {
+          showState('找不到這份報告，可能已被移除，請跟朱兒確認連結');
+          editBtn.hidden = true; imgBtn.hidden = true;
+          return;
+        }
+        wrap.innerHTML = data.html;
+        loaded = true;
+        refreshTitle();
+        setSync('ok', '最後更新：' + fmtTime(data.updatedAt) + '（點「編輯」可直接改字，儲存後其他人重新整理即看到）');
+      })
+      .catch(function(){
+        showState('報告載入失敗，請確認網路後重新整理');
+        setSync('err', '連線失敗');
+      });
+  }
+  load();
+
+  /* ===== 編輯與同步 ===== */
+  function setEditing(on){
+    if (on) {
+      backupHTML = wrap.innerHTML;
+      wrap.setAttribute('contenteditable', 'true');
+      editBtn.hidden = true; imgBtn.hidden = true;
+      saveBtn.hidden = false; cancelBtn.hidden = false;
+      setSync('', '編輯模式：直接點文字修改，改完按「儲存同步」');
+    } else {
+      wrap.removeAttribute('contenteditable');
+      editBtn.hidden = false; imgBtn.hidden = false;
+      saveBtn.hidden = true; cancelBtn.hidden = true;
+    }
+  }
+
+  editBtn.addEventListener('click', function(){
+    if (!loaded) { toast('報告還沒載入完成'); return; }
+    setEditing(true);
+  });
+
+  cancelBtn.addEventListener('click', function(){
+    wrap.innerHTML = backupHTML;
+    setEditing(false);
+    setSync('ok', '已取消編輯，內容維持原狀');
+  });
+
+  saveBtn.addEventListener('click', function(){
+    wrap.removeAttribute('contenteditable');
+    var payload = { html: wrap.innerHTML, updatedAt: { '.sv': 'timestamp' } };
+    saveBtn.disabled = true; saveBtn.textContent = '儲存中…';
+    fetch(DB + '/meetings/' + slug + '.json', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function(res){
+        setEditing(false);
+        refreshTitle();
+        setSync('ok', '最後更新：' + fmtTime(res.updatedAt) + '（已同步，其他人重新整理即看到）');
+        toast('已儲存 ✓ 所有人都會看到這個版本');
+      })
+      .catch(function(){
+        wrap.setAttribute('contenteditable', 'true');
+        setSync('err', '儲存失敗，請確認網路後再按一次「儲存同步」');
+        toast('儲存失敗，內容還在畫面上，請再試一次');
+      })
+      .finally(function(){
+        saveBtn.disabled = false; saveBtn.textContent = '💾 儲存同步';
+      });
+  });
+
+  /* ===== 存成圖片 ===== */
+  imgBtn.addEventListener('click', function(){
+    if (!loaded) { toast('報告還沒載入完成'); return; }
+    imgBtn.disabled = true; imgBtn.textContent = '產生中…';
+    toast('圖片產生中，請稍候…', 6000);
+    html2canvas(wrap, { scale: 2, backgroundColor: '#f6f7f9', useCORS: true, logging: false })
+      .then(function(canvas){
+        canvas.toBlob(function(blob){
+          if (!blob) { toast('圖片產生失敗，請再試一次'); return; }
+          var a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = docTitle.replace(/[\\/:*?"<>|\s]+/g, '_') + '.png';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(function(){ URL.revokeObjectURL(a.href); }, 5000);
+          toast('圖片已下載 ✓');
+        }, 'image/png');
+      })
+      .catch(function(){ toast('圖片產生失敗，請再試一次'); })
+      .finally(function(){ imgBtn.disabled = false; imgBtn.textContent = '🖼 存成圖片'; });
+  });
+})();
+</script>
+</body>
+</html>
