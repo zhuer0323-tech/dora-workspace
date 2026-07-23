@@ -150,6 +150,13 @@
   .chip.struct{background:#E4E9F5;color:#4a5b8a}
   .chip.day{background:#EDEDED;color:#666}
   .chip.saved{background:#DFF2E4;color:#2e7d4f}
+  .chip.author{background:#FBE2C4;color:#a55b12}
+  .recbar{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-bottom:14px}
+  .syncst{font-size:12px;font-weight:700;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:20px;padding:5px 12px}
+  .syncst.on{color:#2e7d4f;border-color:#bfe6cc;background:#f2fbf5}
+  .syncst.off{color:#b5651d;border-color:#f2d9bf;background:#fdf5ec}
+  .nicklabel{font-size:12.5px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:7px}
+  .nicklabel input{width:auto;flex:0 0 160px;padding:7px 11px;font-size:13px}
   .recitem .acts{margin-top:8px;display:flex;gap:8px}
   /* modal */
   .modal{position:fixed;inset:0;background:rgba(18,32,31,.5);display:none;z-index:50;align-items:center;justify-content:center;padding:16px}
@@ -298,7 +305,11 @@
   <!-- ⑤ 產出紀錄 -->
   <section class="page" id="page-records">
     <h2 class="sec">產出紀錄</h2>
-    <p class="sub">依系列分類保存，點系列可收合，有貼腳本的紀錄可以查看全文。</p>
+    <p class="sub">全團隊即時共享——你和同事新增的紀錄，大家都看得到、也會即時更新。</p>
+    <div class="recbar">
+      <span class="syncst" id="syncStatus">○ 連線中…</span>
+      <label class="nicklabel">你的暱稱：<input type="text" id="nickInput" placeholder="讓大家知道是誰做的"></label>
+    </div>
     <div class="recnav" id="recNav"></div>
     <div id="recArea"></div>
   </section>
@@ -1732,7 +1743,7 @@ const SERIES = [
       "我對錢的觀念，很多都來自小時候的家庭",
       "那句『我們家沒錢』，影響了我對錢很久",
       "從小的金錢教育，決定了長大後的金錢關係",
-      "我想給下一代的，是不匱乏的金錢觀",
+      "我花了好久，才擺脫從小帶來的匱乏金錢觀",
       "原來我對錢的不安，是從童年帶來的"]},
     {tag:"走出負債",desc:"從負債到還清",q:[
       "背著那筆債的日子，每天醒來都覺得喘不過氣",
@@ -2645,7 +2656,7 @@ const SERIES = [
       "那個從小做到大的習俗，藏著家族的記憶",
       "長大後我才懂，那些儀式是把家人連在一起的線",
       "傳承的不只是習俗，是一整代人的情感",
-      "我想把這些儀式，繼續傳給下一代",
+      "我想好好守住這些儀式，別讓它們慢慢消失",
       "有些傳統看似麻煩，卻是家的根"]},
     {tag:"時間流逝",desc:"又一年過去",q:[
       "一年又過去了，快到讓我有點措手不及",
@@ -3276,12 +3287,12 @@ const SERIES = [
       "住宿的儀式感，是把平凡的一晚變得特別",
       "點上香氛、泡個澡，把房間過成自己的小天地",
       "為自己好好過一晚，是我對自己的溫柔"]},
-    {tag:"親子旅宿",desc:"一家人的回憶",q:[
-      "那間親子旅宿，讓孩子玩到不想回家",
-      "一家人擠在一張大床上聊天，是最珍貴的畫面",
-      "親子旅宿的意義，是製造一家人的共同回憶",
-      "看著孩子開心的笑，這趟就值得了",
-      "那晚全家人的笑聲，是我最想留住的時光"]},
+    {tag:"帶爸媽出遊",desc:"和父母的旅宿時光",q:[
+      "那次帶爸媽住一晚好旅宿，看他們放鬆我就滿足了",
+      "難得跟爸媽一起旅行，那份陪伴比什麼都珍貴",
+      "帶爸媽出遊才發現，他們其實很少為自己好好休息",
+      "看著爸媽在房間裡笑得開心，這趟就值得了",
+      "趁還能一起旅行，我想多帶爸媽走走看看"]},
     {tag:"難忘的一晚",desc:"記憶中的旅宿",q:[
       "有一間旅宿，我到現在都念念不忘",
       "那一晚的美好，成了我旅行記憶裡的珍藏",
@@ -3812,6 +3823,63 @@ let records = load(LS_REC, []);
 let customTopics = load(LS_CUS, {}); // {seriesId:[{id,topic}]}
 let state = { series:null, direction:null };
 
+/* ============ Firebase 即時同步（產出紀錄全團隊共享） ============ */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAWOXPFBmb-lU90dpBOq2B8Gn7LsR2p-jM",
+  authDomain: "busan-trip-2026-201f8.firebaseapp.com",
+  databaseURL: "https://busan-trip-2026-201f8-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "busan-trip-2026-201f8",
+  storageBucket: "busan-trip-2026-201f8.firebasestorage.app",
+  messagingSenderId: "300878890409",
+  appId: "1:300878890409:web:c80543dc5c43f6d81bb0b8"
+};
+const FB_ROOM = "connieScripts";
+const LS_NICK = "cks_nickname";
+let fbReady=false, fbDb=null, fbApi=null;
+
+function getNick(){ return (load(LS_NICK,"")||"").trim(); }
+function setNick(v){ save(LS_NICK, v); }
+function setSyncStatus(s){
+  const el=document.getElementById("syncStatus"); if(!el) return;
+  if(s==="on"){ el.textContent="● 已連線，紀錄即時同步中"; el.className="syncst on"; }
+  else if(s==="connecting"){ el.textContent="○ 連線中…"; el.className="syncst"; }
+  else { el.textContent="● 未同步（本機模式）"; el.className="syncst off"; }
+}
+async function initFirebase(){
+  try{
+    setSyncStatus("connecting");
+    const {initializeApp}=await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+    const {getDatabase,ref,set,remove,onValue,get}=await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+    const app=initializeApp(FIREBASE_CONFIG);
+    fbDb=getDatabase(app);
+    fbApi={ref,set,remove,onValue,get};
+    fbReady=true;
+    const recRef=ref(fbDb, FB_ROOM+"/records");
+    // 初次：Firebase 若為空且本機有舊紀錄，先推上去做遷移
+    try{
+      const snap=await get(recRef);
+      if(!snap.exists()){
+        const local=load(LS_REC,[]);
+        for(const r of local){ await set(ref(fbDb, FB_ROOM+"/records/"+r.id), r); }
+      }
+    }catch(e){ /* 遷移失敗就略過，不影響同步 */ }
+    // 即時監聽：任何人新增/刪除，所有人都會即時看到
+    onValue(recRef, snap=>{
+      const val=snap.val()||{};
+      records=Object.values(val).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+      save(LS_REC, records);
+      setSyncStatus("on");
+      renderRecords();
+    }, err=>{
+      console.warn("Firebase 讀取失敗，改用本機模式", err);
+      fbReady=false; setSyncStatus("off"); renderRecords();
+    });
+  }catch(e){
+    console.warn("Firebase 初始化失敗，改用本機模式", e);
+    fbReady=false; setSyncStatus("off");
+  }
+}
+
 function load(k,def){ try{return JSON.parse(localStorage.getItem(k))??def}catch(e){return def} }
 function save(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
@@ -4074,16 +4142,21 @@ function saveRecord(){
   const d=collectSetup();
   if(!d.topic){ toast("請先填主題再儲存"); return; }
   if(!d.structure){ toast("請選一個腳本結構"); return; }
-  records.unshift({
+  const rec={
     id:uid(), seriesId:d.seriesId, seriesName:d.seriesName,
     topic:d.topic, length:d.length, days:d.days, product:d.product,
     structure:d.structure?d.structure[0]:"", styles:d.styles,
     detail:d.detail, script:d.script,
+    author:getNick()||"匿名",
     date:new Date().toISOString()
-  });
-  save(LS_REC,records);
-  toast("已儲存到產出紀錄");
-  renderRecords();
+  };
+  if(fbReady){
+    fbApi.set(fbApi.ref(fbDb, FB_ROOM+"/records/"+rec.id), rec)
+      .then(()=>toast("已儲存並同步給大家"))
+      .catch(e=>{ console.warn(e); records.unshift(rec); save(LS_REC,records); renderRecords(); toast("已存本機（同步失敗）"); });
+  } else {
+    records.unshift(rec); save(LS_REC,records); renderRecords(); toast("已儲存到產出紀錄");
+  }
 }
 function clearSetup(){
   ["s_topic","s_days","s_product","s_detail","s_script"].forEach(id=>document.getElementById(id).value="");
@@ -4257,6 +4330,8 @@ function initRecords(){
   document.getElementById("sm_copy").addEventListener("click",()=>{
     copyText(document.getElementById("sm_body").textContent);
   });
+  const nick=document.getElementById("nickInput");
+  if(nick){ nick.value=getNick(); nick.addEventListener("input",()=>setNick(nick.value.trim())); }
   renderRecords();
 }
 function renderRecords(){
@@ -4304,8 +4379,14 @@ function renderRecords(){
     reProduce(r);
   }));
   area.querySelectorAll("[data-delrec]").forEach(b=>b.addEventListener("click",()=>{
-    records=records.filter(x=>x.id!==b.dataset.delrec);
-    save(LS_REC,records); renderRecords(); toast("已刪除紀錄");
+    const id=b.dataset.delrec;
+    if(fbReady){
+      fbApi.remove(fbApi.ref(fbDb, FB_ROOM+"/records/"+id)).catch(e=>console.warn(e));
+      toast("已刪除紀錄");
+    } else {
+      records=records.filter(x=>x.id!==id);
+      save(LS_REC,records); renderRecords(); toast("已刪除紀錄");
+    }
   }));
 }
 function recItemHTML(r){
@@ -4318,6 +4399,7 @@ function recItemHTML(r){
     <div class="top"><h4>${esc(r.topic)}</h4><span class="date">${dateStr}</span></div>
     <div class="chips">
       <span class="chip type">${esc(r.seriesName)}</span>
+      ${r.author?`<span class="chip author">✍ ${esc(r.author)}</span>`:""}
       ${r.structure?`<span class="chip struct">${esc(r.structure)}</span>`:""}
       ${styleChips}
       ${r.days?`<span class="chip day">第 ${esc(r.days)} 天</span>`:""}
@@ -4355,6 +4437,7 @@ function boot(){
   restoreDraft();
   rebuildTopicPick();
   togglePR();
+  initFirebase();
 }
 boot();
 </script>
