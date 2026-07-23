@@ -1,0 +1,4362 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connie 卡妮說｜IG 腳本靈感與提示詞產出系統</title>
+<style>
+  :root{
+    --primary:#E37B1B;      /* 主色：禾言 logo 暖橘 */
+    --primary-d:#C25A0C;    /* 深橘紅 */
+    --primary-l:#FBE2C4;    /* 淺金 */
+    --primary-bg:#FEF6EC;   /* 米白底 */
+    --accent:#E2461A;       /* 紅橘點綴（logo 火焰紅） */
+    --ink:#2A2320;
+    --muted:#8A7B6C;
+    --line:#EFE6DA;
+    --card:#FFFFFF;
+    --bg:#FBF8F3;
+    --tag-a:#E2461A;
+    --shadow:0 2px 12px rgba(227,123,27,.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;
+  }
+  /* Header */
+  header{
+    background:linear-gradient(120deg,#F5A623 0%,#E37B1B 45%,#D9531A 100%);
+    color:#fff;padding:22px 20px 18px;
+  }
+  header .wrap{max-width:1080px;margin:0 auto}
+  header h1{font-size:20px;font-weight:800;letter-spacing:.5px}
+  header p{font-size:13px;opacity:.9;margin-top:4px}
+  /* Tabs */
+  nav{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;box-shadow:0 1px 6px rgba(0,0,0,.03)}
+  nav .wrap{max-width:1080px;margin:0 auto;display:flex;overflow-x:auto}
+  nav button{
+    flex:0 0 auto;background:none;border:none;padding:14px 18px;font-size:14px;font-weight:600;
+    color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;font-family:inherit;
+  }
+  nav button.active{color:var(--primary);border-bottom-color:var(--primary)}
+  nav button:hover{color:var(--primary-d)}
+  main{max-width:1080px;margin:0 auto;padding:22px 20px 60px}
+  .page{display:none;animation:fade .25s ease}
+  .page.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  h2.sec{font-size:17px;font-weight:800;margin-bottom:4px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+  /* Series chips */
+  .series-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin-bottom:8px}
+  .series-card{
+    background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;cursor:pointer;
+    transition:.15s;box-shadow:var(--shadow)
+  }
+  .series-card:hover{border-color:var(--primary);transform:translateY(-2px)}
+  .series-card.on{border-color:var(--primary);background:var(--primary-bg)}
+  .series-card .badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:6px}
+  .badge.custom{background:var(--primary-l);color:var(--primary-d)}
+  .badge.general{background:#F0EEE9;color:#8a7f6a}
+  .series-card h3{font-size:15px;font-weight:800}
+  .series-card p{font-size:12px;color:var(--muted);margin-top:3px}
+  .group-label{font-size:13px;font-weight:800;color:var(--muted);margin:16px 0 8px;letter-spacing:.5px}
+  /* direction cards */
+  .dir-head{display:flex;align-items:center;gap:10px;margin:22px 0 12px;flex-wrap:wrap}
+  .dir-head h3{font-size:16px;font-weight:800}
+  .dir-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:11px}
+  .dir-card{
+    background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;transition:.15s
+  }
+  .dir-card:hover{border-color:var(--primary);box-shadow:var(--shadow)}
+  .dir-card.on{border-color:var(--primary);background:var(--primary-bg)}
+  .dir-card .tag{display:inline-block;background:var(--accent);color:#fff;font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;margin-bottom:6px}
+  .dir-card .num{float:right;color:#c7d2d0;font-size:12px;font-weight:700}
+  .dir-card p{font-size:13px;color:var(--ink);line-height:1.5}
+  /* forms */
+  .field{margin-bottom:18px}
+  .field>label{display:block;font-size:13px;font-weight:700;margin-bottom:7px}
+  .field .hint{font-weight:500;color:var(--muted);font-size:12px}
+  select,input[type=text],input[type=number],textarea{
+    width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font-size:14px;font-family:inherit;
+    background:#fff;color:var(--ink)
+  }
+  select:focus,input:focus,textarea:focus{outline:none;border-color:var(--primary)}
+  textarea{resize:vertical;min-height:70px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:640px){.row2{grid-template-columns:1fr}}
+  .inline{display:flex;gap:8px;align-items:center}
+  .inline select{flex:1}
+  /* structure & style tags */
+  .tagpick{display:flex;flex-wrap:wrap;gap:8px}
+  .tagpick .t{
+    border:1.5px solid var(--line);border-radius:20px;padding:7px 13px;font-size:12.5px;cursor:pointer;background:#fff;transition:.12s;
+    user-select:none
+  }
+  .tagpick .t small{display:block;font-size:10.5px;color:var(--muted);font-weight:400;margin-top:1px}
+  .tagpick .t:hover{border-color:var(--primary)}
+  .tagpick .t.on{background:var(--primary);border-color:var(--primary);color:#fff}
+  .tagpick .t.on small{color:rgba(255,255,255,.85)}
+  .tagpick.style .t.on{background:var(--accent);border-color:var(--accent)}
+  /* buttons */
+  .btn{
+    background:var(--primary);color:#fff;border:none;padding:11px 20px;border-radius:10px;font-size:14px;font-weight:700;
+    cursor:pointer;font-family:inherit;transition:.15s
+  }
+  .btn:hover{background:var(--primary-d)}
+  .btn.ghost{background:#fff;color:var(--primary);border:1.5px solid var(--primary)}
+  .btn.ghost:hover{background:var(--primary-bg)}
+  .btn.sm{padding:7px 13px;font-size:12.5px}
+  .btn.accent{background:var(--accent)}
+  .btn.accent:hover{background:#cf7130}
+  .btn.gray{background:#eef1f0;color:var(--muted)}
+  .btnbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+  /* prompt output */
+  .prompt-box{
+    background:#12201F;color:#D7E4E2;border-radius:14px;padding:18px;margin-top:16px;font-size:13px;line-height:1.75;
+    white-space:pre-wrap;word-break:break-word;font-family:"SF Mono",Menlo,monospace;max-height:520px;overflow:auto;display:none
+  }
+  .prompt-box.show{display:block}
+  /* topic library / list */
+  .filterbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .filterbar select,.filterbar input{width:auto;flex:1;min-width:160px}
+  .qlist{display:flex;flex-direction:column;gap:8px}
+  .qitem{
+    background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 14px;display:flex;justify-content:space-between;gap:12px;align-items:center
+  }
+  .qitem .meta{font-size:11px;color:var(--muted);margin-bottom:2px}
+  .qitem p{font-size:13.5px}
+  .qitem .r{display:flex;gap:6px;flex:0 0 auto}
+  .empty{color:var(--muted);font-size:13px;text-align:center;padding:30px}
+  /* records */
+  .recnav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .recnav a{font-size:12.5px;background:#fff;border:1.5px solid var(--line);border-radius:20px;padding:5px 12px;cursor:pointer;color:var(--primary-d);font-weight:700;text-decoration:none}
+  .recnav a:hover{border-color:var(--primary);background:var(--primary-bg)}
+  .recgroup{background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden}
+  .recgroup>.gh{padding:13px 16px;background:var(--primary-bg);cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+  .recgroup>.gh h3{font-size:15px;font-weight:800;color:var(--primary-d)}
+  .recgroup>.gh .cnt{font-size:12px;color:var(--muted);font-weight:700}
+  .recgroup .body{padding:6px 16px 14px}
+  .recgroup.collapsed .body{display:none}
+  .recitem{border-bottom:1px dashed var(--line);padding:12px 0}
+  .recitem:last-child{border-bottom:none}
+  .recitem .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+  .recitem h4{font-size:14.5px;font-weight:700}
+  .recitem .date{font-size:11px;color:var(--muted);flex:0 0 auto}
+  .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+  .chip{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px}
+  .chip.type{background:var(--primary-l);color:var(--primary-d)}
+  .chip.style{background:#FBE7D5;color:#b5651d}
+  .chip.struct{background:#E4E9F5;color:#4a5b8a}
+  .chip.day{background:#EDEDED;color:#666}
+  .chip.saved{background:#DFF2E4;color:#2e7d4f}
+  .recitem .acts{margin-top:8px;display:flex;gap:8px}
+  /* modal */
+  .modal{position:fixed;inset:0;background:rgba(18,32,31,.5);display:none;z-index:50;align-items:center;justify-content:center;padding:16px}
+  .modal.show{display:flex}
+  .modal .box{background:#fff;border-radius:16px;max-width:640px;width:100%;max-height:85vh;display:flex;flex-direction:column;overflow:hidden}
+  .modal .mh{padding:15px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  .modal .mh h3{font-size:16px;font-weight:800}
+  .modal .mh .x{cursor:pointer;font-size:22px;color:var(--muted);line-height:1;background:none;border:none}
+  .modal .mb{padding:16px 18px;overflow:auto}
+  .modal .mf{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end}
+  .scripttext{white-space:pre-wrap;font-size:14px;line-height:1.75;background:var(--bg);padding:14px;border-radius:10px}
+  .searchresult{display:flex;flex-direction:column;gap:7px;margin-top:12px}
+  .toast{
+    position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;
+    padding:11px 20px;border-radius:30px;font-size:13.5px;font-weight:600;opacity:0;transition:.25s;z-index:80;pointer-events:none
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .hidden{display:none!important}
+  .notice{background:var(--primary-bg);border:1px solid var(--primary-l);border-radius:10px;padding:11px 14px;font-size:12.5px;color:var(--primary-d);margin-bottom:14px}
+  .pill-recommend{font-size:11px;color:var(--accent);font-weight:700;margin-left:6px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Connie 卡妮說 ｜ IG 腳本靈感與提示詞產出系統</h1>
+    <p>100+ 品牌廣告操盤經驗，陪企業主少走冤枉路 ｜ 選題 → 設定 → 一鍵產出提示詞</p>
+  </div>
+</header>
+
+<nav>
+  <div class="wrap">
+    <button class="tab active" data-tab="ideas">① 靈感選題</button>
+    <button class="tab" data-tab="setup">② 腳本設定</button>
+    <button class="tab" data-tab="library">③ 題目庫</button>
+    <button class="tab" data-tab="custom">④ 自訂題目</button>
+    <button class="tab" data-tab="records">⑤ 產出紀錄</button>
+  </div>
+</nav>
+
+<main>
+  <!-- ① 靈感選題 -->
+  <section class="page active" id="page-ideas">
+    <h2 class="sec">靈感選題</h2>
+    <p class="sub">先選一個內容系列，再挑一個創作方向，就能帶著方向去設定腳本。</p>
+    <div id="seriesPicker"></div>
+    <div id="directionArea"></div>
+  </section>
+
+  <!-- ② 腳本設定 -->
+  <section class="page" id="page-setup">
+    <h2 class="sec">腳本設定</h2>
+    <p class="sub">設定好之後按「複製提示詞」，把提示詞貼進 AI 就能產出腳本。</p>
+
+    <div class="field">
+      <label>系列選擇</label>
+      <select id="s_series"></select>
+    </div>
+
+    <div class="field">
+      <label>主題 <span class="hint">（先從推薦題目挑，或自己輸入，也可從題目庫搜尋）</span></label>
+      <div class="inline" style="margin-bottom:8px">
+        <select id="s_topicPick"><option value="">— 請先在「靈感選題」選方向，或直接自行輸入 —</option></select>
+        <button class="btn ghost sm" id="btnLib" type="button">從題目庫選題</button>
+      </div>
+      <input type="text" id="s_topic" placeholder="在這裡輸入 / 修改你的主題">
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <label>腳本長度</label>
+        <select id="s_length"></select>
+      </div>
+      <div class="field">
+        <label>這是第幾天的內容 <span class="hint">（自填天數）</span></label>
+        <input type="number" id="s_days" min="1" placeholder="例如 12">
+      </div>
+    </div>
+
+    <div class="field" id="prField">
+      <label>業配商品名稱</label>
+      <input type="text" id="s_product" placeholder="業配系列才需要填">
+    </div>
+
+    <div class="field">
+      <label>腳本結構 <span class="hint">（選一種）</span></label>
+      <div class="tagpick" id="s_structure"></div>
+    </div>
+
+    <div class="field">
+      <label>腳本風格 <span class="hint">（可複選）</span></label>
+      <div class="tagpick style" id="s_style"></div>
+    </div>
+
+    <div class="field">
+      <label>補充細節 / 金句方向 <span class="hint">（選填）</span></label>
+      <textarea id="s_detail" placeholder="想強調的重點、想放的金句、想避開的方向…"></textarea>
+    </div>
+
+    <div class="field">
+      <label>貼入腳本內容 <span class="hint">（選填，把 AI 產出的腳本貼回來存進紀錄）</span></label>
+      <textarea id="s_script" placeholder="AI 產好後把完整腳本貼在這裡，儲存後可在「產出紀錄」查看"></textarea>
+    </div>
+
+    <div class="btnbar">
+      <button class="btn" id="btnPrompt" type="button">複製提示詞</button>
+      <button class="btn accent" id="btnSave" type="button">儲存這筆紀錄</button>
+      <button class="btn gray sm" id="btnClear" type="button">清空表單</button>
+    </div>
+
+    <div class="prompt-box" id="promptBox"></div>
+  </section>
+
+  <!-- ③ 題目庫 -->
+  <section class="page" id="page-library">
+    <h2 class="sec">題目庫</h2>
+    <p class="sub">全系列題目都在這裡，可依系列篩選、關鍵字搜尋，點「用這題」直接帶入設定。</p>
+    <div class="filterbar">
+      <select id="lib_series"><option value="">全部系列</option></select>
+      <input type="text" id="lib_search" placeholder="搜尋關鍵字…">
+    </div>
+    <div class="qlist" id="libList"></div>
+  </section>
+
+  <!-- ④ 自訂題目 -->
+  <section class="page" id="page-custom">
+    <h2 class="sec">自訂題目</h2>
+    <p class="sub">自己新增的題目會存在瀏覽器，並出現在題目庫與推薦下拉選單裡。</p>
+    <div class="row2">
+      <div class="field">
+        <label>選擇系列</label>
+        <select id="cu_series"></select>
+      </div>
+      <div class="field">
+        <label>題目內容</label>
+        <input type="text" id="cu_topic" placeholder="輸入你的題目，Enter 或按新增">
+      </div>
+    </div>
+    <button class="btn" id="btnAddCustom" type="button">新增題目</button>
+    <div style="margin-top:22px">
+      <h3 style="font-size:14px;font-weight:800;margin-bottom:10px">我的自訂題目</h3>
+      <div class="qlist" id="customList"></div>
+    </div>
+  </section>
+
+  <!-- ⑤ 產出紀錄 -->
+  <section class="page" id="page-records">
+    <h2 class="sec">產出紀錄</h2>
+    <p class="sub">依系列分類保存，點系列可收合，有貼腳本的紀錄可以查看全文。</p>
+    <div class="recnav" id="recNav"></div>
+    <div id="recArea"></div>
+  </section>
+</main>
+
+<!-- 題目庫彈窗（設定頁用） -->
+<div class="modal" id="libModal">
+  <div class="box">
+    <div class="mh"><h3>從題目庫選題</h3><button class="x" data-close="libModal">&times;</button></div>
+    <div class="mb">
+      <div class="filterbar">
+        <select id="mod_series"><option value="">全部系列</option></select>
+        <input type="text" id="mod_search" placeholder="搜尋關鍵字…">
+      </div>
+      <div class="searchresult" id="modList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 查看腳本彈窗 -->
+<div class="modal" id="scriptModal">
+  <div class="box">
+    <div class="mh"><h3 id="sm_title">腳本內容</h3><button class="x" data-close="scriptModal">&times;</button></div>
+    <div class="mb"><div class="scripttext" id="sm_body"></div></div>
+    <div class="mf"><button class="btn ghost sm" id="sm_copy" type="button">複製腳本</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<textarea id="copyHelper" style="position:fixed;left:-9999px;top:0"></textarea>
+
+<script>
+/* ============ 創作者設定 ============ */
+const CREATOR = {
+  name:"Connie卡妮說｜廣告顧問陪跑｜行銷．電商．商業思維｜陳姿吟",
+  memory:"Connie卡妮說，帶你在行銷路上少走彎路",
+  fixedStyle:"用白話講行銷，不賣術語。\n分享真實客戶案例，而不是紙上談兵。\n不只教投廣告，更分享品牌經營與商業思維。\n偶爾分享創業、管理、BNI、合作與人生體悟。\n理性分析，但保有溫度。"
+};
+
+/* ============ 腳本長度 ============ */
+const LENGTHS = [
+  "30 秒（約 150 字）","45 秒（約 220 字）","60 秒（約 500 字）",
+  "90 秒（約 750 字）","2 分鐘（約 1000 字）","3 分鐘（約 1500 字）"
+];
+
+/* ============ 腳本結構（20+） ============ */
+const STRUCTURES = [
+  ["故事型","用一個完整的故事帶出觀點"],
+  ["吐槽型","用抱怨或吐槽引起共鳴"],
+  ["建議型","直接給出可執行的建議"],
+  ["懺悔型","坦白自己的錯誤或失敗"],
+  ["揭秘型","揭露不為人知的內幕"],
+  ["翻轉型","先建立認知再推翻它"],
+  ["對比型","用兩種情況做強烈對照"],
+  ["問答型","用一問一答推進內容"],
+  ["列清單型","把重點整理成條列"],
+  ["信件型","用寫信的口吻對某人說話"],
+  ["陪伴型","像朋友一樣陪你聊"],
+  ["宣言型","堅定地表達一個立場"],
+  ["生活喜劇型","用幽默日常博君一笑"],
+  ["決策型","帶你走過一個做決定的過程"],
+  ["複盤型","事後回顧一件事的得與失"],
+  ["觀察報告型","客觀描述你觀察到的現象"],
+  ["教學型","一步步教會你一件事"],
+  ["時間軸型","依時間順序講一段經歷"],
+  ["思考題型","拋出一個問題讓觀眾思考"],
+  ["隨筆心情型","記錄當下的心情與感受"]
+];
+
+/* ============ 腳本風格 ============ */
+const STYLES = ["幽默自嘲","溫暖共鳴","輕鬆日常","適合分享","引發討論","強開場懸念","深度反思","知識輸出","療癒陪伴"];
+
+/* ============ 系列資料 ============ */
+/* 每個系列：id / name / category(custom|general) / desc / strategy / directions[20]{tag,desc,q[5]} */
+const SERIES = [
+{
+  id:"ad-diary", name:"廣告陪跑日記", category:"custom",
+  desc:"分享每天實際遇到的客戶問題",
+  strategy:"用每天真實的客戶現場，建立「她真的在第一線」的專業信任感，讓觀眾覺得你懂實戰、值得託付。",
+  directions:[
+    {tag:"ROAS下滑",desc:"廣告成效突然變差，一起找出真正的原因",q:[
+      "客戶一早打來說 ROAS 崩了，我點開後台那一刻手心在冒汗",
+      "ROAS 下滑不一定是廣告的錯，那天我查到第三層才發現真相",
+      "同一組廣告昨天還好好的，今天突然沒人買，我先做了這件事",
+      "客戶問我為什麼 ROAS 從 8 掉到 3，我沒急著改廣告，先問了他一句話",
+      "那次 ROAS 掉下來，最後發現問題根本不在廣告，在他自己的官網"]},
+    {tag:"數據信任",desc:"老闆看不懂或不信報表時，我怎麼溝通",q:[
+      "老闆盯著報表說「這數字是不是你亂填的」，我深吸一口氣",
+      "客戶不信廣告有效，我把他三個月的訂單一筆一筆攤開給他看",
+      "那天客戶說「我覺得沒感覺」，可是數據明明在成長，我怎麼辦",
+      "教一個從來不看數據的老闆看懂報表，我只用了三個數字",
+      "客戶說「別家報價比較便宜」，我沒降價，我給他看了這張圖"]},
+    {tag:"預算取捨",desc:"陪客戶決定每天預算的拉扯",q:[
+      "客戶說「錢就這麼多」，我陪他把預算重新排了一次優先順序",
+      "該加碼還是收手？那天我跟客戶在會議室算到晚上八點",
+      "客戶想把預算全壓在最好的那組，我勸他留一手的原因",
+      "一天多花五百還是少花五百，這個決定其實比想像中重要",
+      "客戶問我「這筆錢值不值得」，我教他用一個公式自己判斷"]},
+    {tag:"素材疲乏",desc:"廣告跑久沒人點的處理現場",q:[
+      "同一支廣告跑到第三週突然沒人點，我知道它累了",
+      "客戶說「素材明明很好看」，但數據告訴我觀眾已經看膩了",
+      "素材疲乏的訊號其實很早就出現，只是很多人沒發現",
+      "那天我請客戶別再等，馬上換素材，結果隔天就回血",
+      "為什麼你的廣告越跑越貴？多半是這個原因"]},
+    {tag:"會議轉折",desc:"開會當下的關鍵決定",q:[
+      "一場會議就改變了整個廣告策略，那天我說了三句話",
+      "客戶本來要收掉廣告，開完會他決定再撐一個月",
+      "會議上大家吵成一團，我請所有人先看這個數字",
+      "有時候客戶要的不是答案，是有人陪他一起做決定",
+      "那次開會我沒帶報表，只帶了一個問題"]},
+    {tag:"期待落差",desc:"老闆想要的和廣告能做到的距離",q:[
+      "客戶說「我要第一個月就回本」，我沒有直接答應他",
+      "老闆的期待和市場現實差很遠，我怎麼把話講清楚又不傷感情",
+      "那天我第一次跟客戶說「這個目標，做不到」",
+      "客戶把廣告當萬靈丹，我花了半小時解釋它不是",
+      "管理期待，其實比投廣告還難"]},
+    {tag:"名單品質",desc:"有量沒質的名單怎麼救",q:[
+      "客戶說「名單一堆但都不成交」，問題其實不在廣告",
+      "那天我打了三通電話給客戶的業務，才找到名單卡在哪",
+      "名單很便宜卻很爛，我寧願讓它變貴一點",
+      "為什麼你收到的名單都是來亂的？我當面拆給客戶看",
+      "把名單成本壓低不是本事，讓名單會成交才是"]},
+    {tag:"受眾拉扯",desc:"到底該投給誰的取捨",q:[
+      "客戶堅持「我的客人是所有人」，我笑著搖頭",
+      "那天我把客戶的受眾砍掉一半，成效反而更好",
+      "投得越廣越好？我用一個小實驗打破客戶的迷思",
+      "找對人比講對話更重要，這是我陪跑三年最深的體會",
+      "客戶問我「到底該投給誰」，我請他先回答我一個問題"]},
+    {tag:"追蹤壞掉",desc:"像素、事件出問題的排查現場",q:[
+      "後台顯示 0 轉換，我第一個反應不是慌，是打開追蹤",
+      "那天像素壞了三天沒人發現，我心疼到不行",
+      "數據突然歸零，多半不是廣告死了，是追蹤斷了",
+      "客戶換了官網卻沒跟我說，我花一小時才找到破口",
+      "追蹤這件事很無聊，但它壞掉的時候會要你的命"]},
+    {tag:"想停廣告",desc:"成效不好想收手時我怎麼勸",q:[
+      "客戶傳來一句「先停吧」，我知道他只是累了",
+      "那天我沒有勸客戶繼續，我陪他一起算了一筆帳",
+      "想停廣告的時候，通常是最不該停的時候",
+      "客戶說「錢燒完了」，我請他先別關，我們換個做法",
+      "有時候撐過那一週，整個局就不一樣了"]},
+    {tag:"淡季策略",desc:"生意冷的時候廣告怎麼投",q:[
+      "淡季客戶都想省錢，我卻建議他這時候更該出手",
+      "那天我跟客戶說「淡季是搶市佔的機會」，他愣了一下",
+      "生意冷的時候，廣告不是要衝業績，是要做這件事",
+      "別人淡季縮手，我陪客戶做的是這三件事",
+      "淡季怎麼投才不浪費錢？關鍵在目標換一個"]},
+    {tag:"新品上市",desc:"陪客戶上架第一天的緊張",q:[
+      "新品上架第一天，客戶跟我一樣盯著後台不敢眨眼",
+      "那天凌晨十二點上架，第一筆訂單進來我們一起歡呼",
+      "新品沒人買很正常，我陪客戶熬過最難的前三天",
+      "上市第一週該看的不是業績，是這個訊號",
+      "客戶問「第一天就沒賣是不是失敗」，我請他別急"]},
+    {tag:"價格戰",desc:"對手降價我們怎麼接招",q:[
+      "競品突然降價一半，客戶問我要不要跟，我說先別",
+      "那天我陪客戶做的不是降價，是把價值講清楚",
+      "打價格戰是最沒創意的做法，我給客戶另一條路",
+      "對手用低價搶客，我教客戶用這招守住",
+      "價格不是你唯一的武器，這是我一直跟客戶說的"]},
+    {tag:"客戶亂改",desc:"老闆手癢動了廣告之後",q:[
+      "客戶半夜自己改了預算，隔天後台一片混亂",
+      "那天我發現廣告被動過手腳，第一件事是先不生氣",
+      "老闆手癢很正常，我教他改之前先問自己一句話",
+      "客戶亂關廣告又叫我救回來，我笑著答應了",
+      "為什麼投手最怕老闆自己動後台？我講給你聽"]},
+    {tag:"小預算",desc:"錢不多卻要做出成績",q:[
+      "客戶一天只有五百塊預算，我還是想幫他做出東西",
+      "那天我把有限的錢花在刀口上，成效讓客戶驚訝",
+      "小預算不是不能玩，是不能亂玩，我這樣分配",
+      "錢少的時候，別想著全部都要，先鎖定一件事",
+      "客戶說「我沒有大品牌的預算」，我說沒關係我們有腦"]},
+    {tag:"後端爆掉",desc:"廣告太成功後端跟不上",q:[
+      "廣告太成功，客戶的客服電話被打爆，這也是問題",
+      "那天訂單湧進來，客戶卻慌了，因為出貨來不及",
+      "廣告開太猛不一定是好事，後端撐不住反而傷品牌",
+      "我陪客戶踩過的坑：流量來了，準備卻沒跟上",
+      "成交暴增的那週，我做的第一件事是叫客戶先緩"]},
+    {tag:"官網轉換",desc:"流量進來卻不下單",q:[
+      "廣告點擊很漂亮，但就是沒人買，問題在落地那一頁",
+      "那天我坐在客戶旁邊，用手機走一次購買流程",
+      "流量進來不下單，別怪廣告，先看看你的官網",
+      "客戶的結帳頁多按了兩步，就流失一半的人",
+      "把官網當作廣告的一部分，很多老闆都忘了這件事"]},
+    {tag:"即時成效",desc:"才第三天就問怎麼還沒賣",q:[
+      "客戶第三天就問「怎麼還沒賣」，我理解但也要說清楚",
+      "那天我畫了一條學習曲線給客戶看，他才安心",
+      "廣告不是自動販賣機，投錢不會馬上掉東西出來",
+      "客戶要即時成效，我教他該看的是這個先行指標",
+      "急著要結果，反而會做出最貴的決定"]},
+    {tag:"帳號出事",desc:"廣告帳號被封或受限的當下",q:[
+      "早上打開後台，帳號被封，那一秒我腦袋一片空白",
+      "那天客戶的帳號受限，我一邊安撫他一邊申訴",
+      "帳號出事別慌，我照這個順序一步步處理",
+      "被封帳號最怕客戶怪你，我先把責任講清楚",
+      "為什麼會被封？我把常見的雷區列給客戶看"]},
+    {tag:"陪跑成交",desc:"看著客戶終於做起來",q:[
+      "陪跑半年，那天客戶傳來一句「這個月獲利了」",
+      "看著一個快撐不下去的品牌活過來，我比誰都感動",
+      "那天客戶說「還好當初沒放棄」，我眼眶有點熱",
+      "陪跑最有成就感的，不是數字，是客戶重新有了信心",
+      "我陪過最難的一個客戶，最後變成我最好的朋友"]}
+  ]
+},
+{
+  id:"case-study", name:"廣告真實案例拆解", category:"custom",
+  desc:"你最大的優勢就是案例",
+  strategy:"用具體數字與前後對比展現操盤實力，把抽象的行銷變成看得見的成果，強化你的專業權威與說服力。",
+  directions:[
+    {tag:"名單成本",desc:"一支素材如何讓名單成本大降",q:[
+      "一支素材，把名單成本從 300 降到 180，我改了哪裡",
+      "那次名單成本下降 40%，關鍵只是換掉開頭三秒",
+      "客戶說名單太貴，我用一個測試把成本砍了一半",
+      "拆解一支爆量素材：為什麼它的名單這麼便宜",
+      "名單成本降下來的那天，客戶問我是不是作弊"]},
+    {tag:"同預算差三倍",desc:"為什麼一樣的錢結果差很多",q:[
+      "一樣的預算，A 品牌賺三倍，B 品牌打平，差在這裡",
+      "拆解兩個同產業客戶：錢一樣多，業績卻天差地遠",
+      "為什麼你花的錢跟別人一樣，成效卻輸這麼多",
+      "同樣月花十萬，結果差三倍，我把兩者攤開比給你看",
+      "預算不是關鍵，這三件事才決定你的成效"]},
+    {tag:"ROAS10倍",desc:"高 ROAS 是怎麼堆出來的",q:[
+      "ROAS 做到 10，很多人以為靠運氣，其實靠這套流程",
+      "拆解一個 ROAS 10 倍的案子，我從頭講到尾",
+      "那個月 ROAS 破 10，客戶問我能不能複製，我說能",
+      "高 ROAS 不是玄學，我把背後的三個動作講清楚",
+      "ROAS 10 倍的背後，是產品、素材、受眾都對了"]},
+    {tag:"素材小改大爆",desc:"改一個地方成效翻倍",q:[
+      "只改了封面第一張圖，這支素材點擊率翻了一倍",
+      "拆解一次小改動：一句話換位置，轉換就上來了",
+      "客戶不信「改一點點會有差」，我做給他看",
+      "同一支影片，換個開場，成效差了兩倍",
+      "有時候不用重拍，只要動對那一個地方"]},
+    {tag:"受眾找對",desc:"換一組受眾就活了",q:[
+      "換掉一組受眾，這個賣不動的產品突然爆了",
+      "拆解一次受眾實驗：原來他的客人跟他想的不一樣",
+      "客戶以為客人是年輕人，數據卻指向另一群",
+      "那次我把受眾往上調了十歲，成效立刻不同",
+      "找對人，比什麼優化都有效，這個案例就是證明"]},
+    {tag:"淡季逆勢",desc:"別人衰退他卻成長",q:[
+      "整個產業淡季衰退，這個客戶卻逆勢成長三成",
+      "拆解一個淡季逆襲的案子，他做對了哪一步",
+      "別人縮手的時候，這個老闆選擇加碼，結果賺翻",
+      "淡季怎麼成長？這個案例給你答案",
+      "那年冬天大家都在喊冷，只有他的業績在發燒"]},
+    {tag:"客單價",desc:"讓客人買更多的設計",q:[
+      "同樣的流量，把客單價拉高 50%，我動了這個設計",
+      "拆解一次客單價優化：不是漲價，是讓他多買",
+      "客戶問「怎麼讓客人買更多」，我改的是結帳這一步",
+      "一個加購設計，讓每筆訂單多賺兩百塊",
+      "提升客單價，比一直拉新客划算太多了"]},
+    {tag:"冷啟動",desc:"新品牌從 0 到有訂單",q:[
+      "一個沒人認識的新品牌，我怎麼帶它跑出第一筆訂單",
+      "拆解一次冷啟動：從 0 粉絲到穩定出單的三步",
+      "新品牌最難的是前三十天，這個案例我全記錄下來",
+      "客戶說「我沒有名氣」，我說沒關係，我們這樣做",
+      "從零開始的品牌，第一週該做的其實不是衝量"]},
+    {tag:"老品換新",desc:"賣不動的產品重新賣爆",q:[
+      "一個賣了三年的老產品，我怎麼讓它重新爆一次",
+      "拆解一次老品復活：沒改產品，只換了說法",
+      "客戶說「這個賣不動了」，我不信，結果我對了",
+      "老產品換個角度講，居然變成當月冠軍",
+      "很多產品不是不好，是故事講錯了"]},
+    {tag:"漏斗補洞",desc:"補一個環節轉換就上來",q:[
+      "轉換一直卡住，我把整個漏斗攤開，發現破在中間",
+      "拆解一次漏斗檢查：補一個環節，成交就順了",
+      "流量、加購、結帳，客戶漏在哪一段我一眼看出",
+      "那天我畫了一張漏斗圖，客戶終於懂錢漏在哪",
+      "轉換低不是廣告的錯，是漏斗有洞"]},
+    {tag:"再行銷",desc:"把猶豫的客人拉回來成交",q:[
+      "把加了購物車卻沒買的人拉回來，我用了這個組合",
+      "拆解一次再行銷：猶豫的客人，一句話就回頭",
+      "客戶忽略了再行銷，我幫他撿回一堆快流失的訂單",
+      "那些看過卻沒買的人，其實是最好成交的",
+      "再行銷做對，等於免費多一波業績"]},
+    {tag:"影音爆量",desc:"一支影片帶來大量訂單",q:[
+      "一支手機拍的影片，帶來整個月一半的訂單",
+      "拆解一支爆量影片：它憑什麼被演算法推爆",
+      "客戶不信影音有用，直到這支影片賣爆",
+      "那支影片沒特效沒配音，卻讓成交翻倍",
+      "會爆的影片，開頭三秒都做對了這件事"]},
+    {tag:"文案改句",desc:"改一句話轉換就不同",q:[
+      "改一句主標，這支廣告的轉換率就翻了一倍",
+      "拆解一次文案 A/B：一個字之差，成效差很多",
+      "客戶說「文案有差嗎」，我用數據回答他",
+      "那句原本很普通的話，換個講法就變成金句",
+      "文案不是寫得美，是寫得讓人想買"]},
+    {tag:"落地頁",desc:"頁面重寫後轉換率翻倍",q:[
+      "把落地頁重寫，轉換率從 1% 拉到 3%",
+      "拆解一次落地頁改版：我砍掉了一半的內容",
+      "客戶的頁面很漂亮卻沒人買，問題在這裡",
+      "那次改版沒加預算，光靠頁面就多賺一倍",
+      "好的落地頁，是幫客人做決定，不是塞資訊"]},
+    {tag:"預算重分配",desc:"錢挪對地方成效就出來",q:[
+      "沒加半毛預算，只是把錢挪對地方，成效就上來",
+      "拆解一次預算重分配：砍掉這組，全給那組",
+      "客戶以為要加碼，其實只要把錢花在對的地方",
+      "那次我關掉三組廣告，剩下的反而更好",
+      "預算怎麼分，比預算多少更關鍵"]},
+    {tag:"小眾做大",desc:"冷門商品也能爆",q:[
+      "一個超小眾的產品，我怎麼幫它找到對的人",
+      "拆解一次小眾爆單：受眾很窄，但每個都精準",
+      "客戶說「我的東西太冷門」，我說冷門才好做",
+      "小眾產品不用討好所有人，鎖定這群就夠了",
+      "那個沒人看好的冷門品，最後做成穩定金流"]},
+    {tag:"客訴轉機",desc:"危機處理後反而更好",q:[
+      "一次客訴差點毀掉品牌，最後反而讓它更被信任",
+      "拆解一次危機處理：客戶怎麼把負評變成口碑",
+      "那天客訴炸開，我陪客戶做的第一件事是先道歉",
+      "處理得好的客訴，會變成最好的廣告",
+      "危機不可怕，可怕的是逃避，這個案例證明了"]},
+    {tag:"會員回購",desc:"讓老客人一直回來買",q:[
+      "把老客人經營起來，這個品牌一半業績來自回購",
+      "拆解一次會員經營：讓客人一買再買的設計",
+      "客戶一直拉新客卻不賺，問題是老客人沒顧好",
+      "那次我幫客戶算了一筆帳：留住老客人多賺多少",
+      "回購率上來，廣告費才會越花越輕鬆"]},
+    {tag:"跨平台",desc:"廣告加內容一起發力",q:[
+      "廣告配上內容經營，這個品牌成長速度變兩倍",
+      "拆解一次跨平台操作：廣告拉新、內容養熟",
+      "客戶只投廣告不做內容，我幫他補上另一半",
+      "那次我把 IG 內容跟廣告串起來，效果加乘",
+      "廣告和內容不是二選一，是一起發力"]},
+    {tag:"從虧到賺",desc:"一個帳號從賠錢做到獲利",q:[
+      "接手一個一直賠錢的帳號，三個月後轉正",
+      "拆解一次翻身：我先做的不是投廣告，是止血",
+      "客戶已經賠到想放棄，我從這一步開始救",
+      "那個帳號從月虧變月賺，關鍵不是花更多錢",
+      "從虧到賺，最難的是先承認之前做錯了什麼"]}
+  ]
+},
+{
+  id:"biz-mind", name:"老闆商業思維", category:"custom",
+  desc:"分享創業與經營的商業思維",
+  strategy:"跳脫廣告技術，用經營者的高度談品牌與商業，吸引真正的企業主客群，做出與一般投手的差異化定位。",
+  directions:[
+    {tag:"別只看ROAS",desc:"ROAS 不是生意的全部",q:[
+      "為什麼我常勸老闆「不要只看 ROAS」，這裡面有陷阱",
+      "ROAS 很漂亮，生意卻沒賺，我遇過太多這種老闆",
+      "只盯 ROAS 的老闆，容易錯過真正重要的那個數字",
+      "那天我問客戶：ROAS 10 但你有賺到錢嗎？他答不出來",
+      "ROAS 是後照鏡，不是方向盤，這句話我常跟老闆說"]},
+    {tag:"客人不買",desc:"不一定是廣告問題",q:[
+      "客人不買，老闆第一個怪廣告，但真相往往不是",
+      "那天我告訴客戶：問題不在廣告，在你的產品",
+      "客人不下單的原因，可能藏在你沒注意的地方",
+      "廣告只能把人帶到門口，進不進來是另一回事",
+      "把所有問題都推給廣告，是最省事也最危險的想法"]},
+    {tag:"最該投資",desc:"老闆的錢該花在哪",q:[
+      "如果只能投資一件事，我會勸老闆先投這個",
+      "很多老闆猛花廣告費，卻忘了投資更重要的東西",
+      "那天客戶問「錢該花哪」，我沒說廣告，我說這個",
+      "老闆最該投資的，其實是看不到立即回報的那部分",
+      "把錢全砸廣告的老闆，通常撐不久，原因在這"]},
+    {tag:"品牌資產",desc:"怎麼建立長期價值",q:[
+      "什麼是品牌資產？我用一個很生活的例子講給老闆聽",
+      "廣告停了就沒生意，代表你還沒有品牌資產",
+      "那天我問客戶：如果明天不能投廣告，你還剩什麼",
+      "品牌資產是慢慢累積的，但它會在關鍵時刻救你",
+      "真正值錢的品牌，是客人會主動找你，而不是你追他"]},
+    {tag:"定價學問",desc:"價格背後的商業邏輯",q:[
+      "定價不是抓成本加利潤，這個觀念害慘很多老闆",
+      "那天我勸客戶漲價，他嚇一跳，結果業績反而更好",
+      "價格會說話，你賣多少錢，客人就怎麼看你",
+      "為什麼有些東西賣貴反而更好賣？我講給你聽",
+      "定價其實是在定位，這是很多老闆沒想過的"]},
+    {tag:"現金流",desc:"比業績更重要的事",q:[
+      "業績再好，現金流斷了照樣倒，這是老闆的惡夢",
+      "那天客戶業績破紀錄，卻跟我說他快週轉不過來",
+      "很多老闆看業績，卻沒在看真正會要命的現金流",
+      "賺錢跟有錢是兩回事，這個道理我學了很久",
+      "為什麼會賺錢的公司也會倒？答案就在現金流"]},
+    {tag:"選對客人",desc:"不是所有生意都要接",q:[
+      "學會拒絕客人，是老闆很重要的一課",
+      "那天我勸客戶「這種客人別接」，他一開始不理解",
+      "接錯客人，比沒客人還累，我踩過這個坑",
+      "不是所有生意都值得做，有些會拖垮你",
+      "選對客人，你的生意會做得又輕鬆又賺"]},
+    {tag:"產品為本",desc:"廣告救不了爛產品",q:[
+      "我常跟老闆說：廣告救不了一個不好的產品",
+      "那天我拒絕了一個客戶，因為他的產品真的不行",
+      "廣告能放大好產品，也會加速爛產品的死亡",
+      "產品才是地基，廣告只是把人請進來",
+      "與其一直改廣告，不如先把產品改好"]},
+    {tag:"長期短期",desc:"短期業績與長期品牌的拉扯",q:[
+      "老闆總想馬上見效，但有些事得慢慢來",
+      "那天我勸客戶別為了這個月業績，賠掉長期信任",
+      "短期衝業績的做法，常常在偷未來的錢",
+      "怎麼平衡「現在要活」和「未來要好」，我這樣看",
+      "只做短期的生意，會越做越累，我陪很多老闆走過"]},
+    {tag:"授權放手",desc:"老闆該不該事必躬親",q:[
+      "老闆什麼都自己來，公司反而長不大",
+      "那天客戶累到崩潰，問題是他不敢放手",
+      "學會授權，是老闆從「做事」到「經營」的關鍵",
+      "凡事親力親為的老闆，其實是公司的天花板",
+      "放手不是不管，是換一種方式管，我這樣跟老闆說"]},
+    {tag:"差異化",desc:"為什麼你要跟別人不一樣",q:[
+      "跟別人一樣，就只能拚價格，這是死路",
+      "那天我問客戶：你憑什麼讓客人選你不選別人",
+      "差異化不是與眾不同就好，是要有人買單的不同",
+      "找到你的獨特之處，廣告才好打",
+      "在紅海裡，能活下來的都是敢不一樣的"]},
+    {tag:"客戶終身值",desc:"一個客人一生的價值",q:[
+      "別只算這一單賺多少，要算這個客人一輩子值多少",
+      "那天我教客戶算 LTV，他才發現自己一直虧本拉客",
+      "懂 LTV 的老闆，敢花別人不敢花的獲客成本",
+      "一個客人不是買一次，經營對了他會買很多次",
+      "把客戶當一次性交易，你永遠打不贏懂經營的人"]},
+    {tag:"通路選擇",desc:"該不該上架大平台",q:[
+      "上不上大平台？這個決定我陪很多老闆想過",
+      "那天客戶問我要不要上架某平台，我請他先算這筆帳",
+      "大平台帶來流量，也會拿走你的利潤和客人",
+      "通路不是越多越好，選錯反而分散力氣",
+      "有自己的通路，你才真正握著主導權"]},
+    {tag:"數字管理",desc:"老闆該看哪些數字",q:[
+      "老闆每天該看的數字，其實不用超過五個",
+      "那天我幫客戶做了一張儀表板，他終於睡得著了",
+      "被一堆報表淹沒的老闆，通常抓不到重點",
+      "看對數字，決策就快；看錯數字，越忙越亂",
+      "數字是拿來做決定的，不是拿來焦慮的"]},
+    {tag:"危機決策",desc:"生意出狀況怎麼決定",q:[
+      "生意出狀況那一刻，老闆的決定決定了結局",
+      "那天客戶遇到大危機，我陪他先做的是這件事",
+      "危機當下最怕慌，我教老闆先問三個問題",
+      "越是關鍵時刻，越要冷靜地看數據做決定",
+      "我陪客戶撐過的那些危機，事後都變成養分"]},
+    {tag:"合作資源",desc:"一個人做不完所有事",q:[
+      "為什麼我一直勸老闆要學會借力，而不是硬扛",
+      "那天客戶什麼都想自己來，我請他先盤點資源",
+      "懂得合作的老闆，走得比誰都快，BNI 教會我的",
+      "一個人可以走很快，但一群人才能走很遠",
+      "找到對的夥伴，等於幫你的生意裝上翅膀"]},
+    {tag:"品牌故事",desc:"為什麼你的故事值錢",q:[
+      "你的創業故事，可能是你最貴的行銷素材",
+      "那天我請客戶說他為什麼創業，說完連我都被打動",
+      "客人買的不只是產品，是背後那個讓他認同的故事",
+      "會說故事的品牌，不用一直打折也有人買",
+      "你的故事沒人知道，等於把最好的武器藏起來"]},
+    {tag:"成本結構",desc:"賺錢的生意長什麼樣",q:[
+      "會賺錢的生意，成本結構長得跟你想的不一樣",
+      "那天我幫客戶把成本一項一項拆開，他嚇了一跳",
+      "很多老闆以為在賺錢，其實只是在幫別人打工",
+      "看懂成本結構，你才知道錢到底漏在哪",
+      "毛利、淨利、變動成本，這幾個數字老闆一定要懂"]},
+    {tag:"擴張節奏",desc:"什麼時候該放大",q:[
+      "什麼時候該踩油門放大？時機不對會摔得很慘",
+      "那天我勸客戶「先別急著擴張」，他後來很感謝我",
+      "生意剛好起來就想擴張，很多人死在這一步",
+      "擴張前要先確認這件事穩了，不然只是放大問題",
+      "放大是把雙面刃，我陪老闆一起判斷時機"]},
+    {tag:"經營心態",desc:"撐過低潮的思維",q:[
+      "創業最難的不是沒生意，是撐過那段看不到光的日子",
+      "那天客戶想放棄，我跟他分享我自己撐過的低潮",
+      "經營者的心態，決定了公司能走多遠",
+      "低潮的時候別急著做大動作，先穩住自己",
+      "撐得住的老闆，最後都不是最聰明的，是最韌的"]}
+  ]
+},
+{
+  id:"biz-behind", name:"創業幕後日常", category:"custom",
+  desc:"讓大家認識真正的 Connie",
+  strategy:"用真實的人味拉近距離，讓專業形象之外多一層溫度與信任，把粉絲從『看你的專業』變成『喜歡你這個人』。",
+  directions:[
+    {tag:"公司日常",desc:"經營一間公司的真實一天",q:[
+      "很多人以為當老闆很威風，我今天的一天其實是這樣過的",
+      "早上第一件事不是喝咖啡，是打開後台看昨天的數字",
+      "經營公司最累的不是工作，是那些沒人看到的雜事",
+      "那天我從早到晚沒坐下超過十分鐘，回到家癱在沙發上",
+      "創業之後我才懂，老闆是全公司最沒有下班時間的人"]},
+    {tag:"客戶會議",desc:"開會前後的心情與觀察",q:[
+      "每次開會前我都會提早十分鐘到，這個習慣救過我很多次",
+      "那場會議客戶臉很臭，我知道問題不在廣告，在別的地方",
+      "開會最怕遇到什麼都說好，散會後又全部改的客戶",
+      "有一種會議，走出來的時候你會覺得這個客戶值得長期陪",
+      "客戶在會議上突然掉眼淚，那一刻我放下了所有的報表"]},
+    {tag:"BNI交流",desc:"商會人脈的故事與收穫",q:[
+      "第一次去 BNI 我超級不自在，站在角落不知道跟誰講話",
+      "那個在商會認識的人，後來變成我最重要的合作夥伴",
+      "很多人說人脈是虛的，我在 BNI 學到的剛好相反",
+      "早上七點的商會例會，我一開始超抗拒，現在卻很感謝它",
+      "在商會裡我學會的不是拉業績，是怎麼真心幫別人"]},
+    {tag:"演講分享",desc:"站上台前的緊張與成長",q:[
+      "上台前五分鐘，我的手是抖的，這件事我從沒跟人說過",
+      "第一次公開演講講得零零落落，那晚我在車上哭了",
+      "那天台下有人聽完跟我說謝謝，我覺得一切都值得了",
+      "從怕上台到愛上台，我花了整整兩年",
+      "站在台上分享，才發現原來我的經驗對別人這麼有用"]},
+    {tag:"工作生活平衡",desc:"在忙碌裡找回自己",q:[
+      "創業之後我最常被問：你都怎麼平衡工作跟生活，老實說我還在學",
+      "那天我第一次狠下心關掉手機，陪家人吃了一頓完整的飯",
+      "工作和生活從來不是天平，我後來換了一種想法",
+      "忙到連自己喜歡什麼都忘了，那是我最危險的一段時間",
+      "我開始每週留半天給自己，這個決定救了我"]},
+    {tag:"創業踩坑",desc:"走過的那些冤枉路",q:[
+      "創業第一年我犯過最貴的一個錯，代價是半年的獲利",
+      "那次我太相信一個人，結果被狠狠上了一課",
+      "如果能回到剛創業的時候，我最想阻止自己做這件事",
+      "把利潤全部再投進去，那是我踩過最痛的一個坑",
+      "創業路上沒有白走的路，但有些坑真的可以不用踩"]},
+    {tag:"團隊夥伴",desc:"跟一起打拚的人的故事",q:[
+      "第一個願意跟我一起拚的夥伴，我到現在都很感激他",
+      "那天員工跟我提離職，我一邊祝福一邊心裡難過",
+      "帶團隊我才發現，我不只要會做事，還要會帶人",
+      "有一種夥伴，會在你最累的時候默默把事情扛下來",
+      "團隊不是我的員工，是陪我一起長大的人"]},
+    {tag:"深夜工作",desc:"一個人加班的時刻",q:[
+      "凌晨一點，整棟辦公室只剩我，還有一盞燈亮著",
+      "那晚我改提案改到天亮，只為了客戶隔天的會議",
+      "深夜工作的時候，最清楚自己到底為了什麼在撐",
+      "一個人加班的夜晚，其實藏著創業最真實的樣子",
+      "有人問我值得嗎，看著客戶成交的那一刻，我覺得值得"]},
+    {tag:"接案抉擇",desc:"接與不接的掙扎",q:[
+      "那個案子錢很多，但我最後還是拒絕了，原因是這個",
+      "剛創業時我什麼案子都接，後來才學會挑客戶",
+      "接下一個明知會很痛苦的案子，我猶豫了三天",
+      "有些生意，賺了錢卻賠了心情，我不想再做第二次",
+      "學會拒絕，是我創業以來最重要的一堂課"]},
+    {tag:"收入不穩",desc:"創業初期的錢關",q:[
+      "創業第一年，我最怕的是月底看到帳戶餘額的那一刻",
+      "那個月收入掛零，我還是硬著頭皮把員工薪水發出去",
+      "從固定月薪到收入不穩，那種不安全感沒人懂",
+      "撐過最窮的那段日子，我學會的是怎麼跟錢和平相處",
+      "創業不是一直賺，是要撐過那些沒收入還要付錢的月份"]},
+    {tag:"家人支持",desc:"背後那些默默的力量",q:[
+      "創業最難的時候，是家人的一句話把我拉住的",
+      "那天我媽什麼都沒問，只煮了一桌菜等我回家",
+      "家人不一定懂我在做什麼，但他們一直都在",
+      "有一種支持，是不多說，但永遠站在你這邊",
+      "謝謝那些在我最不確定的時候，還相信我的人"]},
+    {tag:"自我懷疑",desc:"撐不下去的那些夜",q:[
+      "那晚我認真想過要不要放棄，坐在車上很久沒發動",
+      "創業久了會有一種孤獨，是沒人能替你做決定的孤獨",
+      "我也會懷疑自己是不是不夠好，這件事我很少講",
+      "撐不下去的時候，我靠的不是雞湯，是這個念頭",
+      "自我懷疑不可怕，可怕的是被它困住走不出來"]},
+    {tag:"小確幸",desc:"創業路上的療癒時刻",q:[
+      "忙了一整天，一杯熱咖啡就能讓我重新有力氣",
+      "那天走路回家，天空的顏色美到我停下來拍了一張",
+      "創業很累，但這些小小的瞬間讓我覺得日子還是甜的",
+      "有時候療癒不需要很大，一個客戶的謝謝就夠了",
+      "我學會在忙碌裡，收集這些微小的幸福"]},
+    {tag:"學習充電",desc:"上課進修的收穫",q:[
+      "當老闆之後我更愛上課，因為我知道自己還差得遠",
+      "那堂課花了不少錢，但一句話就讓我回本了",
+      "停止學習的老闆，公司也會跟著停在原地",
+      "我把賺到的錢，一部分固定拿來投資自己的腦袋",
+      "上完課最重要的不是筆記，是回去真的去做"]},
+    {tag:"客戶感謝",desc:"被肯定的溫暖瞬間",q:[
+      "客戶傳來一句『還好當初找了你』，我看著螢幕笑了很久",
+      "那天收到客戶寄來的小禮物，附了一張手寫卡片",
+      "被客戶肯定的那一刻，是我覺得最有成就感的時候",
+      "有一種感謝，會讓你想繼續把這件事做得更好",
+      "客戶的一句真心話，比任何獎項都讓我感動"]},
+    {tag:"時間管理",desc:"一人分飾多角的忙",q:[
+      "當老闆要同時是業務、投手、客服、會計，還要顧心情",
+      "那天我列了待辦清單，長到我自己都笑出來",
+      "我怎麼在一天裡塞下這麼多事？靠的是這個方法",
+      "學會時間管理之前，我是被時間追著跑的人",
+      "最忙的時候我反而更慢，因為慌了只會更亂"]},
+    {tag:"拒絕的勇氣",desc:"學會說不",q:[
+      "以前我什麼都答應，直到有一天我學會說『這個我不做』",
+      "那次我拒絕了一個大客戶，說出口的時候心臟狂跳",
+      "會拒絕的人，才有空間做真正重要的事",
+      "答應每個人，最後會誰都照顧不好，包括自己",
+      "說不，是我創業路上學得最慢也最值得的一課"]},
+    {tag:"慶祝時刻",desc:"達標的喜悅",q:[
+      "那天公司達標，我請全團隊吃了一頓好的",
+      "看著目標數字被突破的那一刻，我們一起歡呼",
+      "創業要記得慶祝，不然你會忘了自己走了多遠",
+      "小小的達標也值得慶祝，這是我後來才懂的事",
+      "那個晚上我們沒談工作，只是好好開心了一次"]},
+    {tag:"品牌初心",desc:"為什麼開始做這件事",q:[
+      "很多人問我為什麼創業，答案其實很簡單也很任性",
+      "那個讓我決定辭職創業的瞬間，我到現在都記得",
+      "走到現在有時會累，但想起最初的那個念頭就有力氣了",
+      "我做這件事不只是為了賺錢，是因為我真的相信它",
+      "初心很容易在忙碌裡走丟，我常提醒自己回頭看看"]},
+    {tag:"給過去的自己",desc:"回望創業起點",q:[
+      "如果能跟剛創業的自己說一句話，我會說：別怕，你撐得過",
+      "那個什麼都不懂還是勇敢跳下去的我，謝謝你",
+      "回頭看才發現，最難的那段其實把我變強了",
+      "我想告訴以前的自己：慢一點沒關係，方向對就好",
+      "走了這麼遠，最想感謝的是當初沒有放棄的自己"]}
+  ]
+},
+{
+  id:"travel-series", name:"旅遊連載", category:"general",
+  desc:"用連載的方式帶讀者一起旅行",
+  strategy:"用連續的旅程故事營造沉浸感，讓觀眾追著你的行程走，培養黏著度與追蹤習慣。",
+  directions:[
+    {tag:"出發前",desc:"打包與期待的心情",q:[
+      "出發前一晚我興奮到睡不著，行李箱開了又關",
+      "這趟旅行是我臨時決定的，訂完票那一刻超爽",
+      "打包的時候我才發現，原來我想帶走的是逃離日常",
+      "出發前總會有點焦慮，怕這個怕那個，最後還是走了",
+      "為了這趟旅行我存了好久，終於要出發了"]},
+    {tag:"抵達第一眼",desc:"落地的震撼",q:[
+      "走出機場的那一刻，空氣的味道就跟家裡完全不一樣",
+      "第一眼看到這座城市，我整個人愣在原地",
+      "抵達的瞬間，所有的疲憊都被眼前的畫面沖掉了",
+      "落地才發現這裡跟照片差好多，而且是好的那種",
+      "第一次來到這裡，我忍不住深呼吸了一口"]},
+    {tag:"迷路時刻",desc:"走錯路的意外",q:[
+      "那天我徹底迷路，卻意外走進了最美的一條小巷",
+      "地圖顯示到了，但我怎麼找都找不到，急得滿頭汗",
+      "迷路的時候我沒有慌，反而慢下來看到很多風景",
+      "走錯路走到一個沒有觀光客的地方，那才是真正的當地",
+      "旅行最好玩的往往不是計畫，是那些迷路的意外"]},
+    {tag:"當地人情",desc:"路上遇到的溫暖",q:[
+      "那位阿姨看我迷路，直接放下手邊的事帶我走過去",
+      "語言不通，但一個微笑就讓我覺得被接住了",
+      "當地人請我吃了一份沒吃過的東西，那份好意我記到現在",
+      "旅行最溫暖的不是風景，是路上遇到的那些陌生人",
+      "他什麼都沒收我的，只說了一句『歡迎來到這裡』"]},
+    {tag:"一個人旅行",desc:"獨旅的自由與孤獨",q:[
+      "一個人旅行最爽的是，想去哪就去哪，不用問任何人",
+      "那天晚上我一個人吃飯，第一次覺得孤獨也可以很自在",
+      "獨旅教會我最重要的事，是好好跟自己相處",
+      "一個人走在陌生的街上，我聽見了自己的聲音",
+      "有人問我一個人不無聊嗎，我說剛好相反"]},
+    {tag:"交通冒險",desc:"搭車搭船的故事",q:[
+      "那班車誤點三小時，我卻在月台上遇見了整趟旅程最有趣的人",
+      "第一次自己搭當地的車，緊張到全程盯著站名",
+      "搭上一班沒查過的車，就這樣晃到了一個意外的地方",
+      "那趟夜車我睡睡醒醒，窗外的風景美得像夢",
+      "交通的過程本身，也是旅行的一部分"]},
+    {tag:"語言不通",desc:"比手畫腳的趣事",q:[
+      "點餐點到最後，我只好指著別人桌上的菜說『我要那個』",
+      "語言不通的時候，我發現笑容是最好用的翻譯",
+      "那次比手畫腳半天，最後我們兩個都笑出來了",
+      "聽不懂也講不通，但我們還是完成了一場對話",
+      "語言不通反而讓我更專心去感受，而不是聽懂"]},
+    {tag:"意外驚喜",desc:"計畫外的美好",q:[
+      "那天原本的行程全泡湯，卻換來一段最難忘的意外",
+      "轉角遇到一場當地的慶典，我剛好躬逢其盛",
+      "計畫之外的驚喜，往往是旅行最珍貴的部分",
+      "沒有安排的那個下午，反而變成整趟最愛的時光",
+      "旅行教我學會放下計畫，去接住那些突然的美好"]},
+    {tag:"旅途低潮",desc:"想家的時候",q:[
+      "旅行到一半我突然好想家，坐在異鄉的長椅上發呆",
+      "那晚我一個人在旅館，第一次覺得旅行也會累",
+      "旅途的低潮沒人會拍出來，但它是真實的一部分",
+      "想家的時候，我打了通電話回去，聽到聲音就好多了",
+      "原來離開久了才會懂，家的意義是什麼"]},
+    {tag:"特色住宿",desc:"難忘的落腳處",q:[
+      "那間民宿的老闆，把我當成回家的孩子在照顧",
+      "住進一間百年老屋，晚上聽著木頭的聲音入睡",
+      "旅館的窗景美到我捨不得拉上窗簾",
+      "那個晚上住的地方很簡陋，卻是我睡得最好的一晚",
+      "有些住宿不只是睡覺的地方，是旅程的一部分回憶"]},
+    {tag:"街頭觀察",desc:"慢慢逛的發現",q:[
+      "我最愛的旅行方式，就是沒有目的地在街上亂走",
+      "坐在路邊看人來人往，我看見這座城市真正的樣子",
+      "那條街上的每個小細節，都藏著當地人的生活",
+      "慢慢逛才會發現，那些觀光指南不會寫的角落",
+      "旅行不一定要打卡，有時候只是好好看看這個地方"]},
+    {tag:"旅伴故事",desc:"一起旅行的人",q:[
+      "跟對的人旅行，連塞車都可以笑成一團",
+      "那趟旅行讓我看見了朋友完全不同的一面",
+      "旅伴會放大你們的感情，好的壞的都會被看見",
+      "我們在旅途上吵了一架，卻因此更了解彼此",
+      "能一起旅行還不吵架的，真的要好好珍惜"]},
+    {tag:"花錢與省錢",desc:"旅費的取捨",q:[
+      "那餐我猶豫很久，最後還是點了，因為旅行就這一次",
+      "為了省住宿費，我住過一晚超克難的地方",
+      "旅行的錢該省還是該花，我後來想通了一件事",
+      "有些體驗貴一點也值得，有些省下來剛剛好",
+      "花在體驗上的錢，我從來不後悔"]},
+    {tag:"天氣考驗",desc:"遇到壞天氣",q:[
+      "計畫好的行程被一場大雨全打亂，我卻意外開心",
+      "那天冷到不行，我躲進一間小店喝了最暖的一杯",
+      "壞天氣的旅行，反而讓我記得特別清楚",
+      "下雨的城市有另一種美，我以前都沒發現",
+      "天氣不好時的旅行，最考驗你的心情有多好"]},
+    {tag:"深夜異鄉",desc:"夜裡的城市",q:[
+      "深夜的異鄉街道，安靜得能聽見自己的腳步聲",
+      "那晚我睡不著，走出旅館看見了完全不同的城市",
+      "夜裡的城市卸下白天的妝，露出最真的樣子",
+      "一個人走在異鄉的夜裡，我竟然覺得很平靜",
+      "深夜的便利商店，是旅人最溫暖的避風港"]},
+    {tag:"帶回的東西",desc:"紀念品與回憶",q:[
+      "那個小東西不值錢，卻裝著我整趟旅行的回憶",
+      "我很少買紀念品，但這次我為它破例了",
+      "帶回來的不只是伴手禮，是那些說不完的故事",
+      "每次看到這個，我就想起那天那個下午",
+      "旅行帶回最珍貴的，從來不是行李箱裡的東西"]},
+    {tag:"文化衝擊",desc:"不一樣的生活方式",q:[
+      "他們的生活步調慢到讓我一開始很不習慣",
+      "那件在我看來很奇怪的事，對他們卻超級自然",
+      "旅行最有趣的，是看見另一種活法也可以",
+      "文化衝擊讓我開始反省自己習以為常的事",
+      "原來世界這麼大，我的理所當然只是其中一種"]},
+    {tag:"重遊舊地",desc:"再訪的心情",q:[
+      "睽違多年再回到這裡，變的是它，還是我",
+      "那家店還在，老闆卻已經換人，我站在門口好久",
+      "重遊舊地才發現，我記得的其實是當時的自己",
+      "同一個地方，不同的年紀來，感受完全不一樣",
+      "有些地方值得再來一次，因為你已經不是同一個人"]},
+    {tag:"回程",desc:"踏上歸途的感受",q:[
+      "坐上回程的班機，我已經開始想念這裡了",
+      "旅行的最後一天，時間總是走得特別快",
+      "踏上歸途的那一刻，心裡有點空又有點滿",
+      "回家的路上我在想，這趟旅行到底給了我什麼",
+      "每次旅行結束，我都告訴自己：這不是結束，是充飽電"]},
+    {tag:"旅行改變我",desc:"旅程帶來的轉變",q:[
+      "這趟旅行之後，我對很多事情的看法都不一樣了",
+      "旅行沒有解決我的問題，但它讓我看得更開了",
+      "走過那些路，我才知道自己原來這麼有勇氣",
+      "旅行教會我的，是回到日常之後才慢慢懂的",
+      "有些改變不是旅行當下發生的，是回來以後才長出來的"]}
+  ]
+},
+{
+  id:"food-explore", name:"美食探索", category:"general",
+  desc:"用食物勾起共鳴與食慾",
+  strategy:"用食物連結情感與記憶，天生適合分享與收藏，是最容易引發互動的內容類型。",
+  directions:[
+    {tag:"巷弄小店",desc:"藏在巷子裡的味道",q:[
+      "這家店藏在巷子最裡面，沒人帶根本找不到",
+      "門口不起眼，一坐下來我就知道找對地方了",
+      "巷弄裡的老店，往往藏著整條街最好的味道",
+      "那家小店只有四張桌子，卻讓我念念不忘",
+      "越難找的店，通常越不會讓你失望"]},
+    {tag:"排隊名店",desc:"值不值得排",q:[
+      "排了一個半小時，我坐下來的第一口就懂了",
+      "那家爆紅名店，我排完之後只想說一句實話",
+      "到底值不值得排？我幫你排了，答案在這裡",
+      "排隊排到懷疑人生，結果那一口讓我原諒了一切",
+      "有些名店是真的好吃，有些只是很會排隊"]},
+    {tag:"家常味道",desc:"家裡的那道菜",q:[
+      "外面再好吃的餐廳，都比不上我媽那一鍋",
+      "那道菜的味道，是我離家之後最想念的東西",
+      "長大後才發現，家常菜是最難複製的味道",
+      "每次吃到這道菜，我就想起小時候的廚房",
+      "家的味道不用山珍海味，一碗飯就夠了"]},
+    {tag:"深夜食堂",desc:"宵夜的療癒",q:[
+      "凌晨兩點的這一碗，治好了我一整天的委屈",
+      "深夜的那家店，是我加班後唯一的慰藉",
+      "宵夜的療癒力，只有累過的人才懂",
+      "那晚我一個人吃著這碗，突然覺得日子沒那麼難",
+      "深夜食堂賣的不只是食物，是一個能喘口氣的地方"]},
+    {tag:"第一次吃",desc:"嘗鮮的體驗",q:[
+      "第一次吃這個，我抱著懷疑，結果一口就愛上",
+      "朋友硬要我試，沒想到打開了新世界的大門",
+      "第一次嚐到這個味道，我整個人愣住了",
+      "本來以為會踩雷，結果變成我的新愛店",
+      "嘗鮮這件事，偶爾勇敢一次會有驚喜"]},
+    {tag:"難忘的一餐",desc:"記憶中的味道",q:[
+      "那一餐我到現在都記得，不是因為好吃，是因為那個人",
+      "有一頓飯，我這輩子大概都忘不掉",
+      "難忘的一餐，往往和味道無關，和當下有關",
+      "多年後我還是會想起那天那頓飯的溫度",
+      "食物會被吃完，但那一餐的記憶留了下來"]},
+    {tag:"銅板美食",desc:"便宜又好吃",q:[
+      "五十塊就能吃到這麼滿足，我覺得賺到了",
+      "這家銅板美食，好吃到我懷疑老闆有沒有賺錢",
+      "誰說便宜沒好貨，這一份就是最好的反駁",
+      "口袋不深的時候，這些銅板美食救了我",
+      "最厲害的美食不一定貴，這份就是證明"]},
+    {tag:"早餐時光",desc:"一天的開始",q:[
+      "我願意為了這份早餐早起半小時，值得",
+      "一份好的早餐，能決定我一整天的心情",
+      "那家早餐店的阿姨，記得我每天點什麼",
+      "早晨的第一口，是我對自己最溫柔的照顧",
+      "好好吃頓早餐，是我對抗忙碌生活的方式"]},
+    {tag:"甜點時刻",desc:"療癒系甜食",q:[
+      "心情差的時候，一口甜點就能把我救回來",
+      "那塊蛋糕甜到我瞬間原諒了整個世界",
+      "甜點的存在，就是為了在難過的時候陪你",
+      "我知道會胖，但這一口的快樂值得",
+      "療癒不需要理由，有時候一塊甜點就夠了"]},
+    {tag:"市場尋寶",desc:"傳統市場的美味",q:[
+      "傳統市場裡藏著最真實的美味，只是很多人不敢走進去",
+      "那攤沒有招牌，卻是整個市場最多人排的",
+      "逛市場的樂趣，是那些沒被觀光化的味道",
+      "市場阿伯多送我一份，說我看起來很餓",
+      "最道地的美食，往往就在最不起眼的市場攤位"]},
+    {tag:"一個人吃飯",desc:"獨食的自在",q:[
+      "一個人吃飯不孤單，反而是我一天最放鬆的時候",
+      "那天我一個人坐在窗邊，慢慢吃完一整餐",
+      "獨食教會我，好好吃飯也是愛自己的一種方式",
+      "以前怕一個人吃飯，現在卻很享受這種自在",
+      "一個人吃飯，你才真正嚐得到食物的味道"]},
+    {tag:"踩雷經驗",desc:"難吃到記住",q:[
+      "那家店難吃到，我到現在都記得那個味道",
+      "被網路推爆騙去吃，結果我想罵人",
+      "踩雷也是一種體驗，至少我幫你先試過了",
+      "有些雷踩了會生氣，有些踩了會笑",
+      "那餐錢花得心痛，但故事很值得講"]},
+    {tag:"老店故事",desc:"傳承的味道",q:[
+      "這家店開了四十年，老闆的手還記得每一個味道",
+      "那位老師傅說，這個味道是他爸傳給他的",
+      "老店賣的不只是食物，是一整代人的回憶",
+      "看著第二代接手，同樣的味道有了新的溫度",
+      "有些味道會消失，還好這家店還在堅持"]},
+    {tag:"咖啡日常",desc:"一杯咖啡的儀式",q:[
+      "每天的第一杯咖啡，是我跟自己約好的儀式",
+      "那家咖啡店的老闆，煮出我喝過最有溫度的一杯",
+      "一杯咖啡的時間，是我一天裡難得的暫停",
+      "我不是需要咖啡因，是需要那十分鐘的自己",
+      "找到一家對的咖啡店，就像找到一個避難所"]},
+    {tag:"異國料理",desc:"舌尖上的旅行",q:[
+      "沒辦法出國，就用一頓異國料理帶自己去旅行",
+      "第一口就把我帶回那個城市的那條街",
+      "異國料理最迷人的，是它藏著另一個國家的日常",
+      "那家店的味道，正不正宗我不知道，但我喜歡",
+      "用食物環遊世界，是最省錢的旅行方式"]},
+    {tag:"季節限定",desc:"只有這時候吃得到",q:[
+      "這個味道一年只有這幾週，錯過再等一年",
+      "季節限定的魔力，就是那種吃了才算過了這一季",
+      "為了這個限定，我特地跑了一趟",
+      "有些味道就是要在對的季節吃，才會對味",
+      "季節限定提醒我，有些美好本來就該珍惜"]},
+    {tag:"夜市回憶",desc:"夜市的煙火氣",q:[
+      "夜市的味道，是我對這座城市最初的記憶",
+      "那攤從我小時候吃到現在，還是同一個位置",
+      "夜市的迷人不只是好吃，是那股熱鬧的煙火氣",
+      "牽著人潮慢慢走，這才是我認識的夜市",
+      "長大後才懂，夜市裝著的是一整個童年"]},
+    {tag:"手作料理",desc:"自己下廚的成就",q:[
+      "第一次自己做這道菜，成品醜歸醜但超有成就感",
+      "那天我照著食譜做，廚房像戰場但結果意外好吃",
+      "自己下廚才知道，一頓飯背後有多少工",
+      "煮給在乎的人吃，是我表達愛的方式",
+      "手作料理不完美，卻有餐廳給不了的溫度"]},
+    {tag:"聚餐時光",desc:"和誰吃比吃什麼重要",q:[
+      "那頓飯吃什麼我忘了，但我記得我們笑到肚子痛",
+      "跟對的人吃飯，路邊攤也能變成大餐",
+      "聚餐最珍貴的從來不是菜，是圍在一起的那些人",
+      "好久沒見的朋友一頓飯，什麼都聊開了",
+      "食物會涼，但一起吃飯的溫度會留很久"]},
+    {tag:"食物與回憶",desc:"味道連著的往事",q:[
+      "每次吃到這個味道，我就想起一個已經不在的人",
+      "有一種食物，一入口眼淚就差點掉下來",
+      "味道是最誠實的記憶，它比照片還會提醒你",
+      "那道菜連著一段我以為已經忘記的往事",
+      "食物真正的魔力，是它能把時間帶回來"]}
+  ]
+},
+{
+  id:"career-change", name:"職涯轉換", category:"general",
+  desc:"真實的職涯掙扎與轉變",
+  strategy:"用真實的職涯掙扎引發上班族的深度共鳴，是最容易被收藏與轉發的『說中心聲』型內容。",
+  directions:[
+    {tag:"想離職",desc:"動了離開的念頭",q:[
+      "那天我盯著電腦螢幕，第一次認真想：我還要待多久",
+      "壓垮我的不是那件大事，是每天累積的一點點",
+      "想離職的念頭一旦冒出來，就再也壓不回去了",
+      "我不是討厭工作，是討厭那個在工作裡越來越陌生的自己",
+      "很多人問我為什麼想走，其實理由很簡單也很痛"]},
+    {tag:"遞辭呈",desc:"說出口的那一刻",q:[
+      "把辭呈遞出去的那一秒，我的手是抖的",
+      "說出『我想離職』那句話，我練習了好多次",
+      "遞辭呈那天，我以為會很爽，結果是複雜的",
+      "主管問我要不要再考慮，我搖了搖頭",
+      "那一刻我才發現，原來我早就決定好了"]},
+    {tag:"轉職迷惘",desc:"不知道下一步",q:[
+      "離開之後我才發現，我根本不知道自己要什麼",
+      "那段沒工作的日子，焦慮到每天早上醒來都心慌",
+      "轉職最難的不是找工作，是搞清楚自己想去哪",
+      "身邊的人都有方向，只有我還在原地打轉",
+      "迷惘的時候我做的第一件事，是先停下來問自己"]},
+    {tag:"面試現場",desc:"緊張的求職經驗",q:[
+      "面試前我在廁所深呼吸了十次，還是緊張到爆",
+      "那場面試我答得零零落落，走出來很想找地洞鑽",
+      "面試官問了一個問題，讓我當場愣住",
+      "被打槍很多次之後，我學會了怎麼看待拒絕",
+      "那次面試我沒上，卻讓我更清楚自己缺什麼"]},
+    {tag:"薪水抉擇",desc:"錢與理想的拉扯",q:[
+      "一個錢多但無聊，一個錢少但喜歡，我掙扎了好久",
+      "為了理想少賺一截，這個決定我做得不輕鬆",
+      "薪水不是全部，但薪水也真的很重要，這很現實",
+      "那份高薪我最後拒絕了，身邊人都說我瘋了",
+      "錢和熱情之間，我後來找到了自己的平衡點"]},
+    {tag:"職場委屈",desc:"忍下來的那些事",q:[
+      "那天被主管當眾罵，我忍著眼淚回到座位",
+      "功勞被別人搶走的那一刻，我什麼都說不出來",
+      "職場的委屈，很多都是回到家才敢哭出來的",
+      "我忍下來的那些事，後來都變成我離開的原因",
+      "有些委屈說不出口，只能自己慢慢消化"]},
+    {tag:"遇到貴人",desc:"拉你一把的人",q:[
+      "那位前輩的一句話，改變了我整個職涯方向",
+      "在我最低潮的時候，是他願意給我一個機會",
+      "職場上遇到願意提拔你的人，真的要好好感謝",
+      "他什麼都沒要求，只說『我看好你』",
+      "多年後我才懂，那個人在我身上下了多大的賭注"]},
+    {tag:"能力焦慮",desc:"覺得自己不夠好",q:[
+      "開會時我常覺得，是不是只有我聽不懂",
+      "看著同事一個個變強，我焦慮到睡不著",
+      "冒牌者症候群這件事，其實一直跟著我",
+      "覺得自己不夠好的時候，我做了這件事走出來",
+      "能力焦慮不會消失，但我學會了跟它共處"]},
+    {tag:"換跑道",desc:"從零開始的勇氣",q:[
+      "三十歲轉行，等於把過去累積的全部歸零重來",
+      "那天我決定換跑道，身邊沒一個人支持",
+      "從零開始很可怕，但一直做不喜歡的事更可怕",
+      "換跑道的第一年，我狼狽到不行卻很踏實",
+      "重新當菜鳥的滋味不好受，但我不後悔"]},
+    {tag:"加班人生",desc:"過勞的日子",q:[
+      "連續加班一個月，我照鏡子時認不出自己",
+      "那段日子我把公司當家，把家當旅館",
+      "過勞的可怕，是你會慢慢習慣不正常的生活",
+      "身體先垮之前，其實它已經警告我很多次",
+      "我用健康換來的那些業績，值得嗎"]},
+    {tag:"職場人際",desc:"同事與主管的相處",q:[
+      "辦公室政治這件事，我吃過虧才學會",
+      "那個表面對你好的同事，背後捅了我一刀",
+      "職場上真心的朋友很少，但一個就夠珍貴",
+      "跟難搞的主管相處，我後來找到了方法",
+      "在職場，做人有時候比做事還重要"]},
+    {tag:"被否定",desc:"努力不被看見",q:[
+      "我熬夜做的提案，被一句話全盤否定",
+      "努力很久卻不被看見，那種無力感很傷人",
+      "被否定的時候，我學會了不要把價值交給別人定義",
+      "那次被否定之後，我差點就放棄了",
+      "不被看見的努力，其實從來沒有白費"]},
+    {tag:"找到熱情",desc:"做喜歡的事",q:[
+      "第一次做著做著忘了時間，我知道我找對了",
+      "原來做喜歡的事，累也是甜的",
+      "找到熱情之後，我才懂什麼叫『不覺得在工作』",
+      "那件讓我眼睛發亮的事，我等了好久才遇到",
+      "熱情不是找到就好，是要有勇氣往它走過去"]},
+    {tag:"副業起步",desc:"下班後的第二份收入",q:[
+      "白天上班晚上做副業，累但心裡踏實",
+      "第一筆副業收入雖然很少，卻讓我看到希望",
+      "副業起步最難的，是下班後還要逼自己動起來",
+      "那個下班後的小事業，慢慢變成我的出口",
+      "副業教我的不只是賺錢，是相信自己還有可能"]},
+    {tag:"裸辭",desc:"沒退路的決定",q:[
+      "我沒找好下一份就辭了，身邊人都說我太衝動",
+      "裸辭那天，我既害怕又前所未有的自由",
+      "沒退路的時候，人反而會逼出真正的實力",
+      "那段沒收入的空窗期，是我最徬徨也最誠實的時候",
+      "裸辭不是勇敢，是我真的撐不下去了"]},
+    {tag:"中年轉職",desc:"半路重來的掙扎",q:[
+      "四十歲還要重來，我問自己會不會太晚",
+      "上有老下有小，轉職的每一步都走得很重",
+      "中年轉職最大的敵人，是自己心裡那個聲音",
+      "那次重來，我把年齡的包袱慢慢放下了",
+      "誰說半路不能重來，我用行動證明給自己看"]},
+    {tag:"職涯低谷",desc:"最難熬的時期",q:[
+      "那半年是我職涯最黑暗的時候，看不到任何光",
+      "低谷的時候，連早上睜開眼都需要力氣",
+      "撐過職涯低谷靠的不是實力，是不放棄",
+      "現在回頭看，那個低谷其實在幫我轉彎",
+      "最難熬的那段日子，把我磨成了更強的人"]},
+    {tag:"談判加薪",desc:"開口要更多",q:[
+      "開口談加薪之前，我在心裡演練了無數次",
+      "那次我鼓起勇氣說出數字，聲音都在抖",
+      "會做事不等於會被加薪，這件事我學得很晚",
+      "談加薪不是討錢，是幫自己的價值定價",
+      "那次談判成功之後，我才懂主動的重要"]},
+    {tag:"工作意義",desc:"為什麼而做",q:[
+      "那天我突然問自己：我每天這麼拚，到底為了什麼",
+      "找到工作的意義之前，我只是在把日子過完",
+      "薪水付得起帳單，但付不了意義感的空缺",
+      "當工作有了意義，再累我都撐得下去",
+      "我要的不只是一份工作，是一件值得投入的事"]},
+    {tag:"回頭看",desc:"那個決定對了嗎",q:[
+      "多年後回頭看那個離職的決定，我想說：還好我走了",
+      "當初那個看似衝動的選擇，其實是最對的一步",
+      "回頭看才發現，繞的那些路都算數",
+      "那個決定對不對，要走過一段才會知道",
+      "如果重來一次，我還是會做同樣的選擇"]}
+  ]
+},
+{
+  id:"self-media", name:"自媒體創業", category:"general",
+  desc:"經營自媒體的真實歷程",
+  strategy:"用經營自媒體的真實歷程，吸引想做內容、想接案、想變現的受眾，建立『同路人』的信任感。",
+  directions:[
+    {tag:"開始的勇氣",desc:"按下第一個發布鍵",q:[
+      "按下第一個發布鍵之前，我的手指懸在螢幕上好久",
+      "第一支影片醜到不行，但我還是把它發出去了",
+      "開始經營自媒體最難的，是踏出被看見的第一步",
+      "我怕被笑、怕沒人看，最後還是決定開始了",
+      "那天我告訴自己：做得爛沒關係，不開始才最可惜"]},
+    {tag:"沒人看",desc:"面對零互動的低潮",q:[
+      "發了一個月，讚數還是個位數，我認真想過要不要停",
+      "沒人看的那段日子，是最考驗你到底愛不愛的時候",
+      "零互動的時候，我學會了為自己而做，而不是為數字",
+      "那種用心做卻沒人看的失落，只有創作者懂",
+      "熬過沒人看的階段，是每個自媒體的必經之路"]},
+    {tag:"第一個粉絲",desc:"被看見的瞬間",q:[
+      "收到第一則真心的留言，我開心到跟家人炫耀",
+      "那個陌生人說『謝謝你的內容』，我截圖存到現在",
+      "第一個真正懂我的粉絲，讓我覺得一切都值得",
+      "被看見的那一刻，比爆多讚還讓我感動",
+      "原來我做的東西，真的能幫到一個人"]},
+    {tag:"找定位",desc:"我到底要做什麼",q:[
+      "一開始我什麼都想做，結果什麼都做不好",
+      "找定位的過程，其實是在問自己到底是誰",
+      "那天我終於想清楚，我要做的是這件事",
+      "定位不是限制你，是幫你被對的人找到",
+      "繞了半年我才明白，做自己最擅長的最有力量"]},
+    {tag:"產出瓶頸",desc:"想不出題材的時候",q:[
+      "盯著空白的螢幕兩小時，一個字都擠不出來",
+      "靈感枯竭的時候，我用這個方法把自己救回來",
+      "產出瓶頸最可怕的，是開始懷疑自己還行不行",
+      "那陣子我什麼都想不出來，差點就放棄了",
+      "沒靈感的時候，我才發現平常的累積有多重要"]},
+    {tag:"演算法",desc:"跟平台規則的角力",q:[
+      "昨天還爆量，今天就掉到谷底，演算法真的很無情",
+      "被演算法搞到懷疑人生的時候，我提醒自己這件事",
+      "追著演算法跑，最後會忘了自己為什麼開始",
+      "那次流量突然歸零，我學會了不把命運交給平台",
+      "演算法會變，但好內容永遠不會過時"]},
+    {tag:"酸民留言",desc:"面對負評",q:[
+      "第一次收到酸言酸語，我難過了一整天",
+      "那則惡意留言，我看了很多次才學會放下",
+      "面對酸民，我後來找到了一個讓自己好過的方法",
+      "被批評的時候，我學會分辨哪些該聽哪些該刪",
+      "酸民的話會傷人，但我不能讓它決定我要不要繼續"]},
+    {tag:"第一次變現",desc:"賺到第一塊錢",q:[
+      "自媒體賺到的第一塊錢，我捨不得花",
+      "那筆收入不多，卻證明了這條路走得通",
+      "從純分享到能變現，我等了好久這一刻",
+      "第一次靠內容賺錢，我興奮到睡不著",
+      "原來認真做的事，真的可以養活自己"]},
+    {tag:"接業配",desc:"合作的取捨",q:[
+      "第一次有廠商找上門，我興奮之餘也很掙扎",
+      "那個業配錢很多，但我最後拒絕了，因為不適合我的粉絲",
+      "接業配最怕的，是為了錢賣掉觀眾的信任",
+      "我後來給自己定了一條線：不喜歡的東西不推",
+      "業配不是壞事，前提是你真的相信那個產品"]},
+    {tag:"數據焦慮",desc:"被數字綁架",q:[
+      "我一天要看後台數據幾十次，被數字綁得死死的",
+      "那陣子我的心情，完全被觸及率牽著走",
+      "被數據綁架的時候，我忘了創作原本的快樂",
+      "後來我學會少看數據，多問內容有沒有幫到人",
+      "數字會騙人，別讓它決定你的價值"]},
+    {tag:"堅持更新",desc:"撐過想放棄的時候",q:[
+      "想放棄的念頭，幾乎每個月都會來敲門一次",
+      "撐不下去的那天，一則留言把我留住了",
+      "堅持更新最難的不是內容，是那份不知何時開花的等待",
+      "那段最想放棄的日子，現在回頭看是轉捩點",
+      "很多人輸不是輸在能力，是輸在太早放棄"]},
+    {tag:"個人品牌",desc:"讓別人記住你",q:[
+      "怎麼讓別人在一堆帳號裡記住你，我想了很久",
+      "個人品牌不是包裝，是讓真實的你被看見",
+      "那天有人說『一看就知道是你的風格』，我超開心",
+      "建立個人品牌，其實是在累積別人對你的信任",
+      "讓人記住你的，往往不是完美，是真實"]},
+    {tag:"拍片幕後",desc:"沒人看到的辛苦",q:[
+      "一支三分鐘的影片，背後是我拍了三小時的素材",
+      "大家看到的是成品，看不到的是我 NG 了幾十次",
+      "拍片的幕後，藏著自媒體最不為人知的辛苦",
+      "那天為了一個畫面，我來回走了同一條路二十次",
+      "光鮮的內容背後，是很多孤獨的深夜"]},
+    {tag:"比較心態",desc:"看別人爆紅的酸",q:[
+      "看到同期的人爆紅，我承認我酸了一下",
+      "那種『為什麼是他不是我』的心情，我很誠實地面對過",
+      "比較心態會慢慢吃掉你創作的初心",
+      "後來我把注意力從別人身上，收回到自己身上",
+      "別人的花期不是你的，這句話我提醒自己很多次"]},
+    {tag:"找到同溫層",desc:"遇到懂你的人",q:[
+      "那天我遇到一群同樣在做內容的人，第一次不覺得孤單",
+      "找到同溫層之後，這條路突然沒那麼難走了",
+      "有一群懂你辛苦的人，比多幾千個讚更珍貴",
+      "同溫層不是取暖，是彼此打氣繼續往前",
+      "原來有這麼多人跟我一樣，在默默努力著"]},
+    {tag:"從興趣到工作",desc:"熱情變壓力",q:[
+      "把興趣變成工作之後，我一度失去了原本的快樂",
+      "那件我最愛的事，開始有了收入也有了壓力",
+      "熱情變工作最危險的，是連喜歡都變成一種負擔",
+      "我後來學會在賺錢跟熱愛之間，留一點喘息",
+      "還好我沒讓壓力，殺死當初那份純粹的喜歡"]},
+    {tag:"內容被抄",desc:"被複製的無奈",q:[
+      "看到自己的內容被一字不改地抄走，我氣到發抖",
+      "被抄襲的那次，我學會了怎麼保護自己的創作",
+      "內容被抄很無奈，但抄得走形式抄不走你",
+      "那個抄我的人紅了，我一度很不平衡",
+      "後來我想通：能被抄，代表我做得夠好"]},
+    {tag:"長線經營",desc:"慢慢養的心態",q:[
+      "自媒體不是短跑，是一場很長很長的馬拉松",
+      "那些走得遠的創作者，靠的都不是一夕爆紅",
+      "長線經營最需要的，是耐得住寂寞的心",
+      "我不求爆紅，只求每天比昨天好一點點",
+      "慢慢養的帳號，根才紮得深"]},
+    {tag:"停更的掙扎",desc:"想休息的罪惡感",q:[
+      "想休息一下，卻有一種『會不會被遺忘』的罪惡感",
+      "那次我停更了兩週，焦慮到每天都想打開後台",
+      "停更的掙扎，其實是怕自己好不容易累積的會消失",
+      "後來我懂了，適時休息才走得長久",
+      "允許自己暫停，也是經營自媒體的一種能力"]},
+    {tag:"給想開始的你",desc:"過來人的話",q:[
+      "如果你也想開始做自媒體，我想先跟你說一句真心話",
+      "當初沒人告訴我的那些坑，我全整理給你",
+      "給還在猶豫的你：完美主義才是你最大的敵人",
+      "我不會騙你這條路好走，但我可以告訴你值得",
+      "想開始就開始吧，最好的時機永遠是現在"]}
+  ]
+},
+{
+  id:"mind-growth", name:"心理成長", category:"general",
+  desc:"內在成長與情緒的真實分享",
+  strategy:"用內在成長與情緒的真實分享，療癒同樣在自我探索路上的人，建立最深層的情感連結。",
+  directions:[
+    {tag:"自我懷疑",desc:"覺得自己不夠好",q:[
+      "夜深人靜的時候，那個『我是不是不夠好』的聲音又出現了",
+      "我表面看起來很好，其實心裡一直在懷疑自己",
+      "自我懷疑最累的，是你明明很努力還是覺得不夠",
+      "那天我終於對自己說：你已經做得很好了",
+      "學會跟自我懷疑相處，是我這幾年最大的功課"]},
+    {tag:"情緒失控",desc:"崩潰的那一刻",q:[
+      "那天我為了一件小事崩潰大哭，其實是積壓太久",
+      "情緒失控之後我很自責，後來才懂那是身體在求救",
+      "崩潰不是脆弱，是你撐太久了",
+      "那次失控讓我發現，我一直沒好好照顧自己的情緒",
+      "允許自己崩潰一次，然後再慢慢站起來"]},
+    {tag:"討好別人",desc:"學會不再迎合",q:[
+      "我曾經是那種所有人都說好，唯獨對自己說不的人",
+      "討好別人這麼多年，我把自己弄丟了",
+      "那天我第一次沒有迎合，反而覺得輕鬆",
+      "討好型人格的累，是永遠在照顧別人的感受",
+      "學會不討好，我才開始真正喜歡自己"]},
+    {tag:"設立界線",desc:"保護自己的能量",q:[
+      "第一次對別人說『不行』，我內疚了好久卻也解脫了",
+      "沒有界線的善良，最後只會累垮自己",
+      "設立界線不是自私，是保護你所剩不多的能量",
+      "那些會因為你設界線而離開的人，本來就該離開",
+      "學會說不之後，我的生活清爽了很多"]},
+    {tag:"面對焦慮",desc:"與不安共處",q:[
+      "焦慮來的時候，我的心跳快到像要跳出來",
+      "那段最焦慮的日子，我靠這個方法慢慢穩住自己",
+      "焦慮不會消失，但我學會了不被它牽著走",
+      "與其對抗焦慮，我後來選擇跟它好好相處",
+      "焦慮其實在提醒我：有些事該停下來看看了"]},
+    {tag:"原生家庭",desc:"童年帶來的影響",q:[
+      "長大後才發現，我很多反應都來自童年的那些傷",
+      "那句父母無心的話，我記了二十年",
+      "理解原生家庭的影響，不是為了怪誰，是為了放下",
+      "我花了很久才明白，有些愛的方式是會傷人的",
+      "看懂了原生家庭，我才開始真正長大"]},
+    {tag:"自我和解",desc:"原諒過去的自己",q:[
+      "那個曾經做錯選擇的自己，我終於願意原諒他了",
+      "跟過去的自己和解，是我給自己最好的禮物",
+      "我一直對過去很苛刻，直到那天我學會放過自己",
+      "和解不是忘記，是帶著那些傷繼續好好活",
+      "原諒過去的自己，才有力氣走向未來"]},
+    {tag:"比較之苦",desc:"停止跟別人比",q:[
+      "滑著別人的生活，我把自己越比越糟",
+      "那天我關掉手機，才發現我一直活在別人的節奏裡",
+      "比較之苦在於，你永遠拿自己的幕後比別人的舞台",
+      "停止比較之後，我才看見自己原來也有的好",
+      "每個人的時區不同，你沒有遲到"]},
+    {tag:"獨處的力量",desc:"學會跟自己相處",q:[
+      "以前我很怕獨處，現在卻很享受一個人的時光",
+      "那段一個人的日子，我重新認識了自己",
+      "獨處不是孤單，是把注意力還給自己",
+      "學會跟自己相處，我就不那麼害怕孤單了",
+      "一個人也能過得很好，這是我學到最重要的事"]},
+    {tag:"走出低潮",desc:"從谷底爬起",q:[
+      "那段低潮期，我連起床都需要用盡全力",
+      "從谷底爬起來靠的不是勵志，是一步一步的小事",
+      "低潮的時候我什麼都做不了，只能等它慢慢過去",
+      "現在回頭看，那個谷底其實是我的轉捩點",
+      "走出低潮沒有捷徑，但你一定走得出來"]},
+    {tag:"允許犯錯",desc:"對自己寬容",q:[
+      "我曾經連一個小錯都無法原諒自己",
+      "那天我告訴自己：犯錯不代表你這個人不好",
+      "允許自己犯錯，我才敢去嘗試更多",
+      "對自己寬容一點，日子就沒那麼難了",
+      "完美主義害我不敢動，直到我學會接受不完美"]},
+    {tag:"放下執念",desc:"學會鬆手",q:[
+      "有件事我執著了好久，直到放下才發現海闊天空",
+      "那個我一直不肯鬆手的東西，其實一直在拉扯我",
+      "放下不是失去，是給自己重新選擇的自由",
+      "學會鬆手之後，我反而抓住了更重要的東西",
+      "有些事越用力抓，越會從指縫溜走"]},
+    {tag:"情緒勒索",desc:"掙脫關係的綁架",q:[
+      "『我都是為你好』這句話，曾經把我綁得死死的",
+      "那段被情緒勒索的關係，我花了好久才走出來",
+      "情緒勒索最可怕的，是讓你以為錯的是自己",
+      "掙脫綁架的第一步，是看清那不是你的責任",
+      "愛不該是控制，這件事我學得很痛"]},
+    {tag:"找回自信",desc:"相信自己",q:[
+      "被否定久了，我一度連自己的判斷都不敢相信",
+      "那天我做成了一件事，才慢慢把自信找回來",
+      "自信不是天生的，是一次次做到累積出來的",
+      "找回自信之後，我不再需要別人的肯定才能安心",
+      "相信自己，是我送給自己最重要的能力"]},
+    {tag:"接受不完美",desc:"不再苛求",q:[
+      "我追求完美追了半輩子，累到差點喘不過氣",
+      "那天我把『不夠好』改成『這樣就好』，整個人輕了",
+      "接受不完美，不是放棄，是對自己溫柔",
+      "不完美才是真實，這件事我很晚才懂",
+      "放下對完美的執著，我才開始真正生活"]},
+    {tag:"練習感恩",desc:"看見擁有的",q:[
+      "我總盯著沒有的，卻忘了看已經擁有的",
+      "那天我開始寫感恩日記，心境慢慢變了",
+      "練習感恩不是自我安慰，是把焦點放回擁有",
+      "當我開始看見擁有的，焦慮就少了一半",
+      "幸福不是得到更多，是懂得珍惜現在"]},
+    {tag:"面對恐懼",desc:"跨出舒適圈",q:[
+      "那件我怕了很久的事，我終於鼓起勇氣去做了",
+      "跨出舒適圈的那一步，腿是軟的但心是踏實的",
+      "恐懼會騙你說你做不到，但你可以證明它錯了",
+      "面對恐懼之後我才發現，最可怕的是想像",
+      "每次跨出舒適圈，我的世界就大一點"]},
+    {tag:"自我照顧",desc:"好好對待自己",q:[
+      "我對別人溫柔，卻常常忘了對自己好一點",
+      "那天我為自己煮了一頓飯，突然覺得被好好照顧",
+      "自我照顧不是放縱，是給自己補充能量",
+      "把自己照顧好，才有力氣照顧別人",
+      "好好對待自己，其實是一種需要練習的能力"]},
+    {tag:"心理諮商",desc:"求助不是軟弱",q:[
+      "第一次踏進諮商室，我以為代表我很脆弱",
+      "那次諮商讓我明白，願意求助其實很勇敢",
+      "求助不是軟弱，是你願意好好對待自己",
+      "諮商沒有馬上解決我的問題，但它讓我不再一個人扛",
+      "會照顧心理健康的人，才是真正堅強的人"]},
+    {tag:"成為更好的人",desc:"成長的意義",q:[
+      "成長不是變成別人，是變成更完整的自己",
+      "那些痛苦的經歷，最後都變成了我的一部分",
+      "成為更好的人，不是為了誰，是為了自己",
+      "回頭看才發現，我已經走了好遠",
+      "成長沒有終點，但每一步都算數"]}
+  ]
+},
+{
+  id:"relationship", name:"人際關係", category:"general",
+  desc:"關係裡的真實體會",
+  strategy:"用關係裡的真實體會引發共鳴，友情、家人、職場人際都是最容易被轉發的『說中心聲』話題。",
+  directions:[
+    {tag:"漸行漸遠",desc:"友情的淡出",q:[
+      "沒有吵架，沒有翻臉，我們就這樣慢慢不聯絡了",
+      "那個曾經無話不談的朋友，現在連按讚都很尷尬",
+      "友情的結束往往不是轟轟烈烈，是安靜地淡掉",
+      "長大後才懂，有些朋友只能陪你走一段",
+      "漸行漸遠不是誰的錯，只是我們往不同方向走了"]},
+    {tag:"真心換絕情",desc:"被辜負的痛",q:[
+      "我掏心掏肺對他，換來的卻是被當成傻子",
+      "那次被辜負之後，我學會了收起一部分的自己",
+      "真心換絕情最傷的，是你開始懷疑自己的付出",
+      "被辜負教會我，善良也要有底線",
+      "我不後悔真心，只是學會了看清人"]},
+    {tag:"學會拒絕",desc:"不再當濫好人",q:[
+      "當了半輩子濫好人，我終於學會說『我不方便』",
+      "那天我拒絕了一個請求，天沒有塌下來",
+      "濫好人的累，是把所有人擺在自己前面",
+      "學會拒絕之後，我才有力氣照顧真正重要的人",
+      "不再有求必應，我反而活得更輕鬆"]},
+    {tag:"有毒關係",desc:"遠離消耗你的人",q:[
+      "跟他相處後我總是很累，後來才知道那叫情緒消耗",
+      "那段有毒的關係，我離開後才發現自己自由了",
+      "有些人不是壞，但就是會一點一點掏空你",
+      "遠離消耗你的人，不是無情，是自保",
+      "離開有毒關係之後，我才重新變回自己"]},
+    {tag:"老朋友",desc:"一輩子的情誼",q:[
+      "那個認識二十年的朋友，一個眼神就懂我在想什麼",
+      "再忙，我們一年總會見一次，什麼都不用解釋",
+      "老朋友最珍貴的，是他知道你所有的過去還願意留下",
+      "有一種朋友，很久沒聯絡卻一聊就回到從前",
+      "能走一輩子的朋友，真的要用力珍惜"]},
+    {tag:"家人相處",desc:"最親也最難",q:[
+      "家人是我最愛的人，卻也是最容易傷到我的人",
+      "那句對外人絕不會說的重話，我們卻常對家人說",
+      "家人相處最難的，是太熟了反而不懂表達愛",
+      "長大後我才學會，用不同的方式跟家人相處",
+      "最親的關係，往往也需要最多的體諒"]},
+    {tag:"愛情裡的自己",desc:"在關係裡迷失",q:[
+      "談了那場戀愛之後，我差點認不出自己",
+      "為了配合對方，我把自己越縮越小",
+      "在愛情裡迷失最可惜的，是弄丟了原本的你",
+      "那段感情教我：愛人之前要先愛自己",
+      "好的愛情不會讓你變小，而是讓你更完整"]},
+    {tag:"分手與釋懷",desc:"放下一段感情",q:[
+      "分手後最難的不是想念，是習慣他不在了",
+      "那段感情結束後，我花了整整一年才走出來",
+      "釋懷不是不愛了，是終於願意讓自己好過",
+      "放下一個人，是慢慢的，不是一夕之間",
+      "謝謝那段感情，也謝謝願意放手的自己"]},
+    {tag:"孤獨感",desc:"熱鬧裡的寂寞",q:[
+      "在一群人裡笑得最大聲的時候，我卻覺得好孤獨",
+      "那種明明身邊很多人，卻沒人真的懂你的寂寞",
+      "孤獨感不是沒人陪，是沒人走進你心裡",
+      "我後來明白，孤獨是每個人都要學會面對的",
+      "與其在熱鬧裡寂寞，我選擇在獨處裡自在"]},
+    {tag:"被討厭的勇氣",desc:"不用討好所有人",q:[
+      "我終於接受了一件事：不可能讓所有人都喜歡我",
+      "那天有人不喜歡我，我第一次覺得沒關係",
+      "想被所有人喜歡，最後只會失去自己",
+      "有被討厭的勇氣，你才有做自己的自由",
+      "篩掉那些不對頻的人，留下來的才是真的"]},
+    {tag:"溝通的難",desc:"話說不到心裡",q:[
+      "我明明想關心，說出口卻變成了指責",
+      "那次誤會，其實只要好好講一句話就能解開",
+      "溝通最難的，是你以為說清楚了，對方卻懂成別的",
+      "後來我學會，先聽懂再回應，關係就順了",
+      "很多關係壞掉，不是不愛，是不會好好說話"]},
+    {tag:"信任崩塌",desc:"一次背叛的代價",q:[
+      "一次背叛，就把好幾年的信任全部打碎",
+      "那件事之後，我再也沒辦法像從前那樣相信他",
+      "信任崩塌最痛的，是連好的回憶都變得可疑",
+      "重建信任比建立信任難上一百倍",
+      "有些裂痕就算修好了，也還是看得見"]},
+    {tag:"陪伴的意義",desc:"在身邊就好",q:[
+      "我最難的時候，他什麼都沒說，只是一直在",
+      "那天我崩潰，一個安靜的擁抱勝過千言萬語",
+      "陪伴的意義，不是解決問題，是讓你不孤單",
+      "真正的陪伴，是願意跟你一起待在黑暗裡",
+      "有人願意在身邊，就已經是最大的溫柔"]},
+    {tag:"界線與尊重",desc:"再親也要有分寸",q:[
+      "再好的關係，越界了也會變成負擔",
+      "那次他擅自替我做決定，我才發現界線多重要",
+      "尊重不是疏遠，是再親也記得對方是獨立的人",
+      "好的關係，是靠得近但不越界",
+      "有分寸的愛，才是能長久的愛"]},
+    {tag:"原諒",desc:"放過別人也放過自己",q:[
+      "我以為原諒是為了他，後來發現是為了放過自己",
+      "那份怨恨我扛了好久，放下的那刻好輕",
+      "原諒不代表和好，是不再讓那件事折磨你",
+      "帶著恨過日子，最累的其實是自己",
+      "學會原諒，我才真正把自己還給了自己"]},
+    {tag:"社交疲憊",desc:"需要獨處充電",q:[
+      "一場熱鬧的聚會後，我需要好幾天才能回血",
+      "那種笑著應酬完卻累到虛脫的感覺，內向的人都懂",
+      "社交疲憊不是不愛朋友，是能量真的用完了",
+      "我學會在社交之後，留時間給自己充電",
+      "需要獨處不是孤僻，是照顧自己的方式"]},
+    {tag:"重要的人",desc:"值得珍惜的關係",q:[
+      "人生走到一半才發現，真正重要的人沒幾個",
+      "那幾個無論如何都在的人，是我最大的財富",
+      "重要的人不用多，用心對待那幾個就好",
+      "我開始把時間留給那些值得的關係",
+      "篩到最後留下來的，都是真心的人"]},
+    {tag:"誤會與和解",desc:"把話講開",q:[
+      "一個誤會讓我們冷戰了半年，其實只是沒把話講開",
+      "那天我們終於坐下來聊，才發現都是誤會",
+      "很多關係的裂痕，只差一句『我們談談』",
+      "把話講開的那一刻，心裡的石頭終於放下",
+      "和解需要的不是道理，是願意先開口的勇氣"]},
+    {tag:"給予與接受",desc:"學會被愛",q:[
+      "我很會付出，卻不太會接受別人的好",
+      "那天有人對我好，我居然覺得不安、想逃",
+      "學會被愛，比學會愛人還難",
+      "一直給予的人，其實也需要練習好好被照顧",
+      "接受別人的愛，也是一種溫柔的能力"]},
+    {tag:"關係斷捨離",desc:"篩選身邊的人",q:[
+      "我開始清理那些只會消耗我的關係",
+      "那次斷捨離之後，我的生活清爽了好多",
+      "關係也需要斷捨離，留下真正對頻的人",
+      "不是每段關係都要維持，有些放手才對",
+      "篩選身邊的人，其實是在選擇你要成為誰"]}
+  ]
+},
+{
+  id:"money-view", name:"理財與金錢觀", category:"general",
+  desc:"真實的金錢故事與觀念",
+  strategy:"用真實的金錢故事與觀念破解焦慮，吸引想理財、想改變金錢關係的受眾，實用又有共鳴。",
+  directions:[
+    {tag:"月光族",desc:"錢都花去哪了",q:[
+      "每個月薪水一入帳，還沒回過神就見底了",
+      "那天我認真算了一下，錢居然都花在這些小地方",
+      "月光族最可怕的，不是沒錢，是不知道錢去哪了",
+      "我以為自己沒亂花，記帳後才發現真相",
+      "從月光到有存款，我改的其實只有一個習慣"]},
+    {tag:"記帳的開始",desc:"看清自己的錢",q:[
+      "開始記帳的第一週，我被自己的消費嚇到",
+      "記帳不是為了省，是為了看清自己怎麼過日子",
+      "那些不痛不癢的小額支出，加起來嚇死人",
+      "記帳一個月後，我對錢的感覺完全不一樣了",
+      "看清自己的錢流去哪，是理財的第一步"]},
+    {tag:"存錢的難",desc:"存不下來的原因",q:[
+      "我不是不想存，是每次都存不下來",
+      "那天我發現，存不了錢是因為我先花再存",
+      "存錢的難，難在對抗每一個想花的當下",
+      "後來我把順序倒過來，先存再花，就存下來了",
+      "存不下錢，往往不是收入問題，是習慣問題"]},
+    {tag:"第一桶金",desc:"存到的那一刻",q:[
+      "看著帳戶數字達標的那一刻，我眼眶紅了",
+      "存到第一桶金花了三年，但那份踏實無價",
+      "第一桶金給我的不是錢，是我做得到的信心",
+      "那筆錢我一毛沒動，因為它代表我的堅持",
+      "存到人生第一桶金，我才相信自己也能理財"]},
+    {tag:"衝動消費",desc:"買完就後悔",q:[
+      "那個東西買回來，我用不到三次就後悔了",
+      "限時特價的魔力，讓我買了一堆不需要的",
+      "衝動消費的快樂只有三秒，後悔卻很久",
+      "我後來給自己一個規則，成功戒掉亂買",
+      "買之前先等一天，我省下了好多冤枉錢"]},
+    {tag:"金錢焦慮",desc:"對錢的不安",q:[
+      "明明有存款，我還是常常為錢感到不安",
+      "那種對錢的焦慮，其實跟金額沒有絕對關係",
+      "金錢焦慮的根源，有時候藏在很久以前",
+      "後來我學會分辨，哪些擔心是真的，哪些是想像",
+      "面對金錢焦慮，我做的第一件事是搞清楚現狀"]},
+    {tag:"投資踩雷",desc:"賠錢的教訓",q:[
+      "那次跟風投資，我賠掉了半年的積蓄",
+      "聽明牌進場的下場，是繳了一筆很貴的學費",
+      "投資踩雷教會我：看不懂的東西別碰",
+      "那筆賠掉的錢，換來一個我永遠記得的教訓",
+      "賠過錢才懂，理財最重要的是先別虧大錢"]},
+    {tag:"被動收入",desc:"讓錢幫你賺錢",q:[
+      "第一次領到不用上班就有的收入，感覺很奇妙",
+      "被動收入不是躺著賺，前期的累積很辛苦",
+      "那份小小的被動收入，讓我看見另一種可能",
+      "打造被動收入，是我對未來的一份保險",
+      "讓錢幫你賺錢，是我學到最重要的觀念之一"]},
+    {tag:"省錢與生活",desc:"省過頭的失去",q:[
+      "我省錢省到連朋友聚會都不敢去，後來很後悔",
+      "那陣子過度節省，反而失去了生活的溫度",
+      "省錢是好事，但省掉了體驗就本末倒置了",
+      "後來我學會分辨：哪些該省，哪些值得花",
+      "會賺錢也要會花錢，這才是健康的金錢觀"]},
+    {tag:"借錢與人情",desc:"金錢與關係",q:[
+      "借出去的那筆錢，最後連朋友都一起賠掉了",
+      "那次借錢的經驗，讓我看清了一段關係",
+      "金錢跟人情混在一起，最容易兩敗俱傷",
+      "我後來的原則：借出去就當送人，還了是驚喜",
+      "談錢傷感情，但不談清楚更傷"]},
+    {tag:"花錢的價值觀",desc:"什麼值得花",q:[
+      "我願意為體驗花錢，卻捨不得為虛榮買單",
+      "那天我想通了，錢要花在會讓你快樂的事上",
+      "花錢的價值觀，其實反映了你重視什麼",
+      "同樣一筆錢，花對地方是投資，花錯是浪費",
+      "把錢花在對的地方，比一味省錢更重要"]},
+    {tag:"收入天花板",desc:"突破薪水的框",q:[
+      "靠死薪水，我算過一輩子也存不到想要的生活",
+      "那天我意識到，收入不能只有一個來源",
+      "突破收入天花板，得先突破自己的想法",
+      "我開始培養第二專長，慢慢打開新的收入",
+      "薪水是底，但不該是你收入的全部"]},
+    {tag:"財務自由",desc:"到底要多少錢",q:[
+      "我算過財務自由要多少錢，數字嚇了我一跳",
+      "追求財務自由的路上，我差點忘了現在也要過好",
+      "財務自由不是有花不完的錢，是有選擇的自由",
+      "那天我重新定義，我要的自由到底是什麼",
+      "財務自由不是終點，是讓你能為自己而活"]},
+    {tag:"金錢與家庭",desc:"從小的金錢教育",q:[
+      "我對錢的觀念，很多都來自小時候的家庭",
+      "那句『我們家沒錢』，影響了我對錢很久",
+      "從小的金錢教育，決定了長大後的金錢關係",
+      "我想給下一代的，是不匱乏的金錢觀",
+      "原來我對錢的不安，是從童年帶來的"]},
+    {tag:"走出負債",desc:"從負債到還清",q:[
+      "背著那筆債的日子，每天醒來都覺得喘不過氣",
+      "那天我把債務攤開來面對，是還清的第一步",
+      "走出負債靠的不是奇蹟，是一筆一筆慢慢還",
+      "還清最後一筆的那天，我在車上大哭了一場",
+      "從負債走出來，我學會了怎麼跟錢好好相處"]},
+    {tag:"保險的迷思",desc:"買對還是買貴",q:[
+      "我曾經買了一堆保險，卻不知道自己保了什麼",
+      "那天我重新檢視保單，發現繳了好多冤枉錢",
+      "保險買太多跟買太少一樣危險",
+      "搞懂自己真正需要什麼，才不會被話術牽著走",
+      "保險是保障不是投資，這件事我很晚才懂"]},
+    {tag:"通膨焦慮",desc:"錢越來越薄",q:[
+      "同樣一百塊，現在能買的東西少得可憐",
+      "那天結帳我才驚覺，錢真的越來越薄了",
+      "把錢放著不動，其實是在慢慢變窮",
+      "面對通膨，光靠省是省不出未來的",
+      "通膨提醒我，要讓錢動起來而不是躺著"]},
+    {tag:"對錢的態度",desc:"錢是工具不是目的",q:[
+      "我曾經把賺錢當人生目標，賺到了卻不快樂",
+      "那天我想通，錢是工具，不是活著的意義",
+      "把錢當目的，你永遠覺得不夠",
+      "當我把錢當工具，我跟它的關係就輕鬆了",
+      "錢很重要，但它是為生活服務的，不是反過來"]},
+    {tag:"為未來準備",desc:"退休這件事",q:[
+      "我第一次認真想退休，是被一則新聞嚇到",
+      "那天我算了退休金，才知道現在就要開始",
+      "為未來準備，最貴的成本是拖延",
+      "退休規劃不是老了才做，是越早越輕鬆",
+      "現在多存的每一塊，都是給未來的自己"]},
+    {tag:"金錢與幸福",desc:"錢能買到什麼",q:[
+      "錢買不到快樂，但沒錢的煩惱是真的",
+      "那天我發現，錢真正的價值是買到選擇和安心",
+      "金錢與幸福的關係，比想像中複雜",
+      "有錢不一定幸福，但財務穩定真的少很多煩惱",
+      "我後來的體會：錢是幸福的底線，不是上限"]}
+  ]
+},
+{
+  id:"health-body", name:"身體與健康", category:"general",
+  desc:"身體的真實經歷與提醒",
+  strategy:"用身體的真實經歷提醒觀眾照顧自己，健康話題有廣泛共鳴，也最容易引發實際行動。",
+  directions:[
+    {tag:"健康警訊",desc:"身體發出的訊號",q:[
+      "身體其實早就在提醒我，是我一直假裝沒聽見",
+      "那天突然的一陣不舒服，讓我第一次認真看待健康",
+      "健康警訊來的時候，你才會後悔平常太不在乎",
+      "我把身體的抗議當成小事，直到它真的罷工",
+      "身體是最誠實的，它不會平白無故喊痛"]},
+    {tag:"減重之路",desc:"跟體重的拉扯",q:[
+      "跟體重奮鬥了這麼多年，我終於想通了一件事",
+      "那次減重成功不是靠餓，是靠改變生活習慣",
+      "減重最難的不是瘦下來，是不要復胖",
+      "我試過所有極端方法，最後發現慢慢來最有效",
+      "跟體重的拉扯，其實是跟自己的關係"]},
+    {tag:"運動習慣",desc:"從討厭到愛上",q:[
+      "我曾經是那種一運動就找藉口的人",
+      "那天我第一次跑完全程，流著汗卻笑了",
+      "從討厭運動到離不開，我只是跨過了最難的開始",
+      "運動改變的不只是身體，還有我的心情",
+      "養成運動習慣的關鍵，其實是找到你喜歡的方式"]},
+    {tag:"睡眠問題",desc:"睡不好的日子",q:[
+      "那陣子我每天躺在床上，腦子卻停不下來",
+      "睡不好的日子，白天整個人像行屍走肉",
+      "失眠最痛苦的，是你越想睡越睡不著",
+      "我調整了睡前的習慣，睡眠慢慢回來了",
+      "原來睡得好，是一件需要好好經營的事"]},
+    {tag:"飲食調整",desc:"吃出改變",q:[
+      "改變飲食一個月後，我連皮膚都變好了",
+      "那天我開始認真看成分標示，被嚇了一跳",
+      "吃進去的東西，真的會慢慢變成你這個人",
+      "我沒有節食，只是把亂吃改成好好吃",
+      "飲食調整不是折磨自己，是善待身體"]},
+    {tag:"生病的體悟",desc:"躺下來才懂",q:[
+      "生了一場病，我才發現健康的時候有多幸福",
+      "躺在床上動不了的那幾天，我想通了很多事",
+      "生病最大的收穫，是逼你慢下來看看自己",
+      "那場病像是身體給我的一封警告信",
+      "健康的時候拚命，生病才知道什麼最重要"]},
+    {tag:"慢性病",desc:"面對身體的老化",q:[
+      "拿到報告那一刻，我第一次感覺自己不年輕了",
+      "面對慢性病，我學會了跟身體長期相處",
+      "身體的老化不是敵人，是提醒你換一種活法",
+      "那些數字提醒我，不能再用年輕時的方式對待身體",
+      "跟身體和平共處，是中年後最重要的功課"]},
+    {tag:"壓力與身體",desc:"情緒藏在身體裡",q:[
+      "那陣子壓力大到，身體開始用各種方式抗議",
+      "原來我以為的小毛病，都是情緒在身體裡的痕跡",
+      "壓力不會消失，它只是換個地方藏在身體裡",
+      "身體會替你記住那些你不肯面對的情緒",
+      "照顧身體，其實也是在照顧那顆累壞的心"]},
+    {tag:"健檢報告",desc:"數字帶來的警醒",q:[
+      "那張健檢報告上的紅字，讓我當場清醒",
+      "數字不會騙人，它逼我正視一直逃避的事",
+      "健檢報告像一面鏡子，照出我怎麼對待自己",
+      "看到那個數字之後，我終於下定決心改變",
+      "健檢不是為了嚇自己，是給自己一次改變的機會"]},
+    {tag:"戒掉壞習慣",desc:"跟舊自己說再見",q:[
+      "那個陪了我十年的壞習慣，我終於決定放手",
+      "戒掉它的過程很痛苦，但我知道值得",
+      "跟壞習慣說再見，其實是跟一部分的自己告別",
+      "我沒有一次就成功，是失敗很多次才做到",
+      "戒掉壞習慣最難的，是相信自己真的做得到"]},
+    {tag:"身材焦慮",desc:"跟外表和解",q:[
+      "我曾經因為鏡子裡的自己，一整天都不開心",
+      "那天我決定，不再用別人的標準審視自己",
+      "身材焦慮的背後，往往是對自己的不接納",
+      "跟外表和解之後，我才真正喜歡上自己",
+      "健康比好看重要，這句話我花了很久才聽懂"]},
+    {tag:"難以啟齒的健康",desc:"那些不好意思說的",q:[
+      "有些身體的困擾，我忍了好久都不好意思看醫生",
+      "那次終於鼓起勇氣就醫，才發現根本沒什麼好丟臉",
+      "難以啟齒的健康問題，越拖只會越嚴重",
+      "身體的事沒有丟臉不丟臉，只有該不該面對",
+      "願意好好照顧自己的身體，一點都不難為情"]},
+    {tag:"中年身體",desc:"開始走下坡",q:[
+      "過了某個年紀，我明顯感覺身體不像以前",
+      "那天爬個樓梯就喘，我笑說歲月不饒人",
+      "中年的身體開始走下坡，但也讓我更懂珍惜",
+      "以前熬夜隔天就恢復，現在要修好幾天",
+      "接受身體的變化，是中年很重要的一課"]},
+    {tag:"復健之路",desc:"慢慢好起來",q:[
+      "受傷之後的復健，比我想像中漫長得多",
+      "那段慢慢好起來的日子，教會我耐心",
+      "復健最難的，是看不到終點還要繼續",
+      "一點一點進步的過程，讓我學會跟自己溫柔",
+      "身體的復原沒有捷徑，急不得也逃不掉"]},
+    {tag:"身心一體",desc:"心理影響生理",q:[
+      "當我心情變好，身體的很多毛病也跟著好了",
+      "那次我才明白，身跟心根本是連在一起的",
+      "身心是一體的，忽略哪一邊都不行",
+      "照顧好情緒，其實也是在保養身體",
+      "身體的健康，一半來自那顆安定的心"]},
+    {tag:"養成好習慣",desc:"微小改變的力量",q:[
+      "一個小到不行的習慣，一年後給了我巨大的改變",
+      "那天我只是決定每天多走一點，就此不同",
+      "養成好習慣的祕訣，是小到你不會想放棄",
+      "健康不是靠一次拚命，是靠每天一點點",
+      "微小的改變累積起來，力量大到會嚇到你"]},
+    {tag:"喝水與作息",desc:"最基本卻最難",q:[
+      "多喝水、早點睡，聽起來簡單卻最難做到",
+      "那天我認真補水一整天，居然精神好很多",
+      "最基本的健康法則，往往也是最被忽略的",
+      "我把作息調正常之後，整個人都不一樣了",
+      "健康不需要花大錢，回到基本就很有用"]},
+    {tag:"陪家人看病",desc:"醫院裡的體悟",q:[
+      "陪家人在醫院等報告的那幾小時，特別漫長",
+      "那天在醫院，我看見了太多來不及的遺憾",
+      "陪家人看病，才驚覺我們都不再年輕了",
+      "醫院是最能看清人生輕重的地方",
+      "那趟就醫讓我下定決心，要更用力珍惜家人"]},
+    {tag:"珍惜健康",desc:"失去才懂的事",q:[
+      "健康的時候我從沒想過，它有一天會離開",
+      "那次差點失去健康，我才懂它有多珍貴",
+      "很多事失去了才懂，健康就是最典型的一個",
+      "現在的我，把能好好呼吸都當成幸福",
+      "珍惜健康最好的時機，是在你還擁有的時候"]},
+    {tag:"好好活著",desc:"健康的意義",q:[
+      "走過一場病痛，我對『好好活著』有了新的理解",
+      "健康不是為了活久，是為了活得有品質",
+      "那天我告訴自己：把身體顧好，才有本錢追夢",
+      "好好活著，其實就是最踏實的幸福",
+      "身體健康，是所有美好的地基"]}
+  ]
+},
+{
+  id:"home-life", name:"居家生活", category:"general",
+  desc:"居家的日常療癒感",
+  strategy:"用居家的日常療癒感營造溫度，畫面感強、適合收藏分享，吸引重視生活品質的受眾。",
+  directions:[
+    {tag:"打造窩",desc:"布置自己的空間",q:[
+      "把家布置成自己喜歡的樣子，是我對生活的溫柔",
+      "那個小角落我弄了好久，現在是我最愛待的地方",
+      "打造一個窩，其實是在打造一個能安放自己的地方",
+      "家不用大，能讓你放鬆的就是好家",
+      "布置空間的過程，也是在整理自己的心"]},
+    {tag:"斷捨離",desc:"清掉不需要的",q:[
+      "那天我一口氣清掉三大袋，房間跟心都輕了",
+      "斷捨離最難的不是丟東西，是放下對它的執念",
+      "留下來的每一樣，都是真正讓我心動的",
+      "清掉不需要的，才有空間迎接想要的",
+      "整理房間的同時，我好像也整理了人生"]},
+    {tag:"一個人住",desc:"獨居的自在",q:[
+      "一個人住之後，我才真正認識了自己",
+      "那種想幾點睡就幾點睡的自由，無可取代",
+      "獨居的自在，是把整個空間活成自己的樣子",
+      "一個人住偶爾寂寞，但更多的是自在",
+      "學會享受獨居，是一種難得的能力"]},
+    {tag:"收納整理",desc:"讓空間變清爽",q:[
+      "收納做對了，找東西再也不用翻箱倒櫃",
+      "那天我把櫃子重新整理，成就感爆棚",
+      "空間清爽了，連做事的效率都變高",
+      "收納的祕訣不是藏起來，是給每樣東西一個家",
+      "整齊的空間，會回饋你一個清楚的腦袋"]},
+    {tag:"廚房日常",desc:"下廚的療癒",q:[
+      "下班後煮一頓飯，是我對一天最好的收尾",
+      "廚房的煙火氣，讓我覺得日子踏實",
+      "切菜、翻炒的節奏，意外地讓人放空療癒",
+      "為自己好好煮一餐，是很簡單的幸福",
+      "廚房是我一個人也能自得其樂的地方"]},
+    {tag:"早晨儀式",desc:"一天的開始",q:[
+      "早起後的那杯咖啡，是我跟一天的溫柔開場",
+      "那個安靜的早晨儀式，決定了我一整天的狀態",
+      "早晨屬於自己的那半小時，是我最珍惜的時光",
+      "好好開始一天，比拚命過完一天更重要",
+      "早晨儀式感不用複雜，能讓你安定就好"]},
+    {tag:"植物與綠意",desc:"照顧一盆植物",q:[
+      "自從家裡有了綠意，整個空間都活了起來",
+      "那盆差點被我養死的植物，最後開花了",
+      "照顧植物教會我耐心，也教會我等待",
+      "看著它一天天長大，是很療癒的陪伴",
+      "一盆小植物，讓家多了呼吸的感覺"]},
+    {tag:"打掃的療癒",desc:"打掃時的心境",q:[
+      "心情亂的時候，我會用力打掃，掃完就清爽了",
+      "那天我一邊擦地一邊放空，煩惱也跟著擦掉",
+      "打掃不只是清潔，是一種整理心情的儀式",
+      "把空間弄乾淨的當下，我也放下了一些什麼",
+      "原來打掃可以這麼療癒，是我後來才發現的"]},
+    {tag:"家的味道",desc:"空間裡的記憶",q:[
+      "一進門那個熟悉的味道，就是家的感覺",
+      "那個味道連著好多回憶，讓我瞬間安心",
+      "每個家都有自己的味道，那是記憶的形狀",
+      "有一種味道，聞到就知道我回家了",
+      "家的味道，是再豪華的地方都給不了的"]},
+    {tag:"小資改造",desc:"花小錢變舒適",q:[
+      "沒花大錢，只換了幾樣小東西，家就變了樣",
+      "那次小資改造，證明舒適不一定要很貴",
+      "花小錢也能過得有質感，關鍵在用心",
+      "我用有限的預算，把租屋處變成理想的樣子",
+      "改造的重點不是花多少，是有沒有為生活著想"]},
+    {tag:"睡前時光",desc:"一天的收尾",q:[
+      "睡前的那段安靜時光，是我跟自己獨處的時刻",
+      "那天我放下手機，好好結束了一天",
+      "睡前怎麼過，其實會影響第二天的自己",
+      "我開始用一個小儀式收尾，睡得特別安穩",
+      "好好收尾一天，也是善待明天的自己"]},
+    {tag:"週末在家",desc:"宅在家的快樂",q:[
+      "不用出門的週末，是我最理想的充電方式",
+      "那個宅在家的下午，什麼都沒做卻很幸福",
+      "宅在家不是無聊，是把時間還給自己",
+      "有時候最好的休息，就是哪都不去",
+      "宅在家的快樂，只有懂的人才懂"]},
+    {tag:"生活儀式感",desc:"把日常過得講究",q:[
+      "把普通的日子過得講究一點，生活就不一樣了",
+      "那個小小的儀式感，讓平凡的一天發光",
+      "儀式感不是矯情，是提醒自己好好生活",
+      "同樣一杯茶，用喜歡的杯子喝就是不同",
+      "把日常過得認真，是對生活最基本的尊重"]},
+    {tag:"搬家",desc:"換一個新開始",q:[
+      "搬家整理舊物時，我像是翻閱了一整段人生",
+      "那次搬家，我把過去也一起打包放下了",
+      "換一個空間，好像也給了自己重新開始的機會",
+      "搬家的疲憊過後，是一種煥然一新的期待",
+      "每次搬家，都是跟一段日子好好告別"]},
+    {tag:"老物件",desc:"捨不得丟的東西",q:[
+      "那個舊到不行的東西，我怎麼樣都捨不得丟",
+      "每件留下來的老物件，背後都有一個故事",
+      "捨不得丟的，往往不是東西，是那段時光",
+      "老物件裝著的，是回不去的日子",
+      "有些東西沒用了，卻是心裡最重要的收藏"]},
+    {tag:"香氛與燈光",desc:"營造氛圍",q:[
+      "一點暖黃燈光，就能把家變成放鬆的地方",
+      "那個香味一飄出來，整個空間都溫柔了",
+      "氛圍是可以營造的，香氛和燈光就是魔法",
+      "換了燈光之後，家瞬間有了咖啡廳的感覺",
+      "營造氛圍其實是在照顧自己的心情"]},
+    {tag:"一人餐桌",desc:"好好吃一頓",q:[
+      "一個人也要好好擺盤，好好吃一頓飯",
+      "那天我為自己準備了一桌，儀式感滿滿",
+      "一人餐桌不將就，是我愛自己的方式",
+      "好好吃飯這件事，值得為自己認真對待",
+      "就算一個人，也要把日子過得有滋有味"]},
+    {tag:"整理心情",desc:"空間影響心情",q:[
+      "當房間亂成一團，我的心也跟著亂",
+      "那天整理完空間，煩躁的心情居然也平靜了",
+      "空間的狀態，其實反映了你內心的狀態",
+      "整理外在，往往能理清內在",
+      "環境變乾淨，心情真的會跟著變好"]},
+    {tag:"家事分工",desc:"誰做家事的學問",q:[
+      "家事分工這件事，差點成了我們吵架的導火線",
+      "那次我們把家事攤開來談，關係反而更好",
+      "誰做家事看起來是小事，其實是相處的大事",
+      "家事不是誰的責任，是一起生活的默契",
+      "把家事講清楚，家才住得舒服"]},
+    {tag:"家的意義",desc:"什麼是家",q:[
+      "對我來說，家不是一個地址，是一種安心",
+      "那天我終於明白，有人等你的地方才叫家",
+      "家的意義不在大小，在於它接住你的疲憊",
+      "無論走多遠，家永遠是我最想回去的地方",
+      "家是唯一一個，你可以完全做自己的地方"]}
+  ]
+},
+{
+  id:"reading-learn", name:"閱讀與學習", category:"general",
+  desc:"閱讀與學習的收穫",
+  strategy:"用閱讀與學習的收穫，吸引愛成長、愛知識的受眾，內容有價值感、易被收藏轉發。",
+  directions:[
+    {tag:"改變我的書",desc:"影響深遠的閱讀",q:[
+      "有一本書，我可以說它改變了我的人生方向",
+      "那本書我讀完的當下，整個人像被重新開機",
+      "一本對的書，能在對的時間把你救起來",
+      "多年後我還會重讀那本書，每次都有新收穫",
+      "如果只能推薦一本書，我會毫不猶豫選它"]},
+    {tag:"重拾閱讀",desc:"找回讀書的習慣",q:[
+      "出社會後我好幾年沒讀完一本書，直到那天",
+      "重拾閱讀的第一本書，我讀得好慢卻好滿足",
+      "找回讀書習慣，等於找回了跟自己對話的時間",
+      "那天我關掉手機翻開書，久違的專注回來了",
+      "重新開始讀書，我才發現自己有多想它"]},
+    {tag:"買書如山倒",desc:"讀不完的書",q:[
+      "我的書架上堆滿了買了還沒讀的書",
+      "那天我看著那疊未讀，決定先讀完再買",
+      "買書如山倒，讀書如抽絲，這是我的日常",
+      "買書的快樂，有時候大過讀書本身",
+      "堆著的那些書，其實是我想成為的樣子"]},
+    {tag:"讀書筆記",desc:"怎麼消化一本書",q:[
+      "以前我讀完就忘，直到我開始做筆記",
+      "那本書我邊讀邊寫，內容才真的進到腦子裡",
+      "讀書筆記的重點不是抄，是用自己的話重講",
+      "我把書裡的重點變成行動，才算真的讀懂",
+      "消化一本書，比讀完更多本書更重要"]},
+    {tag:"通勤閱讀",desc:"零碎時間的累積",q:[
+      "每天通勤的那半小時，讓我一年讀完二十本書",
+      "那些零碎的時間，累積起來力量驚人",
+      "通勤閱讀教我，時間是擠出來的不是等來的",
+      "把滑手機換成讀幾頁書，一年後差很多",
+      "零碎時間怎麼用，慢慢會拉開人跟人的距離"]},
+    {tag:"被一句話擊中",desc:"某句話的力量",q:[
+      "書裡的那句話，像是專門寫給當下的我",
+      "那句話我抄了下來，貼在看得見的地方",
+      "有時候一整本書，就為了那一句話值得",
+      "被一句話擊中的瞬間，你會知道你需要它",
+      "一句對的話，能陪你走過一段很難的路"]},
+    {tag:"讀書會",desc:"一起讀的火花",q:[
+      "同一本書，聽別人的解讀讓我看見全新的角度",
+      "那次讀書會的討論，比書本身還精彩",
+      "一個人讀是輸入，一群人讀是碰撞",
+      "讀書會讓我發現，原來書可以這樣被理解",
+      "跟人一起讀書，收穫的不只是知識，還有連結"]},
+    {tag:"換個腦袋",desc:"讀不同領域的書",q:[
+      "跨出自己熟悉的領域讀書，像打開了新世界",
+      "那本完全不同領域的書，反而給了我最多啟發",
+      "讀不同領域，是幫大腦裝上新的鏡頭",
+      "答案有時候藏在你以為無關的那本書裡",
+      "換個腦袋讀書，你會發現世界更立體"]},
+    {tag:"有聲書",desc:"用聽的閱讀",q:[
+      "洗碗、通勤的時候聽書，一天多讀好多",
+      "那本用聽的書，讓我重新愛上『讀』書",
+      "有聲書打破了我對閱讀一定要坐著的想像",
+      "用聽的閱讀，把很多碎片時間變成養分",
+      "誰說一定要用眼睛讀，用耳朵也能吸收"]},
+    {tag:"學習方法",desc:"怎麼學得更好",q:[
+      "我以前很努力卻學得很慢，問題出在方法",
+      "那個學習方法，讓我的效率一下提高好多",
+      "會學習的人，贏的不是時間，是方法",
+      "找到適合自己的學習方式，事半功倍",
+      "學習不是比誰花的時間多，是比誰學得巧"]},
+    {tag:"終身學習",desc:"為什麼一直學",q:[
+      "離開學校才發現，真正的學習現在才開始",
+      "那天我意識到，停止學習就等於停止成長",
+      "終身學習不是口號，是這個時代的生存能力",
+      "我保持學習，是為了不被自己的舒適區困住",
+      "願意一直學的人，永遠不會被時代拋下"]},
+    {tag:"學不會的挫折",desc:"學習卡關",q:[
+      "那個東西我怎麼學都學不會，一度想放棄",
+      "卡關的時候，我學會了對自己耐心一點",
+      "學不會不代表笨，只是還沒找到你的節奏",
+      "那次撞牆的經驗，反而讓我學得更扎實",
+      "學習的挫折，是通往真正理解的必經之路"]},
+    {tag:"從書到行動",desc:"知道不等於做到",q:[
+      "我讀了一堆書，卻發現知道跟做到差很遠",
+      "那本書真正改變我的，是我把它變成了行動",
+      "讀再多不去做，也只是收藏了一堆道理",
+      "從知道到做到，中間隔著最難的那一步",
+      "書的價值不在讀完，在你有沒有活出來"]},
+    {tag:"童年的書",desc:"陪我長大的故事",q:[
+      "那本小時候讀到爛的書，我到現在還留著",
+      "童年的那些故事，悄悄形塑了現在的我",
+      "重讀童年的書，我讀到了當時沒懂的東西",
+      "有些書陪你長大，長大後才讀懂它的溫柔",
+      "童年的閱讀，是一個人最初的世界觀"]},
+    {tag:"讀書與獨處",desc:"一個人的時光",q:[
+      "一個人捧著書的時光，是我最平靜的時候",
+      "那個下午我只是安靜讀書，卻覺得無比富足",
+      "讀書是最好的獨處，你並不孤單",
+      "在書裡，我找到了跟自己相處的方式",
+      "一本書、一杯茶、一個下午，就是我的療癒"]},
+    {tag:"重讀經典",desc:"不同年紀的體會",q:[
+      "同一本經典，二十歲跟三十歲讀完全不同",
+      "那本書我重讀時，才讀懂了當年跳過的部分",
+      "經典之所以是經典，是它會隨你一起長大",
+      "不同年紀讀同一本書，像照見不同的自己",
+      "好書值得一讀再讀，每次都給你新的東西"]},
+    {tag:"學新技能",desc:"大人的學習",q:[
+      "這把年紀還從頭學一樣東西，我一開始很不好意思",
+      "那個新技能學成之後，我對自己刮目相看",
+      "大人的學習沒有考試，卻更需要自律",
+      "學新技能讓我證明，年紀不是放棄的藉口",
+      "重新當學生的感覺，其實很讓人上癮"]},
+    {tag:"資訊焦慮",desc:"讀太多也是負擔",q:[
+      "我一天吸收的資訊，多到大腦快要當機",
+      "那天我發現，讀太多沒消化，反而更焦慮",
+      "資訊過載的時代，會篩選比會吸收更重要",
+      "後來我學會少而精，焦慮就少了一半",
+      "不是讀得越多越好，是讀得對才有用"]},
+    {tag:"分享閱讀",desc:"把好書推薦出去",q:[
+      "遇到一本好書，我忍不住想推薦給所有人",
+      "那次我推薦的書，朋友讀完傳訊謝謝我",
+      "分享閱讀的快樂，是知識被傳遞下去的溫暖",
+      "把好書推薦出去，像是把一份禮物送給別人",
+      "能因為一本書跟人產生連結，是很美的事"]},
+    {tag:"閱讀的意義",desc:"讀書帶給我的",q:[
+      "閱讀給我的，是一個永遠可以逃進去的世界",
+      "那些讀過的書，最後都變成了我看世界的眼睛",
+      "讀書的意義，是讓你活過不只一種人生",
+      "書沒有讓我變有錢，卻讓我變得更自由",
+      "閱讀最珍貴的，是它讓我永遠對世界好奇"]}
+  ]
+},
+{
+  id:"digital-life", name:"數位生活", category:"general",
+  desc:"數位時代的真實觀察",
+  strategy:"用數位時代的真實觀察引發討論，手機成癮、社群疲勞是當代人共同的痛點，最容易引起共鳴。",
+  directions:[
+    {tag:"手機成癮",desc:"放不下的螢幕",q:[
+      "我算過自己一天滑手機的時間，數字讓我沉默了",
+      "那天手機沒電，我才發現自己有多依賴它",
+      "明明沒事，手還是不自覺地一直解鎖螢幕",
+      "手機成癮最可怕的，是偷走了你不知不覺的時間",
+      "放下手機的那幾小時，我久違地覺得自由"]},
+    {tag:"社群疲勞",desc:"被貼文綁架",q:[
+      "滑完一輪社群，我沒得到什麼，只覺得更累",
+      "那天我發現，我是為了別人的眼光在發貼文",
+      "社群疲勞是一種，明明無聊卻停不下來的空虛",
+      "後來我減少發文，反而找回了生活的實感",
+      "被貼文綁架的日子，我把自己活成了表演"]},
+    {tag:"數位排毒",desc:"關機的練習",q:[
+      "那個週末我把手機關機，緊張到手一直想找它",
+      "數位排毒的第一天最難，撐過去就海闊天空",
+      "關機之後，我才聽見自己心裡真正的聲音",
+      "沒有手機的那幾天，時間變得好長好安靜",
+      "偶爾關機，是這個時代最奢侈的休息"]},
+    {tag:"資訊過載",desc:"被訊息淹沒",q:[
+      "每天湧進來的訊息，多到我根本消化不完",
+      "那天我清空所有未讀，像是卸下一個重擔",
+      "資訊過載讓我焦慮，好像永遠有事沒跟上",
+      "後來我學會關掉通知，世界並沒有因此崩塌",
+      "被訊息淹沒的時候，其實你更需要留白"]},
+    {tag:"網路人設",desc:"螢幕上的假象",q:[
+      "我在網路上笑得燦爛，現實裡卻累得說不出話",
+      "那天我發現，自己活得越來越像螢幕上的人設",
+      "網路人設久了，連自己都快分不清真假",
+      "別人的完美貼文背後，藏著你看不到的狼狽",
+      "我後來決定，做網路上比較真實的那個自己"]},
+    {tag:"通知焦慮",desc:"被提醒追著跑",q:[
+      "那些跳出來的紅點，讓我一整天都無法真正放鬆",
+      "我試著關掉所有通知，第一次感覺自己主導了時間",
+      "被通知追著跑的人生，其實從沒真正休息過",
+      "每個提醒都在偷走你的專注，一次一點點",
+      "關掉通知那天，我才發現大部分都不重要"]},
+    {tag:"螢幕與睡眠",desc:"睡前滑手機",q:[
+      "明明很睏，卻還是滑手機滑到深夜",
+      "那天我把手機放到客廳，居然睡得特別好",
+      "睡前的那道藍光，偷走了我多少睡眠",
+      "戒掉睡前滑手機，是我做過最有感的改變",
+      "手機不進臥室之後，我的睡眠品質回來了"]},
+    {tag:"線上與真實",desc:"兩個世界的落差",q:[
+      "我們用訊息聊得火熱，見面卻不知道說什麼",
+      "那天我放下手機看世界，才發現錯過好多",
+      "線上再熱鬧，也取代不了真實的一個擁抱",
+      "活在螢幕裡久了，我快忘了真實的溫度",
+      "最好的連結，還是發生在螢幕之外"]},
+    {tag:"網路比較",desc:"看別人過得好",q:[
+      "滑著別人的精彩，我把自己的日子越看越糟",
+      "那天我提醒自己，那些都只是別人的高光時刻",
+      "網路比較的陷阱，是拿自己的日常比別人的舞台",
+      "關掉那些讓我焦慮的帳號，心情立刻好轉",
+      "別人的生活是剪輯過的，你的才是完整的"]},
+    {tag:"群組人生",desc:"已讀與回覆的壓力",q:[
+      "那個一直跳訊息的群組，讓我壓力好大",
+      "已讀不回會焦慮，回了又停不下來，好累",
+      "群組人生的疲憊，是隨時都得在線上的壓力",
+      "我後來把不重要的群組設靜音，世界安靜了",
+      "不用即時回覆每個訊息，也是一種自我保護"]},
+    {tag:"數位斷捨離",desc:"清理數位雜物",q:[
+      "那天我清掉幾百張重複的照片，手機跟心都清爽",
+      "數位斷捨離之後，我的檔案跟人生都變整齊",
+      "手機裡的雜物，其實跟房間的雜物一樣累人",
+      "取消追蹤那些消耗我的帳號，動態乾淨多了",
+      "清理數位空間，也是在清理自己的注意力"]},
+    {tag:"遠距工作",desc:"在家上班的日常",q:[
+      "在家上班聽起來爽，實際上工作跟生活全糊在一起",
+      "那天我為自己設下下班時間，才不會工作到半夜",
+      "遠距工作最難的，是分清楚什麼時候該關機",
+      "少了通勤，我卻好像更沒有自己的時間",
+      "在家工作的自由，是需要自律去守護的"]},
+    {tag:"演算法泡泡",desc:"被餵養的世界",q:[
+      "我看到的世界，其實是演算法挑給我看的",
+      "那天我才驚覺，我的想法一直被餵養而不自知",
+      "同溫層太舒服，久了會忘記世界有別的聲音",
+      "跳出演算法泡泡，我才看見更完整的世界",
+      "當所有內容都在附和你，你該警覺了"]},
+    {tag:"網路隱私",desc:"被看光的擔憂",q:[
+      "剛聊完的東西馬上跳出廣告，我背脊發涼",
+      "那天我認真檢查權限，才知道自己給出了多少",
+      "在網路上，我們比想像中更透明",
+      "保護隱私不是心虛，是保護自己的界線",
+      "我開始少分享一點，把生活留一部分給自己"]},
+    {tag:"老照片",desc:"數位裡的回憶",q:[
+      "翻到幾年前的照片，一整段回憶湧上來",
+      "那些存在雲端的照片，是我最珍貴的時光膠囊",
+      "數位照片方便，卻也讓我們很少真的回頭看",
+      "那天我整理老照片，看著看著就紅了眼眶",
+      "照片會存很久，但拍照的那個當下回不去了"]},
+    {tag:"追劇人生",desc:"一集接一集",q:[
+      "說好只看一集，結果天亮了我還在看",
+      "那部劇陪我度過了一段很難熬的日子",
+      "追劇是逃避，也是這個時代的小小療癒",
+      "一集接一集的背後，有時是不想面對現實",
+      "偶爾放縱追劇沒關係，別讓它吃掉你的人生"]},
+    {tag:"數位工具",desc:"讓生活更方便",q:[
+      "自從用了那個工具，我的生活效率提升好多",
+      "那個小 App 幫我省下的時間，累積起來很可觀",
+      "科技的好，是把繁瑣的事變簡單",
+      "善用數位工具，讓我把時間留給更重要的事",
+      "工具是死的，會用的人才能真正受惠"]},
+    {tag:"網路酸言",desc:"鍵盤後的惡意",q:[
+      "螢幕後面的那些惡意，殺傷力比想像中大",
+      "那則酸言我看了很多次，才學會不放心上",
+      "鍵盤俠的膽子，全來自於看不見對方的臉",
+      "面對網路惡意，我學會了關掉留言保護自己",
+      "在網路上善良一點，因為你不知道對方正經歷什麼"]},
+    {tag:"重新連結",desc:"放下手機看世界",q:[
+      "那天我放下手機抬起頭，才看見夕陽有多美",
+      "跟朋友約定吃飯不滑手機，我們聊得好深",
+      "重新連結真實世界，我找回了久違的踏實",
+      "最美的風景，從來不在螢幕裡",
+      "放下手機的那一刻，我才真正在場"]},
+    {tag:"科技與人性",desc:"我們被改變了嗎",q:[
+      "科技讓我們更近，還是其實更遠了",
+      "那天我想，我們到底是在用科技，還是被它用",
+      "科技改變的不只是生活，還有我們這個人",
+      "工具越來越聰明，我們有沒有變得更好",
+      "在科技的浪潮裡，別把最珍貴的人性弄丟了"]}
+  ]
+},
+{
+  id:"growth-story", name:"個人成長故事", category:"general",
+  desc:"個人成長的真實故事",
+  strategy:"用個人成長的真實故事打動人心，成長型敘事最能引發追蹤與情感投射，是經營鐵粉的利器。",
+  directions:[
+    {tag:"轉捩點",desc:"改變人生的那一刻",q:[
+      "那一刻我不知道，它會徹底改變我往後的人生",
+      "回頭看，人生的轉彎往往發生在一個不起眼的瞬間",
+      "那個決定當下很小，後來卻改變了一切",
+      "如果沒有那天，就不會有現在的我",
+      "轉捩點來的時候，你不一定認得出它"]},
+    {tag:"最低潮",desc:"走過谷底",q:[
+      "那段最低潮的日子，我連呼吸都覺得吃力",
+      "跌到谷底才發現，剩下的路只有往上",
+      "走過谷底的人，眼神裡有一種說不出的堅定",
+      "最黑暗的那段時間，其實正在悄悄改變我",
+      "谷底不可怕，可怕的是你以為自己爬不出來"]},
+    {tag:"一個決定",desc:"改變一切的選擇",q:[
+      "那個所有人都反對的決定，我還是做了",
+      "如果當初選了另一條路，現在會是怎樣",
+      "一個決定的重量，往往要很多年後才知道",
+      "那次我聽了自己心裡的聲音，沒有後悔",
+      "改變一生的，常常就是那一個小小的選擇"]},
+    {tag:"克服恐懼",desc:"跨過心裡的坎",q:[
+      "那件我怕了半輩子的事，我終於面對它了",
+      "跨過那道坎的瞬間，我聽見自己的心在鬆開",
+      "恐懼一直騙我說做不到，我證明了它是錯的",
+      "克服恐懼之後，我看世界的角度都不一樣了",
+      "最難跨的坎，往往就在自己心裡"]},
+    {tag:"失敗的禮物",desc:"從失敗學到的",q:[
+      "那次徹底的失敗，後來變成我最寶貴的禮物",
+      "如果沒失敗過，我不會懂得現在珍惜的東西",
+      "失敗當下很痛，事後卻教了我最多",
+      "我感謝那次跌倒，它讓我學會怎麼站得更穩",
+      "成功教我方法，失敗教我做人"]},
+    {tag:"被看不起",desc:"用實力證明",q:[
+      "那句看不起我的話，我默默記了好多年",
+      "被否定的時候我沒回嘴，我用結果回答",
+      "曾經看不起我的人，後來都閉上了嘴",
+      "被看不起不可怕，證明給自己看就好",
+      "那些質疑，反而變成我往前衝的燃料"]},
+    {tag:"堅持到底",desc:"撐過最難的時候",q:[
+      "無數次想放棄，最後都靠一個念頭撐了下來",
+      "那段最難的日子，我只是咬牙多撐了一天又一天",
+      "堅持到底最難的，是看不到終點還要繼續走",
+      "後來我懂了，撐過去和放棄之間只差一點點",
+      "很多人不是輸給困難，是輸給了想放棄的自己"]},
+    {tag:"貴人相助",desc:"改變我的人",q:[
+      "那個在我最低潮時拉我一把的人，我一輩子感謝",
+      "他的一句話，改變了我對自己的看法",
+      "人生的貴人，往往出現在你最想不到的時候",
+      "沒有那個願意相信我的人，就沒有現在的我",
+      "我能走到這裡，是因為有人先看見了我"]},
+    {tag:"突破自我",desc:"做到以為做不到的",q:[
+      "我做到了那件，連自己都不敢相信的事",
+      "當我跨過那個門檻，才知道極限是自己設的",
+      "以為做不到的事，做到之後整個人都不一樣了",
+      "突破自我的瞬間，是我最有力量的時刻",
+      "原來我遠比自己想像的還要強"]},
+    {tag:"迷惘的日子",desc:"找不到方向",q:[
+      "那段找不到方向的日子，我每天都在原地打轉",
+      "迷惘的時候最怕的，是身邊人都好像有目標",
+      "後來我學會，迷惘也是成長的一部分",
+      "找不到路的時候，我先停下來聽自己的聲音",
+      "那些迷路的日子，其實在幫我找到真正的方向"]},
+    {tag:"重新開始",desc:"歸零再出發",q:[
+      "把過去全部歸零重來，比想像中需要勇氣",
+      "那次重新開始，我把包袱一件一件放下",
+      "歸零不是失去，是給自己一張乾淨的白紙",
+      "重新開始的第一步最難，跨出去就對了",
+      "人生可以重來很多次，只要你願意"]},
+    {tag:"相信自己",desc:"找回信心",q:[
+      "被打擊久了，我一度連自己都不相信",
+      "那天我做成一件事，慢慢把信心撿了回來",
+      "相信自己，是我送給自己最重要的禮物",
+      "當我開始相信自己，別人的懷疑就傷不了我",
+      "信心不是別人給的，是自己一次次掙來的"]},
+    {tag:"走出舒適圈",desc:"冒險的勇氣",q:[
+      "待在舒適圈很安全，卻也讓我慢慢枯萎",
+      "那天我決定跳出去，心跳得很快但很值得",
+      "走出舒適圈之後，我的世界一下變大了",
+      "冒險當下很怕，回頭看卻是最對的決定",
+      "舒適圈會讓你安心，也會讓你停止長大"]},
+    {tag:"成長的代價",desc:"得到與失去",q:[
+      "成長讓我得到很多，也讓我失去了一些",
+      "那些變化的過程，有喜悅也有捨不得",
+      "長大的代價，是有些人有些事回不去了",
+      "我得到了想要的，也學會了跟失去和解",
+      "成長從來不是免費的，但值得"]},
+    {tag:"蛻變",desc:"變成更好的自己",q:[
+      "翻看幾年前的自己，我幾乎認不出來",
+      "蛻變是慢慢發生的，直到有天你回頭嚇一跳",
+      "那個曾經膽小的我，變成了現在的樣子",
+      "蛻變的過程不好受，破繭而出卻無比自由",
+      "我沒有變成別人，只是變成更完整的自己"]},
+    {tag:"給年輕的自己",desc:"回望來時路",q:[
+      "如果能對年輕的自己說話，我想說：別急，都會好的",
+      "那個橫衝直撞的我，謝謝你沒有停下來",
+      "回望來時路，我想抱抱當年那個努力的自己",
+      "年輕時的傻，其實是最珍貴的勇敢",
+      "我想告訴以前的自己：你走的每一步都算數"]},
+    {tag:"意外的收穫",desc:"繞路的風景",q:[
+      "那條我以為走錯的路，最後給了我最美的風景",
+      "計畫全被打亂，卻換來意想不到的收穫",
+      "繞路不一定是壞事，有些風景只有繞路才看得到",
+      "回頭才發現，那次的意外是老天給的禮物",
+      "人生沒有白走的路，繞的路都算數"]},
+    {tag:"找到熱情",desc:"為之努力的事",q:[
+      "找到那件讓我願意熬夜也甘願的事，我知道對了",
+      "熱情來的時候，你會忘了時間、忘了累",
+      "那件讓我眼睛發亮的事，我等了很久",
+      "找到熱情之後，努力變成一件開心的事",
+      "有一件想全力以赴的事，人生就有了方向"]},
+    {tag:"感謝那段路",desc:"苦過才懂",q:[
+      "那段最苦的日子，現在成了我最感謝的一段",
+      "苦過才懂，那些眼淚都沒有白流",
+      "回頭看那段路，我想跟它說一聲謝謝",
+      "當時覺得撐不過的，如今都成了養分",
+      "那段路很難走，但把我變成了更好的人"]},
+    {tag:"成為自己",desc:"活成想要的樣子",q:[
+      "花了好多年，我終於活成自己想要的樣子",
+      "成為自己，是我這輩子最重要的功課",
+      "不再為了別人而活的那一刻，我自由了",
+      "我不再需要別人的認可，也能好好做自己",
+      "活成自己，就是對這一生最好的交代"]}
+  ]
+},
+{
+  id:"sport-outdoor", name:"運動與戶外", category:"general",
+  desc:"運動與戶外的體驗",
+  strategy:"用運動與戶外的體驗傳遞正能量與生活態度，吸引嚮往健康、自然與自我挑戰的受眾。",
+  directions:[
+    {tag:"第一次挑戰",desc:"跨出第一步",q:[
+      "第一次報名時我超猶豫，怕自己撐不完",
+      "那天我踏出第一步，才發現沒有想像中難",
+      "跨出第一步之後，我對自己完全改觀",
+      "最難的永遠是開始，動起來就成功一半了",
+      "第一次挑戰的那份忐忑，我到現在都記得"]},
+    {tag:"跑步人生",desc:"一個人的節奏",q:[
+      "跑步的時候，全世界只剩下我和呼吸的節奏",
+      "那條每天跑的路線，陪我走過好多心事",
+      "一個人跑步，是我跟自己對話最好的時間",
+      "跑步教我的，是專注在自己的步伐上",
+      "跑起來以後，很多想不通的事都通了"]},
+    {tag:"登山",desc:"爬向山頂",q:[
+      "爬到快放棄的時候，山頂就在轉角",
+      "那次登頂看到的風景，讓所有的累都值得",
+      "登山教我，一步一步慢慢走也會到",
+      "山不會為你降低高度，但你可以變強",
+      "站上山頂那一刻，我懂了什麼叫堅持的獎賞"]},
+    {tag:"大自然療癒",desc:"走進山林海邊",q:[
+      "走進山林的那一刻，城市的煩躁全被洗掉",
+      "那片海讓我覺得，自己的煩惱其實很小",
+      "大自然什麼都沒說，卻療癒了我很多",
+      "累的時候我就往山裡海邊跑，回來就滿血了",
+      "在大自然面前，我學會了謙卑也學會了放下"]},
+    {tag:"運動低潮",desc:"撐不下去的時候",q:[
+      "那陣子我怎麼練都沒進步，一度想放棄",
+      "撐不下去的時候，我告訴自己再一下就好",
+      "運動的低潮，跟人生的低潮很像，都要熬",
+      "那次撞牆期，教會我怎麼跟自己好好相處",
+      "低潮不代表退步，有時是在為突破蓄力"]},
+    {tag:"突破紀錄",desc:"超越自己",q:[
+      "刷新自己紀錄的那一刻，我激動到起雞皮疙瘩",
+      "那個曾經覺得不可能的數字，我做到了",
+      "超越自己，比贏過別人更讓我滿足",
+      "突破紀錄靠的不是天賦，是每天的累積",
+      "跟昨天的自己比，才是最真實的勝利"]},
+    {tag:"汗水的意義",desc:"運動教我的",q:[
+      "流下的每一滴汗，都在悄悄改變我",
+      "運動教我的，是誠實——你付出多少身體都知道",
+      "汗水不會背叛你，這是運動最公平的地方",
+      "那些流汗的日子，養出了我的自律",
+      "運動場上沒有捷徑，這件事我很喜歡"]},
+    {tag:"團隊運動",desc:"一起流汗",q:[
+      "那場比賽我們一起流汗一起哭，感情再也不同",
+      "團隊運動教我，一個人跑得快不如一起走得遠",
+      "隊友在你想放棄時的一句加油，力量好大",
+      "一起流汗的默契，是坐著聊天換不來的",
+      "團隊運動最珍貴的，是那份並肩作戰的情誼"]},
+    {tag:"受傷復出",desc:"重新站起來",q:[
+      "受傷停練的那段日子，比運動本身還難熬",
+      "那次復出，我學會了跟身體好好商量",
+      "重新站起來的過程漫長，卻讓我更懂珍惜",
+      "受傷教會我，休息也是訓練的一部分",
+      "復出後的第一步，比任何紀錄都珍貴"]},
+    {tag:"早起運動",desc:"對抗惰性",q:[
+      "鬧鐘響的那一刻，是我每天最大的戰爭",
+      "那天我戰勝了賴床，晨跑完整個人神清氣爽",
+      "早起運動最難的，是離開溫暖的被窩那一秒",
+      "戰勝惰性之後，一整天都覺得自己很棒",
+      "早晨運動給我的，是一整天的好狀態"]},
+    {tag:"戶外冒險",desc:"未知的刺激",q:[
+      "那次冒險超出我的舒適圈，卻讓我上癮",
+      "面對未知的那份緊張，其實是活著的感覺",
+      "戶外冒險教我，計畫再多也要留給意外空間",
+      "那段刺激的旅程，讓我發現自己的另一面",
+      "走進未知，才知道自己有多勇敢"]},
+    {tag:"身體的改變",desc:"運動帶來的",q:[
+      "運動三個月後，我連走路都變得不一樣",
+      "那天穿上舊衣服，我才驚覺身體真的變了",
+      "運動帶來的改變，是慢慢的但騙不了人",
+      "身體變強之後，我對自己更有自信",
+      "運動改變的不只是體態，還有整個人的氣場"]},
+    {tag:"堅持的習慣",desc:"每天一點",q:[
+      "每天一點點，一年後我完全變了個人",
+      "那個小到不行的運動習慣，改變了我的人生",
+      "堅持的祕訣，是把目標設到你不會想放棄",
+      "運動變成習慣之後，不做反而渾身不對勁",
+      "每天一點的累積，力量大到會嚇到自己"]},
+    {tag:"賽事挑戰",desc:"站上起跑線",q:[
+      "站上起跑線那一刻，緊張又熱血",
+      "那場比賽我沒拿名次，卻贏了過去的自己",
+      "報名賽事，是逼自己認真練習的最好方法",
+      "衝過終點線的瞬間，所有的辛苦都值得",
+      "站上起跑線本身，就已經很勇敢了"]},
+    {tag:"獨自面對",desc:"一個人的旅程",q:[
+      "那段路只有我一個人，卻走得特別踏實",
+      "獨自面對挑戰，我學會了依靠自己",
+      "一個人的旅程雖然孤獨，卻讓我更認識自己",
+      "沒人幫你的時候，你才知道自己有多強",
+      "獨自完成的那一刻，成就感無可取代"]},
+    {tag:"看見風景",desc:"努力後的獎賞",q:[
+      "撐過最累的那段，眼前的風景是給我的獎賞",
+      "那片風景只留給願意走到最後的人",
+      "努力之後看見的風景，特別美",
+      "累到想哭的時候，一個轉彎就柳暗花明",
+      "最好的風景，往往在最難走的路後面"]},
+    {tag:"運動與心情",desc:"流汗解壓",q:[
+      "心情差的時候，我就去跑步，跑完全好了",
+      "那天我把煩惱都留在跑道上，回家一身輕",
+      "流汗是我最有效的解壓方式，不用花錢",
+      "運動的時候，煩惱好像也跟著汗一起排掉了",
+      "情緒卡住的時候，動起來就對了"]},
+    {tag:"找到熱愛",desc:"愛上運動",q:[
+      "我曾經最討厭運動，現在卻離不開它",
+      "那項運動我一試就愛上，找到了真正的熱情",
+      "找到喜歡的運動，堅持就一點都不難",
+      "愛上運動之後，流汗變成一種享受",
+      "原來運動可以這麼快樂，是我以前不知道的"]},
+    {tag:"突破極限",desc:"挑戰不可能",q:[
+      "那個我以為的極限，其實只是心理設的關卡",
+      "突破極限的瞬間，我聽見自己的潛能在爆發",
+      "挑戰不可能，才知道自己能到哪裡",
+      "極限不是終點，是下一段的起點",
+      "當我跨過極限，整個人都被重新定義了"]},
+    {tag:"運動哲學",desc:"場上學到的人生",q:[
+      "運動場上學到的道理，比課本教的還深刻",
+      "那場比賽輸了，卻教會我怎麼面對失敗",
+      "運動就像人生，重點不是贏，是有沒有全力以赴",
+      "場上的每一課，最後都用在了生活裡",
+      "運動教我的人生哲學：撐下去，就有機會"]}
+  ]
+},
+{
+  id:"season-festival", name:"四季與節慶", category:"general",
+  desc:"四季流轉與節慶的氛圍",
+  strategy:"用四季流轉與節慶的氛圍勾起情感與回憶，畫面感強、貼近生活，是最容易引發共鳴的內容。",
+  directions:[
+    {tag:"春天",desc:"萬物復甦的心情",q:[
+      "春天一到，連空氣都變得溫柔起來",
+      "那棵樹冒出新芽的時候，我也想重新開始",
+      "春天總讓我覺得，一切都還來得及",
+      "看著花一朵朵開，心情也跟著明亮了",
+      "春天教我的是，寒冬過後總會有新的開始"]},
+    {tag:"夏天",desc:"熱烈的季節",q:[
+      "夏天的味道，是冰、是海、是回不去的青春",
+      "那個蟬鳴的午後，藏著我整個童年的夏天",
+      "夏天總是過得特別快，快到讓人捨不得",
+      "熱烈的夏天，最適合做一件瘋狂的事",
+      "每到夏天，我就想起那些揮汗如雨的日子"]},
+    {tag:"秋天",desc:"微涼的感傷",q:[
+      "秋天的風一吹，心裡就多了一點說不出的感傷",
+      "那片落葉飄下的瞬間，我突然想起了誰",
+      "秋天最適合回憶，微涼裡藏著溫柔",
+      "秋天讓我學會，有些告別是自然而然的",
+      "微涼的秋天，是最適合沉澱自己的季節"]},
+    {tag:"冬天",desc:"寒冷裡的溫暖",q:[
+      "冬天最幸福的，是冷風裡那一碗熱湯",
+      "那個寒冷的夜晚，一個擁抱就足夠溫暖",
+      "冬天教我珍惜，那些讓你覺得暖的人事物",
+      "越冷的天，越顯得溫暖珍貴",
+      "冬天再冷，有想見的人就不怕"]},
+    {tag:"過年",desc:"團圓的味道",q:[
+      "過年的味道，是媽媽廚房裡飄出來的那鍋香",
+      "那頓年夜飯，是我一年最期待的一餐",
+      "長大後才懂，過年最重要的是那份團圓",
+      "過年的紅包越來越薄，但家的溫度沒變",
+      "無論走多遠，過年還是想回家"]},
+    {tag:"中秋",desc:"月圓人團圓",q:[
+      "中秋的月亮，照著我也照著遠方想念的人",
+      "那晚我們一家人賞月，什麼都聊，什麼都好",
+      "月圓的時候，最想的還是家人",
+      "中秋節的烤肉香，是台灣人共同的回憶",
+      "抬頭看月亮，好像就跟遠方的人靠近了一點"]},
+    {tag:"端午",desc:"節慶的記憶",q:[
+      "端午的粽香，是奶奶留給我最深的記憶",
+      "那個綁粽子的下午，是我最想念的畫面",
+      "節慶的意義，是把家人聚在一起的理由",
+      "長大後包起粽子，才懂長輩當年的用心",
+      "有些味道只有節慶才有，錯過就要再等一年"]},
+    {tag:"生日",desc:"又長一歲",q:[
+      "又長一歲的這天，我對自己說了一段話",
+      "那個生日我一個人過，卻意外地平靜滿足",
+      "生日不只是慶祝，是提醒自己走了多遠",
+      "年紀越大，越想要的生日禮物是健康和陪伴",
+      "每個生日，都是重新出發的好時機"]},
+    {tag:"跨年",desc:"迎接新的一年",q:[
+      "倒數的那一刻，我許下了對自己的承諾",
+      "那個跨年夜，我回顧了一整年的自己",
+      "跨年不是終點，是給自己重新開始的儀式",
+      "又一年過去，我問自己：有沒有變成想要的樣子",
+      "新的一年，我只希望能對自己更好一點"]},
+    {tag:"母親節",desc:"對媽媽的話",q:[
+      "有些對媽媽的感謝，我總是說不出口",
+      "那天我第一次認真跟媽媽說謝謝，她紅了眼",
+      "長大後才懂，媽媽的嘮叨都是愛的形狀",
+      "母親節我想說的是，媽你也要好好照顧自己",
+      "媽媽的愛，是那種你長大才慢慢讀懂的"]},
+    {tag:"父親節",desc:"沉默的愛",q:[
+      "爸爸從不說愛，卻用一輩子默默扛著我們",
+      "那天我發現爸爸老了，心裡一陣酸",
+      "父親的愛總是沉默的，你要用心才聽得到",
+      "長大後我才懂爸爸當年的難處",
+      "父親節我想跟爸爸說：辛苦了，換我照顧你"]},
+    {tag:"情人節",desc:"關於愛情",q:[
+      "情人節不一定要有人陪，好好愛自己也算",
+      "那個情人節我們沒送禮，卻聊了最深的心裡話",
+      "愛情不在節日多隆重，在日常有多在乎",
+      "一個人的情人節，我學會了跟自己約會",
+      "最好的情人節禮物，是有一個懂你的人"]},
+    {tag:"聖誕節",desc:"溫馨的氛圍",q:[
+      "街上的燈一亮，就有一種被療癒的感覺",
+      "那個聖誕節不豪華，卻因為有他們而溫暖",
+      "聖誕節的魔力，是讓大人也重新相信美好",
+      "我最愛聖誕節那種暖暖的、期待的氛圍",
+      "聖誕節提醒我，要記得對身邊的人好一點"]},
+    {tag:"節氣",desc:"順著時節生活",q:[
+      "跟著節氣過日子，我找回了跟自然的連結",
+      "那個節氣一到，長輩總會叮嚀要吃什麼",
+      "老祖宗的節氣智慧，其實藏著生活的節奏",
+      "順著時節生活，日子好像慢了下來",
+      "節氣提醒我，人也是自然的一部分"]},
+    {tag:"換季",desc:"季節交替的感受",q:[
+      "換季的時候，我總會有一種說不清的心情",
+      "那天收起厚衣服，好像也收起了一段時光",
+      "季節在交替，人生也是，都要學會適應",
+      "換季整理衣櫃，像是給生活一次小小的更新",
+      "每次換季，我都感覺自己又走過了一段路"]},
+    {tag:"回鄉",desc:"節日返家",q:[
+      "踏上返鄉的路，心就先軟了一半",
+      "那條回家的路再塞，我都甘願",
+      "回鄉最珍貴的，是那些習以為常的日常",
+      "每次回家，都發現爸媽又老了一點",
+      "無論在外多累，回到家就有了力氣"]},
+    {tag:"一個人的節日",desc:"獨自過節",q:[
+      "一個人過節，我學會了不把孤單當可憐",
+      "那個獨自過的節日，我好好陪了自己一天",
+      "一個人過節也可以很有儀式感",
+      "獨自過節不寂寞，是難得跟自己相處的時光",
+      "學會一個人好好過節，也是一種能力"]},
+    {tag:"儀式與傳承",desc:"家族的習俗",q:[
+      "那個從小做到大的習俗，藏著家族的記憶",
+      "長大後我才懂，那些儀式是把家人連在一起的線",
+      "傳承的不只是習俗，是一整代人的情感",
+      "我想把這些儀式，繼續傳給下一代",
+      "有些傳統看似麻煩，卻是家的根"]},
+    {tag:"時間流逝",desc:"又一年過去",q:[
+      "一年又過去了，快到讓我有點措手不及",
+      "那天翻月曆，才驚覺時間走得這麼急",
+      "時間流逝提醒我，要把日子過得認真一點",
+      "年紀越大，越覺得時間像是被按了快轉",
+      "留不住時間，那就好好過每一個當下"]},
+    {tag:"季節與回憶",desc:"那些季節裡的事",q:[
+      "每個季節，都藏著一段回不去的回憶",
+      "那年那個季節發生的事，我一直記到現在",
+      "季節會重來，但那些人那些事回不來了",
+      "有一種懷念，是聞到某個季節的味道才想起",
+      "季節輪迴，帶走的和留下的都是故事"]}
+  ]
+},
+{
+  id:"work-habit", name:"工作效率與習慣", category:"general",
+  desc:"實用的效率方法與習慣心得",
+  strategy:"用實用的效率方法與習慣心得，吸引想提升自己、想更有生產力的上班族與自我成長受眾。",
+  directions:[
+    {tag:"拖延症",desc:"總是拖到最後",q:[
+      "明明有時間，我還是拖到最後一刻才動手",
+      "那天我終於搞懂，拖延不是懶，是害怕",
+      "拖延症最痛苦的，是那段一直焦慮又不做的時間",
+      "後來我用一個小方法，成功騙過了拖延的自己",
+      "戰勝拖延的關鍵，是先做五分鐘就好"]},
+    {tag:"待辦清單",desc:"管理每一天",q:[
+      "自從開始列待辦清單，我的一天終於有了掌控感",
+      "那天我把清單砍到只剩三件，效率反而更高",
+      "待辦清單的重點不是列很多，是做完重要的",
+      "把腦中的事寫下來，我才不會一直焦慮忘東忘西",
+      "一張好的待辦清單，能決定你一天的品質"]},
+    {tag:"專注力",desc:"對抗分心",q:[
+      "手機一響，我的專注力就碎成一片一片",
+      "那天我關掉所有干擾，一小時做完平常半天的事",
+      "專注力是這個時代最稀缺、也最值錢的能力",
+      "我把手機放到看不見的地方，效率立刻回來",
+      "對抗分心的第一步，是拿走讓你分心的東西"]},
+    {tag:"時間管理",desc:"把時間用好",q:[
+      "我不是沒時間，是沒把時間花在對的地方",
+      "那天我記錄一整天的時間，發現漏洞百出",
+      "時間管理的本質，是管理你的選擇",
+      "把時間花在重要的事上，忙才有意義",
+      "會管理時間的人，其實是會取捨的人"]},
+    {tag:"早起",desc:"掌握早晨",q:[
+      "早起後多出來的那一小時，改變了我的人生",
+      "那天我提早起床，第一次覺得時間是自己的",
+      "掌握早晨的人，等於贏在一天的起跑點",
+      "早起最難的是開始，養成後就回不去了",
+      "安靜的清晨，是一天裡效率最高的黃金時段"]},
+    {tag:"番茄鐘",desc:"專注工作法",q:[
+      "用番茄鐘之後，我才知道自己能這麼專心",
+      "那個二十五分鐘的專注，比拖一整天有用",
+      "番茄鐘的魔力，是給大腦一個明確的衝刺點",
+      "設定一個計時器，我就不再無止盡地拖",
+      "專注一小段再休息，反而做得又快又好"]},
+    {tag:"減少會議",desc:"拿回時間",q:[
+      "那些冗長的會議，偷走了我一天最好的時間",
+      "後來我學會拒絕不必要的會議，效率翻倍",
+      "很多會議其實一封訊息就能解決",
+      "減少會議之後，我才有時間做真正的工作",
+      "會議不是工作，把事情做完才是"]},
+    {tag:"精力管理",desc:"比時間更重要",q:[
+      "我發現真正稀缺的不是時間，是精力",
+      "那天我把重要的事排在精力最好的時段，一切都順了",
+      "管理精力，比管理時間更能提升效率",
+      "累的時候硬做，只會做得又慢又爛",
+      "把最好的精力，留給最重要的事"]},
+    {tag:"建立習慣",desc:"讓好事自動化",q:[
+      "當一件事變成習慣，就不再需要意志力硬撐",
+      "那個習慣養成後，我不用逼自己也會去做",
+      "建立習慣的祕訣，是綁在已有的日常上",
+      "好習慣一旦自動化，人生就輕鬆很多",
+      "我們先養成習慣，然後習慣塑造我們"]},
+    {tag:"斷捨離工作",desc:"做重要的事",q:[
+      "我以前很忙卻沒成果，因為在瞎忙",
+      "那天我砍掉一半的工作，重要的事反而做好了",
+      "工作也要斷捨離，不是每件事都值得做",
+      "學會放掉不重要的，才有力氣做關鍵的",
+      "做得少但做得對，比做得多更有價值"]},
+    {tag:"數位工具",desc:"提升效率",q:[
+      "一個對的工具，幫我省下每天一小時",
+      "那個 App 把我雜亂的工作整理得清清楚楚",
+      "善用工具，是聰明人偷時間的方式",
+      "工具用對，重複的事再也不用自己來",
+      "不是工具越多越好，是用對的那幾個"]},
+    {tag:"說不的能力",desc:"保護時間",q:[
+      "答應太多事，最後每件都做不好",
+      "那次我學會說不，才守住了自己的時間",
+      "會說不的人，才有空間做真正想做的事",
+      "每答應一件事，就等於對別的事說不",
+      "保護時間最有效的一句話，就是『我不行』"]},
+    {tag:"完美主義",desc:"追求完美的代價",q:[
+      "追求完美讓我遲遲不敢開始，卡在原地",
+      "那天我告訴自己，完成比完美更重要",
+      "完美主義最大的代價，是拖延和內耗",
+      "先做出一個爛版本，再慢慢變好",
+      "有時候『夠好』就已經很好了"]},
+    {tag:"深度工作",desc:"不被打擾的專注",q:[
+      "一段不被打擾的深度工作，抵得上一整天的忙碌",
+      "那兩小時我什麼都不管，完成了最難的部分",
+      "深度工作，是這個分心時代最強的競爭力",
+      "我開始為自己留一段誰都不能打擾的時間",
+      "真正的產出，都來自那些專注的深度時光"]},
+    {tag:"復盤習慣",desc:"每天檢視",q:[
+      "每天花五分鐘復盤，我進步得比別人快",
+      "那個復盤的習慣，讓我不會重複踩同樣的坑",
+      "復盤不是自責，是幫自己找到更好的方法",
+      "檢視今天，是為了讓明天更好",
+      "會復盤的人，每一天都在悄悄升級"]},
+    {tag:"精簡待辦",desc:"少即是多",q:[
+      "待辦太多反而癱瘓，我學會一天只鎖定三件",
+      "那天我把清單砍半，完成率反而更高",
+      "少即是多，這句話用在待辦清單特別對",
+      "與其列一堆做不完，不如做好最重要的",
+      "精簡待辦，是把力氣集中在刀口上"]},
+    {tag:"能量高峰",desc:"找到黃金時段",q:[
+      "找到自己的能量高峰後，效率整個不一樣",
+      "那天我把難事排在早上，一下就搞定了",
+      "每個人都有黃金時段，關鍵是把它用在對的事",
+      "了解自己什麼時候最有精神，事半功倍",
+      "順著能量的節奏工作，比硬撐有效多了"]},
+    {tag:"對抗倦怠",desc:"撐過沒動力",q:[
+      "那陣子我對什麼都提不起勁，連工作都變沉重",
+      "倦怠來的時候，硬撐只會更糟",
+      "對抗倦怠最好的方式，是先允許自己休息",
+      "那次倦怠讓我發現，我需要的是充電不是逼迫",
+      "撐過沒動力的方法，是把目標拆到小得不費力"]},
+    {tag:"微習慣",desc:"小到不會失敗",q:[
+      "我把目標設到小得可笑，結果反而堅持下來了",
+      "那個一天只做一下的微習慣，一年後很驚人",
+      "微習慣的厲害，是小到你找不到藉口不做",
+      "從一個伏地挺身開始，我養成了運動的習慣",
+      "改變不用一次到位，小到不會失敗就好"]},
+    {tag:"效率的本質",desc:"忙不等於有效",q:[
+      "我曾經把忙碌當努力，其實只是在原地打轉",
+      "那天我才懂，效率不是做很多，是做對的",
+      "看起來很忙，跟真正有產出是兩回事",
+      "效率的本質，是用更少的力氣做出更多的成果",
+      "別再用忙碌感動自己，要看做出了什麼"]}
+  ]
+},
+{
+  id:"pet-animal", name:"寵物與動物", category:"general",
+  desc:"與動物相處的溫暖故事",
+  strategy:"用與動物相處的溫暖故事觸動人心，寵物內容有天然的療癒力與極高的互動率。",
+  directions:[
+    {tag:"相遇",desc:"遇見牠的那天",q:[
+      "遇見牠的那天，我沒想到會愛得這麼深",
+      "牠第一眼看我的樣子，我到現在都記得",
+      "有時候不是我們選了寵物，是牠選了我們",
+      "那天原本只是去看看，最後卻把牠帶回了家",
+      "牠的出現，讓我的生活從此不一樣"]},
+    {tag:"陪伴",desc:"有牠的日常",q:[
+      "下班回家有牠在門口等，再累都值得",
+      "牠不會說話，卻是我最好的傾聽者",
+      "有牠在的日常，連平凡都變得溫暖",
+      "那些孤單的夜晚，是牠在身邊陪我度過",
+      "牠的陪伴，是一種不用言語的安心"]},
+    {tag:"生病",desc:"牠不舒服的時候",q:[
+      "牠生病的那幾天，我比自己生病還難受",
+      "看著牠虛弱的樣子，我恨不得代替牠",
+      "那晚我抱著牠去急診，一路上心都揪著",
+      "牠不會喊痛，我只能更用心去讀懂牠",
+      "牠康復的那一刻，我鬆了一大口氣"]},
+    {tag:"搗蛋",desc:"令人又氣又愛",q:[
+      "牠又闖禍了，我氣到不行卻怎麼都捨不得罵",
+      "那天回家看到一片狼藉，牠還一臉無辜",
+      "牠的調皮，是我生活裡最甜蜜的負擔",
+      "被牠氣笑的次數，多到我數不清",
+      "牠再怎麼搗蛋，一個撒嬌我就投降了"]},
+    {tag:"療癒時刻",desc:"牠治癒了我",q:[
+      "我最低潮的時候，是牠靜靜靠在我身邊",
+      "那天我哭了，牠什麼都不懂卻一直陪著",
+      "牠不知道，牠治癒了我多少個難熬的日子",
+      "難過的時候抱著牠，好像什麼都能撐過去",
+      "牠給的療癒，是任何人都取代不了的"]},
+    {tag:"老去",desc:"陪牠慢慢變老",q:[
+      "牠的毛開始白了，我才驚覺牠也在變老",
+      "陪牠慢慢老去，是甜蜜也是不捨",
+      "那天牠跳不上沙發了，我心裡一陣酸",
+      "牠陪我走過青春，換我陪牠走完後半段",
+      "看著牠變老，我更珍惜跟牠的每一天"]},
+    {tag:"離別",desc:"送走毛孩",q:[
+      "送走牠的那天，家裡突然安靜得讓人受不了",
+      "牠走了以後，我還是習慣性地喊牠的名字",
+      "那份離別的痛，只有養過的人才懂",
+      "謝謝牠來過我的生命，雖然時間太短",
+      "牠教會我的最後一課，是好好說再見"]},
+    {tag:"領養",desc:"給牠一個家",q:[
+      "領養牠的時候，牠眼神裡的怯生生我忘不了",
+      "那天我沒有買，我選擇了領養，我不後悔",
+      "給一個曾經被丟下的生命一個家，很值得",
+      "牠花了好久才敢相信，這裡是牠的家了",
+      "領養代替購買，我用行動疼惜一個生命"]},
+    {tag:"訓練",desc:"一起學習成長",q:[
+      "教牠一個小動作，我們一起挫折又一起開心",
+      "那次牠終於學會了，我比牠還興奮",
+      "訓練牠的過程，其實也在訓練我的耐心",
+      "牠學得慢沒關係，我們慢慢一起進步",
+      "跟牠一起成長，是很奇妙的一種默契"]},
+    {tag:"默契",desc:"不用說也懂",q:[
+      "我一個眼神，牠就知道我要做什麼",
+      "那種不用說話也懂彼此的默契，很難得",
+      "牠總能在我需要的時候，剛好靠過來",
+      "我們之間有一種只屬於彼此的語言",
+      "牠懂我的程度，有時候比人還深"]},
+    {tag:"迎接新成員",desc:"家裡多了牠",q:[
+      "自從家裡多了牠，笑聲也跟著多了起來",
+      "那天把牠接回家，整個家的氣氛都變了",
+      "多了一個小生命，責任重了但幸福也多了",
+      "牠的到來，讓我們家更完整了",
+      "迎接牠的那一刻，我知道我的生活升級了"]},
+    {tag:"牠的個性",desc:"獨一無二的牠",q:[
+      "牠有一堆奇怪的小癖好，全世界只有牠這樣",
+      "那個獨特的小脾氣，是牠最可愛的地方",
+      "每隻寵物都有個性，我家這隻特別有戲",
+      "牠的與眾不同，讓我更覺得牠是唯一",
+      "牠不完美，但正是那些怪癖讓我愛不釋手"]},
+    {tag:"流浪動物",desc:"街頭的生命",q:[
+      "路邊那隻流浪的眼神，我到現在還記得",
+      "那天我餵了牠一頓，牠的信任讓我鼻酸",
+      "街頭的每個小生命，都值得被溫柔以待",
+      "看到流浪動物，我總會想起牠們也曾被愛過",
+      "多一點善意，也許就能改變一個生命的命運"]},
+    {tag:"責任",desc:"養牠這件事",q:[
+      "養牠不只是可愛，是一份十幾年的承諾",
+      "那天我才真正體會，養一個生命有多重的責任",
+      "決定養牠之前，我問了自己很多次能不能負責",
+      "牠的一生都交給了我，我不能辜負",
+      "愛牠，就是願意為牠負起全部的責任"]},
+    {tag:"無條件的愛",desc:"牠給我的",q:[
+      "不管我是什麼樣子，牠永遠一樣愛我",
+      "牠給的愛沒有條件，這是人很難做到的",
+      "那種被完全信任、完全依賴的感覺，很珍貴",
+      "牠不在乎我有沒有錢、成不成功，只在乎我回家",
+      "牠教會我，什麼叫真正無條件的愛"]},
+    {tag:"想對牠說",desc:"送牠的話",q:[
+      "有好多話想對牠說，可惜牠聽不懂",
+      "如果牠能懂，我想跟牠說謝謝你選擇我",
+      "牠不知道，牠是我生命裡多重要的存在",
+      "我想告訴牠：有你在，我什麼都不怕",
+      "牠給我的，遠比我給牠的多太多了"]},
+    {tag:"動物教我的",desc:"從牠身上學到",q:[
+      "牠活在當下的樣子，是我一直學不會的智慧",
+      "從牠身上，我學會了怎麼單純地快樂",
+      "牠不記仇、不比較，這些我都該向牠學",
+      "牠教我的，是好好珍惜眼前的每一刻",
+      "有時候，動物比人更懂得怎麼生活"]},
+    {tag:"牠與家人",desc:"家裡的一份子",q:[
+      "牠早就不是寵物，是我們家不可缺的一員",
+      "那天全家為了牠忙進忙出，笑成一團",
+      "牠把原本各自忙碌的我們，重新聚在一起",
+      "在我們家，牠有牠的位子，也有牠的份量",
+      "牠是家人，這件事從來不用懷疑"]},
+    {tag:"小小的幸福",desc:"牠帶來的日常快樂",q:[
+      "牠打呼的樣子，是我一天裡最療癒的畫面",
+      "那些牠帶來的小確幸，累積成滿滿的幸福",
+      "牠的一個小動作，就能讓我笑一整天",
+      "有牠在，平凡的日子也閃閃發光",
+      "幸福其實很簡單，就是有牠在身邊"]},
+    {tag:"牠對我的意義",desc:"為什麼養寵物",q:[
+      "有人問我為什麼養牠，答案很簡單：因為愛",
+      "牠對我的意義，是家、是陪伴、是一份牽掛",
+      "養牠之後我才懂，被需要也是一種幸福",
+      "牠讓我變成一個更溫柔、更有責任感的人",
+      "牠不只是我養的，是我生命裡的一部分"]}
+  ]
+},
+{
+  id:"slow-life", name:"慢活與簡單生活", category:"general",
+  desc:"慢活與簡單的生活態度",
+  strategy:"用慢活與簡單的生活態度，療癒被快節奏壓垮的人，吸引嚮往從容、自在生活的受眾。",
+  directions:[
+    {tag:"慢下來",desc:"停下腳步",q:[
+      "那天我第一次讓自己停下來，發現世界沒有崩塌",
+      "一直往前衝的我，忘了停下來看看風景",
+      "慢下來之後，我才聽見自己內心的聲音",
+      "原來停下腳步，不是浪費，是充電",
+      "慢一點沒關係，方向對就好"]},
+    {tag:"少即是多",desc:"減法生活",q:[
+      "當我擁有的變少，快樂反而變多了",
+      "那次大掃除讓我明白，我需要的沒那麼多",
+      "減法生活教我，空間留白心也跟著清爽",
+      "東西少了，我才看清什麼是真正重要的",
+      "少即是多，是我這幾年最有感的體會"]},
+    {tag:"享受獨處",desc:"一個人的時光",q:[
+      "一個人的時光，是我為自己保留的奢侈",
+      "那個安靜的下午，我什麼都沒做卻很滿足",
+      "享受獨處，是我送給自己最好的禮物",
+      "學會跟自己相處，就不再害怕一個人",
+      "獨處不是孤單，是找回自己的方式"]},
+    {tag:"極簡",desc:"只留必要的",q:[
+      "只留下必要的東西，我的生活變得好輕盈",
+      "那次極簡實驗，讓我重新認識自己的需要",
+      "極簡不是什麼都不要，是只留讓你心動的",
+      "當空間變乾淨，我的心也跟著安定",
+      "擁有得少，反而過得更自由"]},
+    {tag:"活在當下",desc:"專注此刻",q:[
+      "我常活在過去和未來，卻忘了好好過現在",
+      "那天我專注在當下，發現此刻其實很美",
+      "活在當下不是口號，是一種需要練習的能力",
+      "當我專注此刻，焦慮就沒有了容身之處",
+      "把心收回到現在，日子就有了重量"]},
+    {tag:"放下比較",desc:"過自己的節奏",q:[
+      "停止跟別人比之後，我終於能過自己的日子",
+      "那天我不再看別人走多快，只看自己的方向",
+      "每個人的節奏不同，急著趕上只會迷失",
+      "放下比較，我才開始享受自己的人生",
+      "你不需要活成別人，你只要活成自己"]},
+    {tag:"知足",desc:"夠了就好",q:[
+      "當我學會知足，才發現原來我已經擁有很多",
+      "那天我停止追逐，突然覺得現在就很好",
+      "知足不是不上進，是懂得欣賞已有的",
+      "夠了就好，這四個字讓我輕鬆了很多",
+      "幸福不是得到更多，是覺得現在剛剛好"]},
+    {tag:"手作時光",desc:"慢慢做一件事",q:[
+      "慢慢做一件手工，時間好像也慢了下來",
+      "那個下午我專心做著，煩惱全都不見了",
+      "手作的療癒，在於那份專注和慢",
+      "親手做出來的東西，有種說不出的溫度",
+      "在快速的時代，慢慢做一件事很奢侈也很療癒"]},
+    {tag:"自然的節奏",desc:"跟著時序生活",q:[
+      "跟著四季過日子，我找回了生活的節奏",
+      "那天我順著天亮天黑作息，整個人都輕鬆了",
+      "自然有它的節奏，跟著走比對抗省力",
+      "日出而作日落而息，老祖宗的智慧真的有道理",
+      "貼近自然的節奏，日子就沒那麼緊繃"]},
+    {tag:"斷開忙碌",desc:"給自己留白",q:[
+      "那天我什麼都不排，讓自己徹底放空",
+      "行程表留白，反而讓我活得更有餘裕",
+      "斷開忙碌，是我對抗過勞的方式",
+      "留白不是浪費，是給生活喘息的空間",
+      "一直填滿的人生，最後會把自己壓垮"]},
+    {tag:"簡單的快樂",desc:"平凡裡的美好",q:[
+      "一杯咖啡、一本書，就是我簡單的快樂",
+      "那些平凡的小事，其實藏著最真的幸福",
+      "快樂不用很貴，簡單的最持久",
+      "我開始收集生活裡的小美好，越來越富足",
+      "最深的幸福，往往藏在最平凡的日常裡"]},
+    {tag:"不趕時間",desc:"慢慢來",q:[
+      "那天我不趕時間，慢慢走反而看見更多",
+      "急著趕的人生，其實錯過了好多風景",
+      "慢慢來，比較快，這句話越活越有感",
+      "不趕時間之後，我才真正享受過程",
+      "有些事急不得，慢下來它自然會成"]},
+    {tag:"減少慾望",desc:"想要與需要",q:[
+      "分清楚想要和需要之後，我省下好多錢和煩惱",
+      "那天我發現，很多慾望其實不是真的需要",
+      "減少慾望不是壓抑，是看清什麼讓你快樂",
+      "慾望少了，我反而覺得自己更自由",
+      "真正的富足，是不被慾望牽著走"]},
+    {tag:"生活的儀式",desc:"認真過日子",q:[
+      "把普通的一天過得認真，本身就是一種儀式",
+      "那個小小的生活儀式，讓我覺得日子被善待",
+      "認真過日子，是對生命最基本的尊重",
+      "儀式感不用花錢，用心就有",
+      "把日常過得講究一點，人生就不一樣了"]},
+    {tag:"遠離喧囂",desc:"找回安靜",q:[
+      "那天我遠離人群，終於聽見了內心的安靜",
+      "喧囂待久了，才知道安靜有多珍貴",
+      "遠離喧囂，是為了聽清楚自己要什麼",
+      "在安靜裡，我找回了被吵雜蓋掉的自己",
+      "偶爾抽離喧鬧，是照顧自己的方式"]},
+    {tag:"一杯茶的時間",desc:"靜下來",q:[
+      "泡一杯茶的時間，是我一天裡難得的暫停",
+      "那杯茶的熱氣裡，我讓自己徹底靜了下來",
+      "靜下來喝杯茶，煩躁的心也跟著沉澱",
+      "一杯茶的儀式，是我跟自己的小約會",
+      "慢慢喝一杯茶，就能把急躁的自己找回來"]},
+    {tag:"重新定義成功",desc:"不是越多越好",q:[
+      "以前我以為成功是擁有越多，現在想法變了",
+      "那天我重新定義成功，是能好好過想要的生活",
+      "成功不一定是往上爬，也可以是往內走",
+      "當我不再用別人的標準衡量，人生輕鬆多了",
+      "真正的成功，是活得自在又心安"]},
+    {tag:"好好吃飯",desc:"專心一餐",q:[
+      "那天我放下手機專心吃飯，食物特別好吃",
+      "好好吃一頓飯，其實是很療癒的一件事",
+      "專心吃飯，是把注意力還給當下的練習",
+      "連吃飯都在忙的人生，是不是太可惜了",
+      "好好吃飯，是愛自己最基本的方式"]},
+    {tag:"慢活的勇氣",desc:"不隨波逐流",q:[
+      "當所有人都在衝，選擇慢下來其實需要勇氣",
+      "那天我決定不隨波逐流，過自己想要的節奏",
+      "慢活不是躺平，是清楚知道自己要什麼",
+      "不被世界的速度綁架，是一種勇敢",
+      "敢慢下來的人，才是真正掌握生活的人"]},
+    {tag:"簡單生活的意義",desc:"為什麼選擇慢",q:[
+      "選擇簡單生活，是為了把時間留給真正重要的",
+      "那天我終於明白，慢下來是為了活得更清醒",
+      "簡單生活的意義，是把人生的主導權拿回來",
+      "少一點雜訊，多一點自己，這就是我要的",
+      "慢活不是逃避，是選擇一種更有覺知的活法"]}
+  ]
+},
+{
+  id:"dream-future", name:"夢想與未來", category:"general",
+  desc:"對夢想與未來的真誠思考",
+  strategy:"用對夢想與未來的真誠思考鼓舞人心，激勵型內容能引發強烈的認同與轉發分享。",
+  directions:[
+    {tag:"曾經的夢",desc:"小時候想成為",q:[
+      "小時候的那個夢，長大後我還記得嗎",
+      "那天翻到舊作文，看見小時候寫下的夢想",
+      "曾經那麼確定要成為的人，現在走到哪了",
+      "小時候的夢很單純，卻是最勇敢的自己",
+      "那個曾經的夢，其實一直藏在我心裡"]},
+    {tag:"放棄的夢",desc:"沒完成的遺憾",q:[
+      "有個夢我放棄了，午夜夢迴還是會想起",
+      "那個沒完成的夢，成了我心裡的一根刺",
+      "放棄夢想的當下有很多理由，回頭卻只剩遺憾",
+      "我常想，如果當初沒放棄，現在會怎樣",
+      "有些夢放下了，但它從沒真正離開過"]},
+    {tag:"重拾夢想",desc:"再一次勇敢",q:[
+      "這個年紀重拾夢想，會不會太晚了",
+      "那天我決定再勇敢一次，為當年的夢",
+      "重拾夢想需要的勇氣，比第一次還多",
+      "我不想老了後悔，所以決定再試一次",
+      "夢想沒有期限，只要你願意重新開始"]},
+    {tag:"現實與夢想",desc:"兩者的拉扯",q:[
+      "夢想很美，但現實的帳單也很真實",
+      "那段在夢想和麵包之間拉扯的日子，好煎熬",
+      "現實和夢想不一定對立，我在找平衡點",
+      "我沒有放棄夢想，只是學會跟現實共處",
+      "邊顧現實邊追夢，雖然慢卻很踏實"]},
+    {tag:"為夢努力",desc:"默默的堅持",q:[
+      "沒人看見的時候，我還是默默為夢想努力著",
+      "那些為夢想熬的夜，只有自己知道",
+      "為夢努力的路很孤獨，但我甘願",
+      "夢想不會自己實現，是一天天堆出來的",
+      "默默堅持的樣子，其實最動人"]},
+    {tag:"害怕失敗",desc:"不敢追夢",q:[
+      "我不是不想追夢，是太害怕失敗",
+      "那份怕輸的心情，讓我遲遲不敢開始",
+      "害怕失敗，其實是害怕面對真正的自己",
+      "後來我懂了，不去試才是真正的失敗",
+      "與其怕失敗一輩子，不如勇敢一次"]},
+    {tag:"不被看好",desc:"別人的眼光",q:[
+      "當我說出夢想，換來的是一堆質疑的眼神",
+      "那些不看好的聲音，差點讓我放棄",
+      "不被看好沒關係，我用行動證明給自己看",
+      "別人的眼光是他們的，我的人生我決定",
+      "最不該懷疑你的人，是你自己"]},
+    {tag:"一步一步",desc:"慢慢靠近",q:[
+      "夢想很遠，但我每天都往前一步",
+      "那個看似遙不可及的目標，我正一點點靠近",
+      "追夢不用一步登天，走著走著就到了",
+      "一步一步的累積，比空想有力量多了",
+      "只要方向對，慢慢走也會抵達"]},
+    {tag:"夢想清單",desc:"想做的事",q:[
+      "我列了一張夢想清單，想做的事還好多",
+      "那天我劃掉清單上的一項，成就感爆棚",
+      "把想做的事寫下來，它就不再只是空想",
+      "夢想清單提醒我，人生還有好多可能",
+      "趁還有力氣，把想做的事一件件實現"]},
+    {tag:"迷失方向",desc:"忘了要去哪",q:[
+      "忙著趕路的我，好像忘了自己要去哪",
+      "那天我停下來問自己：這真的是我要的嗎",
+      "迷失方向的時候，先停下來比繼續走重要",
+      "找不到方向沒關係，那也是重新選擇的機會",
+      "偶爾迷路，是為了找到更對的路"]},
+    {tag:"勇敢一次",desc:"為自己賭一把",q:[
+      "那次我決定為自己賭一把，不想再後悔",
+      "人生總要勇敢一次，就算失敗也甘願",
+      "勇敢一次不代表衝動，是想清楚後的孤注一擲",
+      "那個決定很冒險，但我知道不做會更難受",
+      "為自己勇敢一次，你會謝謝那個當下的你"]},
+    {tag:"想成為的人",desc:"未來的自己",q:[
+      "我常想像五年後的自己，會是什麼樣子",
+      "那個我想成為的人，現在的我在往那走嗎",
+      "想清楚要成為誰，路才不會走偏",
+      "未來的自己，是靠現在一天天長出來的",
+      "我想成為的，不是最厲害的，是最自在的自己"]},
+    {tag:"堅持初心",desc:"別忘了為什麼",q:[
+      "走久了容易忘記，當初為什麼要開始",
+      "那天我提醒自己，回到最初的那個念頭",
+      "堅持初心，是在走偏時把自己拉回來",
+      "初心很容易在忙碌裡走丟，要常常回頭看",
+      "記得為什麼出發，才不會迷失在路上"]},
+    {tag:"給未來的信",desc:"對未來說",q:[
+      "我寫了一封信給未來的自己，希望你還記得夢",
+      "那封信裡，藏著我此刻最真的期待",
+      "對未來的自己說：無論如何，別放棄自己",
+      "如果未來的你看到這封信，希望你已經在路上",
+      "寫給未來的話，其實是提醒現在的自己"]},
+    {tag:"現在開始",desc:"永遠不嫌晚",q:[
+      "我一直說等準備好，後來才懂永遠不會準備好",
+      "那天我決定，就從現在這一刻開始",
+      "開始永遠不嫌晚，最好的時機就是現在",
+      "與其等一個完美時機，不如現在就跨出去",
+      "種一棵樹最好的時間是十年前，其次是現在"]},
+    {tag:"小小的夢",desc:"平凡也珍貴",q:[
+      "我的夢不偉大，就是把日子過好，這樣也算數",
+      "那個小小的願望，對我來說一樣珍貴",
+      "夢想不一定要驚天動地，小小的也值得追",
+      "平凡的夢，實現起來一樣讓人幸福",
+      "每個小小的夢，都是生活的一束光"]},
+    {tag:"追夢的代價",desc:"得失之間",q:[
+      "追夢讓我得到很多，也讓我失去了一些",
+      "那些為夢想犧牲的東西，我不後悔",
+      "追夢是有代價的，但值不值得你自己知道",
+      "得與失之間，我選擇了忠於自己",
+      "追夢的路上，學會了跟失去和解"]},
+    {tag:"相信可能",desc:"為夢想留一扇門",q:[
+      "就算現在做不到，我也不想關上那扇門",
+      "那份相信可能的心，是我沒放棄的原因",
+      "只要不否定自己，可能性就一直都在",
+      "為夢想留一扇門，哪天準備好就能推開",
+      "相信可能，是追夢最重要的第一步"]},
+    {tag:"走過的路",desc:"離夢想更近",q:[
+      "回頭看才發現，我已經離夢想這麼近了",
+      "那些走過的路，每一步都算在靠近夢想",
+      "以為還很遠，其實已經走了好長一段",
+      "走過的路不會白費，都在為夢想鋪墊",
+      "別只看還有多遠，也看看已經走了多遠"]},
+    {tag:"夢想的意義",desc:"為什麼要有夢",q:[
+      "有夢的人，眼睛裡有一種特別的光",
+      "那天我懂了，夢想不是終點，是往前的動力",
+      "夢想的意義，是讓平凡的日子有了方向",
+      "就算實現不了，有夢也讓活著更有滋味",
+      "人為什麼要有夢？因為它讓你成為更好的自己"]}
+  ]
+},
+{
+  id:"quality-stay", name:"質感旅宿", category:"general",
+  desc:"質感住宿的體驗",
+  strategy:"用質感住宿的體驗營造嚮往感，畫面精緻、適合收藏，吸引重視生活品味與儀式感的受眾。",
+  directions:[
+    {tag:"一泊二食",desc:"被款待的體驗",q:[
+      "那晚被款待的感覺，讓我徹底放下了所有疲憊",
+      "一泊二食的美好，是有人把你照顧得無微不至",
+      "從入住到晚餐，每個環節都讓我覺得被珍惜",
+      "那頓為住客準備的晚餐，暖了胃也暖了心",
+      "被好好款待一次，才知道自己有多需要休息"]},
+    {tag:"房間第一眼",desc:"推開門的驚喜",q:[
+      "推開房門那一刻，我忍不住發出讚嘆",
+      "那個房間的第一眼，就值回了整趟的票價",
+      "好的旅宿，會在你推開門的瞬間就征服你",
+      "房間比照片還美，我興奮得像個孩子",
+      "推開門看見的畫面，我拍了又拍捨不得停"]},
+    {tag:"窗外的景",desc:"為風景而住",q:[
+      "拉開窗簾的那一刻，整片風景撲面而來",
+      "那扇窗外的景，是我這趟旅行最深的記憶",
+      "有時候住一間房，就為了那一片窗景",
+      "早晨在窗邊看著風景喝咖啡，人生值了",
+      "為了這片景，多住一晚我也甘願"]},
+    {tag:"老屋改造",desc:"有故事的空間",q:[
+      "住進一間有故事的老屋，感覺像走進了時光",
+      "那些保留下來的老元素，讓空間有了靈魂",
+      "老屋改造的旅宿，住的不只是房間，是歷史",
+      "斑駁的牆和新的設計並存，美得很有味道",
+      "有故事的空間，讓一晚住宿變成一段旅程"]},
+    {tag:"溫泉時光",desc:"泡湯的療癒",q:[
+      "泡進溫泉的那一刻，一整年的累都溶化了",
+      "那個私人湯池，讓我徹底放空了一個晚上",
+      "泡湯的療癒，是身體和心一起被溫柔包覆",
+      "在裊裊熱氣裡，我什麼都不想只想好好放鬆",
+      "一趟溫泉之旅，把緊繃的自己重新泡軟"]},
+    {tag:"早餐時刻",desc:"旅宿的早晨",q:[
+      "旅宿的早晨，從一頓用心的早餐開始",
+      "那份早餐擺盤美到我捨不得動筷",
+      "在旅宿慢慢吃早餐，是假期最幸福的時刻",
+      "沒有趕時間的早晨，一頓早餐吃得好從容",
+      "旅宿的早餐，藏著主人最大的用心"]},
+    {tag:"主人的用心",desc:"細節裡的溫度",q:[
+      "那些藏在細節裡的貼心，讓我覺得好溫暖",
+      "主人記得我隨口提的一句話，準備了驚喜",
+      "好的旅宿，是在你沒開口前就想到你的需要",
+      "那份手寫的歡迎卡片，我一直留著",
+      "細節裡的溫度，是連鎖飯店給不了的"]},
+    {tag:"獨旅住宿",desc:"一個人的房間",q:[
+      "一個人住進這間房，享受完全屬於自己的夜晚",
+      "那晚沒有人打擾，我把整個空間過成了自己的",
+      "獨旅的住宿，是給自己一段安靜的獨處",
+      "一個人的房間，可以任性地什麼都不做",
+      "獨自住一晚好旅宿，是很治癒的自我照顧"]},
+    {tag:"設計感",desc:"空間美學",q:[
+      "這間旅宿的每個角落，都像精心構圖的畫",
+      "那份設計的美感，讓住宿變成一種享受",
+      "好的空間設計，會悄悄影響你的心情",
+      "光線、材質、線條，處處都是美學",
+      "住在有設計感的空間裡，連呼吸都優雅了"]},
+    {tag:"睡一場好覺",desc:"難得的放鬆",q:[
+      "那張床太好睡，我睡了近年來最沉的一覺",
+      "在這裡我終於卸下防備，好好睡了一場",
+      "難得的放鬆，是連夢都變得香甜",
+      "一夜好眠，讓我第二天像換了個人",
+      "好的旅宿最珍貴的，是讓你睡得安心"]},
+    {tag:"私房祕境",desc:"藏起來的旅宿",q:[
+      "那間藏在山裡的旅宿，美得像個祕密",
+      "少有人知道的私房旅宿，安靜得剛剛好",
+      "有些好地方，就是要藏起來才顯珍貴",
+      "遠離人潮的祕境旅宿，是我的口袋名單",
+      "找到一間祕境旅宿，像挖到寶一樣開心"]},
+    {tag:"慢下來的假期",desc:"什麼都不做",q:[
+      "那趟旅宿我什麼都沒排，就是好好耍廢",
+      "什麼都不做的假期，才是真正的休息",
+      "住進旅宿放空一整天，是奢侈也是必要",
+      "那次我學會了，度假不是趕行程是慢下來",
+      "什麼都不做的那一天，讓我重新充飽電"]},
+    {tag:"頂級體驗",desc:"值得的奢侈",q:[
+      "那次我狠下心住了頂級房，事後覺得超值得",
+      "偶爾奢侈一次，是給努力的自己一份獎勵",
+      "頂級體驗貴，但那份被寵愛的感覺無價",
+      "那晚的服務讓我明白，好的貴有它的道理",
+      "人生偶爾要對自己好一次，這次我不手軟"]},
+    {tag:"平價好宿",desc:"CP值驚喜",q:[
+      "沒想到這個價格，能住到這麼好的地方",
+      "那間平價旅宿的用心，完全超出我的預期",
+      "CP值高的好宿，讓人忍不住想回訪",
+      "價格親民卻毫不將就，這種發現最讓人開心",
+      "好的住宿不一定要貴，這間就是最好的證明"]},
+    {tag:"民宿人情",desc:"像回家一樣",q:[
+      "那間民宿的老闆，把我當成回家的孩子在照顧",
+      "住進去的第一晚，就有一種回家的感覺",
+      "民宿最迷人的，是那份像家人一樣的溫暖",
+      "老闆跟我聊到深夜，像認識很久的朋友",
+      "有人情味的民宿，住一次就會想念"]},
+    {tag:"泳池與海景",desc:"度假的畫面",q:[
+      "跳進無邊際泳池那一刻，我覺得自己在度假天堂",
+      "那片海景配上泳池，美得像明信片",
+      "有海有泳池的旅宿，是我心中度假的樣子",
+      "在泳池邊望著海發呆，時間都慢了下來",
+      "那個畫面美到，我一輩子都會記得"]},
+    {tag:"儀式感住宿",desc:"為自己好一次",q:[
+      "那次住宿我為自己準備了滿滿的儀式感",
+      "偶爾為自己訂一間好旅宿，是很療癒的寵愛",
+      "住宿的儀式感，是把平凡的一晚變得特別",
+      "點上香氛、泡個澡，把房間過成自己的小天地",
+      "為自己好好過一晚，是我對自己的溫柔"]},
+    {tag:"親子旅宿",desc:"一家人的回憶",q:[
+      "那間親子旅宿，讓孩子玩到不想回家",
+      "一家人擠在一張大床上聊天，是最珍貴的畫面",
+      "親子旅宿的意義，是製造一家人的共同回憶",
+      "看著孩子開心的笑，這趟就值得了",
+      "那晚全家人的笑聲，是我最想留住的時光"]},
+    {tag:"難忘的一晚",desc:"記憶中的旅宿",q:[
+      "有一間旅宿，我到現在都念念不忘",
+      "那一晚的美好，成了我旅行記憶裡的珍藏",
+      "有些住宿的體驗，會一直留在心裡",
+      "多年後我還會想起那個房間、那片景",
+      "難忘的一晚，讓一趟旅行有了靈魂"]},
+    {tag:"住宿也是旅行",desc:"為什麼旅宿重要",q:[
+      "我後來才懂，住哪裡本身就是旅行的一部分",
+      "那次因為旅宿太好，整趟旅行都加分了",
+      "好的住宿不只是睡覺，是旅程的重要記憶",
+      "選對旅宿，等於為旅行選對了心情",
+      "住宿的體驗，往往是一趟旅行最深的印象"]}
+  ]
+},
+{
+  id:"food-recommend", name:"美食推薦", category:"general",
+  desc:"具體的美食推薦清單",
+  strategy:"用具體的美食推薦幫觀眾解決『吃什麼』的難題，實用性高、易收藏轉發，是最實用的在地生活內容。",
+  directions:[
+    {tag:"私藏名單",desc:"不藏私的推薦",q:[
+      "這幾家是我壓箱底的私藏，今天不藏私全公開",
+      "那些我一去再去的店，終於整理出來分享給你",
+      "私藏名單第一次公開，吃過的都說回不去",
+      "我的口袋名單，每一家都是親自吃過的保證",
+      "這份私藏清單，收藏起來絕對用得到"]},
+    {tag:"約會餐廳",desc:"適合兩個人",q:[
+      "下次約會不知道去哪，這幾家氣氛滿分",
+      "那間讓對方眼睛一亮的餐廳，我幫你找好了",
+      "適合兩個人的餐廳，重點是氛圍對了",
+      "約會踩雷很掃興，這幾家我先幫你試過了",
+      "想製造浪漫的話，選對餐廳就成功一半"]},
+    {tag:"聚餐好去處",desc:"一群人的選擇",q:[
+      "一群人聚餐最難喬，這幾家大家都會滿意",
+      "那次聚餐選對地方，整晚氣氛超好",
+      "人多聚餐的重點是好點、好聊、好分享",
+      "找不到聚餐地點的話，這份名單收好",
+      "聚餐選這幾家，保證不會被朋友抱怨"]},
+    {tag:"一個人也自在",desc:"獨食友善",q:[
+      "一個人吃飯不尷尬，這幾家獨食超自在",
+      "那些適合一個人好好吃頓飯的店，我整理好了",
+      "獨食友善的店，讓一個人也吃得很享受",
+      "怕一個人吃飯被關注？這幾家完全沒問題",
+      "一個人的美食時光，這份名單很可以"]},
+    {tag:"隱藏版菜單",desc:"內行才知道",q:[
+      "這幾道隱藏菜單，只有內行人才會點",
+      "那個沒寫在菜單上的美味，我來告訴你",
+      "隱藏版菜單的存在，就是要獎勵懂吃的人",
+      "點這個隱藏版，老闆會對你刮目相看",
+      "菜單上沒有的好料，這篇一次告訴你"]},
+    {tag:"必點招牌",desc:"來這一定要吃",q:[
+      "來這家不點這道，等於白來一趟",
+      "那道招牌菜，是我每次來必點的理由",
+      "第一次來別亂點，跟著點招牌就對了",
+      "這幾家的必點招牌，錯過會後悔",
+      "招牌之所以是招牌，吃過就知道"]},
+    {tag:"平價美食",desc:"便宜又滿足",q:[
+      "銅板價就能吃到這麼滿足，真的佛心",
+      "那家便宜又好吃的店，是我的省錢救星",
+      "平價美食吃的是實在，這幾家不會讓你失望",
+      "口袋不深也能吃得開心，就靠這份名單",
+      "便宜又好吃的店，值得大力推薦"]},
+    {tag:"高級饗宴",desc:"犒賞自己",q:[
+      "偶爾想犒賞自己，這幾家高級餐廳值得",
+      "那頓高級饗宴，每一道都是一種享受",
+      "想好好慶祝的時候，這幾家不會讓你失望",
+      "高級餐廳的價值，在於那份被款待的體驗",
+      "值得的奢侈，是對努力的自己最好的獎勵"]},
+    {tag:"早午餐",desc:"週末的儀式",q:[
+      "週末就該睡到自然醒，再來一頓豐盛早午餐",
+      "那家早午餐好吃又好拍，是我週末的儀式",
+      "慵懶的週末，配上這幾家早午餐剛剛好",
+      "早午餐的美好，是有時間慢慢享受",
+      "週末不知道吃什麼，這份早午餐名單收好"]},
+    {tag:"甜點下午茶",desc:"療癒時光",q:[
+      "心情需要療癒的時候，就靠這幾家甜點",
+      "那塊甜點美到我拍了好久才捨得吃",
+      "下午茶的儀式感，這幾家完全能滿足",
+      "甜點控必收，這幾家我吃過都想再訪",
+      "一份好甜點，能拯救一整天的壞心情"]},
+    {tag:"深夜宵夜",desc:"越晚越好吃",q:[
+      "深夜嘴饞不知道吃什麼，這幾家救了我",
+      "那家宵夜越晚越熱鬧，好吃到犯規",
+      "宵夜的罪惡感，被這幾家的美味完全打敗",
+      "深夜還開的美食，是加班人的救贖",
+      "半夜肚子餓，這份宵夜名單絕對用得上"]},
+    {tag:"特色小店",desc:"有個性的店",q:[
+      "這家店的個性，比餐點還讓我印象深刻",
+      "那間有故事的小店，吃的是氛圍也是味道",
+      "有個性的店最迷人，這幾家值得專程去",
+      "特色小店的魅力，在於它的獨一無二",
+      "想找有溫度的店，這幾家我大力推薦"]},
+    {tag:"在地人推薦",desc:"觀光客不知道的",q:[
+      "這幾家是在地人才知道的，觀光客都撲空",
+      "那家藏在地人生活裡的美味，我帶你去",
+      "跟著在地人吃，才吃得到最道地的味道",
+      "觀光名店排隊，內行人早就轉進這幾家",
+      "在地人的口袋名單，才是真正的寶藏"]},
+    {tag:"外帶外送",desc:"在家也能享受",q:[
+      "不想出門的日子，這幾家外送不會踩雷",
+      "那家外帶回家一樣好吃，重點是不掉漆",
+      "在家也想吃好料，這份外送名單很實用",
+      "懶得出門的時候，靠這幾家就對了",
+      "外帶外送踩雷很嘔，這幾家我先試過了"]},
+    {tag:"咖啡廳",desc:"好坐好拍好喝",q:[
+      "想找個地方好好待著，這幾家咖啡廳很可以",
+      "那家咖啡廳好坐又好拍，一待就是一下午",
+      "工作、放空、拍照，這幾家咖啡廳都滿足",
+      "咖啡好喝、空間又美，這種店我最愛",
+      "找咖啡廳的重點：好坐、好拍、咖啡好喝"]},
+    {tag:"異國料理",desc:"出國般的味蕾",q:[
+      "沒辦法出國，就用這幾家異國料理過過癮",
+      "那家的味道，一入口就把我帶到那個國家",
+      "想吃道地異國味，這幾家夠正宗",
+      "用一頓異國料理，來一場舌尖上的旅行",
+      "這幾家異國料理，好吃到像真的出國了"]},
+    {tag:"傳統老味道",desc:"古早味推薦",q:[
+      "這幾家古早味，是會讓你想起阿嬤的味道",
+      "那家開了幾十年的老店，味道從沒變過",
+      "傳統老味道越來越少，這幾家一定要支持",
+      "古早味的迷人，在於那份回不去的懷念",
+      "想吃記憶中的味道，這份老店名單收好"]},
+    {tag:"打卡美食",desc:"好吃又好拍",q:[
+      "這幾家好吃又好拍，發限動絕對被問",
+      "那道美食美到，我拍完才發現忘記趁熱吃",
+      "打卡美食最怕好看不好吃，這幾家兩者兼具",
+      "想拍美照又想吃美食，這份名單一次滿足",
+      "好拍又好吃的店，才值得專程去打卡"]},
+    {tag:"季節限定",desc:"錯過等一年",q:[
+      "這個季節限定，錯過真的要再等一年",
+      "那個限定美味，我每年這時候都要去朝聖",
+      "季節限定的魅力，就是那份不吃可惜",
+      "趁現在還吃得到，這幾家季節限定快衝",
+      "限定美食就是要把握，過了就沒了"]},
+    {tag:"我的推薦哲學",desc:"為什麼推薦",q:[
+      "我推薦的每一家，都是自己真的愛吃才寫",
+      "那些踩過的雷我不會推，這是我的原則",
+      "我的推薦哲學很簡單：自己不會回訪的不推",
+      "推薦美食是一種信任，我不會拿它開玩笑",
+      "我推的不一定最有名，但一定是我真心喜歡的"]}
+  ]
+},
+{
+  id:"sponsor", name:"業配商品", category:"general",
+  desc:"真誠的業配使用體驗",
+  strategy:"用真誠的使用體驗建立信任，好的業配是把產品的價值講給對的人聽，同時兼顧品牌方與粉絲的信任。",
+  directions:[
+    {tag:"真實使用",desc:"我實際用了",q:[
+      "這個我實際用了一段時間，今天來說說真實心得",
+      "沒有實際用過的東西我不推，這個我用出感情了",
+      "不是拿了就推，這個我是真的天天在用",
+      "體驗過才有資格說，這個我用了才敢跟你分享",
+      "真實使用後我發現，它跟宣傳的還真的一樣"]},
+    {tag:"解決痛點",desc:"它幫我解決的",q:[
+      "我一直有個困擾，直到用了這個才解決",
+      "那個困擾我很久的問題，它一次幫我搞定",
+      "它厲害的地方，是真的打中了我的痛點",
+      "本來以為只能忍，沒想到有東西能解決",
+      "用了之後我才發現，原來這個問題可以不用忍"]},
+    {tag:"使用前後",desc:"明顯的改變",q:[
+      "用之前跟用之後的差別，連我自己都驚訝",
+      "那個改變不是我說的，是身邊人先發現的",
+      "使用前後對比一放，效果自己說話",
+      "才用一陣子，變化就明顯到藏不住",
+      "改變是慢慢的，但回頭看真的差很多"]},
+    {tag:"為什麼選它",desc:"我選它的原因",q:[
+      "市面上這麼多選擇，我為什麼獨獨選了它",
+      "那個讓我決定選它的關鍵，其實是這一點",
+      "我挑東西很龜毛，它能被我留下是有原因的",
+      "選它不是因為便宜，是因為它真的做到了",
+      "我選它的理由很簡單：它解決了我最在意的事"]},
+    {tag:"適合誰用",desc:"這產品給誰",q:[
+      "不是每個人都需要它，但這幾種人會很有感",
+      "如果你也有這個困擾，那這個就是為你準備的",
+      "誠實說，這個產品特別適合這樣的人",
+      "它不是萬能，但對的人用了會回不去",
+      "先看看你是不是這類人，再決定要不要入手"]},
+    {tag:"小資入手",desc:"CP值分享",q:[
+      "這個價格能有這種品質，CP值真的高",
+      "小資也能負擔，效果卻不打折，這點我很欣賞",
+      "不用花大錢就能擁有，這個很值得",
+      "算下來每天不到幾塊錢，CP值超高",
+      "平價又好用的東西不好找，這個是驚喜"]},
+    {tag:"生活場景",desc:"融入我的日常",q:[
+      "它已經默默變成我每天生活的一部分",
+      "那個使用的瞬間，剛好融入我的日常節奏",
+      "不用刻意，它就這樣自然地成了我的習慣",
+      "我的一天裡，有好幾個時刻都會用到它",
+      "好的產品，是讓你不知不覺就離不開"]},
+    {tag:"意外的驚喜",desc:"超出預期",q:[
+      "本來沒抱太大期待，結果它給了我驚喜",
+      "那個我沒注意到的小功能，反而最實用",
+      "超出預期的地方，讓我對它更加分",
+      "原本以為就那樣，用了才發現藏了好多細節",
+      "它的表現，比我想像的還要好"]},
+    {tag:"猶豫要不要買",desc:"幫你分析",q:[
+      "如果你也在猶豫要不要買，這篇幫你分析",
+      "那些讓人猶豫的點，我一個個幫你釐清",
+      "值不值得買，看完這篇你心裡就有答案",
+      "買之前想清楚這幾件事，才不會後悔",
+      "我把該考慮的都列出來，你自己判斷"]},
+    {tag:"使用小技巧",desc:"怎麼用更好",q:[
+      "同一個東西，這樣用效果差很多",
+      "那個藏起來的小技巧，讓它更好用",
+      "多數人都用錯了，其實正確用法是這樣",
+      "分享幾個小撇步，讓你把它用到極致",
+      "會用的人才知道，這樣搭配效果加倍"]},
+    {tag:"跟其他比",desc:"我為什麼選這個",q:[
+      "同類型的我也用過，比較之後我還是選它",
+      "那些差異放在一起比，高下立見",
+      "跟別家比過才知道，它贏在這幾個地方",
+      "不是別的不好，是這個更符合我的需求",
+      "比較之後我才確定，選它沒有錯"]},
+    {tag:"送禮推薦",desc:"送人也體面",q:[
+      "不知道送什麼的時候，這個送禮很體面",
+      "那次我拿它當禮物，對方開心到不行",
+      "送禮最怕踩雷，這個實用又有質感",
+      "包裝好看、內容實在，送人剛剛好",
+      "這個當禮物，收到的人都會記得你的用心"]},
+    {tag:"回購原因",desc:"用完還想再買",q:[
+      "很多東西用完就算了，這個我居然回購了",
+      "那個讓我回購的理由，就是它真的好用",
+      "會回購的產品不多，它是其中之一",
+      "用完第一次就決定，一定要再買",
+      "回購是最誠實的推薦，我用行動投票"]},
+    {tag:"開箱感受",desc:"第一印象",q:[
+      "拆開包裝的那一刻，第一印象就加了不少分",
+      "那個開箱的質感，讓我對它更期待",
+      "第一眼的感覺很重要，它沒讓我失望",
+      "開箱的細節，看得出品牌有沒有用心",
+      "光是開箱，就能感覺到它的用心程度"]},
+    {tag:"長期使用",desc:"用久了的心得",q:[
+      "短期好用不稀奇，用久了不掉漆才是真本事",
+      "那個用了很久的心得是，它經得起時間考驗",
+      "長期使用下來，我更確定當初沒選錯",
+      "很多東西用久就露餡，它反而越用越順手",
+      "時間會證明一切，它通過了我的長期考驗"]},
+    {tag:"家人也愛用",desc:"全家一起用",q:[
+      "本來是我在用，結果全家都愛上了",
+      "那個連家人都搶著用的東西，證明它真的好",
+      "從我一個人用，變成全家的必需品",
+      "家人的認可，是最真實的推薦",
+      "能讓全家都愛用，代表它老少咸宜"]},
+    {tag:"質感細節",desc:"打動我的地方",q:[
+      "真正打動我的，是那些看不見的小細節",
+      "那個細節做得這麼到位，讓我很有好感",
+      "質感這種東西騙不了人，它做到了",
+      "魔鬼藏在細節裡，它的細節讓我很服氣",
+      "打動我的從來不是噱頭，是這些用心的細節"]},
+    {tag:"誠實評價",desc:"優點也說缺點",q:[
+      "我不會只說好話，這個的缺點我也老實講",
+      "那些不夠好的地方，我不會替它隱瞞",
+      "誠實評價才對得起你，優缺點我都說",
+      "沒有完美的產品，重點是缺點你能不能接受",
+      "我推薦但不吹捧，該說的缺點一個不漏"]},
+    {tag:"優惠時機",desc:"划算入手時機",q:[
+      "如果你想入手，現在剛好有個划算的時機",
+      "那個優惠檔期，是入手它最好的時候",
+      "想買的話，趁這波優惠會比較划算",
+      "平常沒特價，這次的優惠真的值得把握",
+      "剛好遇到優惠，想要的可以趁現在"]},
+    {tag:"我的推薦原則",desc:"為什麼接這個",q:[
+      "不是每個業配我都接，這個我接得很安心",
+      "我接業配有原則：自己不用的絕對不推",
+      "那些我拒絕的合作，都是因為過不了自己這關",
+      "會出現在我這裡的，都是我真心認可的",
+      "我珍惜你的信任，所以推薦從來不隨便"]}
+  ]
+},
+{
+  id:"current-affairs", name:"時事觀察", category:"general",
+  desc:"個人視角切入時事",
+  strategy:"用個人視角切入時事議題，理性又有溫度的觀點最能引發討論與思考，展現你的思想深度。",
+  directions:[
+    {tag:"我的看法",desc:"對事件的觀點",q:[
+      "這件事吵得沸沸揚揚，說說我的一點看法",
+      "那個事件，我想從一個比較少人談的角度切入",
+      "先別急著下結論，我有一些不一樣的想法",
+      "關於這件事，我的立場可能跟你想的不同",
+      "這件事讓我想了很多，今天分享我的觀察"]},
+    {tag:"換個角度",desc:"不同的思考",q:[
+      "大家都這樣想，但如果換個角度看呢",
+      "那件事我試著站在另一邊，看見了不同的東西",
+      "換個角度想，這件事其實沒那麼絕對",
+      "多數人只看到一面，我想聊聊另一面",
+      "換位思考之後，我對這件事的看法軟化了"]},
+    {tag:"冷靜分析",desc:"別急著站隊",q:[
+      "情緒先放一邊，我們冷靜看看這件事",
+      "那件事一發生大家就急著選邊，我想先搞清楚",
+      "別急著站隊，事情往往比表面複雜",
+      "冷靜下來分析，你會發現沒有絕對的對錯",
+      "在下判斷之前，先聽完整個故事"]},
+    {tag:"被忽略的面向",desc:"沒人談的角度",q:[
+      "大家都在吵那個，卻沒人注意到這件事",
+      "那個被忽略的面向，其實才是關鍵",
+      "熱議的背後，有個沒人談的角度值得看",
+      "在一片喧鬧裡，這個重點被大家漏掉了",
+      "我想聊聊那個，被討論聲淹沒的面向"]},
+    {tag:"從時事學到",desc:"這件事教我的",q:[
+      "這件事熱鬧歸熱鬧，它其實教了我一件事",
+      "那個新聞讓我反省了自己的某些想法",
+      "時事不只是看熱鬧，它常常在提醒我們什麼",
+      "從這件事，我學到的比想像中多",
+      "每個熱議背後，都藏著值得思考的功課"]},
+    {tag:"跟我們的關係",desc:"其實跟你有關",q:[
+      "你以為這件事離你很遠，其實跟你息息相關",
+      "那個議題看似無關，影響的卻是我們每個人",
+      "別覺得事不關己，這件事終究會找上你",
+      "這件事表面上是別人的事，實際上是大家的事",
+      "很多人不在意，是還沒發現它跟自己的關係"]},
+    {tag:"世代差異",desc:"不同的視角",q:[
+      "同一件事，不同世代看到的完全不一樣",
+      "那個爭議，其實是兩代人的價值觀在碰撞",
+      "長輩跟年輕人吵，往往是視角不同而不是誰錯",
+      "理解世代差異，很多爭論就不用吵了",
+      "這件事讓我看見，世代之間需要更多對話"]},
+    {tag:"媒體識讀",desc:"別被帶風向",q:[
+      "同一件事，不同媒體講出來像兩個故事",
+      "那個標題聳動，內容卻完全不是那回事",
+      "別急著被帶風向，先看清楚事情原貌",
+      "媒體識讀這件事，現在比任何時候都重要",
+      "在資訊爆炸的時代，會判斷比會接收更重要"]},
+    {tag:"理性討論",desc:"好好對話",q:[
+      "我們可以有不同意見，但能不能好好講",
+      "那場爭論如果少點情緒，其實能有很好的對話",
+      "理性討論不是要說服誰，是彼此理解",
+      "意見不同不可怕，可怕的是不願意好好聽",
+      "好的對話，是允許對方跟你不一樣"]},
+    {tag:"反思現象",desc:"背後的問題",q:[
+      "這個現象爆紅，背後其實藏著一個問題",
+      "那件事不是個案，是整個社會的縮影",
+      "熱議退去後，我們該想想它反映了什麼",
+      "現象只是表面，真正該關注的是背後的原因",
+      "與其罵個人，不如想想是什麼造成了這現象"]},
+    {tag:"小人物視角",desc:"平凡人的聲音",q:[
+      "大人物的聲音很大，但小人物的處境也該被聽見",
+      "那件事裡最不被注意的，往往是最受影響的人",
+      "從平凡人的角度看這件事，感受完全不同",
+      "新聞講的是大局，我想說說小人物的難處",
+      "每個事件背後，都有一群沉默的普通人"]},
+    {tag:"別急著論斷",desc:"事情沒那麼簡單",q:[
+      "在我們罵之前，先想想事情有沒有那麼簡單",
+      "那件事一開始我也很氣，深入了解後想法變了",
+      "急著論斷別人，往往是我們不夠了解全貌",
+      "很多事沒有非黑即白，中間有很大的灰色",
+      "先別急著審判，我們知道的可能只是一角"]},
+    {tag:"社會的溫度",desc:"事件裡的善意",q:[
+      "在那件糟糕的事裡，我看見了人性的溫暖",
+      "那個小小的善舉，讓我對社會又有了信心",
+      "壞消息很多，但別忘了還有這些溫暖的角落",
+      "事件裡的善意，是最容易被忽略的光",
+      "這個社會不完美，但溫度還在"]},
+    {tag:"制度的問題",desc:"不只是個人",q:[
+      "我們常怪個人，卻忽略了背後的制度問題",
+      "那件事不是誰特別壞，是制度出了漏洞",
+      "把責任全推給個人，問題永遠不會解決",
+      "看見制度的問題，才有機會真正改善",
+      "有些悲劇不是意外，是制度早該修的破洞"]},
+    {tag:"資訊爆炸",desc:"怎麼判斷真假",q:[
+      "訊息這麼多、這麼快，到底哪個是真的",
+      "那則瘋傳的消息，查證後根本是假的",
+      "在假訊息滿天飛的時代，慢一點反而更安全",
+      "轉發之前先查證，是這個時代的基本功",
+      "資訊爆炸的年代，會分辨真假比什麼都重要"]},
+    {tag:"同理不同意",desc:"尊重差異",q:[
+      "我不同意你的看法，但我尊重你這麼想的理由",
+      "那次爭論教我，同理不等於一定要同意",
+      "能理解對方的立場，是成熟的第一步",
+      "尊重差異，不是要你放棄自己的立場",
+      "我們可以立場不同，還是能好好相處"]},
+    {tag:"從熱議看趨勢",desc:"現象背後的走向",q:[
+      "這個話題會爆，其實反映了一個正在發生的趨勢",
+      "那個現象不是偶然，是時代正在轉彎的訊號",
+      "從大家關心什麼，看得出社會往哪裡走",
+      "熱議的背後，藏著值得留意的走向",
+      "看懂熱議背後的趨勢，你會比別人先看見未來"]},
+    {tag:"保持清醒",desc:"不隨波逐流",q:[
+      "當所有人都一面倒，我提醒自己先保持清醒",
+      "那股集體情緒很強，但我不想被它牽著走",
+      "在群情激憤的時候，保持清醒特別難也特別重要",
+      "隨波逐流很容易，獨立思考才需要勇氣",
+      "別讓別人的情緒，代替你自己的判斷"]},
+    {tag:"溫柔而堅定",desc:"表達立場",q:[
+      "我可以溫柔地說話，但立場一樣堅定",
+      "那件事我有我的堅持，只是不想用攻擊的方式表達",
+      "表達立場不用大聲，溫柔也可以很有力量",
+      "堅定和溫柔並不衝突，我想同時做到",
+      "有些話我會說，但我選擇用不傷人的方式"]},
+    {tag:"觀察的意義",desc:"為什麼關心時事",q:[
+      "有人問我為什麼關心時事，因為它跟我們都有關",
+      "關心時事不是為了吵架，是為了活得更清醒",
+      "那些觀察讓我更懂這個世界，也更懂自己",
+      "保持對世界的關注，是一種不麻木的溫柔",
+      "關心社會，其實是關心我們共同的未來"]}
+  ]
+},
+{
+  id:"ai-tools", name:"AI工具分享", category:"general",
+  desc:"實用的 AI 工具與應用",
+  strategy:"用實用的 AI 工具與應用心得，吸引想提升效率、想跟上趨勢的受眾，內容有價值感也凸顯你的專業。",
+  directions:[
+    {tag:"第一次用",desc:"被 AI 震撼",q:[
+      "第一次用 AI 的時候，我真的被震撼到說不出話",
+      "那個瞬間我意識到，工作方式要被改寫了",
+      "以前覺得 AI 離我很遠，用過一次就回不去了",
+      "第一次它幫我完成任務，我盯著螢幕愣了很久",
+      "被 AI 震撼的那天，我決定認真研究它"]},
+    {tag:"工作神器",desc:"幫我省時間",q:[
+      "自從用了這個 AI，我每天多出好幾小時",
+      "那些以前要熬夜做的事，現在幾分鐘搞定",
+      "這個工具是我的工作神器，省時到誇張",
+      "重複又繁瑣的工作，我全交給 AI 處理",
+      "會用 AI 的人，效率真的贏別人一大截"]},
+    {tag:"寫作幫手",desc:"AI 協助創作",q:[
+      "卡稿的時候，AI 幫我把思路打開了",
+      "那次我用 AI 當寫作夥伴，效率翻了好幾倍",
+      "AI 不是替我寫，是幫我把想法變得更清楚",
+      "寫東西沒靈感時，AI 是我最好的腦力激盪對象",
+      "用對方法，AI 能讓你的創作如虎添翼"]},
+    {tag:"學習加速",desc:"用 AI 學東西",q:[
+      "我用 AI 學新東西，速度比以前快好多",
+      "那個複雜的概念，AI 三句話就幫我講懂了",
+      "有 AI 當家教，學習變得好有效率",
+      "遇到不懂的，我直接問 AI，隨問隨答",
+      "會用 AI 學習的人，成長速度會拉開差距"]},
+    {tag:"生活應用",desc:"日常也能用",q:[
+      "AI 不只用在工作，我連生活大小事都靠它",
+      "那天我用 AI 規劃行程，省事又周到",
+      "從寫訊息到查資料，AI 融入了我的日常",
+      "沒想到 AI 在生活裡這麼好用，回不去了",
+      "AI 的應用比你想的廣，日常處處都能用"]},
+    {tag:"提示詞技巧",desc:"怎麼問更好",q:[
+      "同樣一個問題，會問跟不會問差超多",
+      "那個提示詞技巧，讓 AI 的回答品質翻倍",
+      "AI 給的答案好不好，關鍵在你怎麼問",
+      "學會下對指令，AI 才能真正幫到你",
+      "問對問題，是用好 AI 最重要的能力"]},
+    {tag:"AI 踩雷",desc:"別完全依賴",q:[
+      "那次我太相信 AI，結果被它一本正經地騙了",
+      "AI 會犯錯，全盤照收是很危險的",
+      "用 AI 踩過雷才懂，它是工具不是真理",
+      "那個 AI 給的答案看起來很對，其實是錯的",
+      "AI 很強，但關鍵判斷還是要靠自己"]},
+    {tag:"效率翻倍",desc:"流程自動化",q:[
+      "把重複的流程交給 AI 自動化，我輕鬆好多",
+      "那套自動化流程建好後，工作量少了一半",
+      "AI 自動化的威力，是把你從瑣事裡解放出來",
+      "會設計流程的人，用 AI 效率翻好幾倍",
+      "自動化不是偷懶，是把時間留給更重要的事"]},
+    {tag:"創意激發",desc:"AI 給的靈感",q:[
+      "沒靈感的時候，AI 給了我意想不到的點子",
+      "那個創意方向，是 AI 跟我來回激盪出來的",
+      "AI 最有趣的，是它會給你沒想過的角度",
+      "把 AI 當創意夥伴，靈感源源不絕",
+      "AI 激發的不是答案，是更多的可能性"]},
+    {tag:"免費工具",desc:"不花錢也好用",q:[
+      "不用花錢，這幾個免費 AI 工具就超好用",
+      "那個免費工具的能力，完全不輸付費的",
+      "預算有限也沒關係，這些免費 AI 很夠用",
+      "免費不代表陽春，這幾個我天天在用",
+      "先用免費的上手，再決定要不要升級"]},
+    {tag:"會被取代嗎",desc:"AI 與工作",q:[
+      "很多人擔心被 AI 取代，我的想法有點不同",
+      "那個問題我想了很久：AI 到底會不會搶我的工作",
+      "會被取代的不是用 AI 的人，是不用的人",
+      "與其怕被取代，不如學會跟 AI 合作",
+      "AI 取代的是任務，不是懂得駕馭它的人"]},
+    {tag:"新手上手",desc:"從零開始",q:[
+      "完全不懂 AI 也沒關係，我帶你從零開始",
+      "那些看起來很難的工具，其實上手超簡單",
+      "新手最怕不知從何開始，這篇幫你踏出第一步",
+      "別被 AI 嚇到，跟著做你也可以很快上手",
+      "從零到會用，其實比你想像的容易"]},
+    {tag:"圖像生成",desc:"用 AI 做圖",q:[
+      "我用 AI 生圖，做出以前要花錢外包的東西",
+      "那張圖是 AI 做的，很多人都看不出來",
+      "不會設計也能做圖，AI 生圖真的很神",
+      "用 AI 做圖的關鍵，還是在你怎麼描述",
+      "AI 生圖幫我省下大筆設計費，效果還很好"]},
+    {tag:"整理資訊",desc:"AI 幫你消化",q:[
+      "一大堆資料，我丟給 AI 幫我整理重點",
+      "那份落落長的文件，AI 幫我三分鐘看完",
+      "資訊太多消化不完？讓 AI 幫你濃縮",
+      "AI 整理資訊的能力，幫我省下超多時間",
+      "用 AI 消化資訊，我終於不再被訊息淹沒"]},
+    {tag:"AI 副業",desc:"用工具賺錢",q:[
+      "有人用 AI 工具開啟了副業，我來分享怎麼做",
+      "那個副業靠 AI 加持，效率高到讓我驚訝",
+      "AI 讓一個人也能做以前一團隊才能做的事",
+      "用 AI 開副業的門檻，比你想的低很多",
+      "會用 AI 的人，多了很多賺錢的可能"]},
+    {tag:"常見誤解",desc:"對 AI 的迷思",q:[
+      "很多人對 AI 的想像，其實是誤會",
+      "那個大家以為的 AI 功能，其實它做不到",
+      "破解幾個關於 AI 最常見的迷思",
+      "把 AI 神化或妖魔化，都是不了解它",
+      "認識 AI 真正的樣子，你才用得好它"]},
+    {tag:"我的 AI 日常",desc:"怎麼融入生活",q:[
+      "分享我一天當中，都在哪些地方用到 AI",
+      "那些不知不覺的時刻，AI 已經在幫我了",
+      "AI 怎麼融入日常？我的一天就是最好的示範",
+      "從早到晚，AI 默默替我省下好多力氣",
+      "AI 融入生活的關鍵，是找到你的使用場景"]},
+    {tag:"選對工具",desc:"別被工具淹沒",q:[
+      "AI 工具多到眼花，選對的比用很多重要",
+      "那些一窩蜂追新工具的人，其實最沒效率",
+      "工具不用多，找到適合你的那幾個就好",
+      "與其每個都試，不如把一個用到精",
+      "被工具淹沒的人，反而做不好事"]},
+    {tag:"AI 的極限",desc:"它做不到的",q:[
+      "AI 很強，但有些事它真的做不到",
+      "那些需要溫度和判斷的事，還是得靠人",
+      "認清 AI 的極限，你才知道哪裡該靠自己",
+      "AI 能給答案，但給不了真正的智慧",
+      "了解 AI 做不到什麼，跟知道它能做什麼一樣重要"]},
+    {tag:"擁抱改變",desc:"跟上 AI 時代",q:[
+      "與其抗拒 AI，不如學會擁抱它、駕馭它",
+      "那些願意改變的人，會在這個時代跑得更快",
+      "AI 時代已經來了，跟上它是最務實的選擇",
+      "改變令人不安，但停在原地更危險",
+      "擁抱 AI 不是取代人，是讓人變得更強"]}
+  ]
+}
+];
+
+/* ============ 狀態與儲存 ============ */
+const LS_REC="cks_records", LS_CUS="cks_customTopics", LS_DRAFT="cks_setupDraft";
+let records = load(LS_REC, []);
+let customTopics = load(LS_CUS, {}); // {seriesId:[{id,topic}]}
+let state = { series:null, direction:null };
+
+function load(k,def){ try{return JSON.parse(localStorage.getItem(k))??def}catch(e){return def} }
+function save(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function seriesById(id){ return SERIES.find(s=>s.id===id); }
+function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+/* ============ 複製（相容本地檔案） ============ */
+function copyText(text){
+  const h=document.getElementById("copyHelper");
+  h.value=text; h.focus(); h.select();
+  try{ document.execCommand("copy"); toast("已複製到剪貼簿"); }
+  catch(e){ toast("複製失敗，請手動選取"); }
+  window.getSelection().removeAllRanges();
+}
+function toast(msg){
+  const t=document.getElementById("toast");
+  t.textContent=msg; t.classList.add("show");
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),1800);
+}
+
+/* ============ 分頁切換 ============ */
+document.querySelectorAll("nav .tab").forEach(b=>{
+  b.addEventListener("click",()=>{
+    document.querySelectorAll("nav .tab").forEach(x=>x.classList.remove("active"));
+    document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    document.getElementById("page-"+b.dataset.tab).classList.add("active");
+  });
+});
+function goTab(tab){
+  document.querySelector('nav .tab[data-tab="'+tab+'"]').click();
+}
+
+/* ============ ① 靈感選題 ============ */
+function renderSeriesPicker(){
+  const custom=SERIES.filter(s=>s.category==="custom");
+  const general=SERIES.filter(s=>s.category==="general");
+  let html="";
+  html+=`<div class="group-label">專屬系列</div><div class="series-grid">`;
+  custom.forEach(s=>html+=seriesCardHTML(s));
+  html+=`</div>`;
+  if(general.length){
+    html+=`<div class="group-label">通用系列</div><div class="series-grid">`;
+    general.forEach(s=>html+=seriesCardHTML(s));
+    html+=`</div>`;
+  }
+  document.getElementById("seriesPicker").innerHTML=html;
+  document.querySelectorAll("#seriesPicker .series-card").forEach(c=>{
+    c.addEventListener("click",()=>selectSeries(c.dataset.id));
+  });
+}
+function seriesCardHTML(s){
+  const on = state.series===s.id ? "on":"";
+  const badge = s.category==="custom"?`<span class="badge custom">專屬</span>`:`<span class="badge general">通用</span>`;
+  return `<div class="series-card ${on}" data-id="${s.id}">${badge}<h3>${esc(s.name)}</h3><p>${esc(s.desc)}</p></div>`;
+}
+function selectSeries(id){
+  state.series=id; state.direction=null;
+  renderSeriesPicker(); renderDirections();
+}
+function renderDirections(){
+  const area=document.getElementById("directionArea");
+  if(!state.series){ area.innerHTML=""; return; }
+  const s=seriesById(state.series);
+  let html=`<div class="dir-head"><h3>${esc(s.name)} · 20 個創作方向</h3><span class="sub" style="margin:0">${esc(s.strategy)}</span></div><div class="dir-grid">`;
+  s.directions.forEach((d,i)=>{
+    const on = state.direction===i ? "on":"";
+    html+=`<div class="dir-card ${on}" data-i="${i}"><span class="num">${String(i+1).padStart(2,"0")}</span><span class="tag">${esc(d.tag)}</span><p>${esc(d.desc)}</p></div>`;
+  });
+  html+=`</div>`;
+  if(state.direction!==null){
+    html+=`<div class="btnbar" style="margin-top:16px"><button class="btn" id="btnToSetup" type="button">用這個方向去設定腳本 →</button></div>`;
+  }
+  area.innerHTML=html;
+  area.querySelectorAll(".dir-card").forEach(c=>{
+    c.addEventListener("click",()=>{ state.direction=+c.dataset.i; renderDirections(); });
+  });
+  const bt=document.getElementById("btnToSetup");
+  if(bt) bt.addEventListener("click",()=>{
+    applySelectionToSetup(); goTab("setup");
+  });
+}
+
+/* ============ ② 腳本設定 ============ */
+function initSetupStatic(){
+  // 系列下拉（設定頁 / 自訂頁）
+  const opt = SERIES.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("");
+  document.getElementById("s_series").innerHTML=opt;
+  document.getElementById("cu_series").innerHTML=opt;
+  // 長度
+  document.getElementById("s_length").innerHTML=LENGTHS.map((l,i)=>`<option value="${i}">${l}</option>`).join("");
+  // 結構
+  document.getElementById("s_structure").innerHTML=STRUCTURES.map((st,i)=>
+    `<div class="t" data-i="${i}" title="${esc(st[1])}">${st[0]}<small>${esc(st[1])}</small></div>`).join("");
+  document.querySelectorAll("#s_structure .t").forEach(t=>{
+    t.addEventListener("click",()=>{
+      document.querySelectorAll("#s_structure .t").forEach(x=>x.classList.remove("on"));
+      t.classList.add("on"); saveDraft();
+    });
+  });
+  // 風格（複選）
+  document.getElementById("s_style").innerHTML=STYLES.map((st,i)=>`<div class="t" data-i="${i}">${st}</div>`).join("");
+  document.querySelectorAll("#s_style .t").forEach(t=>{
+    t.addEventListener("click",()=>{ t.classList.toggle("on"); saveDraft(); });
+  });
+  // 系列改變 → 更新推薦下拉 & 業配欄位
+  document.getElementById("s_series").addEventListener("change",()=>{
+    state.series=document.getElementById("s_series").value;
+    rebuildTopicPick(); togglePR(); saveDraft();
+  });
+  // 推薦下拉
+  document.getElementById("s_topicPick").addEventListener("change",onTopicPick);
+  // 從題目庫選題
+  document.getElementById("btnLib").addEventListener("click",openLibModal);
+  // 按鈕
+  document.getElementById("btnPrompt").addEventListener("click",buildPrompt);
+  document.getElementById("btnSave").addEventListener("click",saveRecord);
+  document.getElementById("btnClear").addEventListener("click",clearSetup);
+  // 表單變動存草稿
+  ["s_topic","s_days","s_product","s_detail","s_script","s_length"].forEach(id=>{
+    document.getElementById(id).addEventListener("input",saveDraft);
+    document.getElementById(id).addEventListener("change",saveDraft);
+  });
+}
+function togglePR(){
+  const s=seriesById(document.getElementById("s_series").value);
+  const show = s && (s.id==="sponsor" || s.name.includes("業配"));
+  document.getElementById("prField").classList.toggle("hidden",!show);
+}
+function rebuildTopicPick(){
+  const sel=document.getElementById("s_topicPick");
+  const sid=document.getElementById("s_series").value;
+  const s=seriesById(sid);
+  let opts=`<option value="">— 選擇推薦題目 —</option>`;
+  // 若有選方向 → 該方向 5 題；否則列出全系列前幾題方向的題目做參考
+  if(s){
+    if(state.direction!==null && s.directions[state.direction]){
+      const d=s.directions[state.direction];
+      opts+=`<optgroup label="方向：${esc(d.tag)}">`+
+        d.q.map(q=>`<option value="${esc(q)}">${esc(q)}</option>`).join("")+`</optgroup>`;
+    }
+    // 自訂題目
+    const cus=(customTopics[sid]||[]);
+    if(cus.length){
+      opts+=`<optgroup label="我的自訂題目">`+
+        cus.map(c=>`<option value="${esc(c.topic)}">${esc(c.topic)}</option>`).join("")+`</optgroup>`;
+    }
+  }
+  opts+=`<option value="__self__">＋ 以上都不要，我自己輸入</option>`;
+  sel.innerHTML=opts;
+}
+function onTopicPick(){
+  const sel=document.getElementById("s_topicPick");
+  const v=sel.value;
+  if(v==="__self__"){
+    const inp=document.getElementById("s_topic");
+    inp.value=""; inp.focus(); sel.value="";
+  }else if(v){
+    document.getElementById("s_topic").value=v;
+  }
+  saveDraft();
+}
+function applySelectionToSetup(){
+  if(state.series){
+    document.getElementById("s_series").value=state.series;
+    togglePR();
+  }
+  rebuildTopicPick();
+  // 自動帶第一個推薦題（可再改）
+  if(state.series && state.direction!==null){
+    const d=seriesById(state.series).directions[state.direction];
+    if(d && d.q[0]) document.getElementById("s_topic").value=d.q[0];
+  }
+  saveDraft();
+}
+function getStructure(){
+  const el=document.querySelector("#s_structure .t.on");
+  return el?STRUCTURES[+el.dataset.i]:null;
+}
+function getStyles(){
+  return [...document.querySelectorAll("#s_style .t.on")].map(el=>STYLES[+el.dataset.i]);
+}
+function collectSetup(){
+  const sid=document.getElementById("s_series").value;
+  const s=seriesById(sid);
+  const st=getStructure();
+  return {
+    seriesId:sid, seriesName:s?s.name:"", strategy:s?s.strategy:"",
+    topic:document.getElementById("s_topic").value.trim(),
+    lengthIdx:+document.getElementById("s_length").value,
+    length:LENGTHS[+document.getElementById("s_length").value],
+    structure:st, styles:getStyles(),
+    days:document.getElementById("s_days").value.trim(),
+    product:document.getElementById("s_product").value.trim(),
+    detail:document.getElementById("s_detail").value.trim(),
+    script:document.getElementById("s_script").value.trim()
+  };
+}
+function buildPrompt(){
+  const d=collectSetup();
+  if(!d.topic){ toast("請先填主題"); document.getElementById("s_topic").focus(); return; }
+  if(!d.structure){ toast("請選一個腳本結構"); return; }
+  const box=document.getElementById("promptBox");
+  const text=composePrompt(d);
+  box.textContent=text; box.classList.add("show");
+  copyText(text);
+  box.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+function composePrompt(d){
+  const structLine = d.structure ? `${d.structure[0]}（${d.structure[1]}）` : "";
+  const styleLine = d.styles.length ? d.styles.join(" / ") : "自然真實";
+  const prod = (d.seriesName.includes("業配") && d.product) ? `\n🛍 業配商品：${d.product}` : "";
+  const detail = d.detail ? `\n💡 補充細節或金句方向：${d.detail}` : "";
+  const days = d.days ? d.days : "1";
+  return `你是台灣 IG 創作者「${CREATOR.name}」的腳本助理。
+
+請幫我寫一篇「${d.seriesName}」系列的 IG 口播腳本。
+
+📌 主題：${d.topic}
+📈 長度：${d.length}
+🗂 結構：${structLine}
+📅 這是第 ${days} 天的內容${prod}
+🎯 內容類型：${d.seriesName}
+   （策略說明：${d.strategy}）
+✨ 腳本風格：${styleLine}${detail}
+
+【固定風格要求】
+- 口語自然，有節奏感，善用短句斷行
+- 第一人稱，帶有真實感和情緒
+- 不要說教，用「說故事」或「分享感受」帶出觀點
+- 內容風格：${CREATOR.fixedStyle}
+
+【結尾規則（每篇必須執行）】
+每篇腳本結尾必須包含以下兩個部分：
+① 身份記憶句：「${CREATOR.memory}」
+② 互動 CTA 句（請根據本篇內容的情緒基調自行決定語氣）：
+   - 嚴肅／沉重內容 → 語氣真誠帶連結感，例：「如果你也有過類似的感受，可以留言告訴我，你不孤單」
+   - 中性／分享型內容 → 語氣自然邀請，例：「你有沒有類似的經驗？留言跟我說吧」
+   - 輕鬆／幽默內容 → 語氣輕鬆有趣，例：「你也有這種經歷嗎？快來留言，讓我知道我不是唯一一個」
+   - 知識／建議型內容 → 語氣引導行動，例：「這幾點你覺得哪個最有感？留言告訴我你的想法」
+   - 旅遊／美食推薦內容 → 語氣輕鬆帶好奇，例：「你去過這裡嗎？有私藏推薦也歡迎留言分享」
+
+【標題視角規則（每篇必須執行）】
+請在腳本最上方先產出：
+標題：（讓人想點進來看的標題）
+副標：（一句話帶出情緒或懸念的副標）
+
+腳本正文輸出後，請直接輸出可以唸的內容，不要加任何說明或備註。
+
+---
+
+【拍攝建議】
+請根據上面的腳本內容和風格，另外產出一段拍攝建議，和腳本分開呈現，包含：
+1. 影片形式：口播直拍 / 加入生活畫面 B-roll / 短劇形式，擇一或組合建議
+2. 拍攝地點：具體建議適合的拍攝場景
+3. 拍攝畫面：建議穿插的補充畫面或動作
+4. 送分建議：讓這支影片在第一秒被留住的具體操作建議`;
+}
+function saveRecord(){
+  const d=collectSetup();
+  if(!d.topic){ toast("請先填主題再儲存"); return; }
+  if(!d.structure){ toast("請選一個腳本結構"); return; }
+  records.unshift({
+    id:uid(), seriesId:d.seriesId, seriesName:d.seriesName,
+    topic:d.topic, length:d.length, days:d.days, product:d.product,
+    structure:d.structure?d.structure[0]:"", styles:d.styles,
+    detail:d.detail, script:d.script,
+    date:new Date().toISOString()
+  });
+  save(LS_REC,records);
+  toast("已儲存到產出紀錄");
+  renderRecords();
+}
+function clearSetup(){
+  ["s_topic","s_days","s_product","s_detail","s_script"].forEach(id=>document.getElementById(id).value="");
+  document.querySelectorAll("#s_structure .t,#s_style .t").forEach(t=>t.classList.remove("on"));
+  document.getElementById("promptBox").classList.remove("show");
+  document.getElementById("s_topicPick").value="";
+  saveDraft();
+  toast("已清空");
+}
+/* 草稿：讓設定頁重整後仍在 */
+function saveDraft(){
+  const d={
+    series:document.getElementById("s_series").value,
+    topic:document.getElementById("s_topic").value,
+    lengthIdx:document.getElementById("s_length").value,
+    days:document.getElementById("s_days").value,
+    product:document.getElementById("s_product").value,
+    detail:document.getElementById("s_detail").value,
+    script:document.getElementById("s_script").value,
+    structIdx:(document.querySelector("#s_structure .t.on")||{}).dataset?.i ?? "",
+    styleIdx:[...document.querySelectorAll("#s_style .t.on")].map(t=>t.dataset.i),
+    direction:state.direction
+  };
+  save(LS_DRAFT,d);
+}
+function restoreDraft(){
+  const d=load(LS_DRAFT,null); if(!d) return;
+  if(d.series){ document.getElementById("s_series").value=d.series; state.series=d.series; }
+  document.getElementById("s_topic").value=d.topic||"";
+  document.getElementById("s_length").value=d.lengthIdx||0;
+  document.getElementById("s_days").value=d.days||"";
+  document.getElementById("s_product").value=d.product||"";
+  document.getElementById("s_detail").value=d.detail||"";
+  document.getElementById("s_script").value=d.script||"";
+  if(d.structIdx!=="" && d.structIdx!=null){
+    const el=document.querySelector(`#s_structure .t[data-i="${d.structIdx}"]`); if(el)el.classList.add("on");
+  }
+  (d.styleIdx||[]).forEach(i=>{
+    const el=document.querySelector(`#s_style .t[data-i="${i}"]`); if(el)el.classList.add("on");
+  });
+  if(d.direction!=null) state.direction=d.direction;
+  togglePR(); rebuildTopicPick();
+}
+
+/* ============ ③ 題目庫 ============ */
+function allTopics(){
+  const list=[];
+  SERIES.forEach(s=>{
+    s.directions.forEach(d=>{
+      d.q.forEach(q=>list.push({seriesId:s.id,seriesName:s.name,tag:d.tag,topic:q,custom:false}));
+    });
+  });
+  Object.keys(customTopics).forEach(sid=>{
+    const s=seriesById(sid); if(!s) return;
+    (customTopics[sid]||[]).forEach(c=>list.push({seriesId:sid,seriesName:s.name,tag:"自訂",topic:c.topic,custom:true,cid:c.id}));
+  });
+  return list;
+}
+function initLibrary(){
+  document.getElementById("lib_series").innerHTML=`<option value="">全部系列</option>`+
+    SERIES.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("");
+  document.getElementById("mod_series").innerHTML=document.getElementById("lib_series").innerHTML;
+  document.getElementById("lib_series").addEventListener("change",renderLibrary);
+  document.getElementById("lib_search").addEventListener("input",renderLibrary);
+  document.getElementById("mod_series").addEventListener("change",renderModList);
+  document.getElementById("mod_search").addEventListener("input",renderModList);
+  renderLibrary();
+}
+function filterTopics(sid,kw){
+  kw=(kw||"").trim().toLowerCase();
+  return allTopics().filter(t=>{
+    if(sid && t.seriesId!==sid) return false;
+    if(kw && !(t.topic.toLowerCase().includes(kw)||t.tag.toLowerCase().includes(kw)||t.seriesName.toLowerCase().includes(kw))) return false;
+    return true;
+  });
+}
+function renderLibrary(){
+  const sid=document.getElementById("lib_series").value;
+  const kw=document.getElementById("lib_search").value;
+  const list=filterTopics(sid,kw);
+  const box=document.getElementById("libList");
+  if(!list.length){ box.innerHTML=`<div class="empty">找不到符合的題目</div>`; return; }
+  box.innerHTML=list.slice(0,300).map(t=>`
+    <div class="qitem">
+      <div><div class="meta">${esc(t.seriesName)} · ${esc(t.tag)}${t.custom?" · 自訂":""}</div><p>${esc(t.topic)}</p></div>
+      <div class="r"><button class="btn ghost sm" data-topic="${esc(t.topic)}" data-sid="${t.seriesId}">用這題 →</button></div>
+    </div>`).join("");
+  box.querySelectorAll("button").forEach(b=>{
+    b.addEventListener("click",()=>useTopic(b.dataset.sid,b.dataset.topic));
+  });
+}
+function useTopic(sid,topic){
+  document.getElementById("s_series").value=sid; state.series=sid;
+  togglePR(); rebuildTopicPick();
+  document.getElementById("s_topic").value=topic;
+  saveDraft(); goTab("setup"); toast("已帶入設定頁");
+}
+
+/* 題目庫彈窗 */
+function openLibModal(){
+  document.getElementById("mod_series").value=document.getElementById("s_series").value||"";
+  document.getElementById("mod_search").value="";
+  renderModList();
+  openModal("libModal");
+}
+function renderModList(){
+  const sid=document.getElementById("mod_series").value;
+  const kw=document.getElementById("mod_search").value;
+  const list=filterTopics(sid,kw);
+  const box=document.getElementById("modList");
+  if(!list.length){ box.innerHTML=`<div class="empty">找不到符合的題目</div>`; return; }
+  box.innerHTML=list.slice(0,200).map(t=>`
+    <div class="qitem">
+      <div><div class="meta">${esc(t.seriesName)} · ${esc(t.tag)}</div><p>${esc(t.topic)}</p></div>
+      <div class="r"><button class="btn sm" data-topic="${esc(t.topic)}" data-sid="${t.seriesId}">選這題</button></div>
+    </div>`).join("");
+  box.querySelectorAll("button").forEach(b=>{
+    b.addEventListener("click",()=>{
+      document.getElementById("s_series").value=b.dataset.sid; state.series=b.dataset.sid;
+      togglePR(); rebuildTopicPick();
+      document.getElementById("s_topic").value=b.dataset.topic;
+      saveDraft(); closeModal("libModal"); toast("已選入主題");
+    });
+  });
+}
+
+/* ============ ④ 自訂題目 ============ */
+function initCustom(){
+  document.getElementById("btnAddCustom").addEventListener("click",addCustom);
+  document.getElementById("cu_topic").addEventListener("keydown",e=>{ if(e.key==="Enter") addCustom(); });
+  renderCustomList();
+}
+function addCustom(){
+  const sid=document.getElementById("cu_series").value;
+  const topic=document.getElementById("cu_topic").value.trim();
+  if(!topic){ toast("請輸入題目"); return; }
+  if(!customTopics[sid]) customTopics[sid]=[];
+  customTopics[sid].unshift({id:uid(),topic});
+  save(LS_CUS,customTopics);
+  document.getElementById("cu_topic").value="";
+  renderCustomList(); renderLibrary(); rebuildTopicPick();
+  toast("已新增自訂題目");
+}
+function renderCustomList(){
+  const box=document.getElementById("customList");
+  const rows=[];
+  Object.keys(customTopics).forEach(sid=>{
+    const s=seriesById(sid); if(!s) return;
+    (customTopics[sid]||[]).forEach(c=>rows.push({sid,name:s.name,...c}));
+  });
+  if(!rows.length){ box.innerHTML=`<div class="empty">還沒有自訂題目</div>`; return; }
+  box.innerHTML=rows.map(r=>`
+    <div class="qitem">
+      <div><div class="meta">${esc(r.name)}</div><p>${esc(r.topic)}</p></div>
+      <div class="r">
+        <button class="btn ghost sm" data-sid="${r.sid}" data-topic="${esc(r.topic)}">用這題 →</button>
+        <button class="btn gray sm" data-del="${r.id}" data-dsid="${r.sid}">刪除</button>
+      </div>
+    </div>`).join("");
+  box.querySelectorAll("[data-topic]").forEach(b=>b.addEventListener("click",()=>useTopic(b.dataset.sid,b.dataset.topic)));
+  box.querySelectorAll("[data-del]").forEach(b=>b.addEventListener("click",()=>{
+    customTopics[b.dataset.dsid]=(customTopics[b.dataset.dsid]||[]).filter(x=>x.id!==b.dataset.del);
+    save(LS_CUS,customTopics);
+    renderCustomList(); renderLibrary(); rebuildTopicPick();
+    toast("已刪除");
+  }));
+}
+
+/* ============ ⑤ 產出紀錄 ============ */
+function initRecords(){
+  document.getElementById("sm_copy").addEventListener("click",()=>{
+    copyText(document.getElementById("sm_body").textContent);
+  });
+  renderRecords();
+}
+function renderRecords(){
+  const nav=document.getElementById("recNav");
+  const area=document.getElementById("recArea");
+  if(!records.length){
+    nav.innerHTML=""; area.innerHTML=`<div class="empty">還沒有任何紀錄，去「腳本設定」產出並儲存吧</div>`; return;
+  }
+  // group by series，保持 SERIES 順序
+  const groups={};
+  records.forEach(r=>{ (groups[r.seriesId]=groups[r.seriesId]||[]).push(r); });
+  const order=SERIES.map(s=>s.id).filter(id=>groups[id]);
+  Object.keys(groups).forEach(id=>{ if(!order.includes(id)) order.push(id); });
+
+  nav.innerHTML=order.map(id=>{
+    const name=(seriesById(id)||{}).name||groups[id][0].seriesName;
+    return `<a data-jump="rec-${id}">${esc(name)} (${groups[id].length})</a>`;
+  }).join("");
+
+  area.innerHTML=order.map(id=>{
+    const name=(seriesById(id)||{}).name||groups[id][0].seriesName;
+    const items=groups[id].map(r=>recItemHTML(r)).join("");
+    return `<div class="recgroup" id="rec-${id}">
+      <div class="gh"><h3>${esc(name)}</h3><span class="cnt">${groups[id].length} 篇 ▾</span></div>
+      <div class="body">${items}</div>
+    </div>`;
+  }).join("");
+
+  nav.querySelectorAll("a").forEach(a=>a.addEventListener("click",()=>{
+    const el=document.getElementById(a.dataset.jump);
+    el.classList.remove("collapsed");
+    el.scrollIntoView({behavior:"smooth",block:"start"});
+  }));
+  area.querySelectorAll(".gh").forEach(h=>h.addEventListener("click",()=>{
+    h.parentElement.classList.toggle("collapsed");
+  }));
+  area.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>{
+    const r=records.find(x=>x.id===b.dataset.view);
+    document.getElementById("sm_title").textContent=r.topic;
+    document.getElementById("sm_body").textContent=r.script;
+    openModal("scriptModal");
+  }));
+  area.querySelectorAll("[data-prompt]").forEach(b=>b.addEventListener("click",()=>{
+    const r=records.find(x=>x.id===b.dataset.prompt);
+    reProduce(r);
+  }));
+  area.querySelectorAll("[data-delrec]").forEach(b=>b.addEventListener("click",()=>{
+    records=records.filter(x=>x.id!==b.dataset.delrec);
+    save(LS_REC,records); renderRecords(); toast("已刪除紀錄");
+  }));
+}
+function recItemHTML(r){
+  const dt=new Date(r.date);
+  const dateStr=`${dt.getFullYear()}/${String(dt.getMonth()+1).padStart(2,"0")}/${String(dt.getDate()).padStart(2,"0")}`;
+  const styleChips=(r.styles||[]).map(s=>`<span class="chip style">${esc(s)}</span>`).join("");
+  const saved=r.script?`<span class="chip saved">已存腳本</span>`:"";
+  const viewBtn=r.script?`<button class="btn ghost sm" data-view="${r.id}">查看腳本</button>`:"";
+  return `<div class="recitem">
+    <div class="top"><h4>${esc(r.topic)}</h4><span class="date">${dateStr}</span></div>
+    <div class="chips">
+      <span class="chip type">${esc(r.seriesName)}</span>
+      ${r.structure?`<span class="chip struct">${esc(r.structure)}</span>`:""}
+      ${styleChips}
+      ${r.days?`<span class="chip day">第 ${esc(r.days)} 天</span>`:""}
+      ${saved}
+    </div>
+    <div class="acts">
+      ${viewBtn}
+      <button class="btn ghost sm" data-prompt="${r.id}">再產一次提示詞</button>
+      <button class="btn gray sm" data-delrec="${r.id}">刪除</button>
+    </div>
+  </div>`;
+}
+function reProduce(r){
+  const s=seriesById(r.seriesId)||{};
+  const st=STRUCTURES.find(x=>x[0]===r.structure)||null;
+  const d={seriesName:r.seriesName,strategy:s.strategy||"",topic:r.topic,length:r.length,
+    structure:st,styles:r.styles||[],days:r.days,product:r.product,detail:r.detail};
+  const text=composePrompt(d);
+  copyText(text);
+}
+
+/* ============ Modal ============ */
+function openModal(id){ document.getElementById(id).classList.add("show"); }
+function closeModal(id){ document.getElementById(id).classList.remove("show"); }
+document.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click",()=>closeModal(b.dataset.close)));
+document.querySelectorAll(".modal").forEach(m=>m.addEventListener("click",e=>{ if(e.target===m) m.classList.remove("show"); }));
+
+/* ============ 啟動 ============ */
+function boot(){
+  renderSeriesPicker();
+  initSetupStatic();
+  initLibrary();
+  initCustom();
+  initRecords();
+  restoreDraft();
+  rebuildTopicPick();
+  togglePR();
+}
+boot();
+</script>
+</body>
+</html>
