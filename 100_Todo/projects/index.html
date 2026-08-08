@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>朱兒的工作台</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>">
+<meta name="theme-color" content="#FFF5F7">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="工作台">
+<style>
+:root{
+  --bg:#FFF5F7; --bg2:#FFEDF1; --card:#FFFFFF;
+  --pink:#F48FB1; --pink-d:#E57399; --pink-l:#FFD9E3; --pink-xl:#FFF0F4;
+  --ink:#5B3C46; --ink2:#8C6B76; --ink3:#B79AA4;
+  --line:#F6DCE4;
+  --todo:#FFD97D; --doing:#B39DDB; --done:#7ED0A0;
+  --p1:#FF6B6B; --p2:#FFA45B; --p3:#FFD93D; --p4:#D8CDD1;
+  --shadow:0 2px 10px rgba(232,150,178,.13);
+  --shadow-l:0 6px 22px rgba(232,150,178,.20);
+  --r:18px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+  background:var(--bg); color:var(--ink); font-size:15px; line-height:1.6;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none}
+a{color:var(--pink-d)}
+
+/* ---------- 通行碼鎖 ---------- */
+#gate{position:fixed;inset:0;background:linear-gradient(160deg,#FFF5F7,#FFE4EC);z-index:9999;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;padding:24px}
+#gate .emo{font-size:56px}
+#gate h1{margin:0;font-size:20px;font-weight:700;color:var(--ink)}
+#gate p{margin:0;font-size:13px;color:var(--ink2)}
+#gate .row{display:flex;gap:8px}
+#gate button{padding:13px 26px;border-radius:14px;background:var(--pink);color:#fff;font-weight:700;
+  box-shadow:var(--shadow-l)}
+#gate .err{color:#E05263;font-size:13px;min-height:18px;max-width:340px;text-align:center;line-height:1.5}
+#gate .linkbtn{background:none;box-shadow:none;color:var(--ink3);font-size:12.5px;
+  font-weight:500;text-decoration:underline;padding:4px}
+
+/* ---------- 版面 ---------- */
+.wrap{max-width:1180px;margin:0 auto;padding:0 14px 90px}
+header.top{display:flex;align-items:center;gap:10px;padding:18px 2px 12px;flex-wrap:wrap}
+header.top h1{margin:0;font-size:21px;font-weight:800;letter-spacing:.5px}
+header.top .sub{font-size:12px;color:var(--ink3);margin-left:2px}
+.spacer{flex:1}
+.dot{width:9px;height:9px;border-radius:50%;background:#ccc;display:inline-block;flex:none}
+.syncbox{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink3);
+  background:#fff;padding:6px 11px;border-radius:99px;box-shadow:var(--shadow)}
+
+/* 分頁列 */
+nav.tabs{display:flex;gap:6px;overflow-x:auto;padding:2px 2px 10px;scrollbar-width:none}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs button{padding:9px 16px;border-radius:99px;background:#fff;color:var(--ink2);
+  font-size:14px;font-weight:600;white-space:nowrap;box-shadow:var(--shadow);transition:.15s}
+nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
+
+.page{display:none;animation:fade .25s}
+.page.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+.grid{display:grid;gap:14px}
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:16px}
+.card h2{margin:0 0 12px;font-size:14px;font-weight:700;color:var(--ink2);
+  display:flex;align-items:center;gap:7px}
+.card h2 .en{font-size:10px;color:var(--ink3);letter-spacing:1.5px;font-weight:600}
+.card h2 .spacer{flex:1}
+.tiny{font-size:12px;color:var(--ink3)}
+
+/* ---------- 今日 ---------- */
+.today-grid{grid-template-columns:1fr}
+.vitals-grid{grid-template-columns:1fr}
+@media(min-width:820px){
+  .today-grid{grid-template-columns:1fr 1fr 1fr}
+  .vitals-grid{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:start}
+}
+.hero{background:linear-gradient(150deg,#FCA5BC,#F48FB1 55%,#EE7FA8);color:#fff;
+  border-radius:var(--r);padding:20px;box-shadow:var(--shadow-l);position:relative;overflow:hidden}
+.hero::after{content:"🌸";position:absolute;right:-8px;bottom:-14px;font-size:86px;opacity:.18}
+.hero .hi{font-size:16px;font-weight:700}
+.hero .note{font-size:12px;opacity:.9;margin-top:2px}
+.hero .clock{font-size:40px;font-weight:800;letter-spacing:1px;margin:10px 0 2px;
+  font-variant-numeric:tabular-nums}
+.hero .date{font-size:12px;opacity:.92}
+
+.focus-item{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-bottom:1px dashed var(--line)}
+.focus-item:last-child{border-bottom:none}
+.focus-item .t{flex:1;font-size:14px;font-weight:600;line-height:1.4}
+.focus-item .m{font-size:11px;color:var(--ink3);font-weight:400;margin-top:2px}
+.star{font-size:16px;line-height:1;flex:none;background:none}
+.empty{color:var(--ink3);font-size:13px;text-align:center;padding:16px 0}
+#taskList .empty{grid-column:1/-1}
+#alertList{max-height:290px;overflow-y:auto}
+
+.quick{display:flex;gap:8px}
+.quick input{flex:1;padding:11px 14px;border:2px solid var(--line);border-radius:14px;
+  background:var(--pink-xl);outline:none}
+.quick input:focus{border-color:var(--pink-l);background:#fff}
+.quick button{padding:11px 16px;border-radius:14px;background:var(--pink);color:#fff;font-weight:700}
+.quick-hint{font-size:11px;color:var(--ink3);margin-top:8px}
+.daily-score{display:flex;gap:8px;margin-top:14px}
+.daily-score div{flex:1;background:var(--pink-xl);border-radius:13px;padding:10px 6px;text-align:center}
+.daily-score b{display:block;font-size:18px;font-weight:800;color:var(--pink-d);line-height:1.2}
+.daily-score span{font-size:10.5px;color:var(--ink3)}
+
+.rings{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.ring{text-align:center;width:82px;flex:1 1 82px}
+.ring svg{display:block;margin:0 auto}
+.ring .v{font-size:17px;font-weight:800;margin-top:-42px;margin-bottom:22px;position:relative}
+.ring .l{font-size:11px;color:var(--ink2);font-weight:600}
+.ring .s{font-size:10px;color:var(--ink3)}
+.vbox{flex:1 1 150px;min-width:150px;background:linear-gradient(150deg,#FCA5BC,#EE7FA8);
+  color:#fff;border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.vbox .r{display:flex;align-items:center;gap:9px}
+.vbox .r b{font-size:19px;font-weight:800;line-height:1;min-width:26px}
+.vbox .r span{font-size:11.5px;opacity:.95;line-height:1.35}
+
+.alert-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;
+  background:#FFF1F1;margin-bottom:6px;font-size:13px}
+.alert-item.warn{background:#FFF8E8}
+.alert-item .t{flex:1;font-weight:600}
+.alert-item .d{font-size:11px;font-weight:700;color:#E05263;white-space:nowrap}
+.alert-item.warn .d{color:#C98A16}
+
+/* ---------- 任務 ---------- */
+.filters{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.filters select,.filters input[type=search]{padding:8px 11px;border:1.5px solid var(--line);
+  border-radius:12px;background:#fff;outline:none;font-size:13px}
+.filters select:focus,.filters input:focus{border-color:var(--pink-l)}
+.chip{padding:7px 13px;border-radius:99px;background:#fff;border:1.5px solid var(--line);
+  font-size:13px;font-weight:600;color:var(--ink2)}
+.chip.on{background:var(--pink);border-color:var(--pink);color:#fff}
+.btn{padding:9px 16px;border-radius:13px;background:var(--pink);color:#fff;font-weight:700;font-size:14px}
+.btn.ghost{background:#fff;color:var(--pink-d);border:1.5px solid var(--pink-l)}
+.btn.sm{padding:6px 12px;font-size:13px}
+
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.stat{background:#fff;border-radius:14px;padding:9px 14px;box-shadow:var(--shadow);min-width:76px}
+.stat b{display:block;font-size:19px;font-weight:800;line-height:1.2}
+.stat span{font-size:11px;color:var(--ink3)}
+.stat.g b{color:var(--done)} .stat.p b{color:#8E72C7} .stat.y b{color:#D9A521} .stat.r b{color:#E05263}
+
+#taskList{display:grid;gap:8px}
+@media(min-width:900px){#taskList{grid-template-columns:1fr 1fr}}
+.task{display:flex;align-items:flex-start;gap:10px;background:#fff;border-radius:14px;
+  padding:12px 13px;box-shadow:var(--shadow);border-left:5px solid var(--todo)}
+.task[data-s=doing]{border-left-color:var(--doing)}
+.task[data-s=done]{border-left-color:var(--done);opacity:.62}
+.task .chk{width:21px;height:21px;border-radius:7px;border:2px solid var(--line);flex:none;
+  margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff}
+.task[data-s=done] .chk{background:var(--done);border-color:var(--done)}
+.task .body{flex:1;min-width:0;cursor:pointer}
+.task .title{font-weight:600;font-size:14.5px;line-height:1.4;word-break:break-word}
+.task[data-s=done] .title{text-decoration:line-through;color:var(--ink3)}
+.task .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px;align-items:center}
+.tag{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--pink-xl);color:var(--ink2);font-weight:600}
+.tag.client{background:#EDE7F6;color:#6B5B95}
+.tag.date{background:#E8F4F8;color:#3D7A8C}
+.tag.date.over{background:#FFE5E5;color:#D0455C}
+.tag.time{background:#FFF3E0;color:#A9682A}
+.pdot{width:8px;height:8px;border-radius:50%;flex:none}
+.task .prog{height:5px;border-radius:99px;background:var(--line);margin-top:7px;overflow:hidden}
+.task .prog i{display:block;height:100%;background:var(--doing);border-radius:99px}
+
+/* ---------- 工具牆 ---------- */
+.tools{grid-template-columns:repeat(auto-fill,minmax(158px,1fr))}
+.tool{background:#fff;border-radius:var(--r);padding:18px 15px;box-shadow:var(--shadow);
+  display:block;text-decoration:none;color:var(--ink);transition:.18s}
+.tool:hover{transform:translateY(-3px);box-shadow:var(--shadow-l)}
+.tool .ic{font-size:30px;line-height:1}
+.tool .n{font-weight:700;font-size:14.5px;margin-top:9px}
+.tool .d{font-size:11.5px;color:var(--ink3);margin-top:3px;line-height:1.45}
+
+/* ---------- 客戶 ---------- */
+.client-row{display:flex;align-items:center;gap:10px;background:#fff;border-radius:14px;
+  padding:12px 13px;box-shadow:var(--shadow);margin-bottom:8px}
+.client-row.off{opacity:.55}
+.client-row .n{flex:1;min-width:0;cursor:pointer}
+.client-row .n b{font-size:14.5px}
+.client-row .n span{display:block;font-size:11.5px;color:var(--ink3)}
+.client-row .ico{width:34px;height:34px;border-radius:11px;background:var(--pink-xl);flex:none;
+  display:flex;align-items:center;justify-content:center;font-size:17px;text-decoration:none}
+.client-row .ico.off{background:#F4EEF0;color:var(--ink3);font-size:15px}
+#clientList{display:grid;gap:8px}
+@media(min-width:900px){#clientList{grid-template-columns:1fr 1fr}}
+#clientList .sec-title,#clientList .empty{grid-column:1/-1}
+.client-row{margin-bottom:0}
+.sec-title{font-size:12px;color:var(--ink3);font-weight:700;margin:16px 0 8px;letter-spacing:1px}
+
+/* ---------- 彈窗 ---------- */
+.modal{position:fixed;inset:0;background:rgba(91,60,70,.42);z-index:900;display:none;
+  align-items:flex-end;justify-content:center;backdrop-filter:blur(2px)}
+.modal.on{display:flex}
+@media(min-width:700px){.modal{align-items:center}}
+.sheet{background:var(--bg);width:100%;max-width:520px;max-height:92vh;overflow-y:auto;
+  border-radius:22px 22px 0 0;padding:18px 16px calc(20px + env(safe-area-inset-bottom))}
+@media(min-width:700px){.sheet{border-radius:22px}}
+.sheet h3{margin:0 0 14px;font-size:17px;font-weight:800}
+.f{margin-bottom:12px}
+.f label{display:block;font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:5px}
+.f input,.f select,.f textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);
+  border-radius:13px;background:#fff;outline:none}
+.f input:focus,.f select:focus,.f textarea:focus{border-color:var(--pink-l)}
+.f textarea{min-height:62px;resize:vertical}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+#tmPrio{display:grid;grid-template-columns:repeat(2,1fr)}
+@media(min-width:560px){#tmPrio{grid-template-columns:repeat(4,1fr)}}
+.seg button{flex:1;min-width:70px;padding:9px 6px;border-radius:12px;background:#fff;
+  border:1.5px solid var(--line);font-size:13px;font-weight:600;color:var(--ink2)}
+.seg button.on{background:var(--pink);border-color:var(--pink);color:#fff}
+.seg.status button.on[data-v=todo]{background:var(--todo);border-color:var(--todo);color:#7A5A10}
+.seg.status button.on[data-v=doing]{background:var(--doing);border-color:var(--doing);color:#fff}
+.seg.status button.on[data-v=done]{background:var(--done);border-color:var(--done);color:#fff}
+.sheet-actions{display:flex;gap:9px;margin-top:16px}
+.sheet-actions .btn{flex:1;text-align:center;padding:13px}
+.btn.del{background:#fff;color:#E05263;border:1.5px solid #FFD6DC;flex:none;padding:13px 16px}
+.hide{display:none !important}
+
+/* 浮動新增鈕 */
+.fab{position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom));width:56px;height:56px;
+  border-radius:50%;background:linear-gradient(150deg,#FCA5BC,#EE7FA8);color:#fff;font-size:28px;
+  box-shadow:0 6px 20px rgba(232,120,160,.45);z-index:800;display:flex;align-items:center;justify-content:center}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:88px;background:rgba(91,60,70,.92);
+  color:#fff;padding:10px 18px;border-radius:99px;font-size:13.5px;z-index:950;opacity:0;
+  transition:.25s;pointer-events:none}
+.toast.on{opacity:1}
+.toast.clickable{pointer-events:auto;cursor:pointer}
+.toast .undo{color:#FFC7DA;margin-left:8px;text-decoration:underline}
+</style>
+</head>
+<body>
+
+<!-- 登入 -->
+<div id="gate">
+  <div class="emo">🌸</div>
+  <h1>朱兒的工作台</h1>
+  <p>任務裡有客戶資料，需要登入才能看</p>
+  <div class="row">
+    <button id="gateBtn">用 Google 登入</button>
+  </div>
+  <div class="err" id="gateErr"></div>
+  <button id="gateLocal" class="linkbtn">先不登入，只用這台裝置（不會同步）</button>
+</div>
+
+<div class="wrap" id="app" style="display:none">
+
+  <header class="top">
+    <div>
+      <h1>工作台</h1>
+      <div class="sub">Dora Workspace</div>
+    </div>
+    <div class="spacer"></div>
+    <button class="syncbox" id="syncBox"><span class="dot" id="syncDot"></span><span id="syncTxt">離線模式</span></button>
+  </header>
+
+  <nav class="tabs">
+    <button class="on" data-tab="today">今日</button>
+    <button data-tab="tasks">任務</button>
+    <button data-tab="tools">工具</button>
+    <button data-tab="clients">客戶</button>
+  </nav>
+
+  <!-- ============ 今日 ============ -->
+  <section class="page on" id="p-today">
+    <div class="grid today-grid" style="margin-bottom:14px">
+      <div class="hero">
+        <div class="hi" id="greet">你好，朱兒</div>
+        <div class="note" id="greetNote"></div>
+        <div class="clock" id="clock">--:--:--</div>
+        <div class="date" id="todayDate"></div>
+      </div>
+
+      <div class="card">
+        <h2>⭐ 今日聚焦 <span class="en">TODAY'S FOCUS</span><span class="spacer"></span><span class="tiny" id="focusCount"></span></h2>
+        <div id="focusList"></div>
+      </div>
+
+      <div class="card">
+        <h2>✏️ 快速記一筆 <span class="en">QUICK ADD</span></h2>
+        <div class="quick">
+          <input id="quickInput" placeholder="打一行字就好，例：漁三結案報告" autocomplete="off">
+          <button id="quickBtn">加入</button>
+        </div>
+        <div class="quick-hint">預設帶「工作 · 重要不緊急 · 未開始 · 今天」，之後可以再補細節</div>
+        <div class="daily-score" id="dailyScore"></div>
+        <button class="btn ghost sm" id="goToday" style="width:100%;margin-top:10px">查看今天到期的任務 →</button>
+      </div>
+    </div>
+
+    <div class="grid vitals-grid">
+      <div class="card">
+        <h2>📊 今日概覽 <span class="en">DAILY VITALS</span></h2>
+        <div class="rings" id="rings"></div>
+      </div>
+      <div class="card" id="alertCard">
+        <h2>🔔 需要注意 <span class="en">ALERTS</span></h2>
+        <div id="alertList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 任務 ============ -->
+  <section class="page" id="p-tasks">
+    <div class="stats" id="taskStats"></div>
+    <div class="filters">
+      <button class="chip on" data-area="all">全部</button>
+      <button class="chip" data-area="work">工作</button>
+      <button class="chip" data-area="personal">個人</button>
+      <select id="fClient"><option value="">所有客戶</option></select>
+      <select id="fType"><option value="">所有類型</option></select>
+      <select id="fPrio">
+        <option value="">所有優先級</option>
+        <option value="1">🔴 重要且緊急</option>
+        <option value="2">🟠 重要不緊急</option>
+        <option value="3">🟡 緊急不重要</option>
+        <option value="4">⚪ 都不是</option>
+      </select>
+      <select id="fStatus">
+        <option value="open">未完成</option>
+        <option value="">全部狀態</option>
+        <option value="todo">未開始</option>
+        <option value="doing">進行中</option>
+        <option value="done">已完成</option>
+      </select>
+      <select id="fRange">
+        <option value="">不限日期</option>
+        <option value="today">今天到期</option>
+        <option value="week">本週到期</option>
+        <option value="month">本月到期</option>
+        <option value="over">已逾期</option>
+        <option value="nodate">沒設日期</option>
+      </select>
+      <input type="search" id="fSearch" placeholder="搜尋任務…" style="min-width:130px">
+      <button class="btn ghost sm" id="fReset">清除篩選</button>
+    </div>
+    <div id="taskList"></div>
+  </section>
+
+  <!-- ============ 工具 ============ -->
+  <section class="page" id="p-tools">
+    <div class="grid tools" id="toolWall"></div>
+    <p class="tiny" style="margin-top:16px;text-align:center">
+      新做的工具會加到這裡。純電腦端的腳本工具（例如 Threads 巡邏）沒有網頁，不列在上面。
+    </p>
+  </section>
+
+  <!-- ============ 客戶 ============ -->
+  <section class="page" id="p-clients">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <div class="tiny" style="flex:1">點右邊雲朵圖示開該客戶的 Google 雲端資料夾</div>
+      <button class="btn sm" id="addClientBtn">＋ 新增客戶</button>
+    </div>
+    <div id="clientList"></div>
+  </section>
+
+</div>
+
+<button class="fab" id="fab" style="display:none">＋</button>
+<div class="toast" id="toast"></div>
+
+<!-- 任務編輯 -->
+<div class="modal" id="taskModal">
+  <div class="sheet">
+    <h3 id="tmTitle">新增任務</h3>
+    <div class="f">
+      <label>任務名稱</label>
+      <input id="tmName" placeholder="要做什麼？">
+    </div>
+    <div class="f">
+      <label>大區</label>
+      <div class="seg" id="tmArea">
+        <button data-v="work">💼 工作</button>
+        <button data-v="personal">🏡 個人</button>
+      </div>
+    </div>
+    <div class="f2 f" id="tmWorkFields">
+      <div>
+        <label>客戶</label>
+        <select id="tmClient"></select>
+      </div>
+      <div>
+        <label>工作類型</label>
+        <select id="tmType"></select>
+      </div>
+    </div>
+    <div class="f hide" id="tmPersonalFields">
+      <label>個人分類</label>
+      <select id="tmPersonal"></select>
+    </div>
+    <div class="f">
+      <label>優先級</label>
+      <div class="seg" id="tmPrio">
+        <button data-v="1">🔴 重要緊急</button>
+        <button data-v="2">🟠 重要不緊急</button>
+        <button data-v="3">🟡 緊急不重要</button>
+        <button data-v="4">⚪ 都不是</button>
+      </div>
+    </div>
+    <div class="f">
+      <label>狀態</label>
+      <div class="seg status" id="tmStatus">
+        <button data-v="todo">未開始</button>
+        <button data-v="doing">進行中</button>
+        <button data-v="done">已完成</button>
+      </div>
+    </div>
+    <div class="f2">
+      <div class="f"><label>開始日</label><input type="date" id="tmStart"></div>
+      <div class="f"><label>截止日</label><input type="date" id="tmDue"></div>
+    </div>
+    <div class="f2">
+      <div class="f"><label>預計幾點開始</label><input type="time" id="tmTime" step="300"></div>
+      <div class="f"><label>預計做幾分鐘</label><input type="number" id="tmMins" min="5" step="5" placeholder="60"></div>
+    </div>
+    <div class="f">
+      <label>進度 <span id="tmProgV" class="tiny">0%</span></label>
+      <input type="range" id="tmProg" min="0" max="100" step="5" value="0">
+    </div>
+    <div class="f">
+      <label>備註</label>
+      <textarea id="tmNote" placeholder="補充說明、連結…"></textarea>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn del hide" id="tmDel">刪除</button>
+      <button class="btn ghost" id="tmCancel">取消</button>
+      <button class="btn" id="tmSave">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 客戶編輯 -->
+<div class="modal" id="clientModal">
+  <div class="sheet">
+    <h3 id="cmTitle">新增客戶</h3>
+    <div class="f"><label>客戶全名</label><input id="cmName" placeholder="例：李享家直播集團"></div>
+    <div class="f"><label>顯示簡稱</label><input id="cmShort" placeholder="例：李老闆（留空就用全名）"></div>
+    <div class="f"><label>Google 雲端資料夾網址</label><input id="cmDrive" placeholder="貼上分享連結，可留空"></div>
+    <div class="f">
+      <label>狀態</label>
+      <div class="seg" id="cmActive">
+        <button data-v="1">進行中</button>
+        <button data-v="0">已結案</button>
+      </div>
+    </div>
+    <div class="f"><label>備註</label><textarea id="cmNote" placeholder="窗口、合約期間…"></textarea></div>
+    <div class="sheet-actions">
+      <button class="btn del hide" id="cmDel">刪除</button>
+      <button class="btn ghost" id="cmCancel">取消</button>
+      <button class="btn" id="cmSave">儲存</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+/* ==========================================================
+   朱兒的工作台 — 第一批：今日儀表板 / 任務總表 / 工具牆 / 客戶管理
+   資料：Firebase Realtime DB（doraWorkspace）+ localStorage 離線備援
+   ========================================================== */
+
+// 任務裡有客戶名稱，所以資料庫規則只認朱兒的 Google 帳號。
+// 網頁版 Firebase 金鑰一定得寫在原始碼裡（藏不住），網頁上的通行碼也擋不住直接連資料庫的人，
+// 唯一真正有效的防線是「規則綁定登入帳號」。沒登入 = 讀不到任何一筆。
+const OWNER_EMAIL = 'zhuer0323@gmail.com';
+const LS = { tasks:'ws_tasks', clients:'ws_clients', mode:'ws_mode' };
+
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAWOXPFBmb-lU90dpBOq2B8Gn7LsR2p-jM",
+  authDomain: "busan-trip-2026-201f8.firebaseapp.com",
+  databaseURL: "https://busan-trip-2026-201f8-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "busan-trip-2026-201f8",
+  storageBucket: "busan-trip-2026-201f8.firebasestorage.app",
+  messagingSenderId: "300878890409",
+  appId: "1:300878890409:web:c80543dc5c43f6d81bb0b8"
+};
+const ROOM = 'ws_k7m2q9xr4t';   // 改名要同步改 Firebase 規則
+
+const WORK_TYPES = ['廣告投放排程','廣告文案','社群文案','素材分析','週報回報','結案報表','操作方向建議','報價單','會議','提案','其他'];
+const PERSONAL_CATS = ['家庭','學習','健康','副業','雜事'];
+const PRIO = {1:{t:'重要且緊急',c:'var(--p1)'},2:{t:'重要不緊急',c:'var(--p2)'},3:{t:'緊急不重要',c:'var(--p3)'},4:{t:'都不是',c:'var(--p4)'}};
+const STATUS = {todo:{t:'未開始',c:'var(--todo)'},doing:{t:'進行中',c:'var(--doing)'},done:{t:'已完成',c:'var(--done)'}};
+
+const DEFAULT_CLIENTS = [
+  {name:'李享家直播集團', short:'李老闆'},
+  {name:'漁三'}, {name:'優逸'}, {name:'TOTO'},
+  {name:'一沐日'}, {name:'沐拾'}, {name:'十八子肉'},
+  {name:'北元當舖'}, {name:'工研院'},
+  {name:'內部'}
+];
+
+const TOOLS = [
+  {ic:'🇰🇷', n:'釜山旅遊 App',   d:'行程、記帳、打包清單、Pass 倒數', u:'./busan-trip/'},
+  {ic:'💡', n:'IG 腳本靈感',     d:'27 系列 2700 題，Connie 卡妮說專用', u:'./ig-script-system/index.html'},
+  {ic:'📝', n:'會議報告閱讀站',   d:'會議分析報告的共用同步網頁',       u:'./meeting-report-site/'},
+  {ic:'💰', n:'報價單工具',      d:'廣告服務報價單產生器',             u:'https://heyan-quotation.pages.dev/'},
+  {ic:'🎮', n:'數學冒險遊戲',    d:'國小二年級數學闖關，4 世界 12 關',  u:'./math-game/index.html'}
+];
+
+/* ---------- 小工具 ---------- */
+const $  = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const esc = s => String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad = n => String(n).padStart(2,'0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const TODAY = () => ymd(new Date());
+
+function weekRange(){                       // 本週一 ~ 週日
+  const d = new Date(); const day = (d.getDay()+6)%7;
+  const s = new Date(d); s.setDate(d.getDate()-day);
+  const e = new Date(s); e.setDate(s.getDate()+6);
+  return [ymd(s), ymd(e)];
+}
+function monthRange(){
+  const d = new Date();
+  return [ymd(new Date(d.getFullYear(),d.getMonth(),1)), ymd(new Date(d.getFullYear(),d.getMonth()+1,0))];
+}
+let toastT;
+// undoFn 有值時，提示會多一個「復原」可以點（勾錯完成時救得回來）
+function toast(msg, undoFn){
+  const el = $('#toast');
+  el.innerHTML = esc(msg) + (undoFn ? ` <b class="undo">復原</b>` : '');
+  el.classList.toggle('clickable', !!undoFn);
+  el.onclick = undoFn ? () => { undoFn(); el.classList.remove('on'); } : null;
+  el.classList.add('on');
+  clearTimeout(toastT); toastT = setTimeout(()=>el.classList.remove('on'), undoFn ? 4500 : 1900);
+}
+
+/* ---------- 狀態 ---------- */
+let tasks   = JSON.parse(localStorage.getItem(LS.tasks)   || '{}');
+let clients = JSON.parse(localStorage.getItem(LS.clients) || '{}');
+let filter  = { area:'all', client:'', type:'', prio:'', status:'open', range:'', q:'' };
+
+function saveLocal(){
+  localStorage.setItem(LS.tasks, JSON.stringify(tasks));
+  localStorage.setItem(LS.clients, JSON.stringify(clients));
+}
+function seedClients(){
+  if (Object.keys(clients).length) return false;
+  DEFAULT_CLIENTS.forEach((c,i)=>{
+    const id = uid();
+    clients[id] = { id, name:c.name, short:c.short||'', drive:'', active:true, note:'', order:i };
+  });
+  return true;
+}
+const clientName = id => { const c = clients[id]; return c ? (c.short || c.name) : ''; };
+const sortedClients = () => Object.values(clients)
+  .sort((a,b)=> (b.active?1:0)-(a.active?1:0) || (a.order??99)-(b.order??99) || a.name.localeCompare(b.name,'zh-Hant'));
+
+/* ---------- Firebase ---------- */
+let _db=null,_ref=null,_set=null,_remove=null,_ready=false,_signOut=null;
+
+function setSync(state, detail){
+  const map = { ok:['#7ED0A0','已同步'], error:['#E57373','同步失敗'], connecting:['#FFB74D','連線中'] };
+  const [c,l] = map[state] || ['#ccc','離線模式'];
+  $('#syncDot').style.background = c;
+  $('#syncTxt').textContent = l;
+  $('#syncTxt').title = detail || '';
+}
+function push(path, data){
+  if (!_ready) return;
+  _set(_ref(_db, `${ROOM}/${path}`), data).catch(e => { setSync('error', e.message); console.warn(e); });
+}
+function drop(path){
+  if (!_ready) return;
+  _remove(_ref(_db, `${ROOM}/${path}`)).catch(e => console.warn(e));
+}
+
+// 先登入 Google，再連資料庫。回傳 true 表示同步已啟用。
+async function initFirebase(interactive){
+  setSync('connecting');
+  try{
+    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+    const { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } =
+      await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+    const { getDatabase, ref, set, get, remove, onValue } =
+      await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+    const app = initializeApp(FIREBASE_CONFIG);
+    const auth = getAuth(app);
+    _signOut = () => signOut(auth);
+
+    // 等 Firebase 回報「這台裝置之前登入過沒有」
+    let user = await new Promise(res => {
+      const un = onAuthStateChanged(auth, u => { un(); res(u); });
+    });
+    if (!user){
+      if (!interactive) return false;                       // 沒登入過又不是使用者主動按的 → 停在登入畫面
+      user = (await signInWithPopup(auth, new GoogleAuthProvider())).user;
+    }
+    if (user.email !== OWNER_EMAIL){
+      await signOut(auth);
+      throw new Error(`這個帳號（${user.email}）沒有權限，請用 ${OWNER_EMAIL} 登入`);
+    }
+
+    _db = getDatabase(app); _ref = ref; _set = set; _remove = remove;
+
+    const snap = await get(ref(_db, ROOM));
+    const d = snap.exists() ? snap.val() : {};
+    if (d.tasks)   tasks   = d.tasks;
+    if (d.clients) clients = d.clients;
+    _ready = true; setSync('ok');
+
+    // 雲端還沒有客戶名單 → 用預設名單開帳
+    if (!d.clients){ seedClients(); push('clients', clients); }
+    if (!d.tasks && Object.keys(tasks).length) push('tasks', tasks);
+
+    saveLocal(); renderAll();
+
+    onValue(ref(_db, `${ROOM}/tasks`), s => {
+      const v = s.exists() ? s.val() : {};
+      if (JSON.stringify(v) === JSON.stringify(tasks)) return;
+      tasks = v; saveLocal(); renderAll();
+    });
+    onValue(ref(_db, `${ROOM}/clients`), s => {
+      const v = s.exists() ? s.val() : {};
+      if (JSON.stringify(v) === JSON.stringify(clients)) return;
+      clients = v; saveLocal(); renderAll();
+    });
+    return true;
+  }catch(e){
+    console.warn('Firebase 連線失敗：', e);
+    setSync('error', e.message);
+    throw e;
+  }
+}
+
+/* ---------- 篩選 ---------- */
+// ignoreStatus=true 時不套用「狀態」篩選，給統計列用
+// （否則預設篩「未完成」時，「已完成」永遠顯示 0，看不出當下這批的完成狀況）
+function visibleTasks(ignoreStatus){
+  const [ws,we] = weekRange(), [ms,me] = monthRange(), td = TODAY();
+  return Object.values(tasks).filter(t=>{
+    if (filter.area !== 'all' && t.area !== filter.area) return false;
+    if (filter.client && t.client !== filter.client) return false;
+    if (filter.type && t.type !== filter.type && t.personal !== filter.type) return false;
+    if (filter.prio && String(t.prio) !== filter.prio) return false;
+    if (!ignoreStatus){
+      if (filter.status === 'open'){ if (t.status === 'done') return false; }
+      else if (filter.status && t.status !== filter.status) return false;
+    }
+    if (filter.range){
+      const d = t.due || '';
+      if (filter.range === 'nodate'){ if (d) return false; }
+      else if (!d) return false;
+      else if (filter.range === 'today' && d !== td) return false;
+      else if (filter.range === 'week'  && (d < ws || d > we)) return false;
+      else if (filter.range === 'month' && (d < ms || d > me)) return false;
+      else if (filter.range === 'over'  && !(d < td && t.status !== 'done')) return false;
+    }
+    if (filter.q){
+      const q = filter.q.toLowerCase();
+      const hay = [t.name, t.note, clientName(t.client), t.type, t.personal].join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  }).sort((a,b)=>{
+    const rank = s => s==='doing'?0 : s==='todo'?1 : 2;
+    if (rank(a.status) !== rank(b.status)) return rank(a.status)-rank(b.status);
+    const ad = a.due || '9999-12-31', bd = b.due || '9999-12-31';
+    if (ad !== bd) return ad < bd ? -1 : 1;
+    if (a.prio !== b.prio) return a.prio - b.prio;
+    return (b.createdAt||0) - (a.createdAt||0);
+  });
+}
+
+/* ---------- 渲染：今日 ---------- */
+function renderClock(){
+  const d = new Date();
+  $('#clock').textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  const h = d.getHours();
+  const g = h<5?'夜深了，朱兒' : h<11?'早安，朱兒' : h<13?'午安，朱兒' : h<18?'下午好，朱兒' : '晚上好，朱兒';
+  $('#greet').textContent = g;
+  const wk = ['日','一','二','三','四','五','六'][d.getDay()];
+  $('#todayDate').textContent = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 週${wk}`;
+}
+function renderGreetNote(){
+  const td = TODAY();
+  const dueToday = Object.values(tasks).filter(t=>t.due===td && t.status!=='done').length;
+  const over = Object.values(tasks).filter(t=>t.due && t.due<td && t.status!=='done').length;
+  $('#greetNote').textContent = over ? `有 ${over} 件逾期了，先處理掉吧`
+    : dueToday ? `今天有 ${dueToday} 件要完成` : '今天沒有到期的事，好好安排';
+}
+function renderFocus(){
+  const td = TODAY();
+  const starred = Object.values(tasks).filter(t=>t.star && t.status!=='done');
+  const pool = Object.values(tasks)
+    .filter(t=>!t.star && t.status!=='done' && t.due && t.due<=td)
+    .sort((a,b)=> (a.due<b.due?-1:a.due>b.due?1:0) || a.prio-b.prio);
+  const list = [...starred, ...pool].slice(0,3);
+  $('#focusCount').textContent = list.length ? `${list.length} 項` : '';
+  $('#focusList').innerHTML = list.length ? list.map(t=>{
+    const bits = [];
+    if (t.area==='work' && t.client) bits.push(clientName(t.client));
+    if (t.type || t.personal) bits.push(t.type || t.personal);
+    if (t.due) bits.push(t.due < td ? `逾期 ${t.due}` : t.due === td ? '今天到期' : t.due);
+    return `<div class="focus-item">
+      <button class="star" data-star="${t.id}" title="釘選／取消">${t.star?'⭐':'☆'}</button>
+      <div class="t" data-open="${t.id}">${esc(t.name)}<div class="m">${esc(bits.join(' · '))}</div></div>
+    </div>`;
+  }).join('') : `<div class="empty">還沒有聚焦項目<br><span class="tiny">在任務清單點 ☆ 可以釘上來</span></div>`;
+}
+function ring(pct, label, sub, color){
+  const R=26, C=2*Math.PI*R, off=C*(1-pct/100);
+  return `<div class="ring">
+    <svg width="66" height="66" viewBox="0 0 66 66">
+      <circle cx="33" cy="33" r="${R}" fill="none" stroke="#F6E4EA" stroke-width="7"/>
+      <circle cx="33" cy="33" r="${R}" fill="none" stroke="${color}" stroke-width="7" stroke-linecap="round"
+        stroke-dasharray="${C}" stroke-dashoffset="${off}" transform="rotate(-90 33 33)"/>
+    </svg>
+    <div class="v">${pct}%</div><div class="l">${label}</div><div class="s">${sub}</div>
+  </div>`;
+}
+function renderRings(){
+  const td = TODAY(), [ws,we] = weekRange(), [ms,me] = monthRange();
+  const all = Object.values(tasks);
+  const dayT = all.filter(t=>t.due===td), dayD = dayT.filter(t=>t.status==='done').length;
+  const wkT  = all.filter(t=>t.due&&t.due>=ws&&t.due<=we), wkD = wkT.filter(t=>t.status==='done').length;
+  const doing = all.filter(t=>t.status==='doing').length;
+  const over  = all.filter(t=>t.due&&t.due<td&&t.status!=='done').length;
+  const openN = all.filter(t=>t.status!=='done').length;
+  const monD  = all.filter(t=>t.status==='done'&&t.due&&t.due>=ms&&t.due<=me).length;
+  const pc = (a,b)=> b? Math.round(a/b*100) : 0;
+  $('#rings').innerHTML =
+      ring(pc(dayD,dayT.length),'今日完成',`${dayD}/${dayT.length} 項`,'#EE7FA8')
+    + ring(pc(wkD,wkT.length),'本週完成',`${wkD}/${wkT.length} 項`,'#B39DDB')
+    + ring(pc(doing,openN||1),'進行中',`${doing} 項`,'#7ED0A0')
+    + `<div class="vbox">
+         <div class="r"><b>${over}</b><span>逾期未完成${over?'，要先處理':''}</span></div>
+         <div class="r"><b>${openN}</b><span>待辦總數（含沒設日期）</span></div>
+         <div class="r"><b>${monD}</b><span>本月已完成</span></div>
+       </div>`;
+}
+function renderAlerts(){
+  const td = TODAY();
+  const d3 = new Date(); d3.setDate(d3.getDate()+3); const soon = ymd(d3);
+  const over = Object.values(tasks).filter(t=>t.due&&t.due<td&&t.status!=='done')
+    .sort((a,b)=>a.due<b.due?-1:1);
+  const near = Object.values(tasks).filter(t=>t.due&&t.due>=td&&t.due<=soon&&t.status!=='done')
+    .sort((a,b)=>a.due<b.due?-1:1);
+  const days = d => Math.round((new Date(d) - new Date(td)) / 86400000);
+  const html = [
+    ...over.map(t=>`<div class="alert-item" data-open="${t.id}"><span class="t">${esc(t.name)}</span><span class="d">逾期 ${-days(t.due)} 天</span></div>`),
+    ...near.map(t=>{
+      const n = days(t.due);
+      return `<div class="alert-item warn" data-open="${t.id}"><span class="t">${esc(t.name)}</span><span class="d">${n===0?'今天到期':`剩 ${n} 天`}</span></div>`;
+    })
+  ].join('');
+  $('#alertList').innerHTML = html || `<div class="empty">目前沒有逾期或即將到期的任務 🌿</div>`;
+}
+
+/* ---------- 渲染：任務 ---------- */
+function renderStats(){
+  const v = visibleTasks(true), shown = visibleTasks().length, td = TODAY();
+  const c = s => v.filter(t=>t.status===s).length;
+  $('#taskStats').innerHTML = `
+    <div class="stat"><b>${shown}</b><span>目前顯示</span></div>
+    <div class="stat y"><b>${c('todo')}</b><span>未開始</span></div>
+    <div class="stat p"><b>${c('doing')}</b><span>進行中</span></div>
+    <div class="stat g"><b>${c('done')}</b><span>已完成</span></div>
+    <div class="stat r"><b>${v.filter(t=>t.due&&t.due<td&&t.status!=='done').length}</b><span>逾期</span></div>`;
+}
+function renderTasks(){
+  const list = visibleTasks(), td = TODAY();
+  $('#taskList').innerHTML = list.length ? list.map(t=>{
+    const tags = [];
+    if (t.area==='work'){
+      if (t.client) tags.push(`<span class="tag client">${esc(clientName(t.client))}</span>`);
+      if (t.type)   tags.push(`<span class="tag">${esc(t.type)}</span>`);
+    } else {
+      tags.push(`<span class="tag">🏡 ${esc(t.personal||'個人')}</span>`);
+    }
+    if (t.due){
+      const over = t.due < td && t.status!=='done';
+      tags.push(`<span class="tag date${over?' over':''}">${over?'逾期 ':''}${t.due.slice(5)}${t.due===td?' 今天':''}</span>`);
+    }
+    if (t.time) tags.push(`<span class="tag time">${t.time}${t.mins?` · ${t.mins}分`:''}</span>`);
+    return `<div class="task" data-s="${t.status}">
+      <button class="chk" data-toggle="${t.id}">${t.status==='done'?'✓':''}</button>
+      <div class="body" data-open="${t.id}">
+        <div class="title">${esc(t.name)}</div>
+        <div class="meta">
+          <span class="pdot" style="background:${PRIO[t.prio]?.c||'#ddd'}" title="${PRIO[t.prio]?.t||''}"></span>
+          ${tags.join('')}
+        </div>
+        ${t.progress>0 && t.status!=='done' ? `<div class="prog"><i style="width:${t.progress}%"></i></div>` : ''}
+      </div>
+      <button class="star" data-star="${t.id}">${t.star?'⭐':'☆'}</button>
+    </div>`;
+  }).join('') : `<div class="empty" style="padding:40px 0">沒有符合條件的任務<br><span class="tiny">換個篩選條件，或按右下角 ＋ 新增</span></div>`;
+}
+
+/* ---------- 渲染：工具 / 客戶 ---------- */
+function renderTools(){
+  $('#toolWall').innerHTML = TOOLS.map(t=>`
+    <a class="tool" href="${t.u}" target="_blank" rel="noopener">
+      <div class="ic">${t.ic}</div><div class="n">${esc(t.n)}</div><div class="d">${esc(t.d)}</div>
+    </a>`).join('');
+}
+function renderClients(){
+  const list = sortedClients();
+  const count = id => Object.values(tasks).filter(t=>t.client===id && t.status!=='done').length;
+  const row = c => {
+    const n = count(c.id);
+    const bits = [];
+    if (c.short && c.short !== c.name) bits.push(esc(c.name));
+    bits.push(`未完成 ${n} 件`);
+    if (c.note) bits.push(esc(c.note));
+    const cloud = c.drive
+      ? `<a class="ico" href="${esc(c.drive)}" target="_blank" rel="noopener" title="開啟 Google 雲端資料夾">☁️</a>`
+      : `<button class="ico off" data-client="${c.id}" title="還沒設定雲端連結，點這裡設定">☁</button>`;
+    return `<div class="client-row${c.active?'':' off'}">
+      <div class="n" data-client="${c.id}">
+        <b>${esc(c.short||c.name)}</b>
+        <span>${bits.join(' · ')}</span>
+      </div>
+      ${cloud}
+      <button class="btn ghost sm" data-client="${c.id}">編輯</button>
+    </div>`;
+  };
+  const on = list.filter(c=>c.active), off = list.filter(c=>!c.active);
+  $('#clientList').innerHTML =
+    (on.length? on.map(row).join('') : `<div class="empty">還沒有客戶</div>`) +
+    (off.length? `<div class="sec-title">已結案</div>` + off.map(row).join('') : '');
+}
+
+function renderSelects(){
+  const cs = sortedClients();
+  $('#fClient').innerHTML = `<option value="">所有客戶</option>` +
+    cs.map(c=>`<option value="${c.id}">${esc(c.short||c.name)}</option>`).join('');
+  $('#fClient').value = filter.client;
+  $('#fType').innerHTML = `<option value="">所有類型</option>` +
+    WORK_TYPES.map(t=>`<option value="${t}">${t}</option>`).join('') +
+    `<option disabled>──個人──</option>` +
+    PERSONAL_CATS.map(t=>`<option value="${t}">🏡 ${t}</option>`).join('');
+  $('#fType').value = filter.type;
+  $('#tmClient').innerHTML = `<option value="">（未指定）</option>` +
+    cs.filter(c=>c.active).map(c=>`<option value="${c.id}">${esc(c.short||c.name)}</option>`).join('');
+  $('#tmType').innerHTML = WORK_TYPES.map(t=>`<option value="${t}">${t}</option>`).join('');
+  $('#tmPersonal').innerHTML = PERSONAL_CATS.map(t=>`<option value="${t}">${t}</option>`).join('');
+}
+
+function renderScore(){
+  const t0 = new Date(); t0.setHours(0,0,0,0); const ms = t0.getTime(), td = TODAY();
+  const all = Object.values(tasks);
+  const added = all.filter(t=>(t.createdAt||0) >= ms).length;
+  const doneToday = all.filter(t=>(t.doneAt||0) >= ms).length;
+  const dueToday = all.filter(t=>t.due===td && t.status!=='done').length;
+  $('#dailyScore').innerHTML =
+    `<div><b>${added}</b><span>今天新增</span></div>
+     <div><b>${doneToday}</b><span>今天完成</span></div>
+     <div><b>${dueToday}</b><span>今天還沒做</span></div>`;
+}
+function renderAll(){
+  renderSelects(); renderGreetNote(); renderFocus(); renderRings(); renderAlerts();
+  renderScore(); renderStats(); renderTasks(); renderClients();
+}
+
+/* ---------- 任務操作 ---------- */
+function saveTask(t){
+  t.updatedAt = Date.now();
+  tasks[t.id] = t; saveLocal(); push(`tasks/${t.id}`, t); renderAll();
+}
+function delTask(id){
+  delete tasks[id]; saveLocal(); drop(`tasks/${id}`); renderAll();
+}
+function toggleDone(id){
+  const t = tasks[id]; if (!t) return;
+  const prev = { status:t.status, progress:t.progress, doneAt:t.doneAt };
+  if (t.status === 'done'){
+    t.status = 'doing'; t.doneAt = null; saveTask(t);
+  } else {
+    t.status = 'done'; t.progress = 100; t.doneAt = Date.now(); saveTask(t);
+    toast(`完成「${t.name}」`, () => { Object.assign(tasks[id], prev); saveTask(tasks[id]); });
+  }
+}
+function toggleStar(id){
+  const t = tasks[id]; if (!t) return;
+  const cur = Object.values(tasks).filter(x=>x.star && x.status!=='done').length;
+  if (!t.star && cur >= 3){ toast('今日聚焦最多釘 3 項'); return; }
+  t.star = !t.star; saveTask(t);
+}
+
+/* ---------- 任務彈窗 ---------- */
+let editingTask = null;
+function segSet(el, v){ $$(`#${el} button`).forEach(b=>b.classList.toggle('on', b.dataset.v == v)); }
+function segGet(el){ const b = $(`#${el} button.on`); return b ? b.dataset.v : ''; }
+
+function openTask(id){
+  const t = id ? tasks[id] : null;
+  editingTask = t ? {...t} : null;
+  $('#tmTitle').textContent = t ? '編輯任務' : '新增任務';
+  $('#tmDel').classList.toggle('hide', !t);
+  $('#tmName').value = t?.name || '';
+  segSet('tmArea', t?.area || 'work');
+  segSet('tmPrio', t?.prio || 2);
+  segSet('tmStatus', t?.status || 'todo');
+  $('#tmClient').value = t?.client || '';
+  $('#tmType').value = t?.type || WORK_TYPES[0];
+  $('#tmPersonal').value = t?.personal || PERSONAL_CATS[0];
+  $('#tmStart').value = t?.start || '';
+  $('#tmDue').value = t?.due || (t ? '' : TODAY());
+  $('#tmTime').value = t?.time || '';
+  $('#tmMins').value = t?.mins || '';
+  $('#tmProg').value = t?.progress || 0;
+  $('#tmProgV').textContent = (t?.progress||0) + '%';
+  $('#tmNote').value = t?.note || '';
+  syncAreaFields();
+  $('#taskModal').classList.add('on');
+  if (!t) setTimeout(()=>$('#tmName').focus(), 120);
+}
+function syncAreaFields(){
+  const work = segGet('tmArea') === 'work';
+  $('#tmWorkFields').classList.toggle('hide', !work);
+  $('#tmPersonalFields').classList.toggle('hide', work);
+}
+function closeTask(){ $('#taskModal').classList.remove('on'); editingTask = null; }
+
+$('#tmSave').onclick = () => {
+  const name = $('#tmName').value.trim();
+  if (!name){ toast('任務名稱要填喔'); $('#tmName').focus(); return; }
+  const area = segGet('tmArea');
+  const status = segGet('tmStatus');
+  let progress = +$('#tmProg').value;
+  if (status === 'done') progress = 100;
+  const t = {
+    id: editingTask?.id || uid(),
+    name, area,
+    client: area==='work' ? $('#tmClient').value : '',
+    type:   area==='work' ? $('#tmType').value : '',
+    personal: area==='personal' ? $('#tmPersonal').value : '',
+    prio: +segGet('tmPrio'), status,
+    start: $('#tmStart').value, due: $('#tmDue').value,
+    time: $('#tmTime').value, mins: +$('#tmMins').value || 0,
+    progress, note: $('#tmNote').value.trim(),
+    star: editingTask?.star || false,
+    createdAt: editingTask?.createdAt || Date.now(),
+    doneAt: status==='done' ? (editingTask?.doneAt || Date.now()) : null
+  };
+  saveTask(t); closeTask(); toast(editingTask ? '已更新' : '已新增');
+};
+$('#tmDel').onclick = () => {
+  if (!editingTask) return;
+  if (!confirm(`確定刪除「${editingTask.name}」？`)) return;
+  delTask(editingTask.id); closeTask(); toast('已刪除');
+};
+$('#tmCancel').onclick = closeTask;
+$('#taskModal').onclick = e => { if (e.target.id === 'taskModal') closeTask(); };
+$('#tmArea').onclick = e => { const b = e.target.closest('button'); if (!b) return; segSet('tmArea', b.dataset.v); syncAreaFields(); };
+$('#tmPrio').onclick = e => { const b = e.target.closest('button'); if (b) segSet('tmPrio', b.dataset.v); };
+$('#tmStatus').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  segSet('tmStatus', b.dataset.v);
+  if (b.dataset.v === 'done'){ $('#tmProg').value = 100; $('#tmProgV').textContent = '100%'; }
+};
+$('#tmProg').oninput = e => $('#tmProgV').textContent = e.target.value + '%';
+
+/* ---------- 客戶彈窗 ---------- */
+let editingClient = null;
+function openClient(id){
+  const c = id ? clients[id] : null;
+  editingClient = c ? {...c} : null;
+  $('#cmTitle').textContent = c ? '編輯客戶' : '新增客戶';
+  $('#cmDel').classList.toggle('hide', !c);
+  $('#cmName').value = c?.name || '';
+  $('#cmShort').value = c?.short || '';
+  $('#cmDrive').value = c?.drive || '';
+  $('#cmNote').value = c?.note || '';
+  segSet('cmActive', c ? (c.active?1:0) : 1);
+  $('#clientModal').classList.add('on');
+  if (!c) setTimeout(()=>$('#cmName').focus(), 120);
+}
+function closeClient(){ $('#clientModal').classList.remove('on'); editingClient = null; }
+$('#cmActive').onclick = e => { const b = e.target.closest('button'); if (b) segSet('cmActive', b.dataset.v); };
+$('#cmSave').onclick = () => {
+  const name = $('#cmName').value.trim();
+  if (!name){ toast('客戶名稱要填喔'); return; }
+  const c = {
+    id: editingClient?.id || uid(),
+    name, short: $('#cmShort').value.trim(),
+    drive: $('#cmDrive').value.trim(),
+    active: segGet('cmActive') === '1',
+    note: $('#cmNote').value.trim(),
+    order: editingClient?.order ?? Object.keys(clients).length
+  };
+  clients[c.id] = c; saveLocal(); push(`clients/${c.id}`, c); renderAll();
+  closeClient(); toast(editingClient ? '已更新' : '已新增客戶');
+};
+$('#cmDel').onclick = () => {
+  if (!editingClient) return;
+  const used = Object.values(tasks).filter(t=>t.client === editingClient.id).length;
+  if (used){ toast(`還有 ${used} 筆任務用這個客戶，請改成「已結案」`); return; }
+  if (!confirm(`確定刪除「${editingClient.name}」？`)) return;
+  delete clients[editingClient.id]; saveLocal(); drop(`clients/${editingClient.id}`);
+  renderAll(); closeClient(); toast('已刪除');
+};
+$('#cmCancel').onclick = closeClient;
+$('#clientModal').onclick = e => { if (e.target.id === 'clientModal') closeClient(); };
+$('#addClientBtn').onclick = () => openClient(null);
+
+/* ---------- 事件委派 ---------- */
+document.addEventListener('click', e => {
+  const star = e.target.closest('[data-star]');
+  if (star){ e.stopPropagation(); toggleStar(star.dataset.star); return; }
+  const tog = e.target.closest('[data-toggle]');
+  if (tog){ e.stopPropagation(); toggleDone(tog.dataset.toggle); return; }
+  const open = e.target.closest('[data-open]');
+  if (open){ openTask(open.dataset.open); return; }
+  const cli = e.target.closest('[data-client]');
+  if (cli){ openClient(cli.dataset.client); return; }
+});
+
+/* 分頁 */
+function switchTab(name){
+  $$('nav.tabs button').forEach(x=>x.classList.toggle('on', x.dataset.tab===name));
+  $$('.page').forEach(p=>p.classList.remove('on'));
+  $(`#p-${name}`).classList.add('on');
+  $('#fab').style.display = (name==='today' || name==='tasks') ? 'flex' : 'none';
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+$$('nav.tabs button').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
+$('#goToday').onclick = () => {
+  filter.range = 'today'; filter.status = 'open';
+  $('#fRange').value = 'today'; $('#fStatus').value = 'open';
+  renderStats(); renderTasks(); switchTab('tasks');
+};
+
+/* 篩選 */
+$$('.filters .chip').forEach(b => b.onclick = () => {
+  $$('.filters .chip').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); filter.area = b.dataset.area; renderStats(); renderTasks();
+});
+const bindF = (sel, key) => $(sel).onchange = e => { filter[key] = e.target.value; renderStats(); renderTasks(); };
+bindF('#fClient','client'); bindF('#fType','type'); bindF('#fPrio','prio');
+bindF('#fStatus','status'); bindF('#fRange','range');
+let searchT;
+$('#fSearch').oninput = e => {
+  clearTimeout(searchT);
+  searchT = setTimeout(()=>{ filter.q = e.target.value.trim(); renderStats(); renderTasks(); }, 200);
+};
+$('#fReset').onclick = () => {
+  filter = { area:'all', client:'', type:'', prio:'', status:'open', range:'', q:'' };
+  $$('.filters .chip').forEach(x=>x.classList.toggle('on', x.dataset.area==='all'));
+  ['#fClient','#fType','#fPrio','#fRange'].forEach(s=>$(s).value='');
+  $('#fStatus').value = 'open'; $('#fSearch').value = '';
+  renderStats(); renderTasks();
+};
+
+/* 快速記一筆 */
+function quickAdd(){
+  const name = $('#quickInput').value.trim();
+  if (!name) return;
+  saveTask({
+    id: uid(), name, area:'work', client:'', type:'其他', personal:'',
+    prio:2, status:'todo', start:'', due:TODAY(), time:'', mins:0,
+    progress:0, note:'', star:false, createdAt:Date.now(), doneAt:null
+  });
+  $('#quickInput').value = ''; toast('已加入今天');
+}
+$('#quickBtn').onclick = quickAdd;
+$('#quickInput').onkeydown = e => { if (e.key === 'Enter') quickAdd(); };
+$('#fab').onclick = () => openTask(null);
+
+/* ---------- 登入 ---------- */
+let booted = false;
+function showApp(){
+  if (booted) return; booted = true;
+  $('#gate')?.remove();
+  $('#app').style.display = '';
+  $('#fab').style.display = 'flex';
+  if (seedClients()) saveLocal();
+  renderClock(); setInterval(renderClock, 1000);
+  setInterval(()=>{ renderGreetNote(); renderAlerts(); }, 60000);
+  renderTools(); renderAll();
+}
+function gateError(e){
+  const msg = String(e?.message || e);
+  $('#gateErr').textContent =
+    msg.includes('auth/popup-blocked')        ? '瀏覽器擋掉了登入視窗，請允許彈出視窗後再試一次'
+  : msg.includes('auth/popup-closed-by-user') ? '登入視窗被關掉了，再按一次試試'
+  : msg.includes('auth/operation-not-allowed')? 'Firebase 還沒開啟 Google 登入，請照設定說明先開啟'
+  : msg.includes('Permission denied')         ? '資料庫規則還沒設定好，請照設定說明貼上規則'
+  : msg;
+  $('#gateBtn').disabled = false;
+  $('#gateBtn').textContent = '用 Google 登入';
+}
+$('#gateBtn').onclick = async () => {
+  $('#gateBtn').disabled = true; $('#gateBtn').textContent = '登入中…'; $('#gateErr').textContent = '';
+  try { await initFirebase(true); localStorage.setItem(LS.mode,'cloud'); showApp(); }
+  catch(e){ gateError(e); }
+};
+$('#gateLocal').onclick = () => { localStorage.setItem(LS.mode,'local'); setSync('offline'); showApp(); };
+
+// 點右上角同步狀態：沒同步就去登入，已同步就可以登出
+$('#syncBox').onclick = async () => {
+  if (_ready){
+    if (!confirm('登出後這台裝置就不會再同步，確定嗎？')) return;
+    try { await _signOut?.(); } catch(e){ console.warn(e); }
+    localStorage.removeItem(LS.mode); location.reload();
+  } else {
+    localStorage.removeItem(LS.mode); location.reload();
+  }
+};
+
+/* ---------- 啟動 ---------- */
+(async () => {
+  if (localStorage.getItem(LS.mode) === 'local'){ setSync('offline'); showApp(); return; }
+  // 之前登入過就直接進去，不用每次按登入
+  try { if (await initFirebase(false)) { showApp(); return; } }
+  catch(e){ gateError(e); return; }
+  $('#gateErr').textContent = '';
+})();
+</script>
+</body>
+</html>
