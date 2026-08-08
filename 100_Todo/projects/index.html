@@ -254,6 +254,47 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 .sheet-actions{display:flex;gap:9px;margin-top:16px}
 .sheet-actions .btn{flex:1;text-align:center;padding:13px}
 .btn.del{background:#fff;color:#E05263;border:1.5px solid #FFD6DC;flex:none;padding:13px 16px}
+
+/* ---------- 任務頁（Notion 風格） ---------- */
+.sheet.doc{max-width:720px;background:#fff;padding:14px 20px 26px}
+@media(min-width:700px){.sheet.doc{max-height:88vh}}
+.doc-bar{display:flex;align-items:center;gap:6px;margin:-4px -6px 4px;position:sticky;top:-14px;
+  background:#fff;padding:8px 6px;z-index:3}
+.doc-saved{font-size:11.5px;color:var(--ink3)}
+.doc-x{width:32px;height:32px;border-radius:9px;font-size:15px;color:var(--ink2)}
+.doc-x:hover{background:var(--pink-xl)}
+.doc-title{width:100%;border:none;outline:none;resize:none;overflow:hidden;background:none;
+  font-size:27px;font-weight:800;line-height:1.35;color:var(--ink);padding:2px 0 10px}
+.doc-title::placeholder{color:#E4CDD5}
+.props{display:flex;flex-direction:column;gap:1px}
+.prop{display:flex;align-items:center;gap:10px;min-height:38px;border-radius:9px;padding:2px 6px}
+.prop:hover{background:#FDF6F8}
+.prop .pl{width:104px;flex:none;font-size:12.5px;color:var(--ink3);font-weight:600}
+.prop .pv{flex:1;min-width:0;display:flex;align-items:center}
+.prop .pv-2{gap:8px}
+.prop .pv-2 input[type=time],.prop .pv-2 input[type=number]{max-width:120px}
+/* 屬性值平常看起來像文字，滑過去才像可以點的欄位 */
+.bare{border:1.5px solid transparent;border-radius:9px;background:none;padding:6px 8px;
+  outline:none;width:100%;max-width:340px;font-size:14px;cursor:pointer}
+.bare:hover{background:#FBEEF3}
+.bare:focus{border-color:var(--pink-l);background:#fff}
+.prop .seg{gap:5px}
+.prop .seg button{flex:none;min-width:0;padding:6px 12px;font-size:12.5px;border-radius:99px}
+.prop #tmPrio{display:flex;flex-wrap:wrap}
+.prop .wdays button{padding:6px 0;min-width:32px}
+.prop input[type=range]{max-width:220px;accent-color:var(--pink)}
+.prop .pl{letter-spacing:.5px}
+.doc-divider{height:1px;background:var(--line);margin:18px 0 6px}
+.doc-note{width:100%;min-height:190px;border:none;outline:none;resize:vertical;background:none;
+  font-size:14.5px;line-height:1.85;color:var(--ink);padding:8px 6px;border-radius:10px}
+.doc-note:hover{background:#FDF6F8}
+.doc-note:focus{background:#fff}
+.doc-note::placeholder{color:#D9C2CB}
+
+/* 可改名的卡片標題 */
+.card h2 .cname{cursor:text;border-radius:6px;padding:1px 4px;margin:-1px -4px}
+.card h2 .cname:hover{background:var(--pink-xl);outline:1px dashed var(--pink-l)}
+.card h2 .cname:focus{background:#fff;outline:1.5px solid var(--pink);color:var(--ink)}
 .hide{display:none !important}
 
 .fab{position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom));width:56px;height:56px;
@@ -319,7 +360,7 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
         <div class="tile" data-card="focus">
           <div class="card">
             <button class="drag" data-drag title="拖曳調整位置">⠿</button>
-            <h2>⭐ 今日聚焦 <span class="en">FOCUS</span><span class="spacer"></span><span class="tiny" id="focusCount"></span></h2>
+            <h2>⭐ <span class="cname" data-title="focus">今日聚焦</span> <span class="en">FOCUS</span><span class="spacer"></span><span class="tiny" id="focusCount"></span></h2>
             <div id="focusList"></div>
           </div>
         </div>
@@ -327,7 +368,7 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
         <div class="tile" data-card="quick">
           <div class="card">
             <button class="drag" data-drag title="拖曳調整位置">⠿</button>
-            <h2>✏️ 快速記一筆 <span class="en">QUICK ADD</span></h2>
+            <h2>✏️ <span class="cname" data-title="quick">快速記一筆</span> <span class="en">QUICK ADD</span></h2>
             <div class="quick">
               <input id="quickInput" placeholder="打一行字，例：漁三結案報告" autocomplete="off">
               <button id="quickBtn">加入</button>
@@ -341,7 +382,7 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
         <div class="tile" data-card="routine">
           <div class="card">
             <button class="drag" data-drag title="拖曳調整位置">⠿</button>
-            <h2>🔁 每日例行 <span class="en">ROUTINE</span><span class="spacer"></span><span class="tiny" id="routineCount"></span></h2>
+            <h2>🔁 <span class="cname" data-title="routine">每日例行</span> <span class="en">ROUTINE</span><span class="spacer"></span><span class="tiny" id="routineCount"></span></h2>
             <div id="routineList"></div>
             <button class="btn ghost sm" id="addRoutine" style="width:100%;margin-top:10px">＋ 新增每天都要做的事</button>
           </div>
@@ -350,7 +391,7 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
         <div class="tile" data-card="vitals">
           <div class="card">
             <button class="drag" data-drag title="拖曳調整位置">⠿</button>
-            <h2>📊 今日概覽 <span class="en">VITALS</span></h2>
+            <h2>📊 <span class="cname" data-title="vitals">今日概覽</span> <span class="en">VITALS</span></h2>
             <div class="rings" id="rings"></div>
           </div>
         </div>
@@ -358,7 +399,7 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
         <div class="tile" data-card="alerts">
           <div class="card">
             <button class="drag" data-drag title="拖曳調整位置">⠿</button>
-            <h2>🔔 需要注意 <span class="en">ALERTS</span></h2>
+            <h2>🔔 <span class="cname" data-title="alerts">需要注意</span> <span class="en">ALERTS</span></h2>
             <div id="alertList"></div>
           </div>
         </div>
@@ -471,63 +512,79 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 <button class="fab" id="fab" style="display:none">＋</button>
 <div class="toast" id="toast"></div>
 
-<!-- 任務編輯 -->
+<!-- 任務頁（Notion 風格：大標題 + 屬性列 + 內容區） -->
 <div class="modal" id="taskModal">
-  <div class="sheet">
-    <h3 id="tmTitle">新增任務</h3>
-    <div class="f"><label>任務名稱</label><input id="tmName" placeholder="要做什麼？"></div>
-    <div class="f2 f">
-      <div><label>客戶</label><select id="tmClient"></select></div>
-      <div><label>工作類型</label><select id="tmType"></select></div>
+  <div class="sheet doc">
+    <div class="doc-bar">
+      <span class="doc-saved" id="tmSaved"></span>
+      <span class="spacer"></span>
+      <button class="doc-x" id="tmDel" title="刪除這一項">🗑</button>
+      <button class="doc-x" id="tmCancel" title="關閉">✕</button>
     </div>
-    <div class="f">
-      <label>優先級</label>
-      <div class="seg" id="tmPrio"></div>
-    </div>
-    <div class="f">
-      <label>狀態</label>
-      <div class="seg status" id="tmStatus">
-        <button data-v="todo">待開始</button>
-        <button data-v="doing">進行中</button>
-        <button data-v="done">已完成</button>
+
+    <textarea id="tmName" class="doc-title" rows="1" placeholder="無標題"></textarea>
+
+    <div class="props">
+      <div class="prop"><span class="pl">🏷 狀態</span>
+        <div class="pv"><div class="seg status" id="tmStatus">
+          <button data-v="todo">待開始</button>
+          <button data-v="doing">進行中</button>
+          <button data-v="done">已完成</button>
+        </div></div>
+      </div>
+      <div class="prop"><span class="pl">🔥 優先級</span>
+        <div class="pv"><div class="seg" id="tmPrio"></div></div>
+      </div>
+      <div class="prop"><span class="pl">👤 客戶</span>
+        <div class="pv"><select id="tmClient" class="bare"></select></div>
+      </div>
+      <div class="prop"><span class="pl">📁 工作類型</span>
+        <div class="pv"><select id="tmType" class="bare"></select></div>
+      </div>
+      <div class="prop"><span class="pl">🔁 重複</span>
+        <div class="pv"><select id="tmRepeat" class="bare">
+          <option value="none">不重複（一次性任務）</option>
+          <option value="daily">每天</option>
+          <option value="weekdays">週一到週五</option>
+          <option value="weekly">每週指定星期</option>
+        </select></div>
+      </div>
+      <div class="prop hide" id="tmWdaysWrap"><span class="pl">📆 星期幾</span>
+        <div class="pv"><div class="wdays" id="tmWdays">
+          <button data-d="1">一</button><button data-d="2">二</button><button data-d="3">三</button>
+          <button data-d="4">四</button><button data-d="5">五</button><button data-d="6">六</button>
+          <button data-d="0">日</button>
+        </div></div>
+      </div>
+      <div id="tmOnceFields">
+        <div class="prop"><span class="pl">📅 開始日</span>
+          <div class="pv"><input type="date" id="tmStart" class="bare"></div>
+        </div>
+        <div class="prop"><span class="pl">🎯 截止日</span>
+          <div class="pv"><input type="date" id="tmDue" class="bare"></div>
+        </div>
+      </div>
+      <div class="prop"><span class="pl">⏰ 預計時段</span>
+        <div class="pv pv-2">
+          <input type="time" id="tmTime" step="300" class="bare">
+          <input type="number" id="tmMins" min="5" step="5" placeholder="幾分鐘" class="bare">
+        </div>
+      </div>
+      <div class="prop" id="tmProgWrap"><span class="pl">📊 進度</span>
+        <div class="pv pv-2">
+          <input type="range" id="tmProg" min="0" max="100" step="5" value="0">
+          <span id="tmProgV" class="tiny" style="min-width:38px">0%</span>
+        </div>
       </div>
     </div>
-    <div class="f">
-      <label>重複</label>
-      <select id="tmRepeat">
-        <option value="none">不重複（一次性任務）</option>
-        <option value="daily">每天</option>
-        <option value="weekdays">週一到週五</option>
-        <option value="weekly">每週指定星期</option>
-      </select>
-    </div>
-    <div class="f hide" id="tmWdaysWrap">
-      <label>星期幾</label>
-      <div class="wdays" id="tmWdays">
-        <button data-d="1">一</button><button data-d="2">二</button><button data-d="3">三</button>
-        <button data-d="4">四</button><button data-d="5">五</button><button data-d="6">六</button>
-        <button data-d="0">日</button>
-      </div>
-    </div>
-    <div id="tmOnceFields">
-      <div class="f2">
-        <div class="f"><label>開始日</label><input type="date" id="tmStart"></div>
-        <div class="f"><label>截止日</label><input type="date" id="tmDue"></div>
-      </div>
-    </div>
-    <div class="f2">
-      <div class="f"><label>預計幾點開始</label><input type="time" id="tmTime" step="300"></div>
-      <div class="f"><label>預計做幾分鐘</label><input type="number" id="tmMins" min="5" step="5" placeholder="60"></div>
-    </div>
-    <div class="f" id="tmProgWrap">
-      <label>進度 <span id="tmProgV" class="tiny">0%</span></label>
-      <input type="range" id="tmProg" min="0" max="100" step="5" value="0">
-    </div>
-    <div class="f"><label>備註</label><textarea id="tmNote" placeholder="補充說明、連結…"></textarea></div>
-    <div class="sheet-actions">
-      <button class="btn del hide" id="tmDel">刪除</button>
-      <button class="btn ghost" id="tmCancel">取消</button>
-      <button class="btn" id="tmSave">儲存</button>
+
+    <div class="doc-divider"></div>
+    <textarea id="tmNote" class="doc-note"
+      placeholder="在這裡寫下這件事的細節、討論紀錄、連結、下一步…"></textarea>
+
+    <div class="sheet-actions" id="tmNewActions">
+      <button class="btn ghost" id="tmCancel2">取消</button>
+      <button class="btn" id="tmSave">建立</button>
     </div>
   </div>
 </div>
@@ -742,7 +799,7 @@ async function initFirebase(interactive){
     onValue(ref(_db, `${ROOM}/ui`), s => {
       const v = s.exists() ? s.val() : {};
       if (JSON.stringify(v) === JSON.stringify(ui)) return;
-      ui = v; saveLocal(); renderBoardOrder();
+      ui = v; saveLocal(); renderBoardOrder(); renderCardTitles();
     });
     return true;
   }catch(e){
@@ -849,7 +906,8 @@ function renderRoutine(){
     </div>`;
   }).join('') : `<div class="empty">還沒有每天要做的事<br><span class="tiny">像「廣告成效填寫」這種每天重複的，設一次就好</span></div>`;
 }
-function ring(pct, label, sub, color){
+// value = 圈中間要顯示的字（放件數比放百分比好懂），pct = 圓環要畫多滿
+function ring(pct, value, label, sub, color){
   const R=26, C=2*Math.PI*R;
   return `<div class="ring">
     <svg width="66" height="66" viewBox="0 0 66 66">
@@ -857,27 +915,32 @@ function ring(pct, label, sub, color){
       <circle cx="33" cy="33" r="${R}" fill="none" stroke="${color}" stroke-width="7" stroke-linecap="round"
         stroke-dasharray="${C}" stroke-dashoffset="${C*(1-pct/100)}" transform="rotate(-90 33 33)"/>
     </svg>
-    <div class="v">${pct}%</div><div class="l">${label}</div><div class="s">${sub}</div>
+    <div class="v">${value}</div><div class="l">${label}</div><div class="s">${sub}</div>
   </div>`;
 }
 function renderRings(){
   const td = TODAY(), [ws,we] = weekRange(), [ms,me] = monthRange();
   const all = scopeTasks(), once = all.filter(t=>!isRepeat(t));
   const rep = all.filter(t=>isRepeat(t) && repeatDueOn(t, td));
-  const dayT = [...once.filter(t=>t.due===td), ...rep];
-  const dayD = dayT.filter(t=>isDone(t)).length;
+  // 三個環都以「今天的工作」為母體：今天要做的一次性任務 + 今天該做的例行
+  const dayT  = [...once.filter(t=>t.due===td), ...rep];
+  const total = dayT.length;
+  const dayD  = dayT.filter(t=>isDone(t)).length;
+  const dayI  = dayT.filter(t=>!isDone(t) && t.status==='doing').length;
+
   const wkT = once.filter(t=>t.due&&t.due>=ws&&t.due<=we), wkD = wkT.filter(t=>t.status==='done').length;
-  const doing = once.filter(t=>t.status==='doing').length;
   const over = once.filter(t=>t.due&&t.due<td&&t.status!=='done').length;
   const openN = once.filter(t=>t.status!=='done').length;
   const monD = once.filter(t=>t.status==='done'&&t.due&&t.due>=ms&&t.due<=me).length;
   const pc = (a,b)=> b? Math.round(a/b*100) : 0;
+
   $('#rings').innerHTML =
-      ring(pc(dayD,dayT.length),'今日完成',`${dayD}/${dayT.length} 項`,'#EE7FA8')
-    + ring(pc(wkD,wkT.length),'本週完成',`${wkD}/${wkT.length} 項`,'#B39DDB')
-    + ring(pc(doing,openN||1),'進行中',`${doing} 項`,'#7ED0A0')
+      ring(100, total, '今日工作', total ? `完成 ${pc(dayD,total)}%` : '今天沒排事情', '#EE7FA8')
+    + ring(pc(dayI,total), dayI, '進行中', total ? `佔今日 ${pc(dayI,total)}%` : '—', '#B39DDB')
+    + ring(pc(dayD,total), dayD, '已完成', total ? `還剩 ${total-dayD} 項` : '—', '#7ED0A0')
     + `<div class="vbox">
          <div class="r"><b>${over}</b><span>逾期未完成${over?'，要先處理':''}</span></div>
+         <div class="r"><b>${wkD}/${wkT.length}</b><span>本週完成</span></div>
          <div class="r"><b>${openN}</b><span>待辦總數（含沒設日期）</span></div>
          <div class="r"><b>${monD}</b><span>本月已完成</span></div>
        </div>`;
@@ -1010,6 +1073,9 @@ function renderStorageInfo(){
 function renderSelects(){
   const cs = sortedClients();
   const opt = (v,l,sel) => `<option value="${v}"${sel?' selected':''}>${l}</option>`;
+  // 自動儲存會重繪整頁；任務頁開著的時候要把使用者當下的選擇記下來，重建後放回去，
+  // 否則客戶／類型／優先級會在打字的瞬間被重設
+  const keep = { client: $('#tmClient')?.value, type: $('#tmType')?.value, prio: segGet('tmPrio') };
   $('#fClient').innerHTML = `<option value="">所有客戶</option>` +
     cs.map(c=>opt(c.id, esc(c.short||c.name), filter.client===c.id)).join('');
   $('#fType').innerHTML = `<option value="">所有類型</option>` +
@@ -1021,6 +1087,9 @@ function renderSelects(){
   $('#tmType').innerHTML = WORK_TYPES.map(t=>`<option value="${t}">${t}</option>`).join('');
   $('#tmPrio').innerHTML = Object.entries(PRIO)
     .map(([k,v])=>`<button data-v="${k}">${v.t}</button>`).join('');
+  if (keep.client !== undefined) $('#tmClient').value = keep.client;
+  if (keep.type) $('#tmType').value = keep.type;
+  if (keep.prio) segSet('tmPrio', keep.prio);
 }
 
 function renderAll(){
@@ -1066,11 +1135,15 @@ let editingTask = null;
 const segSet = (el,v) => $$(`#${el} button`).forEach(b=>b.classList.toggle('on', b.dataset.v == v));
 const segGet = el => $(`#${el} button.on`)?.dataset.v || '';
 
+function autoGrow(el){ el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
+
 function openTask(id, preset){
   const t = id ? tasks[id] : null;
   editingTask = t ? {...t} : null;
-  $('#tmTitle').textContent = t ? '編輯任務' : (preset?.repeat ? '新增每日例行' : '新增任務');
+  // 既有任務＝像 Notion 一樣邊改邊存；新任務要按「建立」才寫進去
+  $('#tmNewActions').classList.toggle('hide', !!t);
   $('#tmDel').classList.toggle('hide', !t);
+  $('#tmSaved').textContent = t ? '變更會自動儲存' : '';
   $('#tmName').value = t?.name || '';
   segSet('tmPrio', t?.prio || preset?.prio || 'today');
   segSet('tmStatus', t?.status || 'todo');
@@ -1087,6 +1160,7 @@ function openTask(id, preset){
   $('#tmNote').value = t?.note || '';
   syncRepeatFields();
   $('#taskModal').classList.add('on');
+  requestAnimationFrame(()=>{ autoGrow($('#tmName')); autoGrow($('#tmNote')); });
   if (!t) setTimeout(()=>$('#tmName').focus(), 120);
 }
 function syncRepeatFields(){
@@ -1095,47 +1169,74 @@ function syncRepeatFields(){
   // 重複任務沒有「這一次的截止日」與「整體進度」，改用每天打勾
   $('#tmOnceFields').classList.toggle('hide', rep);
   $('#tmProgWrap').classList.toggle('hide', rep);
-  $('#tmStatus').closest('.f').classList.toggle('hide', rep);
+  $('#tmStatus').closest('.prop').classList.toggle('hide', rep);
 }
 const closeTask = () => { $('#taskModal').classList.remove('on'); editingTask = null; };
 
-$('#tmRepeat').onchange = syncRepeatFields;
-$('#tmWdays').onclick = e => { const b = e.target.closest('button'); if (b) b.classList.toggle('on'); };
-$('#tmPrio').onclick = e => { const b = e.target.closest('button'); if (b) segSet('tmPrio', b.dataset.v); };
-$('#tmStatus').onclick = e => {
-  const b = e.target.closest('button'); if (!b) return;
-  segSet('tmStatus', b.dataset.v);
-  if (b.dataset.v === 'done'){ $('#tmProg').value = 100; $('#tmProgV').textContent = '100%'; }
-};
-$('#tmProg').oninput = e => $('#tmProgV').textContent = e.target.value + '%';
-
-$('#tmSave').onclick = () => {
-  const name = $('#tmName').value.trim();
-  if (!name){ toast('任務名稱要填喔'); $('#tmName').focus(); return; }
-  const repeat = $('#tmRepeat').value;
-  const wdays = $$('#tmWdays button.on').map(b=>+b.dataset.d);
-  if (repeat === 'weekly' && !wdays.length){ toast('每週重複要選至少一個星期'); return; }
-  const rep = repeat !== 'none';
+/* 從畫面上的欄位組出一筆任務 */
+function readTaskForm(){
+  const repeat = $('#tmRepeat').value, rep = repeat !== 'none';
   const status = rep ? 'todo' : segGet('tmStatus');
-  const t = {
+  return {
     id: editingTask?.id || uid(),
-    name, area: scope,
+    name: $('#tmName').value.trim(), area: scope,
     client: $('#tmClient').value, type: $('#tmType').value,
     prio: segGet('tmPrio'), status,
-    repeat, wdays,
+    repeat, wdays: $$('#tmWdays button.on').map(b=>+b.dataset.d),
     doneDates: editingTask?.doneDates || {},
     start: rep ? '' : $('#tmStart').value,
     due:   rep ? '' : $('#tmDue').value,
     time: $('#tmTime').value, mins: +$('#tmMins').value || 0,
     progress: rep ? 0 : (status==='done' ? 100 : +$('#tmProg').value),
-    note: $('#tmNote').value.trim(),
+    note: $('#tmNote').value,
     star: editingTask?.star || false,
     notionId: editingTask?.notionId || '',
     createdAt: editingTask?.createdAt || Date.now(),
     doneAt: (!rep && status==='done') ? (editingTask?.doneAt || Date.now()) : null
   };
-  saveTask(t); closeTask(); toast(editingTask ? '已更新' : '已新增');
+}
+
+/* 自動儲存：只對「已存在的任務」生效，打字停 500ms 後寫入 */
+let autoT;
+function autoSave(){
+  if (!editingTask) return;                       // 新任務要按「建立」
+  clearTimeout(autoT);
+  $('#tmSaved').textContent = '編輯中…';
+  autoT = setTimeout(() => {
+    const t = readTaskForm();
+    if (!t.name){ $('#tmSaved').textContent = '標題不能空白'; return; }
+    editingTask = {...t};
+    saveTask(t);
+    $('#tmSaved').textContent = '已儲存 ✓';
+    setTimeout(()=>{ if ($('#tmSaved').textContent === '已儲存 ✓') $('#tmSaved').textContent = '變更會自動儲存'; }, 1800);
+  }, 500);
+}
+// 頁面裡任何欄位改動都觸發自動儲存
+['input','change'].forEach(ev => $('#taskModal').addEventListener(ev, e => {
+  if (e.target.closest('.sheet')) autoSave();
+}));
+$('#tmName').addEventListener('input', e => autoGrow(e.target));
+$('#tmNote').addEventListener('input', e => autoGrow(e.target));
+
+$('#tmRepeat').onchange = () => { syncRepeatFields(); autoSave(); };
+$('#tmWdays').onclick = e => { const b = e.target.closest('button'); if (b){ b.classList.toggle('on'); autoSave(); } };
+$('#tmPrio').onclick = e => { const b = e.target.closest('button'); if (b){ segSet('tmPrio', b.dataset.v); autoSave(); } };
+$('#tmStatus').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  segSet('tmStatus', b.dataset.v);
+  if (b.dataset.v === 'done'){ $('#tmProg').value = 100; $('#tmProgV').textContent = '100%'; }
+  autoSave();
 };
+$('#tmProg').oninput = e => $('#tmProgV').textContent = e.target.value + '%';
+
+$('#tmSave').onclick = () => {
+  const name = $('#tmName').value.trim();
+  if (!name){ toast('先給它一個標題'); $('#tmName').focus(); return; }
+  const t = readTaskForm();
+  if (t.repeat === 'weekly' && !t.wdays.length){ toast('每週重複要選至少一個星期'); return; }
+  saveTask(t); closeTask(); toast('已新增');
+};
+$('#tmCancel2').onclick = () => closeTask();
 $('#tmDel').onclick = () => {
   if (!editingTask) return;
   if (!confirm(`確定刪除「${editingTask.name}」？`)) return;
@@ -1274,6 +1375,39 @@ function saveBoardOrder(){
   ui.boardOrder = $$('#board .tile').map(el=>el.dataset.card);
   saveLocal(); push('ui', ui);
 }
+
+/* 卡片標題可改名：點一下變成可編輯，離開或按 Enter 就存起來 */
+function renderCardTitles(){
+  const names = ui.cardTitles || {};
+  $$('#board .cname').forEach(el => {
+    const k = el.dataset.title;
+    // 第一次跑的時候把原始名稱記下來，之後「重設版面」才有東西可以還原
+    if (!el.dataset.def) el.dataset.def = el.textContent.trim();
+    const want = names[k] || el.dataset.def;
+    if (el.textContent !== want) el.textContent = want;
+  });
+}
+$('#board').addEventListener('click', e => {
+  const el = e.target.closest('.cname'); if (!el) return;
+  if (el.isContentEditable) return;
+  el.contentEditable = 'true'; el.spellcheck = false; el.focus();
+  document.getSelection().selectAllChildren(el);
+});
+$('#board').addEventListener('keydown', e => {
+  const el = e.target.closest?.('.cname'); if (!el) return;
+  if (e.key === 'Enter'){ e.preventDefault(); el.blur(); }
+  if (e.key === 'Escape'){ renderCardTitles(); el.blur(); }
+});
+$('#board').addEventListener('blur', e => {
+  const el = e.target.closest?.('.cname'); if (!el || !el.isContentEditable) return;
+  el.contentEditable = 'false';
+  const name = el.textContent.trim().slice(0, 20);
+  if (!name){ renderCardTitles(); return; }
+  ui.cardTitles = ui.cardTitles || {};
+  ui.cardTitles[el.dataset.title] = name;
+  el.textContent = name;
+  saveLocal(); push('ui', ui);
+}, true);
 function makeSortable(board){
   let el=null, ph=null, dx=0, dy=0, pid=null;
   board.addEventListener('pointerdown', e => {
@@ -1318,8 +1452,8 @@ function makeSortable(board){
   board.addEventListener('pointercancel', end);
 }
 $('#resetBoard').onclick = () => {
-  ui.boardOrder = DEFAULT_ORDER.slice(); saveLocal(); push('ui', ui);
-  renderBoardOrder(); toast('版面已復原');
+  ui.boardOrder = DEFAULT_ORDER.slice(); ui.cardTitles = {}; saveLocal(); push('ui', ui);
+  renderBoardOrder(); renderCardTitles(); toast('版面與標題已復原');
 };
 
 /* ---------- 匯入 / 備份 ---------- */
@@ -1410,7 +1544,7 @@ function showApp(){
   if (seedClients()) saveLocal();
   renderClock(); setInterval(renderClock, 1000);
   setInterval(()=>{ renderGreetNote(); renderAlerts(); }, 60000);
-  renderTools(); renderBoardOrder(); makeSortable($('#board')); renderAll();
+  renderTools(); renderBoardOrder(); renderCardTitles(); makeSortable($('#board')); renderAll();
 }
 function gateError(e){
   const msg = String(e?.message || e);
