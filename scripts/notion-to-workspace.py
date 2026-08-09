@@ -31,7 +31,9 @@ SETTINGS = os.path.expanduser("~/.claude/settings.json")
 OUT = os.path.expanduser("~/Downloads/工作台匯入.json")
 
 # 任務名稱裡出現這些關鍵字就歸給該客戶。key 要跟工作台客戶清單的「客戶全名」一致。
+# 由上往下比，先中的先算，所以具體的要放在籠統的前面。
 CLIENT_KEYWORDS = {
+    # --- 現役客戶 ---
     "李享家直播集團": ["李享家", "李老闆", "李老板"],
     "漁三": ["漁三", "渔三"],
     "優逸": ["優逸", "优逸"],
@@ -39,9 +41,38 @@ CLIENT_KEYWORDS = {
     "一沐日": ["一沐日"],
     "沐拾": ["沐拾"],
     "十八子肉": ["十八子"],
-    "北元當舖": ["北元"],
+    "北元當舖": ["北元", "當舖", "當鋪"],
     "工研院": ["工研院"],
-    "內部": ["禾言", "內部", "公司"],
+    # --- 從 Notion 舊資料判讀出來的客戶（2026-08-09 補建）---
+    "MISO": ["miso"],
+    "OF AZIKU": ["aziku"],
+    "翠芙思": ["翠芙思"],
+    "屬於花藝": ["屬於花藝"],          # 要排在「花徑花藝」前面，兩者是不同客戶
+    "花徑花藝": ["花徑"],
+    "華信航空": ["華信"],
+    "焦糖風": ["焦糖風", "焦糖楓"],     # 焦糖楓是打錯字，同一個客戶
+    "民視": ["民視"],
+    "卡威": ["卡威"],
+    "惠盈生技": ["惠盈"],
+    "新穎木地板": ["新穎木地板"],
+    "歐客佬": ["歐客佬"],
+    "柚山": ["柚山", "沪山", "滬山"],   # 常一起出現，視為同一組
+    "耀聞水果": ["耀聞水果"],
+    "皇后": ["皇后"],
+    "露比": ["露比"],
+    "長典": ["長典"],
+    "阿奇哭": ["阿奇哭"],
+    "名絢": ["名絢"],
+    "LF": ["lf資訊"],
+    # --- 內部行政：放最後，前面都沒中才算內部 ---
+    "內部": [
+        "禾言", "內部", "公司",
+        "廣告成效填寫", "刷卡明細", "報價單歸檔", "成效表單", "專案成效",
+        "fb專員", "fb會議", "meta廣告驗證", "名片", "勞報單", "身分證",
+        "職代交接", "離職交接", "課程簡報", "廣告教材", "廣告顧問",
+        "雲端整理", "結案報告歸檔", "官方line", "會議記錄統整",
+        "開會、拜拜", "短影音拍攝",
+    ],
 }
 
 PRIORITY_MAP = {
@@ -91,6 +122,33 @@ def guess_client(title):
         if any(k.lower() in low for k in keywords):
             return name
     return ""
+
+
+# 這些是朱兒目前主力配合的客戶，不管最後一筆任務多久以前都算進行中
+ALWAYS_ACTIVE = {"李享家直播集團", "漁三", "優逸", "TOTO", "一沐日", "沐拾",
+                 "十八子肉", "北元當舖", "工研院", "內部"}
+# 這個日期之後還有任務，就當成還在合作
+ACTIVE_SINCE = "2026-07-01"
+
+
+def collect_clients(tasks):
+    """整理出這批資料用到哪些客戶，並依最後活動日期判斷還在不在合作。"""
+    last = {}
+    for t in tasks:
+        name = t["clientName"]
+        if not name:
+            continue
+        due = t["due"] or ""
+        if due > last.get(name, ""):
+            last[name] = due
+    return [
+        {
+            "name": name,
+            "lastSeen": due,
+            "active": name in ALWAYS_ACTIVE or due >= ACTIVE_SINCE,
+        }
+        for name, due in sorted(last.items())
+    ]
 
 
 def guess_missing_clients(tasks, top=15):
@@ -197,6 +255,8 @@ def main():
         "source": "notion",
         "exportedAt": datetime.now().isoformat(timespec="seconds"),
         "count": len(tasks),
+        # 這批資料用到的客戶，工作台匯入時可以照這份自動建立缺少的
+        "clients": collect_clients(tasks),
         # 沒對到客戶的任務，猜一下它們的客戶可能叫什麼，方便決定要不要補進客戶名單
         "unmatchedHints": guess_missing_clients(tasks),
         "tasks": tasks,

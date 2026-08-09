@@ -511,7 +511,8 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
         <h3>📥 匯入 Notion 任務</h3>
         <p>先在電腦上執行 <code>python3 scripts/notion-to-workspace.py</code>，
            它會在「下載」資料夾產生「工作台匯入.json」，再選那個檔案進來。<br>
-           已經匯入過的任務不會重複（用 Notion 的內部編號比對），可以重複執行。</p>
+           可以重複執行：已經匯過的任務不會變成兩筆，只會把原本空著的客戶欄補起來；
+           名單裡還沒有的客戶也會自動建好。</p>
         <div class="set-row">
           <input type="file" id="importFile" accept=".json,application/json" style="max-width:100%">
         </div>
@@ -1628,14 +1629,36 @@ $('#importFile').onchange = async e => {
     const rows = data.tasks || (Array.isArray(data) ? data : []);
     if (!rows.length) throw new Error('這個檔案裡沒有任務');
 
-    const seen = new Set(Object.values(tasks).map(t=>t.notionId).filter(Boolean));
-    let added = 0, skipped = 0, noClient = 0;
+    // 1) 先把檔案裡用到、但名單還沒有的客戶建起來
+    let newClients = 0;
+    (data.clients || []).forEach(c => {
+      if (!c.name || clientByName(c.name)) return;
+      const id = uid();
+      clients[id] = {
+        id, name: c.name, short: '', drive: '',
+        active: c.active !== false, note: '',
+        order: Object.keys(clients).length
+      };
+      newClients++;
+    });
+
+    // 2) 匯入任務。已經匯過的不重複，但客戶欄原本是空的會回頭補上
+    const byNotion = {};
+    Object.values(tasks).forEach(t => { if (t.notionId) byNotion[t.notionId] = t; });
+    let added = 0, skipped = 0, fixed = 0, noClient = 0;
     const unmatched = {};
 
     rows.forEach(r => {
-      if (r.notionId && seen.has(r.notionId)){ skipped++; return; }
       const c = r.clientName ? clientByName(r.clientName) : null;
       if (r.clientName && !c) unmatched[r.clientName] = (unmatched[r.clientName]||0) + 1;
+
+      const exist = r.notionId ? byNotion[r.notionId] : null;
+      if (exist){
+        // 之前匯過了：只補客戶欄，其他欄位是你後來改的，不要蓋掉
+        if (!exist.client && c){ exist.client = c.id; fixed++; }
+        else skipped++;
+        return;
+      }
       if (!c) noClient++;
       const id = uid();
       tasks[id] = {
@@ -1650,23 +1673,29 @@ $('#importFile').onchange = async e => {
         createdAt: Date.parse(r.createdAt) || Date.now(),
         doneAt: r.doneAt ? (Date.parse(r.doneAt) || null) : null
       };
-      if (r.notionId) seen.add(r.notionId);
+      if (r.notionId) byNotion[r.notionId] = tasks[id];
       added++;
     });
 
-    saveLocal(); push('tasks', tasks); renderAll();
+    saveLocal();
+    if (newClients) push('clients', clients);
+    push('tasks', tasks);
+    renderAll();
+
     const un = Object.entries(unmatched).sort((a,b)=>b[1]-a[1]);
     const hints = data.unmatchedHints || [];
     log.textContent =
       `匯入完成\n` +
+      (newClients ? `　自動建立 ${newClients} 個客戶\n` : '') +
       `　新增 ${added} 筆\n` +
-      `　略過 ${skipped} 筆（之前匯過了）\n` +
-      `　沒有對到客戶 ${noClient} 筆（客戶欄留空，之後可以自己補）\n` +
+      (fixed ? `　補上客戶 ${fixed} 筆（原本客戶欄是空的）\n` : '') +
+      `　略過 ${skipped} 筆（之前匯過、且沒有要補的）\n` +
+      `　仍沒有客戶 ${noClient} 筆\n` +
       (un.length ? `\n名單裡沒有的客戶：\n` + un.slice(0,15).map(([n,c])=>`　${n}（${c} 筆）`).join('\n') : '') +
       (hints.length ? `\n這些名字看起來可能是客戶，要的話到「客戶」分頁新增：\n` +
         hints.map(h=>`　${h.name}（${h.count} 筆）`).join('\n') : '') +
       (_ready ? '' : '\n\n⚠️ 目前是單機模式，這批資料只存在這台裝置。登入後會自動上傳。');
-    toast(`匯入 ${added} 筆`);
+    toast(added ? `匯入 ${added} 筆` : `補上 ${fixed} 筆的客戶`);
   }catch(err){
     log.textContent = '匯入失敗：' + err.message;
   }
