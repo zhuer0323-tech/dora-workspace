@@ -6,8 +6,12 @@
 <meta name="robots" content="noindex, nofollow">
 <title>朱兒的工作台</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>">
-<meta name="theme-color" content="#FFF5F7">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<meta name="theme-color" content="#F48FB1">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="工作台">
 <style>
 :root{
@@ -2094,6 +2098,13 @@ $('#syncBox').onclick = async () => {
   }
   localStorage.removeItem(LS.mode); location.reload();
 };
+
+/* 離線支援：註冊 service worker（失敗也不影響使用，只是沒網路時開不了） */
+if ('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(e => console.warn('SW 註冊失敗：', e));
+  });
+}
 
 /* ---------- 啟動 ---------- */
 (async () => {
