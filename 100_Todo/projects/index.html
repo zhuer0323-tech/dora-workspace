@@ -151,11 +151,59 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 .btn{padding:9px 16px;border-radius:13px;background:var(--pink);color:#fff;font-weight:700;font-size:14px}
 .btn.ghost{background:#fff;color:var(--pink-d);border:1.5px solid var(--pink-l)}
 .btn.sm{padding:6px 12px;font-size:13px}
-.stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.stat{background:#fff;border-radius:14px;padding:9px 14px;box-shadow:var(--shadow);min-width:76px}
-.stat b{display:block;font-size:19px;font-weight:800;line-height:1.2}
-.stat span{font-size:11px;color:var(--ink3)}
-.stat.g b{color:#4FA97A} .stat.p b{color:#8E72C7} .stat.y b{color:#D9A521} .stat.r b{color:#E05263}
+/* ---------- 任務頁儀表板 ---------- */
+.dash{display:grid;gap:12px;margin-bottom:14px;grid-template-columns:1fr}
+@media(min-width:900px){.dash{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}}
+.dbox{background:#fff;border-radius:var(--r);box-shadow:var(--shadow);padding:15px 16px}
+.dbox h4{margin:0 0 11px;font-size:12px;font-weight:700;color:var(--ink3);letter-spacing:.6px;
+  display:flex;align-items:center;gap:6px}
+.dbox h4 .spacer{flex:1}
+.dbox h4 em{font-style:normal;font-size:11px;color:var(--pink-d);font-weight:600}
+
+/* 一條堆疊長條：一眼看出這批任務走到哪 */
+.dbar{display:flex;height:26px;border-radius:99px;overflow:hidden;background:var(--line)}
+.dbar i{display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:800;
+  color:#fff;cursor:pointer;transition:.15s;min-width:6px;overflow:hidden}
+.dbar i:hover{filter:brightness(1.07)}
+.dbar i.s-todo{background:#FFCF63;color:#7A5A10}
+.dbar i.s-doing{background:#A98CDB}
+.dbar i.s-done{background:#6FC79A}
+.dlegend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px}
+.dlegend button{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink2);
+  padding:3px 6px;border-radius:8px}
+.dlegend button:hover{background:var(--pink-xl)}
+.dlegend button.on{background:var(--pink-xl);color:var(--pink-d);font-weight:700}
+.dlegend .sw{width:10px;height:10px;border-radius:3px;flex:none}
+.dlegend b{font-weight:800}
+
+/* 大數字（今天/逾期這種要馬上看到的） */
+.dnums{display:flex;gap:9px;flex-wrap:wrap;margin-top:13px}
+.dnum{flex:1;min-width:74px;border-radius:13px;padding:9px 10px;background:var(--pink-xl);
+  cursor:pointer;transition:.15s;text-align:left}
+.dnum:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.dnum.on{outline:2px solid var(--pink)}
+.dnum b{display:block;font-size:20px;font-weight:800;line-height:1.15}
+.dnum span{font-size:10.5px;color:var(--ink3)}
+.dnum.over{background:#FFECEC} .dnum.over b{color:#E05263}
+.dnum.today{background:#FFF3DC} .dnum.today b{color:#C58A18}
+.dnum.week{background:#EEE8FA} .dnum.week b{color:#7B5FBE}
+.dnum.none{background:#F1F0F1} .dnum.none b{color:var(--ink2)}
+
+/* 橫條排行（客戶／優先級） */
+.drank{display:flex;flex-direction:column;gap:7px}
+.drow{display:flex;align-items:center;gap:9px;cursor:pointer;padding:2px 4px;border-radius:9px}
+.drow:hover{background:var(--pink-xl)}
+.drow.on{background:var(--pink-xl);outline:1.5px solid var(--pink-l)}
+.drow .nm{width:96px;flex:none;font-size:12px;font-weight:600;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.drow .tr{flex:1;height:16px;border-radius:99px;background:#F7EAEF;overflow:hidden}
+.drow .tr i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#F9A9C3,#EE7FA8)}
+.drow .ct{width:56px;flex:none;text-align:right;font-size:11.5px;color:var(--ink3);font-weight:600}
+.drow .ct b{color:var(--ink);font-weight:800;font-size:13px}
+.dempty{font-size:12px;color:var(--ink3);text-align:center;padding:14px 0}
+.dtabs{display:flex;gap:4px}
+.dtabs button{padding:4px 10px;border-radius:99px;font-size:11.5px;font-weight:700;color:var(--ink3)}
+.dtabs button.on{background:var(--pink);color:#fff}
 
 #taskList{display:grid;gap:8px}
 @media(min-width:980px){#taskList{grid-template-columns:1fr 1fr}}
@@ -409,7 +457,7 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
     </section>
 
     <section class="page" id="p-tasks">
-      <div class="stats" id="taskStats"></div>
+      <div class="dash" id="taskDash"></div>
       <div class="filters">
         <select id="fClient"><option value="">所有客戶</option></select>
         <select id="fType"><option value="">所有類型</option></select>
@@ -815,7 +863,9 @@ function matches(t, ignoreStatus){
   if ((t.area || 'work') !== scope) return false;
   if (filter.repeat === 'only' && !isRepeat(t)) return false;
   if (filter.repeat === 'hide' && isRepeat(t)) return false;
-  if (filter.client && t.client !== filter.client) return false;
+  // '_none' 是特殊值：專門找沒指定客戶的那批（空字串會跟「全部客戶」撞在一起）
+  if (filter.client === '_none'){ if (t.client) return false; }
+  else if (filter.client && t.client !== filter.client) return false;
   if (filter.type && t.type !== filter.type) return false;
   if (filter.prio && t.prio !== filter.prio) return false;
   if (!ignoreStatus){
@@ -972,16 +1022,101 @@ function renderScore(){
      <div><b>${left}</b><span>今天還沒做</span></div>`;
 }
 
-/* ---------- 任務清單 ---------- */
+/* ---------- 任務頁儀表板 ----------
+   跟著上方的篩選條件連動：篩了「漁三」，整個儀表板就只算漁三的。
+   每個區塊都能點，點了就是套用對應的篩選 —— 看到數字不對就能立刻點進去查。   */
+let rankMode = 'client';   // 排行榜看客戶還是看工作類型
+let barMode  = 'month';    // 進度條看本月還是全部
+
 function renderStats(){
-  const v = visibleTasks(true), shown = visibleTasks().length, td = TODAY();
-  const c = s => v.filter(t=>!isRepeat(t) && t.status===s).length;
-  $('#taskStats').innerHTML = `
-    <div class="stat"><b>${shown}</b><span>目前顯示</span></div>
-    <div class="stat y"><b>${c('todo')}</b><span>待開始</span></div>
-    <div class="stat p"><b>${c('doing')}</b><span>進行中</span></div>
-    <div class="stat g"><b>${c('done')}</b><span>已完成</span></div>
-    <div class="stat r"><b>${v.filter(t=>!isRepeat(t)&&t.due&&t.due<td&&t.status!=='done').length}</b><span>逾期</span></div>`;
+  // 母體＝套用其他篩選、但先不管「狀態」的那批（否則預設篩未完成時，已完成永遠是 0）
+  const v = visibleTasks(true), td = TODAY();
+  const once = v.filter(t=>!isRepeat(t));
+  const total = v.length;
+  const c = s => once.filter(t=>t.status===s).length;
+  const todo = c('todo'), doing = c('doing'), done = c('done');
+  const [ws,we] = weekRange(), [ms,me] = monthRange();
+
+  const over  = once.filter(t=>t.due&&t.due<td&&t.status!=='done').length;
+  const today = once.filter(t=>t.due===td&&t.status!=='done').length
+              + v.filter(t=>isRepeat(t)&&repeatDueOn(t,td)&&!repeatDone(t,td)).length;
+  const week  = once.filter(t=>t.due&&t.due>=td&&t.due<=we&&t.status!=='done').length;
+  const nodue = once.filter(t=>!t.due&&t.status!=='done').length;
+
+  // 排行榜：依客戶或依工作類型，只算未完成的（要處理的才有意義）
+  const open = once.filter(t=>t.status!=='done');
+  const tally = {};
+  open.forEach(t=>{
+    const k = rankMode === 'client'
+      ? (t.client ? clientName(t.client) : '（未指定客戶）')
+      : (t.type || '其他');
+    const key = rankMode === 'client' ? (t.client || '_none') : (t.type || '其他');
+    (tally[k] = tally[k] || { n:0, over:0, key }).n++;
+    if (t.due && t.due < td) tally[k].over++;
+  });
+  const ranked = Object.entries(tally).sort((a,b)=>b[1].n-a[1].n).slice(0,7);
+  const max = ranked[0]?.[1].n || 1;
+
+  // 進度條分兩種看法：整體會被幾百筆歷史已完成佔滿，所以預設只看「這個月」
+  const inScope = t => barMode === 'all' || (t.due && t.due >= ms && t.due <= me);
+  const bTodo  = once.filter(t=>t.status==='todo'  && inScope(t)).length;
+  const bDoing = once.filter(t=>t.status==='doing' && inScope(t)).length;
+  const bDone  = once.filter(t=>t.status==='done'  && inScope(t)).length;
+  const bBase  = bTodo + bDoing + bDone;
+  const bpc = n => bBase ? Math.round(n/bBase*100) : 0;
+
+  // 佔比太小就不寫字，不然幾個數字會擠成一團看不清
+  const seg = (n,cls,label) => n
+    ? `<i class="${cls}" data-fstatus="${cls.slice(2)}" style="flex:${n}"
+          title="${label} ${n} 項（${bpc(n)}%）">${bpc(n)>=14 ? n : ''}</i>`
+    : '';
+
+  $('#taskDash').innerHTML = `
+    <div class="dbox">
+      <h4>${barMode==='month'?'這個月的進度':'全部任務進度'} <span class="spacer"></span>
+        <span class="dtabs">
+          <button data-bar="month" class="${barMode==='month'?'on':''}">本月</button>
+          <button data-bar="all"   class="${barMode==='all'?'on':''}">全部</button>
+        </span>
+      </h4>
+      <div class="dbar" style="${bBase?'':'background:var(--line)'}">
+        ${seg(bTodo,'s-todo','待開始')}${seg(bDoing,'s-doing','進行中')}${seg(bDone,'s-done','已完成')}
+      </div>
+      <div class="tiny" style="margin-top:7px">${
+        bBase ? `本${barMode==='month'?'月':'期'}共 ${bBase} 項，已完成 ${bpc(bDone)}%`
+              : (barMode==='month' ? '這個月還沒有排定日期的任務' : '目前沒有任務')}</div>
+      <div class="dlegend">
+        <button data-fstatus="todo"  class="${filter.status==='todo'?'on':''}"><span class="sw" style="background:#FFCF63"></span>待開始 <b>${todo}</b></button>
+        <button data-fstatus="doing" class="${filter.status==='doing'?'on':''}"><span class="sw" style="background:#A98CDB"></span>進行中 <b>${doing}</b></button>
+        <button data-fstatus="done"  class="${filter.status==='done'?'on':''}"><span class="sw" style="background:#6FC79A"></span>已完成 <b>${done}</b></button>
+        <button data-fstatus="open"  class="${filter.status==='open'?'on':''}">未完成 <b>${todo+doing}</b></button>
+        <button data-fstatus=""      class="${filter.status===''?'on':''}">全部 <b>${total}</b></button>
+      </div>
+      <div class="dnums">
+        <button class="dnum over  ${filter.range==='over'?'on':''}"   data-frange="over"><b>${over}</b><span>逾期沒做</span></button>
+        <button class="dnum today ${filter.range==='today'?'on':''}"  data-frange="today"><b>${today}</b><span>今天要做</span></button>
+        <button class="dnum week  ${filter.range==='week'?'on':''}"   data-frange="week"><b>${week}</b><span>本週內到期</span></button>
+        <button class="dnum none  ${filter.range==='nodate'?'on':''}" data-frange="nodate"><b>${nodue}</b><span>沒設日期</span></button>
+      </div>
+    </div>
+
+    <div class="dbox">
+      <h4>未完成的事都卡在哪 <span class="spacer"></span>
+        <span class="dtabs">
+          <button data-rank="client" class="${rankMode==='client'?'on':''}">依客戶</button>
+          <button data-rank="type"   class="${rankMode==='type'?'on':''}">依類型</button>
+        </span>
+      </h4>
+      ${ranked.length ? `<div class="drank">` + ranked.map(([name,d])=>`
+        <div class="drow ${rankMode==='client'&&filter.client===d.key?'on':''}${rankMode==='type'&&filter.type===d.key?'on':''}"
+             data-rankkey="${esc(d.key||'')}">
+          <span class="nm" title="${esc(name)}">${esc(name)}</span>
+          <span class="tr"><i style="width:${Math.round(d.n/max*100)}%"></i></span>
+          <span class="ct"><b>${d.n}</b>${d.over?` · <span style="color:#E05263">逾${d.over}</span>`:''}</span>
+        </div>`).join('') + `</div>`
+      : `<div class="dempty">目前沒有未完成的任務 🌿</div>`}
+      <div class="tiny" style="margin-top:9px">點任何一塊都能篩選，再點一次取消</div>
+    </div>`;
 }
 function taskRow(t){
   const td = TODAY(), tags = [];
@@ -1077,7 +1212,8 @@ function renderSelects(){
   // 否則客戶／類型／優先級會在打字的瞬間被重設
   const keep = { client: $('#tmClient')?.value, type: $('#tmType')?.value, prio: segGet('tmPrio') };
   $('#fClient').innerHTML = `<option value="">所有客戶</option>` +
-    cs.map(c=>opt(c.id, esc(c.short||c.name), filter.client===c.id)).join('');
+    cs.map(c=>opt(c.id, esc(c.short||c.name), filter.client===c.id)).join('') +
+    opt('_none', '（未指定客戶）', filter.client==='_none');
   $('#fType').innerHTML = `<option value="">所有類型</option>` +
     WORK_TYPES.map(t=>opt(t,t,filter.type===t)).join('');
   $('#fPrio').innerHTML = `<option value="">所有優先級</option>` +
@@ -1345,6 +1481,33 @@ $('#fReset').onclick = () => {
   renderStats(); renderTasks();
 };
 $('#showMore').onclick = () => { shownCount += PAGE_SIZE; renderTasks(); };
+
+/* 儀表板點擊：點哪一塊就套用哪個篩選，再點一次取消 */
+function applyFilter(key, val){
+  filter[key] = (filter[key] === val) ? (key==='status' ? 'open' : '') : val;
+  shownCount = PAGE_SIZE;
+  const sel = { status:'#fStatus', range:'#fRange', client:'#fClient', type:'#fType' }[key];
+  if (sel) $(sel).value = filter[key];
+  renderStats(); renderTasks();
+}
+$('#taskDash').addEventListener('click', e => {
+  const st = e.target.closest('[data-fstatus]');
+  if (st){ applyFilter('status', st.dataset.fstatus); return; }
+  const rg = e.target.closest('[data-frange]');
+  if (rg){
+    // 看「今天／本週／逾期」時自動切到未完成，不然會混進已完成的舊資料
+    if (filter.range !== rg.dataset.frange && filter.status === 'done'){
+      filter.status = 'open'; $('#fStatus').value = 'open';
+    }
+    applyFilter('range', rg.dataset.frange); return;
+  }
+  const bm = e.target.closest('[data-bar]');
+  if (bm){ barMode = bm.dataset.bar; renderStats(); return; }
+  const rk = e.target.closest('[data-rank]');
+  if (rk){ rankMode = rk.dataset.rank; renderStats(); return; }
+  const row = e.target.closest('[data-rankkey]');
+  if (row){ applyFilter(rankMode === 'client' ? 'client' : 'type', row.dataset.rankkey); return; }
+});
 
 /* ---------- 快速記一筆 ---------- */
 function quickAdd(){
