@@ -237,6 +237,102 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
   display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff}
 .task.rdone .rbox{background:var(--done);border-color:var(--done)}
 
+/* ---------- 日／週／月／年 看板 ---------- */
+.viewbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.views{display:flex;gap:4px;background:#fff;border-radius:99px;padding:4px;box-shadow:var(--shadow)}
+.views button{padding:7px 14px;border-radius:99px;font-size:13px;font-weight:700;color:var(--ink3);white-space:nowrap}
+.views button.on{background:var(--pink);color:#fff}
+.navbar{display:flex;gap:6px;align-items:center;background:#fff;border-radius:99px;
+  padding:4px 6px;box-shadow:var(--shadow)}
+.nv{width:30px;height:30px;border-radius:50%;font-size:18px;color:var(--ink2);line-height:1}
+.nv:hover{background:var(--pink-xl)}
+.np{font-size:13.5px;font-weight:700;min-width:126px;text-align:center}
+
+.bwrap{background:#fff;border-radius:var(--r);box-shadow:var(--shadow);padding:14px;overflow-x:auto}
+/* 看板上的一張任務小卡 */
+.bt{display:block;width:100%;text-align:left;border-radius:9px;padding:5px 8px;margin-bottom:4px;
+  font-size:11.5px;line-height:1.4;cursor:pointer;border-left:3px solid var(--todo);
+  background:#FFFAF0;color:var(--ink);overflow:hidden}
+.bt:hover{filter:brightness(.97)}
+.bt[data-s=doing]{border-left-color:var(--doing);background:#F5F1FC}
+.bt[data-s=done]{border-left-color:var(--done);background:#EFF9F3;opacity:.65}
+.bt[data-s=done] .bn{text-decoration:line-through}
+.bt.over{border-left-color:#E05263;background:#FFF0F0}
+.bn{font-weight:600;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bc{font-size:10px;color:var(--ink3);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* 週：七欄 */
+.wk{display:grid;grid-template-columns:46px repeat(7,minmax(112px,1fr));gap:0;min-width:860px}
+.wk .hd{padding:7px 4px;text-align:center;font-size:12px;font-weight:700;color:var(--ink2);
+  border-bottom:2px solid var(--line);position:sticky;top:0;background:#fff;z-index:2}
+.wk .hd.today{color:#fff;background:var(--pink);border-radius:10px 10px 0 0}
+.wk .hd small{display:block;font-size:10px;font-weight:500;color:var(--ink3)}
+.wk .hd.today small{color:rgba(255,255,255,.85)}
+.wk .unsched{border-bottom:2px dashed var(--line);border-right:1px solid var(--line);
+  padding:6px 4px;min-height:44px;background:#FFFCFD}
+.wk .ulbl{font-size:9.5px;color:var(--ink3);writing-mode:vertical-rl;text-align:center;
+  border-bottom:2px dashed var(--line);border-right:1px solid var(--line);padding:6px 0;
+  display:flex;align-items:center;justify-content:center;letter-spacing:2px}
+.wk .hr{font-size:10px;color:var(--ink3);text-align:right;padding:3px 6px 0 0;
+  border-right:1px solid var(--line);min-height:40px}
+/* 用 min-height 不是 height：同一格有兩三件事時要能長高，不然會被切掉 */
+.wk .cell{border-bottom:1px solid #FBF0F4;border-right:1px solid var(--line);min-height:40px;
+  padding:2px 3px}
+.wk .cell.today{background:#FFFAFC}
+.wk .cell:hover{background:var(--pink-xl)}
+.wk .cell .bt{font-size:10.5px;padding:3px 6px;margin-bottom:2px}
+
+/* 日：單日時間軸 */
+.dayv{display:grid;grid-template-columns:56px 1fr;gap:0}
+.dayv .hr{font-size:11px;color:var(--ink3);text-align:right;padding:4px 8px 0 0;
+  border-right:1px solid var(--line);min-height:56px}
+.dayv .cell{border-bottom:1px solid #FBF0F4;min-height:56px;padding:3px 6px}
+.dayv .cell:hover{background:var(--pink-xl)}
+.dayv .cell .bt{font-size:12px}
+.dayhead{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;
+  padding-bottom:12px;border-bottom:2px solid var(--line)}
+.dayhead .big{font-size:30px;font-weight:800;line-height:1}
+.dayhead .sub{font-size:12px;color:var(--ink3)}
+.unbox{background:#FFFAFC;border:1.5px dashed var(--line);border-radius:12px;padding:10px;margin-bottom:14px}
+.unbox h5{margin:0 0 8px;font-size:11.5px;color:var(--ink3);font-weight:700}
+.unbox .bt{font-size:12.5px}
+
+/* 月曆 */
+.mo{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;background:var(--line);
+  border-radius:12px;overflow:hidden;min-width:700px}
+.mo .dh{background:#FFF0F4;text-align:center;font-size:11.5px;font-weight:700;color:var(--ink2);padding:7px 0}
+.mo .dy{background:#fff;min-height:104px;padding:5px;position:relative}
+.mo .dy.off{background:#FDFAFB}
+.mo .dy.today{background:#FFF4F8;box-shadow:inset 0 0 0 2px var(--pink)}
+.mo .dn{font-size:11.5px;font-weight:700;color:var(--ink2);margin-bottom:3px;display:flex;
+  align-items:center;gap:4px}
+.mo .dy.off .dn{color:var(--ink3);opacity:.55}
+.mo .dy.today .dn{color:var(--pink-d)}
+.mo .dn i{font-style:normal;font-size:9.5px;background:var(--pink-xl);color:var(--pink-d);
+  border-radius:99px;padding:0 5px;font-weight:700}
+.mo .bt{font-size:10px;padding:2px 5px;margin-bottom:2px}
+.mo .more{font-size:9.5px;color:var(--ink3);cursor:pointer;padding:1px 4px}
+.mo .more:hover{color:var(--pink-d)}
+
+/* 年 */
+.yr{display:grid;gap:11px;grid-template-columns:repeat(auto-fill,minmax(178px,1fr))}
+.ym{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:12px;cursor:pointer;transition:.15s}
+.ym:hover{transform:translateY(-2px);box-shadow:var(--shadow-l);border-color:var(--pink-l)}
+.ym.now{border-color:var(--pink);background:#FFFAFC}
+.ym .mh{display:flex;align-items:baseline;gap:6px;margin-bottom:9px}
+.ym .mh b{font-size:16px;font-weight:800}
+.ym .mh span{font-size:11px;color:var(--ink3)}
+.ym .mbar{height:7px;border-radius:99px;background:var(--line);overflow:hidden;display:flex}
+.ym .mbar i{display:block;height:100%}
+.ym .mbar .a{background:var(--todo)} .ym .mbar .b{background:var(--doing)} .ym .mbar .c{background:var(--done)}
+.ym .mfoot{display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink3);margin-top:7px}
+.ym .mfoot b{color:var(--ink);font-weight:800}
+.ysum{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px}
+.ysum div{flex:1;min-width:96px;background:#fff;border-radius:14px;padding:11px 13px;box-shadow:var(--shadow)}
+.ysum b{display:block;font-size:22px;font-weight:800;line-height:1.15}
+.ysum span{font-size:11px;color:var(--ink3)}
+.bempty{text-align:center;color:var(--ink3);font-size:13px;padding:26px 0;line-height:1.8}
+
 /* ---------- 工具 / 客戶 / 設定 ---------- */
 .tools{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(158px,1fr))}
 .tool{background:#fff;border-radius:var(--r);padding:18px 15px;box-shadow:var(--shadow);
@@ -458,6 +554,23 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 
     <section class="page" id="p-tasks">
       <div class="dash" id="taskDash"></div>
+
+      <div class="viewbar">
+        <div class="views" id="viewSw">
+          <button data-view="list"  class="on">☰ 清單</button>
+          <button data-view="day">📌 日</button>
+          <button data-view="week">🗓 週</button>
+          <button data-view="month">📅 月</button>
+          <button data-view="year">📆 年</button>
+        </div>
+        <div class="navbar hide" id="dateNav">
+          <button class="nv" id="navPrev" title="上一個">‹</button>
+          <span class="np" id="navLabel"></span>
+          <button class="nv" id="navNext" title="下一個">›</button>
+          <button class="btn ghost sm" id="navToday">回到今天</button>
+        </div>
+      </div>
+
       <div class="filters">
         <select id="fClient"><option value="">所有客戶</option></select>
         <select id="fType"><option value="">所有類型</option></select>
@@ -489,6 +602,7 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
       <div style="text-align:center;margin-top:14px">
         <button class="btn ghost sm hide" id="showMore">顯示更多</button>
       </div>
+      <div id="boardView" class="hide"></div>
     </section>
 
     <section class="page" id="p-tools">
@@ -1165,6 +1279,224 @@ function renderTasks(){
   $('#showMore').textContent = `顯示更多（還有 ${more} 筆）`;
 }
 
+/* ==========================================================
+   日／週／月／年 看板
+   時間軸只畫 8:00–19:00（朱兒的上班時段）。
+   沒填「預計時段」的任務不會消失，會放在每一天上方的「未排時間」區
+   —— 目前絕大多數任務都沒填時段，這區才是主力。
+   ========================================================== */
+const DAY_START = 8, DAY_END = 19;
+let view = 'list';                 // list / day / week / month / year
+let cursor = new Date();           // 看板目前停在哪一天
+cursor.setHours(0,0,0,0);
+
+const addDays = (d,n) => { const x = new Date(d); x.setDate(x.getDate()+n); return x; };
+const startOfWeek = d => addDays(d, -((d.getDay()+6)%7));   // 以週一為第一天
+
+/* 某一天該出現哪些任務：一次性看截止日，重複任務看今天輪不輪到 */
+function tasksOn(dateStr){
+  const wd = new Date(dateStr + 'T00:00:00').getDay();
+  return Object.values(tasks).filter(t => {
+    if (!matches(t, true)) return false;                 // 套用上方篩選（狀態除外）
+    if (isRepeat(t)) return repeatDueOn(t, dateStr);
+    return t.due === dateStr;
+  }).sort((a,b) => (a.time||'99:99').localeCompare(b.time||'99:99')
+                || (PRIO[a.prio]?.o??9) - (PRIO[b.prio]?.o??9));
+}
+/* 把任務分成「有排時間」和「沒排時間」兩堆 */
+function splitByTime(list){
+  const timed = {}, untimed = [];
+  list.forEach(t => {
+    const h = t.time ? +t.time.slice(0,2) : null;
+    if (h === null){ untimed.push(t); return; }
+    const slot = Math.min(Math.max(h, DAY_START), DAY_END);   // 超出上班時間就夾到頭尾那格
+    (timed[slot] = timed[slot] || []).push(t);
+  });
+  return { timed, untimed };
+}
+function btCard(t, dateStr){
+  const done = isDone(t, dateStr);
+  const over = !isRepeat(t) && t.due && t.due < TODAY() && t.status !== 'done';
+  const sub = [t.client ? clientName(t.client) : '', t.time || ''].filter(Boolean).join(' · ');
+  return `<button class="bt${over?' over':''}" data-s="${done?'done':t.status}" data-open="${t.id}"
+    title="${esc(t.name)}"><span class="bn">${esc(t.name)}</span>${
+    sub ? `<span class="bc">${esc(sub)}</span>` : ''}</button>`;
+}
+
+function renderDay(){
+  const ds = ymd(cursor);
+  const list = tasksOn(ds);
+  const { timed, untimed } = splitByTime(list);
+  const doneN = list.filter(t=>isDone(t, ds)).length;
+  const isToday = ds === TODAY();
+
+  let rows = '';
+  for (let h = DAY_START; h <= DAY_END; h++){
+    rows += `<div class="hr">${pad(h)}:00</div>
+      <div class="cell">${(timed[h]||[]).map(t=>btCard(t, ds)).join('')}</div>`;
+  }
+  $('#boardView').innerHTML = `<div class="bwrap">
+    <div class="dayhead">
+      <div>
+        <div class="big">${cursor.getMonth()+1}/${cursor.getDate()}</div>
+        <div class="sub">${cursor.getFullYear()}年 週${WDAY[cursor.getDay()]}${isToday?' · 今天':''}</div>
+      </div>
+      <div class="spacer" style="flex:1"></div>
+      <div class="tiny">共 ${list.length} 項${list.length?`，完成 ${doneN} 項`:''}</div>
+    </div>
+    ${untimed.length ? `<div class="unbox">
+      <h5>還沒排時間（${untimed.length}）</h5>${untimed.map(t=>btCard(t, ds)).join('')}</div>` : ''}
+    ${list.length ? `<div class="dayv">${rows}</div>`
+      : `<div class="bempty">這天沒有排任何事<br><span class="tiny">按右下角 ＋ 可以新增</span></div>`}
+  </div>`;
+}
+
+function renderWeek(){
+  const s = startOfWeek(cursor), td = TODAY();
+  const days = Array.from({length:7}, (_,i)=>addDays(s,i));
+  const data = days.map(d => { const ds = ymd(d); return { ds, d, ...splitByTime(tasksOn(ds)) }; });
+
+  let html = `<div class="wk"><div class="hd"></div>` +
+    data.map(({d,ds}) => {
+      const n = tasksOn(ds).length;
+      return `<div class="hd${ds===td?' today':''}">週${WDAY[d.getDay()]} ${d.getDate()}
+        <small>${n?`${n} 項`:'—'}</small></div>`;
+    }).join('');
+
+  // 未排時間那一列
+  html += `<div class="ulbl">未排時間</div>` +
+    data.map(({ds,untimed}) => `<div class="unsched">${untimed.map(t=>btCard(t,ds)).join('')}</div>`).join('');
+
+  // 時間軸
+  for (let h = DAY_START; h <= DAY_END; h++){
+    html += `<div class="hr">${pad(h)}:00</div>` +
+      data.map(({ds,timed}) =>
+        `<div class="cell${ds===td?' today':''}">${(timed[h]||[]).map(t=>btCard(t,ds)).join('')}</div>`
+      ).join('');
+  }
+  html += `</div>`;
+  $('#boardView').innerHTML = `<div class="bwrap">${html}</div>`;
+}
+
+function renderMonth(){
+  const y = cursor.getFullYear(), m = cursor.getMonth(), td = TODAY();
+  const first = new Date(y, m, 1), last = new Date(y, m+1, 0);
+  const gridStart = startOfWeek(first);
+  const weeks = Math.ceil(((last - gridStart) / 86400000 + 1) / 7);
+
+  let html = `<div class="mo">` + ['一','二','三','四','五','六','日']
+    .map(w=>`<div class="dh">${w}</div>`).join('');
+  for (let i = 0; i < weeks*7; i++){
+    const d = addDays(gridStart, i), ds = ymd(d);
+    const list = tasksOn(ds);
+    const off = d.getMonth() !== m;
+    const show = list.slice(0,3);
+    html += `<div class="dy${off?' off':''}${ds===td?' today':''}">
+      <div class="dn">${d.getDate()}${list.length?`<i>${list.length}</i>`:''}</div>
+      ${show.map(t=>btCard(t,ds)).join('')}
+      ${list.length>3 ? `<div class="more" data-goday="${ds}">還有 ${list.length-3} 項 →</div>` : ''}
+    </div>`;
+  }
+  html += `</div>`;
+
+  const inMonth = Object.values(tasks).filter(t =>
+    matches(t,true) && !isRepeat(t) && t.due && t.due >= ymd(first) && t.due <= ymd(last));
+  const doneN = inMonth.filter(t=>t.status==='done').length;
+  $('#boardView').innerHTML = `<div class="bwrap">
+    <div class="tiny" style="margin-bottom:10px">本月共 ${inMonth.length} 項，
+      已完成 ${doneN} 項${inMonth.length?`（${Math.round(doneN/inMonth.length*100)}%）`:''}
+      · 點格子裡的「還有 N 項」可以切到那一天</div>
+    ${html}</div>`;
+}
+
+function renderYear(){
+  const y = cursor.getFullYear(), td = TODAY(), now = new Date();
+  const all = Object.values(tasks).filter(t => matches(t,true) && !isRepeat(t) && t.due);
+  const months = Array.from({length:12}, (_,m) => {
+    const s = ymd(new Date(y,m,1)), e = ymd(new Date(y,m+1,0));
+    const list = all.filter(t => t.due >= s && t.due <= e);
+    const c = st => list.filter(t=>t.status===st).length;
+    return { m, n:list.length, todo:c('todo'), doing:c('doing'), done:c('done'),
+             over: list.filter(t=>t.due<td && t.status!=='done').length };
+  });
+  const tot = months.reduce((a,b)=>a+b.n,0);
+  const totDone = months.reduce((a,b)=>a+b.done,0);
+  const totOver = months.reduce((a,b)=>a+b.over,0);
+  const busiest = months.reduce((a,b)=>b.n>a.n?b:a, months[0]);
+
+  $('#boardView').innerHTML = `<div class="bwrap">
+    <div class="ysum">
+      <div><b>${tot}</b><span>${y} 年總任務</span></div>
+      <div><b>${totDone}</b><span>已完成${tot?`（${Math.round(totDone/tot*100)}%）`:''}</span></div>
+      <div><b>${tot-totDone}</b><span>還沒做完</span></div>
+      <div><b style="color:#E05263">${totOver}</b><span>逾期</span></div>
+      <div><b>${busiest.n?busiest.m+1:'—'}${busiest.n?' 月':''}</b><span>最忙的月份${busiest.n?`（${busiest.n} 項）`:''}</span></div>
+    </div>
+    <div class="yr">${months.map(x=>{
+      const pcv = n => x.n ? (n/x.n*100) : 0;
+      return `<div class="ym${(y===now.getFullYear()&&x.m===now.getMonth())?' now':''}" data-gomonth="${x.m}">
+        <div class="mh"><b>${x.m+1} 月</b><span>${x.n} 項</span></div>
+        <div class="mbar">
+          <i class="a" style="width:${pcv(x.todo)}%"></i>
+          <i class="b" style="width:${pcv(x.doing)}%"></i>
+          <i class="c" style="width:${pcv(x.done)}%"></i>
+        </div>
+        <div class="mfoot">
+          <span>完成 <b>${x.done}</b></span>
+          <span>${x.over?`<b style="color:#E05263">逾 ${x.over}</b>`:`未做 <b>${x.todo+x.doing}</b>`}</span>
+        </div>
+      </div>`;
+    }).join('')}</div>
+    <div class="tiny" style="margin-top:11px;text-align:center">點任何一個月份可以切到該月的月曆</div>
+  </div>`;
+}
+
+function navLabel(){
+  const y = cursor.getFullYear(), m = cursor.getMonth()+1;
+  if (view === 'day')   return `${y}/${m}/${cursor.getDate()}（週${WDAY[cursor.getDay()]}）`;
+  if (view === 'week'){ const s = startOfWeek(cursor), e = addDays(s,6);
+    return `${s.getMonth()+1}/${s.getDate()} – ${e.getMonth()+1}/${e.getDate()}`; }
+  if (view === 'month') return `${y} 年 ${m} 月`;
+  return `${y} 年`;
+}
+function renderBoard(){
+  const isList = view === 'list';
+  $('#taskList').classList.toggle('hide', !isList);
+  $('#showMore').parentElement.classList.toggle('hide', !isList);
+  $('#boardView').classList.toggle('hide', isList);
+  $('#dateNav').classList.toggle('hide', isList);
+  if (isList){ renderTasks(); return; }
+  $('#navLabel').textContent = navLabel();
+  ({ day:renderDay, week:renderWeek, month:renderMonth, year:renderYear })[view]();
+}
+function shiftCursor(dir){
+  if (view === 'day')        cursor = addDays(cursor, dir);
+  else if (view === 'week')  cursor = addDays(cursor, dir*7);
+  else if (view === 'month') cursor = new Date(cursor.getFullYear(), cursor.getMonth()+dir, 1);
+  else                       cursor = new Date(cursor.getFullYear()+dir, cursor.getMonth(), 1);
+  renderBoard();
+}
+$('#viewSw').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  view = b.dataset.view;
+  $$('#viewSw button').forEach(x=>x.classList.toggle('on', x===b));
+  renderBoard();
+};
+$('#navPrev').onclick  = () => shiftCursor(-1);
+$('#navNext').onclick  = () => shiftCursor(1);
+$('#navToday').onclick = () => { cursor = new Date(); cursor.setHours(0,0,0,0); renderBoard(); };
+// 月曆的「還有 N 項」→ 跳到那天；年份的月份卡 → 跳到那個月
+$('#boardView').addEventListener('click', e => {
+  const gd = e.target.closest('[data-goday]');
+  if (gd){ cursor = new Date(gd.dataset.goday + 'T00:00:00'); view = 'day';
+           $$('#viewSw button').forEach(x=>x.classList.toggle('on', x.dataset.view==='day'));
+           renderBoard(); return; }
+  const gm = e.target.closest('[data-gomonth]');
+  if (gm){ cursor = new Date(cursor.getFullYear(), +gm.dataset.gomonth, 1); view = 'month';
+           $$('#viewSw button').forEach(x=>x.classList.toggle('on', x.dataset.view==='month'));
+           renderBoard(); }
+});
+
 /* ---------- 工具 / 客戶 / 設定 ---------- */
 function renderTools(){
   $('#toolWall').innerHTML = TOOLS.map(t=>`
@@ -1232,7 +1564,7 @@ function renderSelects(){
 function renderAll(){
   renderSelects(); renderGreetNote(); renderFocus(); renderRoutine();
   renderRings(); renderAlerts(); renderScore();
-  renderStats(); renderTasks(); renderClients(); renderStorageInfo();
+  renderStats(); renderBoard(); renderClients(); renderStorageInfo();
 }
 
 /* ---------- 任務操作 ---------- */
@@ -1459,27 +1791,27 @@ $('#scopeSw').onclick = e => {
 $('#goToday').onclick = () => {
   filter.range = 'today'; filter.status = 'open'; shownCount = PAGE_SIZE;
   $('#fRange').value = 'today'; $('#fStatus').value = 'open';
-  renderStats(); renderTasks(); switchTab('tasks');
+  renderStats(); renderBoard(); switchTab('tasks');
 };
 $('#addRoutine').onclick = () => openTask(null, { repeat:'daily', prio:'daily' });
 
 /* ---------- 篩選 ---------- */
 const bindF = (sel, key) => $(sel).onchange = e => {
-  filter[key] = e.target.value; shownCount = PAGE_SIZE; renderStats(); renderTasks();
+  filter[key] = e.target.value; shownCount = PAGE_SIZE; renderStats(); renderBoard();
 };
 ['#fClient|client','#fType|type','#fPrio|prio','#fStatus|status','#fRange|range','#fRepeat|repeat']
   .forEach(s => { const [sel,key] = s.split('|'); bindF(sel,key); });
 let searchT;
 $('#fSearch').oninput = e => {
   clearTimeout(searchT);
-  searchT = setTimeout(()=>{ filter.q = e.target.value.trim(); shownCount = PAGE_SIZE; renderStats(); renderTasks(); }, 200);
+  searchT = setTimeout(()=>{ filter.q = e.target.value.trim(); shownCount = PAGE_SIZE; renderStats(); renderBoard(); }, 200);
 };
 $('#fReset').onclick = () => {
   filter = { client:'', type:'', prio:'', status:'open', range:'', repeat:'', q:'' };
   shownCount = PAGE_SIZE;
   ['#fClient','#fType','#fPrio','#fRange','#fRepeat'].forEach(s=>$(s).value='');
   $('#fStatus').value = 'open'; $('#fSearch').value = '';
-  renderStats(); renderTasks();
+  renderStats(); renderBoard();
 };
 $('#showMore').onclick = () => { shownCount += PAGE_SIZE; renderTasks(); };
 
@@ -1489,7 +1821,7 @@ function applyFilter(key, val){
   shownCount = PAGE_SIZE;
   const sel = { status:'#fStatus', range:'#fRange', client:'#fClient', type:'#fType' }[key];
   if (sel) $(sel).value = filter[key];
-  renderStats(); renderTasks();
+  renderStats(); renderBoard();
 }
 $('#taskDash').addEventListener('click', e => {
   const st = e.target.closest('[data-fstatus]');
