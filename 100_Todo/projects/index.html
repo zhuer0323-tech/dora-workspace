@@ -890,6 +890,7 @@ const DEFAULT_TYPES = [
   { n:'廣告',     kw:'廣告上線,名單下載,廣告調整,走期規劃,社群內容,限動發布,操作方向,方向建議,優化建議,投放排程,廣告文案,社群文案,素材分析,走期,名單,限動,社群,貼文,發文,投放,排程,上檔,續投,素材,文案,廣告' },
   { n:'會議',     kw:'會議記錄,會議,開會,面談,拜訪,訪談' },
   { n:'提案',     kw:'提案簡報,提案,企劃,簡報' },
+  { n:'禾言',     kw:'禾言,刷卡明細,雲端更新,雲端調整,雲端整理' },
   { n:'內部',     kw:'廣告檢查,結案檢查,檢查' },
   { n:'結案報告', kw:'結案報告,結案報表,結案,月報' },
   { n:'報價單',   kw:'報價單,報價' },
@@ -897,6 +898,8 @@ const DEFAULT_TYPES = [
   { n:'週報回報', kw:'廣告回報,成效回報,週報回報,週報,回報' },
   { n:'其他',     kw:'' }
 ];
+/* 這幾類比關鍵字長度更優先，排在前面的先比對（朱兒的規則：提到禾言就是禾言、提到檢查就是內部） */
+const TYPE_PRIORITY = ['禾言', '內部'];
 /* 2026-08-10 把原本 11 種細分類併成上面這幾種，舊任務照這張表搬過去（只跑一次） */
 const TYPE_MIGRATE_V2 = {
   '廣告投放排程':'廣告', '廣告文案':'廣告', '社群文案':'廣告',
@@ -1030,12 +1033,14 @@ function kwTables(){
       .forEach(k => cs.push({ id:c.id, k, last: c.name === '內部' }));
   });
   cs.sort((a,b) => (a.last?1:0)-(b.last?1:0) || b.k.length - a.k.length);
-  // 工作類型。「內部」的關鍵字整組排最前面，因為朱兒的規則是
-  // 「只要提到檢查就算內部」——不這樣排，「檢查結案報告」會被更長的「結案報告」搶走
+  // 工作類型。TYPE_PRIORITY 裡的類型整組排最前面，比關鍵字長度更優先——
+  // 朱兒的規則是「提到禾言就是禾言、提到檢查就是內部」，不這樣排，
+  // 「禾言廣告上線」會被更長的「廣告上線」搶走、「檢查結案報告」會被「結案報告」搶走
   const ts = [];
   typeDefs().forEach(t => String(t.kw||'').split(/[,，、\s]+/)
     .map(normKey).filter(Boolean).forEach(k => ts.push({ n:t.n, k })));
-  ts.sort((a,b) => (b.n==='內部'?1:0)-(a.n==='內部'?1:0) || b.k.length - a.k.length);
+  const pri = n => { const i = TYPE_PRIORITY.indexOf(n); return i < 0 ? 99 : i; };
+  ts.sort((a,b) => pri(a.n) - pri(b.n) || b.k.length - a.k.length);
   // 動作詞：所有類型關鍵字 + 通用動作詞，用來切出「客戶名到哪裡結束」
   const acts = [...new Set([...ts.map(x=>x.k), ...EXTRA_ACTIONS.map(normKey)])].filter(w=>w.length>=2);
   return (_kw = { cs, ts, acts });
@@ -1068,8 +1073,12 @@ function detect(title){
   if (!raw) return out;
   const { cs, ts } = kwTables();
   const head = extractHead(raw);
-  out.ckey = normKey(head);
+  const headN = normKey(head);
   const nRaw = normKey(raw);
+  // 開頭那段字本身就是工作內容（例如「雲端更新與調整」的「雲端更新與」）就不是客戶名，
+  // 不然會冒出一堆看起來像工作描述的假客戶
+  const headIsWork = !!headN && ts.some(t => headN.includes(t.k));
+  out.ckey = headIsWork ? '' : headN;
 
   const learnedC = out.ckey && ui.learn?.client?.[out.ckey];
   let hitKw = '';
@@ -1077,18 +1086,23 @@ function detect(title){
   else {
     const hit = cs.find(c => nRaw.includes(c.k));
     if (hit){ out.client = hit.id; hitKw = hit.k; }
-    else if (head) out.newClient = head;
+    else if (head && !headIsWork) out.newClient = head;
   }
 
-  // 判斷類型前先把客戶名拿掉，免得客戶名裡的字被當成工作內容
-  let rest = raw;
-  if (head && rest.startsWith(head)) rest = rest.slice(head.length);
-  let restN = normKey(rest);
-  if (hitKw) restN = restN.split(hitKw).join('');
-  out.tkey = restN;
-  const learnedT = restN && ui.learn?.type?.[restN];
+  // 類型比對用整串標題，不能先把客戶名切掉——「禾言」「刷卡明細」這些字
+  // 同時是客戶別名也是工作類型的關鍵字，切掉就永遠比不到
+  const learnKey = (() => {
+    // 學習用的 key 則是去掉客戶名的那段，這樣同一種工作換個客戶也記得
+    let rest = raw;
+    if (head && !headIsWork && rest.startsWith(head)) rest = rest.slice(head.length);
+    let r = normKey(rest);
+    if (hitKw) r = r.split(hitKw).join('');
+    return r;
+  })();
+  out.tkey = learnKey;
+  const learnedT = learnKey && ui.learn?.type?.[learnKey];
   if (learnedT && typeNames().includes(learnedT)) out.type = learnedT;
-  else { const hit = ts.find(t => restN.includes(t.k)); if (hit) out.type = hit.n; }
+  else { const hit = ts.find(t => nRaw.includes(t.k)); if (hit) out.type = hit.n; }
   return out;
 }
 
@@ -2405,7 +2419,8 @@ function saveTypes(list){
 }
 /* 工作類型的版本升級，每一版只跑一次（版本號記在 ui.typesVersion）。
    v2：11 種細分併成 9 種，舊任務照 TYPE_MIGRATE_V2 搬，原類型留在 typeOld 欄備查
-   v3：KOL 的關鍵字改成朱兒實際的說法。她自己改過那一列就不動，避免蓋掉她的設定 */
+   v3：KOL 的關鍵字改成朱兒實際的說法。她自己改過那一列就不動，避免蓋掉她的設定
+   v4：多一個「禾言」類，並把原本歸在內部／其他、但其實是禾言的搬過去 */
 const KOL_KW_V2 = 'kol,網紅,達人,團媽';
 function migrateTypes(){
   let moved = 0, touched = false;
@@ -2425,11 +2440,25 @@ function migrateTypes(){
     if (kol) kol.kw = DEFAULT_TYPES.find(t=>t.n==='KOL').kw;
     ui.types = list; ui.typesVersion = 3; touched = true;
   }
+  if (ui.typesVersion < 4){
+    const list = typeDefs().map(t=>({...t}));
+    if (!list.some(t => t.n === '禾言')){
+      const at = list.findIndex(t => t.n === '內部');
+      list.splice(at >= 0 ? at : 0, 0, { ...DEFAULT_TYPES.find(t=>t.n==='禾言') });
+    }
+    ui.types = list; ui.typesVersion = 4; touched = true;
+    invalidateKw();                               // 先讓判斷吃到新關鍵字再重跑
+    // 標題提到禾言（或刷卡明細、雲端更新這些）的一律搬到禾言，不管原本歸在哪一類
+    Object.values(tasks).forEach(t => {
+      if (t.type === '禾言' || detect(t.name).type !== '禾言') return;
+      t.typeOld = t.typeOld || t.type; t.type = '禾言'; t.updatedAt = Date.now(); moved++;
+    });
+  }
   if (!touched) return 0;
   saveLocal(); push('ui', ui);
   if (moved) push('tasks', tasks);
   invalidateKw();
-  if (moved) setTimeout(()=>toast(`工作類型已簡化，${moved} 筆任務跟著併過去`), 1200);
+  if (moved) setTimeout(()=>toast(`工作類型已更新，${moved} 筆任務跟著調整`), 1200);
   return moved;
 }
 function renderTypeList(){
