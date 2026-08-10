@@ -893,7 +893,7 @@ const DEFAULT_TYPES = [
   { n:'內部',     kw:'廣告檢查,結案檢查,檢查' },
   { n:'結案報告', kw:'結案報告,結案報表,結案,月報' },
   { n:'報價單',   kw:'報價單,報價' },
-  { n:'KOL',      kw:'kol,網紅,達人,團媽' },
+  { n:'KOL',      kw:'kol,網紅,部落客' },
   { n:'週報回報', kw:'廣告回報,成效回報,週報回報,週報,回報' },
   { n:'其他',     kw:'' }
 ];
@@ -2403,24 +2403,34 @@ $('#resetBoard').onclick = () => {
 function saveTypes(list){
   ui.types = list; saveLocal(); push('ui', ui); invalidateKw(); renderAll();
 }
-/* 類型從 11 種細分改成 9 種（2026-08-10）。只跑一次，舊任務照 TYPE_MIGRATE_V2 併過去，
-   原本的類型留在 typeOld 欄，萬一併錯了還查得回來。 */
-function migrateTypesV2(){
-  if (ui.typesVersion === 2) return 0;
-  ui.types = DEFAULT_TYPES.map(t=>({...t}));
-  ui.typesVersion = 2;
-  let n = 0;
-  Object.values(tasks).forEach(t => {
-    const nw = TYPE_MIGRATE_V2[t.type];
-    if (nw){ t.typeOld = t.type; t.type = nw; t.updatedAt = Date.now(); n++; }
-  });
-  const L = (ui.learn && ui.learn.type) || {};
-  Object.keys(L).forEach(k => { if (TYPE_MIGRATE_V2[L[k]]) L[k] = TYPE_MIGRATE_V2[L[k]]; });
+/* 工作類型的版本升級，每一版只跑一次（版本號記在 ui.typesVersion）。
+   v2：11 種細分併成 9 種，舊任務照 TYPE_MIGRATE_V2 搬，原類型留在 typeOld 欄備查
+   v3：KOL 的關鍵字改成朱兒實際的說法。她自己改過那一列就不動，避免蓋掉她的設定 */
+const KOL_KW_V2 = 'kol,網紅,達人,團媽';
+function migrateTypes(){
+  let moved = 0, touched = false;
+  if (!(ui.typesVersion >= 2)){
+    ui.types = DEFAULT_TYPES.map(t=>({...t}));
+    ui.typesVersion = 2; touched = true;
+    Object.values(tasks).forEach(t => {
+      const nw = TYPE_MIGRATE_V2[t.type];
+      if (nw){ t.typeOld = t.type; t.type = nw; t.updatedAt = Date.now(); moved++; }
+    });
+    const L = (ui.learn && ui.learn.type) || {};
+    Object.keys(L).forEach(k => { if (TYPE_MIGRATE_V2[L[k]]) L[k] = TYPE_MIGRATE_V2[L[k]]; });
+  }
+  if (ui.typesVersion < 3){
+    const list = typeDefs().map(t=>({...t}));
+    const kol = list.find(t => t.n === 'KOL' && t.kw === KOL_KW_V2);
+    if (kol) kol.kw = DEFAULT_TYPES.find(t=>t.n==='KOL').kw;
+    ui.types = list; ui.typesVersion = 3; touched = true;
+  }
+  if (!touched) return 0;
   saveLocal(); push('ui', ui);
-  if (n) push('tasks', tasks);
+  if (moved) push('tasks', tasks);
   invalidateKw();
-  if (n) setTimeout(()=>toast(`工作類型已簡化，${n} 筆任務跟著併過去`), 1200);
-  return n;
+  if (moved) setTimeout(()=>toast(`工作類型已簡化，${moved} 筆任務跟著併過去`), 1200);
+  return moved;
 }
 function renderTypeList(){
   const box = $('#typeList'); if (!box) return;
@@ -2651,7 +2661,7 @@ function showApp(){
   $('#app').style.display = '';
   $('#fab').style.display = 'flex';
   if (seedClients()) saveLocal();
-  migrateTypesV2();
+  migrateTypes();
   renderClock(); setInterval(renderClock, 1000);
   setInterval(()=>{ renderGreetNote(); renderAlerts(); }, 60000);
   renderTools(); renderBoardOrder(); renderCardTitles();
