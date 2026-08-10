@@ -19,7 +19,8 @@
   --pink:#F48FB1; --pink-d:#E57399; --pink-l:#FFD9E3; --pink-xl:#FFF0F4;
   --ink:#5B3C46; --ink2:#8C6B76; --ink3:#B79AA4;
   --line:#F6DCE4;
-  --todo:#FFD97D; --doing:#B39DDB; --done:#7ED0A0;
+  /* 狀態四色：待開始黃、進行中綠、已完成藍、過期沒完成紅（紅蓋過前三色） */
+  --todo:#FFD97D; --doing:#6FC79A; --done:#7FB6E0; --over:#E05263;
   --shadow:0 2px 10px rgba(232,150,178,.13);
   --shadow-l:0 6px 22px rgba(232,150,178,.20);
   --r:18px;
@@ -113,6 +114,17 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 .quick input:focus{border-color:var(--pink-l);background:#fff}
 .quick button{padding:11px 16px;border-radius:14px;background:var(--pink);color:#fff;font-weight:700}
 .quick-hint{font-size:11px;color:var(--ink3);margin-top:8px}
+/* 自動判斷出來的客戶／類型：看得到，也點得動 */
+.guess{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:9px}
+.guess .gl{font-size:11px;color:var(--ink3);font-weight:700}
+.gsel{appearance:none;-webkit-appearance:none;border:1.5px solid var(--line);border-radius:99px;
+  padding:4px 20px 4px 10px;font-size:11.5px;font-weight:700;background-color:#fff;cursor:pointer;outline:none;
+  max-width:200px;text-overflow:ellipsis;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' fill='none' stroke='%23999' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 6px center;background-size:10px}
+.gsel.c{background-color:#EDE7F6;color:#6B5B95;border-color:#DDD2EE}
+.gsel.t{background-color:var(--pink-xl);color:var(--pink-d);border-color:var(--pink-l)}
+.gsel.blank{background-color:#F4F1F2;color:var(--ink3);border-color:var(--line)}
 .daily-score{display:flex;gap:8px;margin-top:14px}
 .daily-score div{flex:1;background:var(--pink-xl);border-radius:13px;padding:10px 6px;text-align:center}
 .daily-score b{display:block;font-size:18px;font-weight:800;color:var(--pink-d);line-height:1.2}
@@ -170,8 +182,8 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
   color:#fff;cursor:pointer;transition:.15s;min-width:6px;overflow:hidden}
 .dbar i:hover{filter:brightness(1.07)}
 .dbar i.s-todo{background:#FFCF63;color:#7A5A10}
-.dbar i.s-doing{background:#A98CDB}
-.dbar i.s-done{background:#6FC79A}
+.dbar i.s-doing{background:#5FBE8E}
+.dbar i.s-done{background:#6FA8DC}
 .dlegend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px}
 .dlegend button{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink2);
   padding:3px 6px;border-radius:8px}
@@ -216,6 +228,8 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
   padding:12px 13px;box-shadow:var(--shadow);border-left:5px solid var(--todo)}
 .task[data-s=doing]{border-left-color:var(--doing)}
 .task[data-s=done]{border-left-color:var(--done);opacity:.62}
+/* 日期過了還沒完成：紅色蓋過原本的狀態色 */
+.task.over{border-left-color:var(--over)}
 .task .body{flex:1;min-width:0;cursor:pointer}
 .task .title{font-weight:600;font-size:14.5px;line-height:1.4;word-break:break-word}
 .task[data-s=done] .title{text-decoration:line-through;color:var(--ink3)}
@@ -235,8 +249,8 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' fill='none' stroke='%23555' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:right 6px center;background-size:11px}
 .st[data-v=todo]{background-color:#FFF1CF;color:#8A6410}
-.st[data-v=doing]{background-color:#EAE1F7;color:#5B4090}
-.st[data-v=done]{background-color:#DFF3E7;color:#2F7A54}
+.st[data-v=doing]{background-color:#DFF3E7;color:#2F7A54}
+.st[data-v=done]{background-color:#E1EEF9;color:#2C5F86}
 .task .rbox{width:26px;height:26px;border-radius:9px;border:2px solid var(--line);flex:none;
   display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff}
 .task.rdone .rbox{background:var(--done);border-color:var(--done)}
@@ -258,12 +272,21 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
   font-size:11.5px;line-height:1.4;cursor:pointer;border-left:3px solid var(--todo);
   background:#FFFAF0;color:var(--ink);overflow:hidden}
 .bt:hover{filter:brightness(.97)}
-.bt[data-s=doing]{border-left-color:var(--doing);background:#F5F1FC}
-.bt[data-s=done]{border-left-color:var(--done);background:#EFF9F3;opacity:.65}
+.bt[data-s=doing]{border-left-color:var(--doing);background:#EFF9F3}
+.bt[data-s=done]{border-left-color:var(--done);background:#EDF5FC;opacity:.65}
 .bt[data-s=done] .bn{text-decoration:line-through}
-.bt.over{border-left-color:#E05263;background:#FFF0F0}
+.bt.over{border-left-color:var(--over);background:#FFF0F0}
 .bn{font-weight:600;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bc{font-size:10px;color:var(--ink3);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* 可拖曳排序的小卡（只有「還沒排時間」那區有） */
+.bt.srt{display:flex;align-items:center;gap:5px}
+.bt .btx{flex:1;min-width:0}
+.bt .bh{flex:none;color:var(--ink3);opacity:.5;cursor:grab;touch-action:none;
+  font-size:12px;padding:2px 3px;border-radius:5px;line-height:1}
+.bt .bh:hover{opacity:1;background:rgba(0,0,0,.05)}
+.bt.cdrag{position:fixed;z-index:999;pointer-events:none;opacity:.95;width:auto;
+  box-shadow:0 10px 26px rgba(200,100,140,.35);transform:rotate(-1deg)}
+.bt-ph{border:2px dashed var(--pink-l);border-radius:9px;background:rgba(255,255,255,.5);margin-bottom:4px}
 
 /* 週：七欄 */
 .wk{display:grid;grid-template-columns:46px repeat(7,minmax(112px,1fr));gap:0;min-width:860px}
@@ -298,7 +321,9 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 .dayhead .big{font-size:30px;font-weight:800;line-height:1}
 .dayhead .sub{font-size:12px;color:var(--ink3)}
 .unbox{background:#FFFAFC;border:1.5px dashed var(--line);border-radius:12px;padding:10px;margin-bottom:14px}
-.unbox h5{margin:0 0 8px;font-size:11.5px;color:var(--ink3);font-weight:700}
+.unbox h5{margin:0 0 8px;font-size:11.5px;color:var(--ink3);font-weight:700;
+  display:flex;align-items:center;gap:6px}
+.unbox h5 em{font-style:normal;font-weight:500;opacity:.85}
 .unbox .bt{font-size:12.5px}
 
 /* 月曆 */
@@ -355,6 +380,9 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 .client-row .n{flex:1;min-width:0;cursor:pointer}
 .client-row .n b{font-size:14.5px}
 .client-row .n span{display:block;font-size:11.5px;color:var(--ink3)}
+/* 自動建立、待朱兒確認的客戶：這個標籤要黏在名字旁邊，不能被上面那條規則撐成一整行 */
+.client-row .n span.pend{display:inline-block;font-size:10.5px;font-weight:700;margin-left:6px;
+  padding:1px 8px;border-radius:99px;background:#FFF3DC;color:#B07A16}
 .client-row .ico{width:34px;height:34px;border-radius:11px;background:var(--pink-xl);flex:none;
   display:flex;align-items:center;justify-content:center;font-size:17px;text-decoration:none}
 .client-row .ico.off{background:#F4EEF0;color:var(--ink3);font-size:15px}
@@ -366,6 +394,25 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 .set-row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
 .import-log{margin-top:12px;background:var(--pink-xl);border-radius:12px;padding:12px;
   font-size:12.5px;line-height:1.75;white-space:pre-wrap;max-height:240px;overflow-y:auto}
+/* 工作類型管理 */
+.ty-row{display:flex;align-items:center;gap:7px;padding:7px 0;border-bottom:1px dashed var(--line);flex-wrap:wrap}
+.ty-row:last-of-type{border-bottom:none}
+.ty-row input{padding:7px 10px;border:1.5px solid var(--line);border-radius:11px;background:#fff;outline:none;font-size:13px}
+.ty-row input:focus{border-color:var(--pink-l)}
+.ty-row .tn{width:132px;flex:none;font-weight:700}
+.ty-row .tk{flex:1;min-width:150px;font-size:12.5px}
+.ty-row .mv{width:26px;height:26px;border-radius:8px;color:var(--ink3);font-size:13px;flex:none}
+.ty-row .mv:hover{background:var(--pink-xl);color:var(--pink-d)}
+.ty-row .rm{color:#E05263;font-size:13px;padding:4px 7px;border-radius:8px;flex:none}
+.ty-row .rm:hover{background:#FFECEC}
+.ty-row .cnt{font-size:11px;color:var(--ink3);width:52px;flex:none;text-align:right}
+/* 學過的對應 */
+.learn-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:12.5px}
+.learn-row:last-of-type{border-bottom:none}
+.learn-row .k{flex:1;min-width:0;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.learn-row .v{color:var(--pink-d);font-weight:600}
+.learn-row .rm{color:#E05263;padding:2px 7px;border-radius:8px}
+.learn-row .rm:hover{background:#FFECEC}
 .placeholder{background:#fff;border-radius:var(--r);box-shadow:var(--shadow);padding:44px 22px;text-align:center}
 .placeholder .emo{font-size:44px}
 .placeholder h3{margin:12px 0 8px;font-size:17px}
@@ -521,7 +568,13 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
               <input id="quickInput" placeholder="打一行字，例：漁三結案報告" autocomplete="off">
               <button id="quickBtn">加入</button>
             </div>
-            <div class="quick-hint">預設帶「今日須完成 · 待開始 · 今天」，之後可以再補細節</div>
+            <div class="guess hide" id="quickGuess">
+              <span class="gl">自動判斷</span>
+              <select id="qgClient" class="gsel c"></select>
+              <select id="qgType" class="gsel t"></select>
+            </div>
+            <div class="quick-hint">預設帶「今日須完成 · 待開始 · 今天」，之後可以再補細節。
+              客戶與類型會自己判斷，猜錯的話直接在上面改，它會記起來</div>
             <div class="daily-score" id="dailyScore"></div>
             <button class="btn ghost sm" id="goToday" style="width:100%;margin-top:10px">查看今天到期的任務 →</button>
           </div>
@@ -635,6 +688,31 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
           <input type="file" id="importFile" accept=".json,application/json" style="max-width:100%">
         </div>
         <div class="import-log hide" id="importLog"></div>
+      </div>
+
+      <div class="set-card">
+        <h3>📁 工作類型</h3>
+        <p>左邊是類型名稱，右邊是「打什麼字會被歸到這一類」，用逗號分開。
+           改名會一併更新已經用到這個類型的任務。「其他」是最後的預設值，不能刪。</p>
+        <div id="typeList"></div>
+        <div class="set-row" style="margin-top:10px">
+          <button class="btn ghost sm" id="addType">＋ 新增工作類型</button>
+        </div>
+      </div>
+
+      <div class="set-card">
+        <h3>🧠 自動分類</h3>
+        <p>打任務標題的時候會自動判斷客戶與工作類型。你手動改過的組合會被記起來，下次同樣的字直接用你的答案。
+           下面是目前學到的東西，記錯了就刪掉。</p>
+        <div id="learnList"></div>
+        <div class="set-row" style="margin-top:12px">
+          <button class="btn ghost sm" id="clearLearn">清掉全部學過的</button>
+          <button class="btn ghost sm" id="backfillBtn">用新規則補一次分類</button>
+        </div>
+        <p class="tiny" style="margin:10px 0 0">
+          「補一次分類」只會填原本空著的客戶欄，以及還是「其他」的類型欄，不會蓋掉你自己填過的；
+          也不會自動建立新客戶。動之前建議先按上面的「匯出備份檔」。</p>
+        <div class="import-log hide" id="backfillLog"></div>
       </div>
 
       <div class="set-card">
@@ -762,6 +840,9 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
     <h3 id="cmTitle">新增客戶</h3>
     <div class="f"><label>客戶全名</label><input id="cmName" placeholder="例：李享家直播集團"></div>
     <div class="f"><label>顯示簡稱</label><input id="cmShort" placeholder="例：李老闆（留空就用全名）"></div>
+    <div class="f"><label>認字關鍵字</label>
+      <input id="cmKw" placeholder="打到這些字就算這個客戶，用逗號分開，例：李享家,李老闆,李老板">
+    </div>
     <div class="f"><label>Google 雲端資料夾網址</label><input id="cmDrive" placeholder="貼上分享連結，可留空"></div>
     <div class="f">
       <label>狀態</label>
@@ -799,7 +880,38 @@ const FIREBASE_CONFIG = {
 };
 const ROOM = 'ws_k7m2q9xr4t';   // 改名要同步改 Firebase 規則
 
-const WORK_TYPES = ['廣告投放排程','廣告文案','社群文案','素材分析','週報回報','結案報表','操作方向建議','報價單','會議','提案','其他'];
+/* 工作類型：這是預設值，朱兒可以在設定頁自己增修（改過就存在 ui.types）。
+   kw = 打到這些字就歸到這一類，比對時一律取最長的關鍵字優先。 */
+const DEFAULT_TYPES = [
+  { n:'廣告投放排程', kw:'廣告投放,投放排程,上檔,開檔,續投,上廣告,廣告設定,排程,投放' },
+  { n:'廣告文案',     kw:'廣告文案,投放文案' },
+  { n:'社群文案',     kw:'社群文案,ig文案,fb文案,社群貼文,貼文,限動,發文' },
+  { n:'素材分析',     kw:'素材分析,素材檢視,成效分析,數據分析,素材' },
+  { n:'週報回報',     kw:'週報,成效回報,週回報,回報' },
+  { n:'結案報表',     kw:'結案報表,結案報告,結案,月報' },
+  { n:'操作方向建議', kw:'操作方向,方向建議,優化建議,操作建議,建議' },
+  { n:'報價單',       kw:'報價單,報價' },
+  { n:'會議',         kw:'會議記錄,會議,開會,面談,拜訪,訪談' },
+  { n:'提案',         kw:'提案簡報,提案,企劃,簡報' },
+  { n:'其他',         kw:'' }
+];
+/* 客戶的別名：從匯入程式 notion-to-workspace.py 的 CLIENT_KEYWORDS 搬過來的，
+   讓網頁自己也認得出「李老闆＝李享家」「焦糖楓是焦糖風打錯字」這種寫法。
+   客戶自己在客戶頁填的關鍵字會再加上去。「內部」永遠最後才比對。 */
+const CLIENT_ALIASES = {
+  '李享家直播集團':['李享家','李老闆','李老板'],
+  '漁三':['渔三'], '優逸':['优逸'], 'TOTO':['toto'],
+  '十八子肉':['十八子'], '北元當舖':['北元','當舖','當鋪'],
+  'OF AZIKU':['aziku'], '花徑花藝':['花徑'], '華信航空':['華信'],
+  '焦糖風':['焦糖楓'], '惠盈生技':['惠盈'], '柚山':['沪山','滬山'], 'LF':['lf資訊'],
+  // 這裡不放「公司」這種太籠統的字，不然「XX公司報價單」會被當成內部
+  '內部':['禾言','廣告成效填寫','刷卡明細','報價單歸檔','成效表單','專案成效',
+         'fb專員','fb會議','meta廣告驗證','名片','勞報單','身分證','職代交接','離職交接',
+         '課程簡報','廣告教材','廣告顧問','雲端整理','結案報告歸檔','官方line','會議記錄統整','短影音拍攝']
+};
+/* 判斷「客戶名到哪裡結束」用的動作詞。標題開頭到第一個動作詞之間，就當作客戶名。 */
+const EXTRA_ACTIONS = ['報告','報表','表單','確認','處理','追蹤','上稿','修改','調整','回覆',
+  '整理','名單','影片','拍攝','剪輯','設計','製作','分析','檢視','歸檔','結算','請款','對帳','匯款'];
 
 // 優先級沿用朱兒 Notion「緊急程度」的四個選項名稱，匯入才對得起來。
 // o = 排序權重（數字小的排前面）
@@ -875,11 +987,121 @@ function seedClients(){
   if (Object.keys(clients).length) return false;
   DEFAULT_CLIENTS.forEach((c,i)=>{
     const id = uid();
-    clients[id] = { id, name:c.name, short:c.short||'', drive:'', active:true, note:'', order:i };
+    clients[id] = { id, name:c.name, short:c.short||'', drive:'', kw:'', active:true, note:'', order:i };
   });
   return true;
 }
 const clientName = id => { const c = clients[id]; return c ? (c.short || c.name) : ''; };
+
+/* ==========================================================
+   自動分類：打一行字就判斷客戶與工作類型
+   順序＝ 學過的對應 → 關鍵字表 → 開頭那段字當新客戶
+   ========================================================== */
+// 比對前先把大小寫、空白、標點統統拿掉，「漁三 - 結案報告」跟「漁三結案報告」才會是同一件事
+const normKey = s => String(s??'').toLowerCase()
+  .replace(/[\s　·・、,，。.／/\\|\-—–－_()（）\[\]【】{}:：;；!！?？'"“”‘’@#*+~%$&]+/g, '');
+
+function typeDefs(){
+  const v = ui.types;
+  if (!Array.isArray(v) || !v.length) return DEFAULT_TYPES.map(t=>({...t}));
+  return v.filter(t=>t && t.n);
+}
+const typeNames = () => typeDefs().map(t=>t.n);
+const FALLBACK_TYPE = () => (typeNames().includes('其他') ? '其他' : (typeNames()[0] || '其他'));
+
+let _kw = null;                       // 關鍵字表算過就快取，客戶或類型有變才重算
+const invalidateKw = () => { _kw = null; };
+function kwTables(){
+  if (_kw) return _kw;
+  // 客戶：全名 + 簡稱 + 別名表 + 客戶自己填的關鍵字，長的排前面，「內部」永遠最後
+  const cs = [];
+  Object.values(clients).forEach(c => {
+    const words = [c.name, c.short, ...(CLIENT_ALIASES[c.name] || []),
+                   ...String(c.kw||'').split(/[,，、\s]+/)];
+    const seen = new Set();
+    words.map(normKey).filter(w => w && !seen.has(w) && seen.add(w))
+      .forEach(k => cs.push({ id:c.id, k, last: c.name === '內部' }));
+  });
+  cs.sort((a,b) => (a.last?1:0)-(b.last?1:0) || b.k.length - a.k.length);
+  // 工作類型
+  const ts = [];
+  typeDefs().forEach(t => String(t.kw||'').split(/[,，、\s]+/)
+    .map(normKey).filter(Boolean).forEach(k => ts.push({ n:t.n, k })));
+  ts.sort((a,b) => b.k.length - a.k.length);
+  // 動作詞：所有類型關鍵字 + 通用動作詞，用來切出「客戶名到哪裡結束」
+  const acts = [...new Set([...ts.map(x=>x.k), ...EXTRA_ACTIONS.map(normKey)])].filter(w=>w.length>=2);
+  return (_kw = { cs, ts, acts });
+}
+
+/* 標題開頭到第一個動作詞之間的那段字＝候選客戶名 */
+function extractHead(title){
+  const s = String(title||'').trim();
+  if (!s) return '';
+  const low = s.toLowerCase();
+  let idx = -1;
+  for (const w of kwTables().acts){
+    const i = low.indexOf(w);
+    if (i > 0 && (idx < 0 || i < idx)) idx = i;
+  }
+  if (idx < 0) return '';
+  const head = s.slice(0, idx)
+    .replace(/^[\s　@#\-—–－·、,，:：/／|(（\[【]+/, '')
+    .replace(/[\s　\-—–－·、,，:：/／|)）\]】的]+$/, '').trim();
+  // 太長多半是把整句話當成客戶名了，寧可留空也不要亂建
+  if (!head || head.length > 8 || /^[\d\s\-/.]+$/.test(head)) return '';
+  return head;
+}
+
+/* 回傳：client=既有客戶 id、newClient=還沒建的新客戶名、type=工作類型、
+   ckey/tkey=拿來記住修正用的 key */
+function detect(title){
+  const raw = String(title||'').trim();
+  const out = { client:'', newClient:'', type:'', ckey:'', tkey:'' };
+  if (!raw) return out;
+  const { cs, ts } = kwTables();
+  const head = extractHead(raw);
+  out.ckey = normKey(head);
+  const nRaw = normKey(raw);
+
+  const learnedC = out.ckey && ui.learn?.client?.[out.ckey];
+  let hitKw = '';
+  if (learnedC && clients[learnedC]) out.client = learnedC;
+  else {
+    const hit = cs.find(c => nRaw.includes(c.k));
+    if (hit){ out.client = hit.id; hitKw = hit.k; }
+    else if (head) out.newClient = head;
+  }
+
+  // 判斷類型前先把客戶名拿掉，免得客戶名裡的字被當成工作內容
+  let rest = raw;
+  if (head && rest.startsWith(head)) rest = rest.slice(head.length);
+  let restN = normKey(rest);
+  if (hitKw) restN = restN.split(hitKw).join('');
+  out.tkey = restN;
+  const learnedT = restN && ui.learn?.type?.[restN];
+  if (learnedT && typeNames().includes(learnedT)) out.type = learnedT;
+  else { const hit = ts.find(t => restN.includes(t.k)); if (hit) out.type = hit.n; }
+  return out;
+}
+
+/* 記住朱兒的修正：下次同樣的字直接用她的答案（優先於關鍵字表） */
+function learnPair(kind, key, val){
+  if (!key || !val) return;
+  ui.learn = ui.learn || {};
+  ui.learn[kind] = ui.learn[kind] || {};
+  if (ui.learn[kind][key] === val) return;
+  ui.learn[kind][key] = val;
+  saveLocal(); push('ui', ui);
+}
+/* 自動建立的新客戶標 pending，會排在客戶頁最上面等朱兒確認 */
+function createClient(name, pending){
+  const ex = clientByName(name); if (ex) return ex.id;
+  const id = uid();
+  clients[id] = { id, name, short:'', drive:'', kw:'', active:true, note:'',
+                  pending: !!pending, order: Object.keys(clients).length };
+  saveLocal(); push(`clients/${id}`, clients[id]); invalidateKw();
+  return id;
+}
 const sortedClients = () => Object.values(clients)
   .sort((a,b)=> (b.active?1:0)-(a.active?1:0) || (a.order??99)-(b.order??99) || a.name.localeCompare(b.name,'zh-Hant'));
 const clientByName = n => Object.values(clients).find(c => c.name === n || c.short === n);
@@ -966,7 +1188,8 @@ async function initFirebase(interactive){
     onValue(ref(_db, `${ROOM}/ui`), s => {
       const v = s.exists() ? s.val() : {};
       if (JSON.stringify(v) === JSON.stringify(ui)) return;
-      ui = v; saveLocal(); renderBoardOrder(); renderCardTitles();
+      // ui 現在也放工作類型與學過的對應，換裝置改過就要整頁重畫
+      ui = v; saveLocal(); renderBoardOrder(); renderCardTitles(); renderAll();
     });
     return true;
   }catch(e){
@@ -1105,8 +1328,8 @@ function renderRings(){
 
   $('#rings').innerHTML =
       ring(100, total, '今日工作', total ? `完成 ${pc(dayD,total)}%` : '今天沒排事情', '#EE7FA8')
-    + ring(pc(dayI,total), dayI, '進行中', total ? `佔今日 ${pc(dayI,total)}%` : '—', '#B39DDB')
-    + ring(pc(dayD,total), dayD, '已完成', total ? `還剩 ${total-dayD} 項` : '—', '#7ED0A0')
+    + ring(pc(dayI,total), dayI, '進行中', total ? `佔今日 ${pc(dayI,total)}%` : '—', '#6FC79A')
+    + ring(pc(dayD,total), dayD, '已完成', total ? `還剩 ${total-dayD} 項` : '—', '#7FB6E0')
     + `<div class="vbox">
          <div class="r"><b>${over}</b><span>逾期未完成${over?'，要先處理':''}</span></div>
          <div class="r"><b>${wkD}/${wkT.length}</b><span>本週完成</span></div>
@@ -1206,8 +1429,8 @@ function renderStats(){
               : (barMode==='month' ? '這個月還沒有排定日期的任務' : '目前沒有任務')}</div>
       <div class="dlegend">
         <button data-fstatus="todo"  class="${filter.status==='todo'?'on':''}"><span class="sw" style="background:#FFCF63"></span>待開始 <b>${todo}</b></button>
-        <button data-fstatus="doing" class="${filter.status==='doing'?'on':''}"><span class="sw" style="background:#A98CDB"></span>進行中 <b>${doing}</b></button>
-        <button data-fstatus="done"  class="${filter.status==='done'?'on':''}"><span class="sw" style="background:#6FC79A"></span>已完成 <b>${done}</b></button>
+        <button data-fstatus="doing" class="${filter.status==='doing'?'on':''}"><span class="sw" style="background:#5FBE8E"></span>進行中 <b>${doing}</b></button>
+        <button data-fstatus="done"  class="${filter.status==='done'?'on':''}"><span class="sw" style="background:#6FA8DC"></span>已完成 <b>${done}</b></button>
         <button data-fstatus="open"  class="${filter.status==='open'?'on':''}">未完成 <b>${todo+doing}</b></button>
         <button data-fstatus=""      class="${filter.status===''?'on':''}">全部 <b>${total}</b></button>
       </div>
@@ -1239,6 +1462,7 @@ function renderStats(){
 }
 function taskRow(t){
   const td = TODAY(), tags = [];
+  const isOver = !isRepeat(t) && t.due && t.due < td && t.status !== 'done';
   if (t.client) tags.push(`<span class="tag client">${esc(clientName(t.client))}</span>`);
   // 「其他」不顯示：匯入的舊任務幾乎都是這個，每張卡都掛一個等於沒資訊
   if (t.type && t.type !== '其他') tags.push(`<span class="tag">${esc(t.type)}</span>`);
@@ -1260,7 +1484,7 @@ function taskRow(t){
       Object.entries(STATUS).map(([k,v])=>`<option value="${k}"${t.status===k?' selected':''}>${v}</option>`).join('') +
       `</select>`;
 
-  return `<div class="task${isRepeat(t)&&done?' rdone':''}" data-s="${isRepeat(t)?(done?'done':'todo'):t.status}">
+  return `<div class="task${isRepeat(t)&&done?' rdone':''}${isOver?' over':''}" data-s="${isRepeat(t)?(done?'done':'todo'):t.status}">
     <div class="body" data-open="${t.id}">
       <div class="title">${esc(t.name)}</div>
       <div class="meta">
@@ -1307,7 +1531,8 @@ function tasksOn(dateStr){
   }).sort((a,b) => (a.time||'99:99').localeCompare(b.time||'99:99')
                 || (PRIO[a.prio]?.o??9) - (PRIO[b.prio]?.o??9));
 }
-/* 把任務分成「有排時間」和「沒排時間」兩堆 */
+/* 把任務分成「有排時間」和「沒排時間」兩堆。
+   沒排時間的照 ord（朱兒自己拖出來的順序）排；沒拖過的維持原本的優先度排序。 */
 function splitByTime(list){
   const timed = {}, untimed = [];
   list.forEach(t => {
@@ -1316,15 +1541,67 @@ function splitByTime(list){
     const slot = Math.min(Math.max(h, DAY_START), DAY_END);   // 超出上班時間就夾到頭尾那格
     (timed[slot] = timed[slot] || []).push(t);
   });
+  untimed.sort((a,b) => (a.ord ?? 1e9) - (b.ord ?? 1e9));
   return { timed, untimed };
 }
-function btCard(t, dateStr){
+function btCard(t, dateStr, sortable){
   const done = isDone(t, dateStr);
   const over = !isRepeat(t) && t.due && t.due < TODAY() && t.status !== 'done';
   const sub = [t.client ? clientName(t.client) : '', t.time || ''].filter(Boolean).join(' · ');
-  return `<button class="bt${over?' over':''}" data-s="${done?'done':t.status}" data-open="${t.id}"
-    title="${esc(t.name)}"><span class="bn">${esc(t.name)}</span>${
-    sub ? `<span class="bc">${esc(sub)}</span>` : ''}</button>`;
+  const body = `<span class="btx"><span class="bn">${esc(t.name)}</span>${
+    sub ? `<span class="bc">${esc(sub)}</span>` : ''}</span>`;
+  return `<button class="bt${over?' over':''}${sortable?' srt':''}" data-s="${done?'done':t.status}"
+    data-open="${t.id}" title="${esc(t.name)}">${
+    sortable ? `<span class="bh" data-cdrag title="按住拖曳排順序">⠿</span>` : ''}${body}</button>`;
+}
+
+/* 「還沒排時間」那區可以自己拖前後順序，順序記在任務的 ord 上，會同步到雲端 */
+let noClickUntil = 0;      // 剛拖完的那一下不要被當成點擊，不然會跳出任務頁
+function makeCardSortable(root){
+  let el=null, ph=null, zone=null, dx=0, dy=0, pid=null;
+  root.addEventListener('pointerdown', e => {
+    const h = e.target.closest('[data-cdrag]'); if (!h) return;
+    el = h.closest('.bt'); zone = el && el.closest('[data-zone]');
+    if (!el || !zone){ el = null; return; }
+    e.preventDefault();
+    pid = e.pointerId; h.setPointerCapture(pid);
+    const r = el.getBoundingClientRect();
+    dx = e.clientX - r.left; dy = e.clientY - r.top;
+    ph = document.createElement('div');
+    ph.className = 'bt-ph'; ph.style.height = r.height + 'px';
+    el.parentNode.insertBefore(ph, el);
+    el.classList.add('cdrag');
+    Object.assign(el.style, { width:r.width+'px', left:r.left+'px', top:r.top+'px' });
+  });
+  root.addEventListener('pointermove', e => {
+    if (!el || e.pointerId !== pid) return;
+    e.preventDefault();
+    el.style.left = (e.clientX - dx) + 'px';
+    el.style.top  = (e.clientY - dy) + 'px';
+    // 只在同一天的區塊裡換順序（跨天要改的是截止日，不在這裡處理）
+    for (const o of zone.querySelectorAll('.bt')){
+      if (o === el) continue;
+      const r = o.getBoundingClientRect();
+      if (e.clientY >= r.top && e.clientY <= r.bottom && e.clientX >= r.left-50 && e.clientX <= r.right+50){
+        o.parentNode.insertBefore(ph, (e.clientY - r.top) > r.height/2 ? o.nextSibling : o);
+        break;
+      }
+    }
+  });
+  const end = e => {
+    if (!el || (pid !== null && e.pointerId !== pid)) return;
+    el.classList.remove('cdrag'); el.style.cssText = '';
+    ph.parentNode.insertBefore(el, ph); ph.remove();
+    const ids = [...zone.querySelectorAll('.bt')].map(x => x.dataset.open).filter(Boolean);
+    let n = 0;
+    ids.forEach((id,i) => { const t = tasks[id];
+      if (t && t.ord !== i*10){ t.ord = i*10; t.updatedAt = Date.now(); n++; } });
+    ph = null; el = null; zone = null; pid = null;
+    noClickUntil = Date.now() + 400;
+    if (n){ saveLocal(); push('tasks', tasks); renderAll(); toast('順序已記住'); }
+  };
+  root.addEventListener('pointerup', end);
+  root.addEventListener('pointercancel', end);
 }
 
 function renderDay(){
@@ -1348,8 +1625,9 @@ function renderDay(){
       <div class="spacer" style="flex:1"></div>
       <div class="tiny">共 ${list.length} 項${list.length?`，完成 ${doneN} 項`:''}</div>
     </div>
-    ${untimed.length ? `<div class="unbox">
-      <h5>還沒排時間（${untimed.length}）</h5>${untimed.map(t=>btCard(t, ds)).join('')}</div>` : ''}
+    ${untimed.length ? `<div class="unbox" data-zone="${ds}">
+      <h5>還沒排時間（${untimed.length}）<em>· 按住 ⠿ 可以拖曳排順序</em></h5>${
+      untimed.map(t=>btCard(t, ds, true)).join('')}</div>` : ''}
     ${list.length ? `<div class="dayv">${rows}</div>`
       : `<div class="bempty">這天沒有排任何事<br><span class="tiny">按右下角 ＋ 可以新增</span></div>`}
   </div>`;
@@ -1369,7 +1647,8 @@ function renderWeek(){
 
   // 未排時間那一列
   html += `<div class="ulbl">未排時間</div>` +
-    data.map(({ds,untimed}) => `<div class="unsched">${untimed.map(t=>btCard(t,ds)).join('')}</div>`).join('');
+    data.map(({ds,untimed}) =>
+      `<div class="unsched" data-zone="${ds}">${untimed.map(t=>btCard(t,ds,true)).join('')}</div>`).join('');
 
   // 時間軸
   for (let h = DAY_START; h <= DAY_END; h++){
@@ -1520,11 +1799,15 @@ function renderClients(){
       ? `<a class="ico" href="${esc(c.drive)}" target="_blank" rel="noopener" title="開啟 Google 雲端資料夾">☁️</a>`
       : `<button class="ico off" data-client="${c.id}" title="還沒設定雲端連結，點這裡設定">☁</button>`;
     return `<div class="client-row${c.active?'':' off'}">
-      <div class="n" data-client="${c.id}"><b>${esc(c.short||c.name)}</b><span>${bits.join(' · ')}</span></div>
+      <div class="n" data-client="${c.id}"><b>${esc(c.short||c.name)}</b>${
+        c.pending ? `<span class="pend">待確認</span>` : ''
+      }<span>${bits.join(' · ')}</span></div>
       ${cloud}<button class="btn ghost sm" data-client="${c.id}">編輯</button>
     </div>`;
   };
-  const on = list.filter(c=>c.active), off = list.filter(c=>!c.active);
+  // 自動建立、還沒確認的客戶排最上面，方便朱兒一次整理掉
+  const on = list.filter(c=>c.active).sort((a,b)=>(b.pending?1:0)-(a.pending?1:0));
+  const off = list.filter(c=>!c.active);
   $('#clientList').innerHTML =
     (on.length? on.map(row).join('') : `<div class="empty">還沒有客戶</div>`) +
     (off.length? `<div class="sec-title">已結案</div>` + off.map(row).join('') : '');
@@ -1548,16 +1831,22 @@ function renderSelects(){
   // 自動儲存會重繪整頁；任務頁開著的時候要把使用者當下的選擇記下來，重建後放回去，
   // 否則客戶／類型／優先級會在打字的瞬間被重設
   const keep = { client: $('#tmClient')?.value, type: $('#tmType')?.value, prio: segGet('tmPrio') };
+  const names = typeNames();
+  // 任務原本的類型如果已經被改名或刪掉，先補進選單，不然自動儲存會把它洗成第一個類型
+  if (keep.type && !names.includes(keep.type)) names.push(keep.type);
   $('#fClient').innerHTML = `<option value="">所有客戶</option>` +
     cs.map(c=>opt(c.id, esc(c.short||c.name), filter.client===c.id)).join('') +
     opt('_none', '（未指定客戶）', filter.client==='_none');
   $('#fType').innerHTML = `<option value="">所有類型</option>` +
-    WORK_TYPES.map(t=>opt(t,t,filter.type===t)).join('');
+    names.map(t=>opt(t,esc(t),filter.type===t)).join('');
   $('#fPrio').innerHTML = `<option value="">所有優先級</option>` +
     Object.entries(PRIO).map(([k,v])=>opt(k,v.t,filter.prio===k)).join('');
+  // 已結案的客戶平常不列，但如果這筆任務本來就掛在它身上，要留著否則會被清空
+  const pick = cs.filter(c => c.active || c.id === keep.client);
   $('#tmClient').innerHTML = `<option value="">（未指定）</option>` +
-    cs.filter(c=>c.active).map(c=>`<option value="${c.id}">${esc(c.short||c.name)}</option>`).join('');
-  $('#tmType').innerHTML = WORK_TYPES.map(t=>`<option value="${t}">${t}</option>`).join('');
+    (newClientGuess ? `<option value="_new">✨ 新客戶：${esc(newClientGuess)}</option>` : '') +
+    pick.map(c=>`<option value="${c.id}">${esc(c.short||c.name)}${c.active?'':'（已結案）'}</option>`).join('');
+  $('#tmType').innerHTML = names.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join('');
   $('#tmPrio').innerHTML = Object.entries(PRIO)
     .map(([k,v])=>`<button data-v="${k}">${v.t}</button>`).join('');
   if (keep.client !== undefined) $('#tmClient').value = keep.client;
@@ -1566,9 +1855,11 @@ function renderSelects(){
 }
 
 function renderAll(){
+  invalidateKw();
   renderSelects(); renderGreetNote(); renderFocus(); renderRoutine();
   renderRings(); renderAlerts(); renderScore();
   renderStats(); renderBoard(); renderClients(); renderStorageInfo();
+  renderTypeList(); renderLearnList();
 }
 
 /* ---------- 任務操作 ---------- */
@@ -1605,6 +1896,9 @@ function toggleStar(id){
 
 /* ---------- 任務彈窗 ---------- */
 let editingTask = null;
+let newClientGuess = '';                        // 判斷出來、但還沒真的建立的新客戶名
+let tmTouched = { client:false, type:false };   // 朱兒手動改過的欄位就不要再被自動蓋掉
+let tmDetect = null;
 const segSet = (el,v) => $$(`#${el} button`).forEach(b=>b.classList.toggle('on', b.dataset.v == v));
 const segGet = el => $(`#${el} button.on`)?.dataset.v || '';
 
@@ -1613,6 +1907,10 @@ function autoGrow(el){ el.style.height = 'auto'; el.style.height = el.scrollHeig
 function openTask(id, preset){
   const t = id ? tasks[id] : null;
   editingTask = t ? {...t} : null;
+  // 每次打開都重來一次：清掉上一筆留下的「新客戶」猜測與手改紀錄
+  newClientGuess = ''; tmTouched = { client:false, type:false };
+  tmDetect = detect(t?.name || '');
+  renderSelects();
   // 既有任務＝像 Notion 一樣邊改邊存；新任務要按「建立」才寫進去
   $('#tmNewActions').classList.toggle('hide', !!t);
   $('#tmDel').classList.toggle('hide', !t);
@@ -1621,7 +1919,7 @@ function openTask(id, preset){
   segSet('tmPrio', t?.prio || preset?.prio || 'today');
   segSet('tmStatus', t?.status || 'todo');
   $('#tmClient').value = t?.client || '';
-  $('#tmType').value = t?.type || WORK_TYPES[0];
+  $('#tmType').value = t?.type || FALLBACK_TYPE();
   $('#tmRepeat').value = t?.repeat || preset?.repeat || 'none';
   $$('#tmWdays button').forEach(b=>b.classList.toggle('on', (t?.wdays||[]).includes(+b.dataset.d)));
   $('#tmStart').value = t?.start || '';
@@ -1644,7 +1942,48 @@ function syncRepeatFields(){
   $('#tmProgWrap').classList.toggle('hide', rep);
   $('#tmStatus').closest('.prop').classList.toggle('hide', rep);
 }
-const closeTask = () => { $('#taskModal').classList.remove('on'); editingTask = null; };
+const closeTask = () => {
+  $('#taskModal').classList.remove('on'); editingTask = null;
+  newClientGuess = ''; tmDetect = null; tmTouched = { client:false, type:false };
+};
+
+/* 打標題的時候順手把客戶與類型填好。
+   新任務：兩欄都自動帶；既有任務：只補原本空著的，不動朱兒已經填過的。 */
+function applyDetectToModal(){
+  const name = $('#tmName').value.trim();
+  if (!name) return;
+  const d = tmDetect = detect(name);
+  const curC = $('#tmClient').value, curT = $('#tmType').value;
+  const canC = !tmTouched.client && (!editingTask || !curC);
+  const canT = !tmTouched.type   && (!editingTask || !curT || curT === '其他');
+  if (canC){
+    // 「建一個新客戶」這個選項只給新任務，既有任務不會在自動儲存時偷偷建客戶
+    const wantNew = (!editingTask && d.newClient) ? d.newClient : '';
+    if (wantNew !== newClientGuess){ newClientGuess = wantNew; renderSelects(); }
+    const want = d.client || (wantNew ? '_new' : '');
+    $('#tmClient').value = want;
+    if ($('#tmClient').selectedIndex < 0) $('#tmClient').value = '';
+  }
+  if (canT) $('#tmType').value = d.type || FALLBACK_TYPE();
+}
+/* 選單被朱兒自己動過 → 記起來，下次同樣的字直接用她的答案 */
+$('#tmClient').addEventListener('change', () => {
+  tmTouched.client = true;
+  const d = tmDetect || detect($('#tmName').value);
+  const v = $('#tmClient').value;
+  if (v && v !== '_new' && v !== d.client) learnPair('client', d.ckey, v);
+});
+$('#tmType').addEventListener('change', () => {
+  tmTouched.type = true;
+  const d = tmDetect || detect($('#tmName').value);
+  const v = $('#tmType').value;
+  if (v && v !== d.type) learnPair('type', d.tkey, v);
+});
+/* '_new' 只會出現在新任務上，按下「建立」的當下才真的把客戶建起來 */
+function resolveClientVal(v){
+  if (v !== '_new') return v;
+  return newClientGuess ? createClient(newClientGuess, true) : '';
+}
 
 /* 從畫面上的欄位組出一筆任務 */
 function readTaskForm(){
@@ -1653,7 +1992,7 @@ function readTaskForm(){
   return {
     id: editingTask?.id || uid(),
     name: $('#tmName').value.trim(), area: scope,
-    client: $('#tmClient').value, type: $('#tmType').value,
+    client: resolveClientVal($('#tmClient').value), type: $('#tmType').value,
     prio: segGet('tmPrio'), status,
     repeat, wdays: $$('#tmWdays button.on').map(b=>+b.dataset.d),
     doneDates: editingTask?.doneDates || {},
@@ -1688,7 +2027,7 @@ function autoSave(){
 ['input','change'].forEach(ev => $('#taskModal').addEventListener(ev, e => {
   if (e.target.closest('.sheet')) autoSave();
 }));
-$('#tmName').addEventListener('input', e => autoGrow(e.target));
+$('#tmName').addEventListener('input', e => { autoGrow(e.target); applyDetectToModal(); });
 $('#tmNote').addEventListener('input', e => autoGrow(e.target));
 
 $('#tmRepeat').onchange = () => { syncRepeatFields(); autoSave(); };
@@ -1705,9 +2044,11 @@ $('#tmProg').oninput = e => $('#tmProgV').textContent = e.target.value + '%';
 $('#tmSave').onclick = () => {
   const name = $('#tmName').value.trim();
   if (!name){ toast('先給它一個標題'); $('#tmName').focus(); return; }
+  const madeNew = $('#tmClient').value === '_new' ? newClientGuess : '';
   const t = readTaskForm();
   if (t.repeat === 'weekly' && !t.wdays.length){ toast('每週重複要選至少一個星期'); return; }
-  saveTask(t); closeTask(); toast('已新增');
+  saveTask(t); closeTask();
+  toast(madeNew ? `已新增 · 順便建了新客戶「${madeNew}」` : '已新增');
 };
 $('#tmCancel2').onclick = () => closeTask();
 $('#tmDel').onclick = () => {
@@ -1723,9 +2064,10 @@ let editingClient = null;
 function openClient(id){
   const c = id ? clients[id] : null;
   editingClient = c ? {...c} : null;
-  $('#cmTitle').textContent = c ? '編輯客戶' : '新增客戶';
+  $('#cmTitle').textContent = c ? (c.pending ? '確認新客戶' : '編輯客戶') : '新增客戶';
   $('#cmDel').classList.toggle('hide', !c);
   $('#cmName').value = c?.name || ''; $('#cmShort').value = c?.short || '';
+  $('#cmKw').value = c?.kw || '';
   $('#cmDrive').value = c?.drive || ''; $('#cmNote').value = c?.note || '';
   segSet('cmActive', c ? (c.active?1:0) : 1);
   $('#clientModal').classList.add('on');
@@ -1739,10 +2081,12 @@ $('#cmSave').onclick = () => {
   const c = {
     id: editingClient?.id || uid(), name,
     short: $('#cmShort').value.trim(), drive: $('#cmDrive').value.trim(),
+    kw: $('#cmKw').value.trim(),
     active: segGet('cmActive') === '1', note: $('#cmNote').value.trim(),
+    pending: false,                      // 存過就是確認過了，「待確認」標記拿掉
     order: editingClient?.order ?? Object.keys(clients).length
   };
-  clients[c.id] = c; saveLocal(); push(`clients/${c.id}`, c); renderAll();
+  clients[c.id] = c; saveLocal(); push(`clients/${c.id}`, c); invalidateKw(); renderAll();
   closeClient(); toast(editingClient ? '已更新' : '已新增客戶');
 };
 $('#cmDel').onclick = () => {
@@ -1763,6 +2107,8 @@ document.addEventListener('change', e => {
   if (st) setStatus(st.dataset.st, st.value);
 });
 document.addEventListener('click', e => {
+  // 剛拖曳完的那一下不要當成點擊，不然放手就會跳出任務頁
+  if (Date.now() < noClickUntil || e.target.closest('[data-cdrag]')) return;
   const star = e.target.closest('[data-star]');
   if (star){ e.stopPropagation(); toggleStar(star.dataset.star); return; }
   const rt = e.target.closest('[data-routine]');
@@ -1846,19 +2192,61 @@ $('#taskDash').addEventListener('click', e => {
   if (row){ applyFilter(rankMode === 'client' ? 'client' : 'type', row.dataset.rankkey); return; }
 });
 
-/* ---------- 快速記一筆 ---------- */
+/* ---------- 快速記一筆 ----------
+   打字的同時判斷客戶與類型，結果就顯示在輸入框下面（看得到、也點得動）。
+   手動改掉的話，加入的時候會把這個對應記起來。 */
+let qGuess = { d:null, client:false, type:false };
+
+function renderQuickGuess(){
+  const box = $('#quickGuess'), name = $('#quickInput').value.trim();
+  if (!name){ box.classList.add('hide'); qGuess = { d:null, client:false, type:false }; return; }
+  const d = qGuess.d = detect(name);
+  const cSel = $('#qgClient'), tSel = $('#qgType');
+
+  const want = qGuess.client ? cSel.value : (d.client || (d.newClient ? '_new' : ''));
+  cSel.innerHTML = `<option value="">👤 未指定客戶</option>` +
+    (d.newClient ? `<option value="_new">✨ 新客戶：${esc(d.newClient)}</option>` : '') +
+    sortedClients().filter(c=>c.active)
+      .map(c=>`<option value="${c.id}">👤 ${esc(c.short||c.name)}</option>`).join('');
+  cSel.value = want;
+  if (cSel.selectedIndex < 0) cSel.value = '';
+
+  const wantT = qGuess.type ? tSel.value : (d.type || FALLBACK_TYPE());
+  tSel.innerHTML = typeNames().map(t=>`<option value="${esc(t)}">📁 ${esc(t)}</option>`).join('');
+  tSel.value = wantT;
+  if (tSel.selectedIndex < 0) tSel.value = FALLBACK_TYPE();
+
+  cSel.classList.toggle('blank', !cSel.value);
+  box.classList.remove('hide');
+}
+$('#qgClient').onchange = () => { qGuess.client = true; $('#qgClient').classList.toggle('blank', !$('#qgClient').value); };
+$('#qgType').onchange   = () => { qGuess.type = true; };
+
 function quickAdd(){
   const name = $('#quickInput').value.trim();
   if (!name) return;
+  const d = qGuess.d || detect(name);
+  let client = $('#qgClient').value, made = '';
+  const type = $('#qgType').value || FALLBACK_TYPE();
+  if (client === '_new'){
+    if (d.newClient){ client = createClient(d.newClient, true); made = d.newClient; }
+    else client = '';
+  }
+  // 手動改過才學：沒動過就代表判斷是對的，不需要多記一筆
+  if (qGuess.client && client && client !== d.client && !made) learnPair('client', d.ckey, client);
+  if (qGuess.type && type !== d.type) learnPair('type', d.tkey, type);
+
   saveTask({
-    id: uid(), name, area: scope, client:'', type:'其他',
+    id: uid(), name, area: scope, client, type,
     prio:'today', status:'todo', repeat:'none', wdays:[], doneDates:{},
     start:'', due:TODAY(), time:'', mins:0, progress:0, note:'',
     star:false, notionId:'', createdAt:Date.now(), doneAt:null
   });
-  $('#quickInput').value = ''; toast('已加入今天');
+  $('#quickInput').value = ''; renderQuickGuess();
+  toast(made ? `已加入今天 · 順便建了新客戶「${made}」` : '已加入今天');
 }
 $('#quickBtn').onclick = quickAdd;
+$('#quickInput').oninput = renderQuickGuess;
 $('#quickInput').onkeydown = e => { if (e.key === 'Enter') quickAdd(); };
 $('#fab').onclick = () => openTask(null);
 
@@ -1954,6 +2342,125 @@ function makeSortable(board){
 $('#resetBoard').onclick = () => {
   ui.boardOrder = DEFAULT_ORDER.slice(); ui.cardTitles = {}; saveLocal(); push('ui', ui);
   renderBoardOrder(); renderCardTitles(); toast('版面與標題已復原');
+};
+
+/* ---------- 設定頁：工作類型 ---------- */
+function saveTypes(list){
+  ui.types = list; saveLocal(); push('ui', ui); invalidateKw(); renderAll();
+}
+function renderTypeList(){
+  const box = $('#typeList'); if (!box) return;
+  const defs = typeDefs(), used = {};
+  Object.values(tasks).forEach(t => { const k = t.type || '其他'; used[k] = (used[k]||0) + 1; });
+  box.innerHTML = defs.map((t,i)=>`
+    <div class="ty-row" data-ti="${i}">
+      <input class="tn" data-tn value="${esc(t.n)}"${t.n==='其他'?' disabled':''}>
+      <input class="tk" data-tk value="${esc(t.kw||'')}" placeholder="關鍵字，用逗號分開">
+      <span class="cnt">${used[t.n]||0} 筆</span>
+      <button class="mv" data-tmv="-1" title="往上移">↑</button>
+      <button class="mv" data-tmv="1" title="往下移">↓</button>
+      ${t.n==='其他' ? '' : `<button class="rm" data-trm>刪除</button>`}
+    </div>`).join('');
+}
+$('#typeList').addEventListener('change', e => {
+  const row = e.target.closest('[data-ti]'); if (!row) return;
+  const i = +row.dataset.ti, defs = typeDefs().map(x=>({...x}));
+  if (!defs[i]) return;
+  if (e.target.matches('[data-tn]')){
+    const old = defs[i].n, nw = e.target.value.trim();
+    if (!nw || nw === old){ renderTypeList(); return; }
+    if (defs.some((d,j)=>j!==i && d.n===nw)){ toast('已經有同名的類型了'); renderTypeList(); return; }
+    defs[i].n = nw;
+    // 改名要把已經用到這個類型的任務一起帶過去，不然它們會變成孤兒
+    let n = 0;
+    Object.values(tasks).forEach(t => { if (t.type === old){ t.type = nw; n++; } });
+    Object.entries(ui.learn?.type || {}).forEach(([k,v]) => { if (v === old) ui.learn.type[k] = nw; });
+    if (filter.type === old){ filter.type = nw; }
+    if (n){ saveLocal(); push('tasks', tasks); }
+    toast(n ? `已改名，${n} 筆任務跟著更新` : '已改名');
+  } else if (e.target.matches('[data-tk]')){
+    defs[i].kw = e.target.value.trim();
+  } else return;
+  saveTypes(defs);
+});
+$('#typeList').addEventListener('click', e => {
+  const row = e.target.closest('[data-ti]'); if (!row) return;
+  const i = +row.dataset.ti, defs = typeDefs().map(x=>({...x}));
+  const mv = e.target.closest('[data-tmv]');
+  if (mv){
+    const j = i + (+mv.dataset.tmv);
+    if (j < 0 || j >= defs.length) return;
+    [defs[i], defs[j]] = [defs[j], defs[i]];
+    saveTypes(defs); return;
+  }
+  if (e.target.closest('[data-trm]')){
+    const nm = defs[i].n;
+    const n = Object.values(tasks).filter(t=>(t.type||'其他')===nm).length;
+    if (n){ toast(`還有 ${n} 筆任務是「${nm}」，先改掉才能刪`); return; }
+    if (!confirm(`確定刪除「${nm}」？`)) return;
+    defs.splice(i,1); saveTypes(defs); toast('已刪除');
+  }
+});
+$('#addType').onclick = () => {
+  const defs = typeDefs().map(x=>({...x}));
+  let nm = '新類型', k = 2;
+  while (defs.some(d=>d.n===nm)) nm = `新類型${k++}`;
+  const at = defs.findIndex(d=>d.n==='其他');
+  defs.splice(at >= 0 ? at : defs.length, 0, { n:nm, kw:'' });
+  saveTypes(defs); toast('已新增，直接改名字和關鍵字');
+};
+
+/* ---------- 設定頁：自動分類學到的東西 ---------- */
+function renderLearnList(){
+  const box = $('#learnList'); if (!box) return;
+  const L = ui.learn || {}, rows = [];
+  Object.entries(L.client || {}).forEach(([k,v]) => {
+    const c = clients[v]; if (!c) return;
+    rows.push(`<div class="learn-row"><span class="k">${esc(k)}</span>→
+      <span class="v">👤 ${esc(c.short||c.name)}</span>
+      <button class="rm" data-lrm="client" data-lk="${esc(k)}">刪</button></div>`);
+  });
+  Object.entries(L.type || {}).forEach(([k,v]) => {
+    rows.push(`<div class="learn-row"><span class="k">${esc(k)}</span>→
+      <span class="v">📁 ${esc(v)}</span>
+      <button class="rm" data-lrm="type" data-lk="${esc(k)}">刪</button></div>`);
+  });
+  box.innerHTML = rows.length ? rows.join('')
+    : `<div class="empty">還沒學到東西<br><span class="tiny">在「快速記一筆」把猜錯的客戶或類型改掉，它就會記起來</span></div>`;
+}
+$('#learnList').addEventListener('click', e => {
+  const b = e.target.closest('[data-lrm]'); if (!b) return;
+  const kind = b.dataset.lrm, key = b.dataset.lk;
+  if (ui.learn?.[kind]) delete ui.learn[kind][key];
+  saveLocal(); push('ui', ui); renderLearnList(); toast('已刪掉這一條');
+});
+$('#clearLearn').onclick = () => {
+  if (!confirm('會清掉所有學過的對應，之後重新從關鍵字開始判斷。確定嗎？')) return;
+  ui.learn = { client:{}, type:{} };
+  saveLocal(); push('ui', ui); renderLearnList(); toast('已清空');
+};
+
+/* 用現在的規則回頭補舊任務：只填空的，不蓋掉朱兒填過的 */
+$('#backfillBtn').onclick = () => {
+  const all = Object.values(tasks);
+  if (!all.length){ toast('目前沒有任務'); return; }
+  if (!confirm(`會掃過 ${all.length} 筆任務，只填原本空著的客戶欄、以及還是「其他」的類型欄，` +
+               `不會蓋掉你自己填過的，也不會建新客戶。要繼續嗎？`)) return;
+  const names = typeNames();
+  let cN = 0, tN = 0;
+  all.forEach(t => {
+    const needC = !t.client, needT = !t.type || t.type === '其他';
+    if (!needC && !needT) return;
+    const d = detect(t.name);
+    if (needC && d.client && clients[d.client]){ t.client = d.client; cN++; }
+    if (needT && d.type && d.type !== '其他' && names.includes(d.type)){ t.type = d.type; tN++; }
+  });
+  if (cN || tN){ saveLocal(); push('tasks', tasks); renderAll(); }
+  const log = $('#backfillLog'); log.classList.remove('hide');
+  log.textContent = `補完了\n　補上客戶 ${cN} 筆\n　補上工作類型 ${tN} 筆` +
+    (cN || tN ? '' : '\n\n沒有可以補的：不是已經填好了，就是關鍵字認不出來。\n' +
+      '可以到上面的「工作類型」補關鍵字，或到客戶頁幫該客戶補「認字關鍵字」，再跑一次。');
+  toast(cN || tN ? `補上 ${cN + tN} 個欄位` : '沒有需要補的');
 };
 
 /* ---------- 匯入 / 備份 ---------- */
@@ -2072,7 +2579,9 @@ function showApp(){
   if (seedClients()) saveLocal();
   renderClock(); setInterval(renderClock, 1000);
   setInterval(()=>{ renderGreetNote(); renderAlerts(); }, 60000);
-  renderTools(); renderBoardOrder(); renderCardTitles(); makeSortable($('#board')); renderAll();
+  renderTools(); renderBoardOrder(); renderCardTitles();
+  makeSortable($('#board')); makeCardSortable($('#boardView'));
+  renderAll();
 }
 function gateError(e){
   const msg = String(e?.message || e);
