@@ -541,10 +541,10 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
   <!-- ===== 工作區 ===== -->
   <div id="workArea">
     <nav class="tabs">
-      <button class="on" data-tab="today">今日</button>
-      <button data-tab="tasks">任務</button>
-      <button data-tab="tools">工具</button>
-      <button data-tab="clients">客戶</button>
+      <button class="on" data-tab="today">今日代辦</button>
+      <button data-tab="tasks">工作規劃</button>
+      <button data-tab="tools">寶藏工具</button>
+      <button data-tab="clients">專案客戶</button>
       <button data-tab="settings">設定</button>
     </nav>
 
@@ -2617,7 +2617,7 @@ $('#backfillBtn').onclick = () => {
   const log = $('#backfillLog'); log.classList.remove('hide');
   log.textContent = `補完了\n　補上客戶 ${cN} 筆\n　補上工作類型 ${tN} 筆` +
     (cN || tN ? '' : '\n\n沒有可以補的：不是已經填好了，就是關鍵字認不出來。\n' +
-      '可以到上面的「工作類型」補關鍵字，或到客戶頁幫該客戶補「認字關鍵字」，再跑一次。');
+      '可以到上面的「工作類型」補關鍵字，或到「專案客戶」幫該客戶補「認字關鍵字」，再跑一次。');
   toast(cN || tN ? `補上 ${cN + tN} 個欄位` : '沒有需要補的');
 };
 
@@ -2693,7 +2693,7 @@ $('#importFile').onchange = async e => {
       `　略過 ${skipped} 筆（之前匯過、且沒有要補的）\n` +
       `　仍沒有客戶 ${noClient} 筆\n` +
       (un.length ? `\n名單裡沒有的客戶：\n` + un.slice(0,15).map(([n,c])=>`　${n}（${c} 筆）`).join('\n') : '') +
-      (hints.length ? `\n這些名字看起來可能是客戶，要的話到「客戶」分頁新增：\n` +
+      (hints.length ? `\n這些名字看起來可能是客戶，要的話到「專案客戶」分頁新增：\n` +
         hints.map(h=>`　${h.name}（${h.count} 筆）`).join('\n') : '') +
       (_ready ? '' : '\n\n⚠️ 目前是單機模式，這批資料只存在這台裝置。登入後會自動上傳。');
     toast(added ? `匯入 ${added} 筆` : `補上 ${fixed} 筆的客戶`);
