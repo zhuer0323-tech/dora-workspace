@@ -1996,7 +1996,7 @@ function toggleStar(id){
 /* ---------- 任務彈窗 ---------- */
 let editingTask = null;
 let newClientGuess = '';                        // 判斷出來、但還沒真的建立的新客戶名
-let tmTouched = { client:false, type:false };   // 朱兒手動改過的欄位就不要再被自動蓋掉
+let tmTouched = { name:"", client:false, type:false };   // 朱兒手動改過的欄位就不要再被自動蓋掉
 let tmDetect = null;
 const segSet = (el,v) => $$(`#${el} button`).forEach(b=>b.classList.toggle('on', b.dataset.v == v));
 const segGet = el => $(`#${el} button.on`)?.dataset.v || '';
@@ -2007,7 +2007,7 @@ function openTask(id, preset){
   const t = id ? tasks[id] : null;
   editingTask = t ? {...t} : null;
   // 每次打開都重來一次：清掉上一筆留下的「新客戶」猜測與手改紀錄
-  newClientGuess = ''; tmTouched = { client:false, type:false };
+  newClientGuess = ''; tmTouched = { name:"", client:false, type:false };
   tmDetect = detect(t?.name || '');
   renderSelects();
   // 既有任務＝像 Notion 一樣邊改邊存；新任務要按「建立」才寫進去
@@ -2043,7 +2043,7 @@ function syncRepeatFields(){
 }
 const closeTask = () => {
   $('#taskModal').classList.remove('on'); editingTask = null;
-  newClientGuess = ''; tmDetect = null; tmTouched = { client:false, type:false };
+  newClientGuess = ''; tmDetect = null; tmTouched = { name:"", client:false, type:false };
 };
 
 /* 打標題的時候順手把客戶與類型填好。
@@ -2051,6 +2051,8 @@ const closeTask = () => {
 function applyDetectToModal(){
   const name = $('#tmName').value.trim();
   if (!name) return;
+  // 跟快速記一筆一樣：標題改了就重新判斷，不然手動改過一次就再也不會跟著標題變
+  if (name !== tmTouched.name){ tmTouched = { name, client:false, type:false }; }
   const d = tmDetect = detect(name);
   const curC = $('#tmClient').value, curT = $('#tmType').value;
   const canC = !tmTouched.client && (!editingTask || !curC);
@@ -2294,11 +2296,14 @@ $('#taskDash').addEventListener('click', e => {
 /* ---------- 快速記一筆 ----------
    打字的同時判斷客戶與類型，結果就顯示在輸入框下面（看得到、也點得動）。
    手動改掉的話，加入的時候會把這個對應記起來。 */
-let qGuess = { d:null, client:false, type:false };
+let qGuess = { d:null, name:'', client:false, type:false };
 
 function renderQuickGuess(){
   const box = $('#quickGuess'), name = $('#quickInput').value.trim();
-  if (!name){ box.classList.add('hide'); qGuess = { d:null, client:false, type:false }; return; }
+  if (!name){ box.classList.add('hide'); qGuess = { d:null, name:'', client:false, type:false }; return; }
+  // 標題的字一變就重新判斷。手動改過的選擇只在「同一個標題」上有效，
+  // 否則改過一次之後，後面打什麼都會卡在上次選的那個
+  if (name !== qGuess.name){ qGuess.name = name; qGuess.client = false; qGuess.type = false; }
   const d = qGuess.d = detect(name);
   const cSel = $('#qgClient'), tSel = $('#qgType');
 
