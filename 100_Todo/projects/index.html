@@ -83,6 +83,8 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 #board{display:grid;gap:14px;grid-template-columns:1fr;align-items:start}
 @media(min-width:760px){#board{grid-template-columns:repeat(auto-fill,minmax(330px,1fr))}}
 .tile{position:relative}
+.tile.wide{grid-column:1/-1}          /* 今日時間表要占滿一整排 */
+#dayPlanCount{margin-right:26px}      /* 讓開右上角的拖曳把手 */
 .tile .drag{position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:9px;
   display:flex;align-items:center;justify-content:center;color:var(--ink3);font-size:15px;
   cursor:grab;touch-action:none;opacity:.45;z-index:2}
@@ -318,6 +320,11 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 .dayv .cell{border-bottom:1px solid #FBF0F4;min-height:56px;padding:3px 6px}
 .dayv .cell:hover{background:var(--pink-xl)}
 .dayv .cell .bt{font-size:12px}
+/* 今日頁那張卡的時間表：一天要塞在一張卡裡，所以列高壓低一點 */
+.dayv.compact{grid-template-columns:50px 1fr}
+.dayv.compact .hr{min-height:40px;font-size:10.5px;padding-top:3px}
+.dayv.compact .cell{min-height:40px;padding:2px 5px}
+.dayv.compact .cell .bt{font-size:11.5px;padding:4px 7px}
 .dayhead{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;
   padding-bottom:12px;border-bottom:2px solid var(--line)}
 .dayhead .big{font-size:30px;font-weight:800;line-height:1}
@@ -579,6 +586,14 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
               客戶與類型會自己判斷，猜錯的話直接在上面改，它會記起來</div>
             <div class="daily-score" id="dailyScore"></div>
             <button class="btn ghost sm" id="goToday" style="width:100%;margin-top:10px">查看今天到期的任務 →</button>
+          </div>
+        </div>
+
+        <div class="tile wide" data-card="dayplan">
+          <div class="card">
+            <button class="drag" data-drag title="拖曳調整位置">⠿</button>
+            <h2>🗓 <span class="cname" data-title="dayplan">今日時間表</span> <span class="en">DAY PLAN</span><span class="spacer"></span><span class="tiny" id="dayPlanCount"></span></h2>
+            <div id="dayPlan"></div>
           </div>
         </div>
 
@@ -986,7 +1001,7 @@ let scope   = 'work';
 let shownCount = PAGE_SIZE;
 let filter  = { client:'', type:'', prio:'', status:'open', range:'', repeat:'', q:'' };
 
-const DEFAULT_ORDER = ['clock','focus','quick','routine','vitals','alerts'];
+const DEFAULT_ORDER = ['clock','focus','quick','dayplan','routine','vitals','alerts'];
 
 function saveLocal(){
   localStorage.setItem(LS.tasks, JSON.stringify(tasks));
@@ -1543,11 +1558,12 @@ cursor.setHours(0,0,0,0);
 const addDays = (d,n) => { const x = new Date(d); x.setDate(x.getDate()+n); return x; };
 const startOfWeek = d => addDays(d, -((d.getDay()+6)%7));   // 以週一為第一天
 
-/* 某一天該出現哪些任務：一次性看截止日，重複任務看今天輪不輪到 */
-function tasksOn(dateStr){
-  const wd = new Date(dateStr + 'T00:00:00').getDay();
+/* 某一天該出現哪些任務：一次性看截止日，重複任務看今天輪不輪到。
+   noFilter＝今日頁那張卡在用的，它不該被任務頁的篩選條件影響 */
+function tasksOn(dateStr, noFilter){
   return Object.values(tasks).filter(t => {
-    if (!matches(t, true)) return false;                 // 套用上方篩選（狀態除外）
+    if (noFilter){ if ((t.area||'work') !== scope) return false; }
+    else if (!matches(t, true)) return false;            // 套用上方篩選（狀態除外）
     if (isRepeat(t)) return repeatDueOn(t, dateStr);
     return t.due === dateStr;
   }).sort((a,b) => (a.time||'99:99').localeCompare(b.time||'99:99')
@@ -1671,19 +1687,30 @@ function makeCardSortable(root){
   root.addEventListener('pointercancel', end);
 }
 
-function renderDay(){
-  const ds = ymd(cursor);
-  const list = tasksOn(ds);
+/* 一天的規劃表（未排時間區 ＋ 8:00–19:00 時間軸）。
+   任務頁的「日」檢視和今日頁的「今日時間表」卡片共用這一份，只差在要不要套篩選、列高 */
+function dayGrid(ds, compact){
+  const list = tasksOn(ds, compact);
   const { timed, untimed } = splitByTime(list);
-  const doneN = list.filter(t=>isDone(t, ds)).length;
-  const isToday = ds === TODAY();
-
   let rows = '';
   for (let h = DAY_START; h <= DAY_END; h++){
     rows += `<div class="hr">${pad(h)}:00</div>
       <div class="cell" data-zone="${ds}" data-slot="${h}">${
         (timed[h]||[]).map(t=>btCard(t, ds, true)).join('')}</div>`;
   }
+  const html =
+    (untimed.length ? `<div class="unbox" data-zone="${ds}">
+      <h5>還沒排時間（${untimed.length}）<em>· 按住 ⠿ 可以拖曳排順序，往下拖到時間軸就排好時段</em></h5>${
+      untimed.map(t=>btCard(t, ds, true)).join('')}</div>` : '') +
+    (list.length ? `<div class="dayv${compact?' compact':''}">${rows}</div>`
+      : `<div class="bempty">這天沒有排任何事<br><span class="tiny">按右下角 ＋ 可以新增</span></div>`);
+  return { list, html, done: list.filter(t=>isDone(t, ds)).length };
+}
+
+function renderDay(){
+  const ds = ymd(cursor);
+  const g = dayGrid(ds, false);
+  const isToday = ds === TODAY();
   $('#boardView').innerHTML = `<div class="bwrap">
     <div class="dayhead">
       <div>
@@ -1691,14 +1718,17 @@ function renderDay(){
         <div class="sub">${cursor.getFullYear()}年 週${WDAY[cursor.getDay()]}${isToday?' · 今天':''}</div>
       </div>
       <div class="spacer" style="flex:1"></div>
-      <div class="tiny">共 ${list.length} 項${list.length?`，完成 ${doneN} 項`:''}</div>
+      <div class="tiny">共 ${g.list.length} 項${g.list.length?`，完成 ${g.done} 項`:''}</div>
     </div>
-    ${untimed.length ? `<div class="unbox" data-zone="${ds}">
-      <h5>還沒排時間（${untimed.length}）<em>· 按住 ⠿ 可以拖曳排順序，往下拖到時間軸就排好時段</em></h5>${
-      untimed.map(t=>btCard(t, ds, true)).join('')}</div>` : ''}
-    ${list.length ? `<div class="dayv">${rows}</div>`
-      : `<div class="bempty">這天沒有排任何事<br><span class="tiny">按右下角 ＋ 可以新增</span></div>`}
+    ${g.html}
   </div>`;
+}
+
+/* 今日頁的「今日時間表」卡片：永遠看今天，不吃任務頁的篩選 */
+function renderDayPlan(){
+  const ds = TODAY(), g = dayGrid(ds, true);
+  $('#dayPlanCount').textContent = g.list.length ? `完成 ${g.done}/${g.list.length}` : '';
+  $('#dayPlan').innerHTML = g.html;
 }
 
 function renderWeek(){
@@ -1926,7 +1956,7 @@ function renderSelects(){
 function renderAll(){
   invalidateKw();
   renderSelects(); renderGreetNote(); renderFocus(); renderRoutine();
-  renderRings(); renderAlerts(); renderScore();
+  renderDayPlan(); renderRings(); renderAlerts(); renderScore();
   renderStats(); renderBoard(); renderClients(); renderStorageInfo();
   renderTypeList(); renderLearnList();
 }
@@ -2322,11 +2352,21 @@ $('#fab').onclick = () => openTask(null);
 /* ---------- 今日主控台：拖曳排序 ---------- */
 function renderBoardOrder(){
   const board = $('#board');
-  const order = (ui.boardOrder && ui.boardOrder.length) ? ui.boardOrder : DEFAULT_ORDER;
+  const saved = (ui.boardOrder && ui.boardOrder.length) ? ui.boardOrder : DEFAULT_ORDER;
   const byId = Object.fromEntries($$('#board .tile').map(el=>[el.dataset.card, el]));
-  // 去重很重要：不然接在後面的 DEFAULT_ORDER 會把剛排好的順序整個蓋回預設。
-  // 補 DEFAULT_ORDER 是為了讓「之後新增的卡片」也能出現（存檔裡不會有它）。
-  [...new Set([...order, ...DEFAULT_ORDER])].forEach(id => { if (byId[id]) board.appendChild(byId[id]); });
+  // 後來才加的卡片（存檔裡不會有它）要插回它在預設排列裡的位置，
+  // 不能一律接在最後面——不然新卡片永遠掉到版面最底下。
+  const order = [...saved];
+  DEFAULT_ORDER.forEach((id, i) => {
+    if (order.includes(id)) return;
+    let at = order.length;
+    for (let j = i - 1; j >= 0; j--){
+      const k = order.indexOf(DEFAULT_ORDER[j]);
+      if (k >= 0){ at = k + 1; break; }
+    }
+    order.splice(at, 0, id);
+  });
+  [...new Set(order)].forEach(id => { if (byId[id]) board.appendChild(byId[id]); });
 }
 function saveBoardOrder(){
   ui.boardOrder = $$('#board .tile').map(el=>el.dataset.card);
@@ -2694,7 +2734,8 @@ function showApp(){
   renderClock(); setInterval(renderClock, 1000);
   setInterval(()=>{ renderGreetNote(); renderAlerts(); }, 60000);
   renderTools(); renderBoardOrder(); renderCardTitles();
-  makeSortable($('#board')); makeCardSortable($('#boardView'));
+  makeSortable($('#board'));
+  makeCardSortable($('#boardView')); makeCardSortable($('#dayPlan'));
   renderAll();
 }
 function gateError(e){
