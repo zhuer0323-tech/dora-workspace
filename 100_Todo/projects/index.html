@@ -287,6 +287,8 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 .bt.cdrag{position:fixed;z-index:999;pointer-events:none;opacity:.95;width:auto;
   box-shadow:0 10px 26px rgba(200,100,140,.35);transform:rotate(-1deg)}
 .bt-ph{border:2px dashed var(--pink-l);border-radius:9px;background:rgba(255,255,255,.5);margin-bottom:4px}
+/* 拖曳時，指標下方那一格會亮起來，才知道會放到哪個時段 */
+.dropok{background:var(--pink-xl) !important;box-shadow:inset 0 0 0 2px var(--pink-l)}
 
 /* 週：七欄 */
 .wk{display:grid;grid-template-columns:46px repeat(7,minmax(112px,1fr));gap:0;min-width:860px}
@@ -693,7 +695,9 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
       <div class="set-card">
         <h3>📁 工作類型</h3>
         <p>左邊是類型名稱，右邊是「打什麼字會被歸到這一類」，用逗號分開。
-           改名會一併更新已經用到這個類型的任務。「其他」是最後的預設值，不能刪。</p>
+           改名會一併更新已經用到這個類型的任務。「其他」是最後的預設值，不能刪。<br>
+           比對規則：關鍵字愈長愈優先（所以「廣告回報」會歸週報回報、不會被「廣告」搶走）；
+           「內部」這一類的關鍵字最優先，只要標題提到檢查就算內部。</p>
         <div id="typeList"></div>
         <div class="set-row" style="margin-top:10px">
           <button class="btn ghost sm" id="addType">＋ 新增工作類型</button>
@@ -883,18 +887,21 @@ const ROOM = 'ws_k7m2q9xr4t';   // 改名要同步改 Firebase 規則
 /* 工作類型：這是預設值，朱兒可以在設定頁自己增修（改過就存在 ui.types）。
    kw = 打到這些字就歸到這一類，比對時一律取最長的關鍵字優先。 */
 const DEFAULT_TYPES = [
-  { n:'廣告投放排程', kw:'廣告投放,投放排程,上檔,開檔,續投,上廣告,廣告設定,排程,投放' },
-  { n:'廣告文案',     kw:'廣告文案,投放文案' },
-  { n:'社群文案',     kw:'社群文案,ig文案,fb文案,社群貼文,貼文,限動,發文' },
-  { n:'素材分析',     kw:'素材分析,素材檢視,成效分析,數據分析,素材' },
-  { n:'週報回報',     kw:'週報,成效回報,週回報,回報' },
-  { n:'結案報表',     kw:'結案報表,結案報告,結案,月報' },
-  { n:'操作方向建議', kw:'操作方向,方向建議,優化建議,操作建議,建議' },
-  { n:'報價單',       kw:'報價單,報價' },
-  { n:'會議',         kw:'會議記錄,會議,開會,面談,拜訪,訪談' },
-  { n:'提案',         kw:'提案簡報,提案,企劃,簡報' },
-  { n:'其他',         kw:'' }
+  { n:'廣告',     kw:'廣告上線,名單下載,廣告調整,走期規劃,社群內容,限動發布,操作方向,方向建議,優化建議,投放排程,廣告文案,社群文案,素材分析,走期,名單,限動,社群,貼文,發文,投放,排程,上檔,續投,素材,文案,廣告' },
+  { n:'會議',     kw:'會議記錄,會議,開會,面談,拜訪,訪談' },
+  { n:'提案',     kw:'提案簡報,提案,企劃,簡報' },
+  { n:'內部',     kw:'廣告檢查,結案檢查,檢查' },
+  { n:'結案報告', kw:'結案報告,結案報表,結案,月報' },
+  { n:'報價單',   kw:'報價單,報價' },
+  { n:'KOL',      kw:'kol,網紅,達人,團媽' },
+  { n:'週報回報', kw:'廣告回報,成效回報,週報回報,週報,回報' },
+  { n:'其他',     kw:'' }
 ];
+/* 2026-08-10 把原本 11 種細分類併成上面這幾種，舊任務照這張表搬過去（只跑一次） */
+const TYPE_MIGRATE_V2 = {
+  '廣告投放排程':'廣告', '廣告文案':'廣告', '社群文案':'廣告',
+  '素材分析':'廣告', '操作方向建議':'廣告', '結案報表':'結案報告'
+};
 /* 客戶的別名：從匯入程式 notion-to-workspace.py 的 CLIENT_KEYWORDS 搬過來的，
    讓網頁自己也認得出「李老闆＝李享家」「焦糖楓是焦糖風打錯字」這種寫法。
    客戶自己在客戶頁填的關鍵字會再加上去。「內部」永遠最後才比對。 */
@@ -1023,11 +1030,12 @@ function kwTables(){
       .forEach(k => cs.push({ id:c.id, k, last: c.name === '內部' }));
   });
   cs.sort((a,b) => (a.last?1:0)-(b.last?1:0) || b.k.length - a.k.length);
-  // 工作類型
+  // 工作類型。「內部」的關鍵字整組排最前面，因為朱兒的規則是
+  // 「只要提到檢查就算內部」——不這樣排，「檢查結案報告」會被更長的「結案報告」搶走
   const ts = [];
   typeDefs().forEach(t => String(t.kw||'').split(/[,，、\s]+/)
     .map(normKey).filter(Boolean).forEach(k => ts.push({ n:t.n, k })));
-  ts.sort((a,b) => b.k.length - a.k.length);
+  ts.sort((a,b) => (b.n==='內部'?1:0)-(a.n==='內部'?1:0) || b.k.length - a.k.length);
   // 動作詞：所有類型關鍵字 + 通用動作詞，用來切出「客戶名到哪裡結束」
   const acts = [...new Set([...ts.map(x=>x.k), ...EXTRA_ACTIONS.map(normKey)])].filter(w=>w.length>=2);
   return (_kw = { cs, ts, acts });
@@ -1541,7 +1549,9 @@ function splitByTime(list){
     const slot = Math.min(Math.max(h, DAY_START), DAY_END);   // 超出上班時間就夾到頭尾那格
     (timed[slot] = timed[slot] || []).push(t);
   });
-  untimed.sort((a,b) => (a.ord ?? 1e9) - (b.ord ?? 1e9));
+  const byOrd = (a,b) => (a.ord ?? 1e9) - (b.ord ?? 1e9);
+  untimed.sort(byOrd);
+  Object.values(timed).forEach(arr => arr.sort(byOrd));   // 同一時段可以放很多件，順序也能自己拖
   return { timed, untimed };
 }
 function btCard(t, dateStr, sortable){
@@ -1555,14 +1565,32 @@ function btCard(t, dateStr, sortable){
     sortable ? `<span class="bh" data-cdrag title="按住拖曳排順序">⠿</span>` : ''}${body}</button>`;
 }
 
-/* 「還沒排時間」那區可以自己拖前後順序，順序記在任務的 ord 上，會同步到雲端 */
+/* 看板上的卡片可以拖：在「還沒排時間」區裡換順序，也可以直接拖到下面的時間軸上排時段，
+   或從時間軸拖回「還沒排時間」把時段清掉。週檢視拖到別天，順便改截止日。
+   時段 = 該格的整點；同一個時段要放幾件都可以。 */
 let noClickUntil = 0;      // 剛拖完的那一下不要被當成點擊，不然會跳出任務頁
 function makeCardSortable(root){
-  let el=null, ph=null, zone=null, dx=0, dy=0, pid=null;
+  let el=null, ph=null, from=null, dx=0, dy=0, pid=null;
+
+  // 指標下方的落點區塊；有重疊時取面積最小的那個（時間格永遠比外層小）
+  const zoneAt = (x,y) => {
+    let best = null;
+    for (const z of root.querySelectorAll('[data-zone]')){
+      const r = z.getBoundingClientRect();
+      if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom){
+        const a = r.width * r.height;
+        if (!best || a < best.a) best = { z, a };
+      }
+    }
+    return best && best.z;
+  };
+  const mark = z => root.querySelectorAll('[data-zone]').forEach(x =>
+    x.classList.toggle('dropok', x === z));
+
   root.addEventListener('pointerdown', e => {
     const h = e.target.closest('[data-cdrag]'); if (!h) return;
-    el = h.closest('.bt'); zone = el && el.closest('[data-zone]');
-    if (!el || !zone){ el = null; return; }
+    el = h.closest('.bt'); from = el && el.closest('[data-zone]');
+    if (!el || !from){ el = null; return; }
     e.preventDefault();
     pid = e.pointerId; h.setPointerCapture(pid);
     const r = el.getBoundingClientRect();
@@ -1572,14 +1600,21 @@ function makeCardSortable(root){
     el.parentNode.insertBefore(ph, el);
     el.classList.add('cdrag');
     Object.assign(el.style, { width:r.width+'px', left:r.left+'px', top:r.top+'px' });
+    mark(from);
   });
+
   root.addEventListener('pointermove', e => {
     if (!el || e.pointerId !== pid) return;
     e.preventDefault();
     el.style.left = (e.clientX - dx) + 'px';
     el.style.top  = (e.clientY - dy) + 'px';
-    // 只在同一天的區塊裡換順序（跨天要改的是截止日，不在這裡處理）
-    for (const o of zone.querySelectorAll('.bt')){
+    // 拖到畫面邊緣時自動捲一點，才拖得到下面的時間軸
+    if (e.clientY > innerHeight - 80) scrollBy(0, 16);
+    else if (e.clientY < 80) scrollBy(0, -16);
+
+    const z = zoneAt(e.clientX, e.clientY) || ph.parentElement;
+    if (z !== ph.parentElement){ z.appendChild(ph); mark(z); }
+    for (const o of z.querySelectorAll('.bt')){
       if (o === el) continue;
       const r = o.getBoundingClientRect();
       if (e.clientY >= r.top && e.clientY <= r.bottom && e.clientX >= r.left-50 && e.clientX <= r.right+50){
@@ -1588,17 +1623,35 @@ function makeCardSortable(root){
       }
     }
   });
+
   const end = e => {
     if (!el || (pid !== null && e.pointerId !== pid)) return;
     el.classList.remove('cdrag'); el.style.cssText = '';
+    const to = ph.parentElement.closest('[data-zone]') || from;
     ph.parentNode.insertBefore(el, ph); ph.remove();
-    const ids = [...zone.querySelectorAll('.bt')].map(x => x.dataset.open).filter(Boolean);
-    let n = 0;
-    ids.forEach((id,i) => { const t = tasks[id];
-      if (t && t.ord !== i*10){ t.ord = i*10; t.updatedAt = Date.now(); n++; } });
-    ph = null; el = null; zone = null; pid = null;
+    mark(null);
+
+    const t = tasks[el.dataset.open];
+    let n = 0, note = '';
+    if (t){
+      // 落在時間格就排時段，落回「還沒排時間」就把時段清掉
+      const want = to.dataset.slot ? `${pad(+to.dataset.slot)}:00` : '';
+      if ((t.time||'') !== want){ t.time = want; t.updatedAt = Date.now(); n++;
+        note = want ? `排到 ${want}` : '拿掉時段'; }
+      // 週檢視拖到別天 = 順便改截止日（重複任務沒有截止日，不動）
+      const day = to.dataset.zone;
+      if (day && !isRepeat(t) && t.due !== day){
+        t.due = day; t.updatedAt = Date.now(); n++;
+        note = `${day.slice(5)} ${want || '未排時間'}`;
+      }
+    }
+    [...to.querySelectorAll('.bt')].forEach((x,i) => {
+      const o = tasks[x.dataset.open];
+      if (o && o.ord !== i*10){ o.ord = i*10; o.updatedAt = Date.now(); n++; }
+    });
+    ph = null; el = null; from = null; pid = null;
     noClickUntil = Date.now() + 400;
-    if (n){ saveLocal(); push('tasks', tasks); renderAll(); toast('順序已記住'); }
+    if (n){ saveLocal(); push('tasks', tasks); renderAll(); toast(note || '順序已記住'); }
   };
   root.addEventListener('pointerup', end);
   root.addEventListener('pointercancel', end);
@@ -1614,7 +1667,8 @@ function renderDay(){
   let rows = '';
   for (let h = DAY_START; h <= DAY_END; h++){
     rows += `<div class="hr">${pad(h)}:00</div>
-      <div class="cell">${(timed[h]||[]).map(t=>btCard(t, ds)).join('')}</div>`;
+      <div class="cell" data-zone="${ds}" data-slot="${h}">${
+        (timed[h]||[]).map(t=>btCard(t, ds, true)).join('')}</div>`;
   }
   $('#boardView').innerHTML = `<div class="bwrap">
     <div class="dayhead">
@@ -1626,7 +1680,7 @@ function renderDay(){
       <div class="tiny">共 ${list.length} 項${list.length?`，完成 ${doneN} 項`:''}</div>
     </div>
     ${untimed.length ? `<div class="unbox" data-zone="${ds}">
-      <h5>還沒排時間（${untimed.length}）<em>· 按住 ⠿ 可以拖曳排順序</em></h5>${
+      <h5>還沒排時間（${untimed.length}）<em>· 按住 ⠿ 可以拖曳排順序，往下拖到時間軸就排好時段</em></h5>${
       untimed.map(t=>btCard(t, ds, true)).join('')}</div>` : ''}
     ${list.length ? `<div class="dayv">${rows}</div>`
       : `<div class="bempty">這天沒有排任何事<br><span class="tiny">按右下角 ＋ 可以新增</span></div>`}
@@ -1654,7 +1708,8 @@ function renderWeek(){
   for (let h = DAY_START; h <= DAY_END; h++){
     html += `<div class="hr">${pad(h)}:00</div>` +
       data.map(({ds,timed}) =>
-        `<div class="cell${ds===td?' today':''}">${(timed[h]||[]).map(t=>btCard(t,ds)).join('')}</div>`
+        `<div class="cell${ds===td?' today':''}" data-zone="${ds}" data-slot="${h}">${
+          (timed[h]||[]).map(t=>btCard(t,ds,true)).join('')}</div>`
       ).join('');
   }
   html += `</div>`;
@@ -2348,6 +2403,25 @@ $('#resetBoard').onclick = () => {
 function saveTypes(list){
   ui.types = list; saveLocal(); push('ui', ui); invalidateKw(); renderAll();
 }
+/* 類型從 11 種細分改成 9 種（2026-08-10）。只跑一次，舊任務照 TYPE_MIGRATE_V2 併過去，
+   原本的類型留在 typeOld 欄，萬一併錯了還查得回來。 */
+function migrateTypesV2(){
+  if (ui.typesVersion === 2) return 0;
+  ui.types = DEFAULT_TYPES.map(t=>({...t}));
+  ui.typesVersion = 2;
+  let n = 0;
+  Object.values(tasks).forEach(t => {
+    const nw = TYPE_MIGRATE_V2[t.type];
+    if (nw){ t.typeOld = t.type; t.type = nw; t.updatedAt = Date.now(); n++; }
+  });
+  const L = (ui.learn && ui.learn.type) || {};
+  Object.keys(L).forEach(k => { if (TYPE_MIGRATE_V2[L[k]]) L[k] = TYPE_MIGRATE_V2[L[k]]; });
+  saveLocal(); push('ui', ui);
+  if (n) push('tasks', tasks);
+  invalidateKw();
+  if (n) setTimeout(()=>toast(`工作類型已簡化，${n} 筆任務跟著併過去`), 1200);
+  return n;
+}
 function renderTypeList(){
   const box = $('#typeList'); if (!box) return;
   const defs = typeDefs(), used = {};
@@ -2577,6 +2651,7 @@ function showApp(){
   $('#app').style.display = '';
   $('#fab').style.display = 'flex';
   if (seedClients()) saveLocal();
+  migrateTypesV2();
   renderClock(); setInterval(renderClock, 1000);
   setInterval(()=>{ renderGreetNote(); renderAlerts(); }, 60000);
   renderTools(); renderBoardOrder(); renderCardTitles();
