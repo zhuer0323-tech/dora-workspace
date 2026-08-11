@@ -80,8 +80,10 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 .empty{color:var(--ink3);font-size:13px;text-align:center;padding:16px 0;line-height:1.7}
 
 /* ---------- 今日主控台（可拖拉） ---------- */
-#board{display:grid;gap:14px;grid-template-columns:1fr;align-items:start}
+/* align-items:stretch＋卡片撐滿高度＝同一排的卡片會對齊，版面才不會參差不齊 */
+#board{display:grid;gap:14px;grid-template-columns:1fr;align-items:stretch}
 @media(min-width:760px){#board{grid-template-columns:repeat(auto-fill,minmax(330px,1fr))}}
+.tile>.card,.tile>.hero{height:100%}
 .tile{position:relative}
 .tile.wide{grid-column:1/-1}          /* 今日時間表要占滿一整排 */
 #dayPlanCount{margin-right:26px}      /* 讓開右上角的拖曳把手 */
@@ -321,19 +323,32 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 .dayv .cell:hover{background:var(--pink-xl)}
 .dayv .cell .bt{font-size:12px}
 /* 今日頁那張卡的時間表：一天要塞在一張卡裡，所以列高壓低一點 */
-.dayv.compact{grid-template-columns:50px 1fr}
-.dayv.compact .hr{min-height:40px;font-size:10.5px;padding-top:3px}
-.dayv.compact .cell{min-height:40px;padding:2px 5px}
-.dayv.compact .cell .bt{font-size:11.5px;padding:4px 7px}
+.dayv.compact{grid-template-columns:46px 1fr}
+.dayv.compact .hr{min-height:34px;font-size:10.5px;padding-top:2px}
+.dayv.compact .cell{min-height:34px;padding:2px 5px}
+.dayv.compact .cell .bt{font-size:11.5px;padding:3px 7px;margin-bottom:2px}
 .dayhead{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;
   padding-bottom:12px;border-bottom:2px solid var(--line)}
 .dayhead .big{font-size:30px;font-weight:800;line-height:1}
 .dayhead .sub{font-size:12px;color:var(--ink3)}
-.unbox{background:#FFFAFC;border:1.5px dashed var(--line);border-radius:12px;padding:10px;margin-bottom:14px}
-.unbox h5{margin:0 0 8px;font-size:11.5px;color:var(--ink3);font-weight:700;
-  display:flex;align-items:center;gap:6px}
+/* 還沒排時間那區：卡片多欄排，不然十幾筆一行一張會把整頁撐得很長 */
+.unbox{background:#FFFAFC;border:1.5px dashed var(--line);border-radius:12px;padding:10px;margin-bottom:14px;
+  display:grid;grid-template-columns:1fr;gap:6px;align-content:start}
+.unbox h5{grid-column:1/-1;margin:0;font-size:11.5px;color:var(--ink3);font-weight:700;
+  display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .unbox h5 em{font-style:normal;font-weight:500;opacity:.85}
-.unbox .bt{font-size:12.5px}
+.unbox .bt{font-size:12.5px;margin-bottom:0}
+.unbox .bt-ph{margin-bottom:0}
+@media(min-width:520px){ .unbox{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media(min-width:1000px){ .unbox{grid-template-columns:repeat(3,minmax(0,1fr))} }
+@media(min-width:1300px){ .unbox{grid-template-columns:repeat(4,minmax(0,1fr))} }
+/* 手機：卡片壓扁一點，十幾筆才不會滑不完 */
+@media(max-width:519px){
+  .unbox{gap:5px;padding:9px}
+  .unbox .bt{padding:4px 8px;line-height:1.35}
+  .unbox .bt .bc{font-size:9.5px}
+  .dayv.compact .hr,.dayv.compact .cell{min-height:30px}
+}
 
 /* 月曆 */
 .mo{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;background:var(--line);
@@ -1644,11 +1659,16 @@ function makeCardSortable(root){
 
     const z = zoneAt(e.clientX, e.clientY) || ph.parentElement;
     if (z !== ph.parentElement){ z.appendChild(ph); mark(z); }
+    // 未排時間那區是多欄排的，要看左右；單欄的（時間格、週檢視）看上下
+    const cs = getComputedStyle(z);
+    const multi = cs.display === 'grid' && cs.gridTemplateColumns.split(/\s+/).filter(Boolean).length > 1;
     for (const o of z.querySelectorAll('.bt')){
       if (o === el) continue;
       const r = o.getBoundingClientRect();
-      if (e.clientY >= r.top && e.clientY <= r.bottom && e.clientX >= r.left-50 && e.clientX <= r.right+50){
-        o.parentNode.insertBefore(ph, (e.clientY - r.top) > r.height/2 ? o.nextSibling : o);
+      const pad = multi ? 0 : 50;
+      if (e.clientY >= r.top && e.clientY <= r.bottom && e.clientX >= r.left-pad && e.clientX <= r.right+pad){
+        const after = multi ? (e.clientX - r.left) > r.width/2 : (e.clientY - r.top) > r.height/2;
+        o.parentNode.insertBefore(ph, after ? o.nextSibling : o);
         break;
       }
     }

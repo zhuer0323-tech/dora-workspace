@@ -171,6 +171,9 @@ Node.js 透過 nvm 安裝，路徑：`/Users/angela/.nvm/versions/node/v24.15.0/
 - 從時間軸拖回「還沒排時間」→ 清掉 `time`
 - 週檢視拖到別天 → 順便改 `due`（重複任務不動）
 - 拖曳中目標格會亮（`.dropok`），靠近視窗上下緣會自動捲動
+- 「還沒排時間」是多欄網格（手機 1 欄→520px 2 欄→1000px 3 欄→1300px 4 欄），
+  所以換位置時要看**左右**中線；單欄的時間格與週檢視看上下（`makeCardSortable` 裡用
+  `gridTemplateColumns` 判斷）
 
 ### 維護重點
 - **新增客戶**：直接打字讓它自動建，或客戶頁手動新增；匯入路線仍看 `scripts/notion-to-workspace.py` 的 `CLIENT_KEYWORDS`
