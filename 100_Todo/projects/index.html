@@ -1310,17 +1310,16 @@ const scopeTasks = () => Object.values(tasks).filter(t => (t.area||'work') === s
 const LUNAR_DAY = ['','初一','初二','初三','初四','初五','初六','初七','初八','初九','初十',
   '十一','十二','十三','十四','十五','十六','十七','十八','十九','二十',
   '廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];
-const ZODIAC = { 子:'鼠', 丑:'牛', 寅:'虎', 卯:'兔', 辰:'龍', 巳:'蛇',
-                 午:'馬', 未:'羊', 申:'猴', 酉:'雞', 戌:'狗', 亥:'豬' };
+// 只顯示農曆的月與日。年份的干支與生肖（例如丙午馬年）講的是「今年」不是朱兒本人，
+// 容易看混，所以拿掉。
 function lunarText(d){
   try{
     const parts = new Intl.DateTimeFormat('zh-TW-u-ca-chinese',
-      { year:'numeric', month:'long', day:'numeric' }).formatToParts(d);
+      { month:'long', day:'numeric' }).formatToParts(d);
     const get = t => parts.find(p => p.type === t)?.value || '';
-    const yn = get('yearName'), mo = get('month'), day = +get('day');
+    const mo = get('month'), day = +get('day');
     if (!mo || !day) return '';
-    const zo = ZODIAC[yn.slice(-1)] || '';
-    return `農曆 ${yn}${zo}年 ${mo}${LUNAR_DAY[day] || day + '日'}`;
+    return `農曆 ${mo}${LUNAR_DAY[day] || day + '日'}`;
   }catch(e){ return ''; }
 }
 
