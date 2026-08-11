@@ -105,6 +105,10 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 .hero .note{font-size:12px;opacity:.9;margin-top:2px}
 .hero .clock{font-size:40px;font-weight:800;margin:10px 0 2px;font-variant-numeric:tabular-nums}
 .hero .date{font-size:12px;opacity:.92}
+.hero .lunar{font-size:12px;opacity:.85;margin-top:3px}
+.hero .motto{position:relative;z-index:1;margin-top:14px;padding-top:13px;
+  border-top:1px solid rgba(255,255,255,.34);font-size:13.5px;font-weight:600;line-height:1.65}
+.hero .motto:empty{display:none}
 
 .focus-item{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-bottom:1px dashed var(--line)}
 .focus-item:last-child{border-bottom:none}
@@ -573,6 +577,8 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
             <div class="note" id="greetNote"></div>
             <div class="clock" id="clock">--:--:--</div>
             <div class="date" id="todayDate"></div>
+            <div class="lunar" id="lunar"></div>
+            <div class="motto" id="motto"></div>
           </div>
         </div>
 
@@ -1299,12 +1305,67 @@ function visibleTasks(ignoreStatus){
 const scopeTasks = () => Object.values(tasks).filter(t => (t.area||'work') === scope);
 
 /* ---------- 今日 ---------- */
+/* 農曆用瀏覽器內建的中國曆（Intl 的 ca-chinese），不自己維護萬年曆表，
+   閏月、春節這些都由瀏覽器處理，也不用連網。太舊的瀏覽器算不出來就整行不顯示。 */
+const LUNAR_DAY = ['','初一','初二','初三','初四','初五','初六','初七','初八','初九','初十',
+  '十一','十二','十三','十四','十五','十六','十七','十八','十九','二十',
+  '廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];
+const ZODIAC = { 子:'鼠', 丑:'牛', 寅:'虎', 卯:'兔', 辰:'龍', 巳:'蛇',
+                 午:'馬', 未:'羊', 申:'猴', 酉:'雞', 戌:'狗', 亥:'豬' };
+function lunarText(d){
+  try{
+    const parts = new Intl.DateTimeFormat('zh-TW-u-ca-chinese',
+      { year:'numeric', month:'long', day:'numeric' }).formatToParts(d);
+    const get = t => parts.find(p => p.type === t)?.value || '';
+    const yn = get('yearName'), mo = get('month'), day = +get('day');
+    if (!mo || !day) return '';
+    const zo = ZODIAC[yn.slice(-1)] || '';
+    return `農曆 ${yn}${zo}年 ${mo}${LUNAR_DAY[day] || day + '日'}`;
+  }catch(e){ return ''; }
+}
+
+/* 每日一句：照一年的第幾天輪，同一天打開幾次都一樣 */
+const MOTTOS = [
+  '每一個早晨都是全新的機會，你可以的！',
+  '今天也要閃閃發光，加油朱兒！',
+  '你的努力有人看見，繼續往前走！',
+  '小步也是前進，不要停下來。',
+  '相信自己，今天的你比昨天更強大。',
+  '先做最重要的那一件，其他的都好說。',
+  '今天的挑戰都是明天的養分，加油！',
+  '把難的先解決掉，剩下的一整天都是輕鬆的。',
+  '數字會說話，但決定往哪走的人是你。',
+  '做不完是常態，做得完的部分做好就很棒了。',
+  '客戶的難題，就是你發揮的地方。',
+  '慢一點沒關係，方向對就好。',
+  '今天先照顧好自己，工作才走得遠。',
+  '每一次調整都讓成效更靠近目標一點。',
+  '你已經處理過更難的事了，這件也可以。',
+  '想太多會累，先動手做一點點。',
+  '把今天的三件事做完，就是完美的一天。',
+  '成果是累積出來的，不是一天蹦出來的。',
+  '休息不是浪費時間，是為了走更遠。',
+  '別人的節奏是別人的，你有你的步調。',
+  '今天做的每一個決定，都在幫未來的你省力。',
+  '搞定一件，就從清單上劃掉一件，很爽的。',
+  '事情再多，也是一件一件做完的。',
+  '你比你想像中更能撐，也更值得被肯定。'
+];
+const dayOfYear = d => Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 86400000);
+
 function renderClock(){
   const d = new Date();
   $('#clock').textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
   const h = d.getHours();
   $('#greet').textContent = h<5?'夜深了，朱兒' : h<11?'早安，朱兒' : h<13?'午安，朱兒' : h<18?'下午好，朱兒' : '晚上好，朱兒';
   $('#todayDate').textContent = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 週${WDAY[d.getDay()]}`;
+  // 農曆與每日一句一天只算一次，不用跟著秒針重算
+  const ds = TODAY(), lu = $('#lunar');
+  if (lu && lu.dataset.d !== ds){
+    lu.dataset.d = ds;
+    lu.textContent = lunarText(d);
+    $('#motto').textContent = MOTTOS[dayOfYear(d) % MOTTOS.length];
+  }
 }
 function renderGreetNote(){
   const td = TODAY(), all = scopeTasks();
