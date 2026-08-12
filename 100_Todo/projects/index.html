@@ -422,8 +422,8 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 @media(min-width:980px){.cgrid{grid-template-columns:repeat(4,1fr)}}
 @media(min-width:1240px){.cgrid{grid-template-columns:repeat(5,1fr)}}
 .cgrid.dropok{background:var(--pink-xl);box-shadow:inset 0 0 0 2px var(--pink-l)}
-.cgrid .cempty{grid-column:1/-1;text-align:center;color:var(--ink3);font-size:12px;
-  padding:18px 0;border:1.5px dashed var(--line);border-radius:14px}
+.cgrid .cempty{grid-column:1/-1;text-align:center;color:var(--ink3);font-size:11.5px;
+  padding:11px 0;border:1.5px dashed var(--line);border-radius:14px}
 .client-card{position:relative;display:flex;align-items:flex-start;gap:9px;background:#fff;
   border-radius:14px;padding:12px 11px;box-shadow:var(--shadow);cursor:pointer;min-width:0}
 .client-card.off{opacity:.55}
@@ -440,6 +440,10 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .client-card .ci span{display:block;font-size:11px;color:var(--ink3);line-height:1.45;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* 我負責的項目：她自己打的字，最多顯示三行，超過的部分點進去看 */
+.client-card .ci span.duty{white-space:pre-line;display:-webkit-box;-webkit-line-clamp:3;
+  -webkit-box-orient:vertical;text-overflow:clip;margin-top:1px}
+.client-card .ci span.duty.none{color:#D3C7CB;font-style:italic}
 .client-card .pend{display:inline-block;font-size:10px;font-weight:700;margin-top:2px;
   padding:1px 7px;border-radius:99px;background:#FFF3DC;color:#B07A16;white-space:nowrap}
 .client-card .ico{position:absolute;right:6px;bottom:6px;width:24px;height:24px;border-radius:8px;
@@ -962,6 +966,10 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
         </div>
       </div>
     </div>
+    <div class="f"><label>我負責的項目</label>
+      <textarea id="cmDuty" rows="3"
+        placeholder="這裡打什麼，客戶卡上就顯示什麼，例：&#10;Meta 廣告投放&#10;每月成效報表&#10;IG 貼文企劃"></textarea>
+    </div>
     <div class="f"><label>認字關鍵字</label>
       <input id="cmKw" placeholder="打到這些字就算這個客戶，用逗號分開，例：李享家,李老闆,李老板">
     </div>
@@ -1054,7 +1062,9 @@ const STATUS = { todo:'待開始', doing:'進行中', done:'已完成' };
 const CGROUPS = [
   { k:'ad',      t:'廣告投放', ic:'📣' },
   { k:'consult', t:'顧問陪跑', ic:'🤝' },
-  { k:'project', t:'專案協作', ic:'🧩' }
+  { k:'project', t:'專案協作', ic:'🧩' },
+  { k:'vendor',  t:'合作廠商', ic:'🏭' },
+  { k:'lf',      t:'LF',      ic:'🔖' }
 ];
 const cgroupOf = c => CGROUPS.some(g => g.k === c.group) ? c.group : 'ad';
 const WDAY = ['日','一','二','三','四','五','六'];
@@ -1123,7 +1133,7 @@ function seedClients(){
   DEFAULT_CLIENTS.forEach((c,i)=>{
     const id = uid();
     clients[id] = { id, name:c.name, short:c.short||'', drive:'', kw:'', active:true, note:'',
-                    group:'ad', logo:'', order:i };
+                    group:'ad', logo:'', duty:'', order:i };
   });
   return true;
 }
@@ -1246,7 +1256,7 @@ function createClient(name, pending){
   const ex = clientByName(name); if (ex) return ex.id;
   const id = uid();
   clients[id] = { id, name, short:'', drive:'', kw:'', active:true, note:'',
-                  group:'ad', logo:'',
+                  group:'ad', logo:'', duty:'',
                   pending: !!pending, order: Object.keys(clients).length };
   saveLocal(); push(`clients/${id}`, clients[id]); invalidateKw();
   return id;
@@ -2065,10 +2075,9 @@ function clientAvatar(c){
   return `<div class="av" style="background:hsl(${h},52%,92%);color:hsl(${h},42%,42%)">${esc(ch)}</div>`;
 }
 function renderClients(){
-  const count = id => Object.values(tasks).filter(t=>t.client===id && !isDone(t)).length;
+  // 卡片上顯示的是朱兒自己打的「我負責的項目」，不是系統算的未完成件數
   const card = (c, drag) => {
-    const bits = [`未完成 ${count(c.id)} 件`];
-    if (c.note) bits.push(esc(c.note));
+    const duty = (c.duty || '').trim();
     const cloud = c.drive
       ? `<a class="ico" href="${esc(c.drive)}" target="_blank" rel="noopener" title="開啟 Google 雲端資料夾">☁️</a>`
       : `<button class="ico off" data-client="${c.id}" title="還沒設定雲端連結，點這裡設定">☁</button>`;
@@ -2076,7 +2085,9 @@ function renderClients(){
       title="${esc(c.name)}">
       ${drag ? `<span class="ch" data-cdrag title="按住拖曳：換順序或換分區">⠿</span>` : ''}
       ${clientAvatar(c)}
-      <div class="ci"><b>${esc(c.short||c.name)}</b><span>${bits.join(' · ')}</span>${
+      <div class="ci"><b>${esc(c.short||c.name)}</b>${
+        duty ? `<span class="duty">${esc(duty)}</span>`
+             : `<span class="duty none">點一下填我負責的項目</span>`}${
         c.pending ? `<span class="pend">待確認</span>` : ''}</div>
       ${cloud}
     </div>`;
@@ -2478,7 +2489,7 @@ function openClient(id){
   $('#cmTitle').textContent = c ? (c.pending ? '確認新客戶' : '編輯客戶') : '新增客戶';
   $('#cmDel').classList.toggle('hide', !c);
   $('#cmName').value = c?.name || ''; $('#cmShort').value = c?.short || '';
-  $('#cmKw').value = c?.kw || '';
+  $('#cmKw').value = c?.kw || ''; $('#cmDuty').value = c?.duty || '';
   $('#cmDrive').value = c?.drive || ''; $('#cmNote').value = c?.note || '';
   $('#cmGroup').innerHTML = CGROUPS.map(g=>`<button data-v="${g.k}">${g.ic} ${g.t}</button>`).join('');
   segSet('cmGroup', c ? cgroupOf(c) : 'ad');
@@ -2498,6 +2509,7 @@ $('#cmSave').onclick = () => {
     short: $('#cmShort').value.trim(), drive: $('#cmDrive').value.trim(),
     kw: $('#cmKw').value.trim(),
     group: segGet('cmGroup') || 'ad', logo: cmLogo || '',
+    duty: $('#cmDuty').value.trim(),
     active: segGet('cmActive') === '1', note: $('#cmNote').value.trim(),
     pending: false,                      // 存過就是確認過了，「待確認」標記拿掉
     order: editingClient?.order ?? Object.keys(clients).length
@@ -2991,7 +3003,7 @@ $('#importFile').onchange = async e => {
       const id = uid();
       clients[id] = {
         id, name: c.name, short: '', drive: '',
-        group: 'ad', logo: '',
+        group: 'ad', logo: '', duty: '',
         active: c.active !== false, note: '',
         order: Object.keys(clients).length
       };
