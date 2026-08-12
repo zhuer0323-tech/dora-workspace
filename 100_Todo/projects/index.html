@@ -133,6 +133,21 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 .gsel.c{background-color:#EDE7F6;color:#6B5B95;border-color:#DDD2EE}
 .gsel.t{background-color:var(--pink-xl);color:var(--pink-d);border-color:var(--pink-l)}
 .gsel.blank{background-color:#F4F1F2;color:var(--ink3);border-color:var(--line)}
+/* 送出前的確認區：打完字按 Enter 才展開，設定好日期／狀態／備註再真的加入 */
+.qmore{margin-top:10px;padding:11px 12px;border-radius:14px;background:var(--pink-xl);
+  border:1.5px solid var(--pink-l)}
+.qmore .qrow{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.qmore .qrow:last-of-type{margin-bottom:0}
+.qmore .ql{font-size:11px;color:var(--ink3);font-weight:700;flex:none;width:52px}
+.qmore .qf{flex:1;min-width:0;border:1.5px solid var(--line);border-radius:10px;background:#fff;
+  padding:6px 9px;font-size:12.5px;outline:none;font-family:inherit;color:var(--ink)}
+.qmore .qf:focus{border-color:var(--pink-l)}
+.qmore .seg{flex:1}
+.qmore .seg button{min-width:0;padding:6px 4px;font-size:12px}
+.qmore-act{display:flex;gap:8px;margin-top:10px}
+.qmore-act button{flex:1;padding:9px 12px;border-radius:12px;font-weight:700;font-size:13px}
+.qmore-act .ok{background:var(--pink);color:#fff}
+.qmore-act .no{background:#fff;color:var(--ink3);border:1.5px solid var(--line)}
 .daily-score{display:flex;gap:8px;margin-top:14px}
 .daily-score div{flex:1;background:var(--pink-xl);border-radius:13px;padding:10px 6px;text-align:center}
 .daily-score b{display:block;font-size:18px;font-weight:800;color:var(--pink-d);line-height:1.2}
@@ -399,21 +414,45 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 .tool .n{font-weight:700;font-size:14.5px;margin-top:9px}
 .tool .d{font-size:11.5px;color:var(--ink3);margin-top:3px;line-height:1.45}
 
-#clientList{display:grid;gap:8px}
-@media(min-width:900px){#clientList{grid-template-columns:1fr 1fr}}
-#clientList .sec-title,#clientList .empty{grid-column:1/-1}
-.client-row{display:flex;align-items:center;gap:10px;background:#fff;border-radius:14px;
-  padding:12px 13px;box-shadow:var(--shadow)}
-.client-row.off{opacity:.55}
-.client-row .n{flex:1;min-width:0;cursor:pointer}
-.client-row .n b{font-size:14.5px}
-.client-row .n span{display:block;font-size:11.5px;color:var(--ink3)}
-/* 自動建立、待朱兒確認的客戶：這個標籤要黏在名字旁邊，不能被上面那條規則撐成一整行 */
-.client-row .n span.pend{display:inline-block;font-size:10.5px;font-weight:700;margin-left:6px;
-  padding:1px 8px;border-radius:99px;background:#FFF3DC;color:#B07A16}
-.client-row .ico{width:34px;height:34px;border-radius:11px;background:var(--pink-xl);flex:none;
-  display:flex;align-items:center;justify-content:center;font-size:17px;text-decoration:none}
-.client-row .ico.off{background:#F4EEF0;color:var(--ink3);font-size:15px}
+/* 客戶頁：廣告投放／顧問陪跑／專案協作三區，每區是一排 4–5 個的小卡，可以互相拖 */
+.csec{margin-bottom:18px}
+.cgrid{display:grid;gap:10px;grid-template-columns:1fr 1fr;
+  border-radius:16px;padding:2px;transition:background .15s}
+@media(min-width:640px){.cgrid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:980px){.cgrid{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:1240px){.cgrid{grid-template-columns:repeat(5,1fr)}}
+.cgrid.dropok{background:var(--pink-xl);box-shadow:inset 0 0 0 2px var(--pink-l)}
+.cgrid .cempty{grid-column:1/-1;text-align:center;color:var(--ink3);font-size:12px;
+  padding:18px 0;border:1.5px dashed var(--line);border-radius:14px}
+.client-card{position:relative;display:flex;align-items:flex-start;gap:9px;background:#fff;
+  border-radius:14px;padding:12px 11px;box-shadow:var(--shadow);cursor:pointer;min-width:0}
+.client-card.off{opacity:.55}
+.client-card.cdrag{position:fixed;z-index:80;pointer-events:none;box-shadow:var(--shadow-l);
+  transform:rotate(-1.5deg);opacity:.95}
+.client-card .ch{position:absolute;top:4px;right:6px;font-size:11px;color:#CFC4C8;
+  cursor:grab;touch-action:none;line-height:1;padding:3px}
+.client-card .av{width:34px;height:34px;border-radius:10px;flex:none;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;background:var(--pink-xl);
+  font-size:14px;font-weight:800;color:var(--pink-d)}
+.client-card .av img{width:100%;height:100%;object-fit:contain;background:#fff}
+.client-card .ci{flex:1;min-width:0;padding-right:10px}
+.client-card .ci b{display:block;font-size:13.5px;line-height:1.3;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.client-card .ci span{display:block;font-size:11px;color:var(--ink3);line-height:1.45;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.client-card .pend{display:inline-block;font-size:10px;font-weight:700;margin-top:2px;
+  padding:1px 7px;border-radius:99px;background:#FFF3DC;color:#B07A16;white-space:nowrap}
+.client-card .ico{position:absolute;right:6px;bottom:6px;width:24px;height:24px;border-radius:8px;
+  background:var(--pink-xl);display:flex;align-items:center;justify-content:center;
+  font-size:12px;text-decoration:none}
+.client-card .ico.off{background:#F4EEF0;color:var(--ink3);font-size:11px}
+.cli-ph{border:1.5px dashed var(--pink-l);border-radius:14px;background:var(--pink-xl)}
+/* 客戶編輯視窗裡的 logo 預覽 */
+.logo-box{display:flex;align-items:center;gap:10px}
+.logo-prev{width:52px;height:52px;border-radius:13px;flex:none;background:var(--pink-xl);
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+  font-size:19px;font-weight:800;color:var(--pink-d)}
+.logo-prev img{width:100%;height:100%;object-fit:contain;background:#fff}
 .sec-title{font-size:12px;color:var(--ink3);font-weight:700;margin:14px 0 4px;letter-spacing:1px}
 
 .set-card{background:#fff;border-radius:var(--r);box-shadow:var(--shadow);padding:16px;margin-bottom:12px}
@@ -603,7 +642,35 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
               <select id="qgClient" class="gsel c"></select>
               <select id="qgType" class="gsel t"></select>
             </div>
-            <div class="quick-hint">預設帶「今日須完成 · 待開始 · 今天」，之後可以再補細節。
+            <!-- 送出前的確認區：按 Enter／加入 才展開，設定完再按「確定加入」 -->
+            <div class="qmore hide" id="quickMore">
+              <div class="qrow">
+                <span class="ql">到期日</span>
+                <input type="date" id="qgDue" class="qf">
+              </div>
+              <div class="qrow">
+                <span class="ql">重要度</span>
+                <select id="qgPrio" class="qf"></select>
+              </div>
+              <div class="qrow">
+                <span class="ql">狀態</span>
+                <div class="seg status" id="qgStatus">
+                  <button data-v="todo">待開始</button>
+                  <button data-v="doing">進行中</button>
+                  <button data-v="done">已完成</button>
+                </div>
+              </div>
+              <div class="qrow">
+                <span class="ql">備註</span>
+                <input id="qgNote" class="qf" placeholder="可留空，之後也能再補">
+              </div>
+              <div class="qmore-act">
+                <button class="no" id="qgCancel">取消</button>
+                <button class="ok" id="qgOk">確定加入</button>
+              </div>
+            </div>
+            <div class="quick-hint">打完字按 Enter 或「加入」會先跳出確認，
+              可以改到期日、重要度、狀態、備註，再按「確定加入」才會存進去（Esc 取消）。<br>
               客戶與類型會自己判斷，猜錯的話直接在上面改，它會記起來</div>
             <div class="daily-score" id="dailyScore"></div>
             <button class="btn ghost sm" id="goToday" style="width:100%;margin-top:10px">查看今天到期的任務 →</button>
@@ -709,7 +776,8 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 
     <section class="page" id="p-clients">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-        <div class="tiny" style="flex:1">點雲朵圖示開該客戶的 Google 雲端資料夾</div>
+        <div class="tiny" style="flex:1">按住卡片右上角的 ⠿ 可以拖曳：同一區換順序，拖到別區就改分類。
+          點卡片編輯（可上傳 logo），點右下角雲朵開 Google 雲端資料夾。</div>
         <button class="btn sm" id="addClientBtn">＋ 新增客戶</button>
       </div>
       <div id="clientList"></div>
@@ -880,6 +948,20 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
     <h3 id="cmTitle">新增客戶</h3>
     <div class="f"><label>客戶全名</label><input id="cmName" placeholder="例：李享家直播集團"></div>
     <div class="f"><label>顯示簡稱</label><input id="cmShort" placeholder="例：李老闆（留空就用全名）"></div>
+    <div class="f"><label>分區</label>
+      <div class="seg" id="cmGroup"></div>
+    </div>
+    <div class="f"><label>客戶 Logo</label>
+      <div class="logo-box">
+        <div class="logo-prev" id="cmLogoPrev"></div>
+        <div style="flex:1;min-width:0">
+          <input type="file" id="cmLogoFile" accept="image/*" style="max-width:100%;font-size:12px">
+          <div class="tiny" style="margin-top:4px">整張自動縮小存成白底方塊（不會裁切），沒上傳就顯示簡稱第一個字。
+            <button type="button" class="btn ghost sm" id="cmLogoDel" style="margin-left:6px">移除</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="f"><label>認字關鍵字</label>
       <input id="cmKw" placeholder="打到這些字就算這個客戶，用逗號分開，例：李享家,李老闆,李老板">
     </div>
@@ -968,6 +1050,13 @@ const PRIO = {
   daily:     { t:'日常任務',        c:'#C0B6BA', o:4 }
 };
 const STATUS = { todo:'待開始', doing:'進行中', done:'已完成' };
+// 客戶分區。舊資料沒有 group 欄位，一律當成「廣告投放」，不需要另外做搬移
+const CGROUPS = [
+  { k:'ad',      t:'廣告投放', ic:'📣' },
+  { k:'consult', t:'顧問陪跑', ic:'🤝' },
+  { k:'project', t:'專案協作', ic:'🧩' }
+];
+const cgroupOf = c => CGROUPS.some(g => g.k === c.group) ? c.group : 'ad';
 const WDAY = ['日','一','二','三','四','五','六'];
 const PAGE_SIZE = 60;
 
@@ -1033,7 +1122,8 @@ function seedClients(){
   if (Object.keys(clients).length) return false;
   DEFAULT_CLIENTS.forEach((c,i)=>{
     const id = uid();
-    clients[id] = { id, name:c.name, short:c.short||'', drive:'', kw:'', active:true, note:'', order:i };
+    clients[id] = { id, name:c.name, short:c.short||'', drive:'', kw:'', active:true, note:'',
+                    group:'ad', logo:'', order:i };
   });
   return true;
 }
@@ -1156,6 +1246,7 @@ function createClient(name, pending){
   const ex = clientByName(name); if (ex) return ex.id;
   const id = uid();
   clients[id] = { id, name, short:'', drive:'', kw:'', active:true, note:'',
+                  group:'ad', logo:'',
                   pending: !!pending, order: Object.keys(clients).length };
   saveLocal(); push(`clients/${id}`, clients[id]); invalidateKw();
   return id;
@@ -1966,30 +2057,125 @@ function renderTools(){
       <div class="ic">${t.ic}</div><div class="n">${esc(t.n)}</div><div class="d">${esc(t.d)}</div>
     </a>`).join('');
 }
+/* 沒上傳 logo 的客戶：用簡稱第一個字當替代圖，顏色照 id 固定，不會每次重整都換 */
+function clientAvatar(c){
+  if (c.logo) return `<div class="av"><img src="${esc(c.logo)}" alt=""></div>`;
+  const ch = (c.short || c.name || '？').trim().charAt(0);
+  let h = 0; for (const s of (c.id||'')) h = (h * 31 + s.charCodeAt(0)) % 360;
+  return `<div class="av" style="background:hsl(${h},52%,92%);color:hsl(${h},42%,42%)">${esc(ch)}</div>`;
+}
 function renderClients(){
-  const list = sortedClients();
   const count = id => Object.values(tasks).filter(t=>t.client===id && !isDone(t)).length;
-  const row = c => {
-    const bits = [];
-    if (c.short && c.short !== c.name) bits.push(esc(c.name));
-    bits.push(`未完成 ${count(c.id)} 件`);
+  const card = (c, drag) => {
+    const bits = [`未完成 ${count(c.id)} 件`];
     if (c.note) bits.push(esc(c.note));
     const cloud = c.drive
       ? `<a class="ico" href="${esc(c.drive)}" target="_blank" rel="noopener" title="開啟 Google 雲端資料夾">☁️</a>`
       : `<button class="ico off" data-client="${c.id}" title="還沒設定雲端連結，點這裡設定">☁</button>`;
-    return `<div class="client-row${c.active?'':' off'}">
-      <div class="n" data-client="${c.id}"><b>${esc(c.short||c.name)}</b>${
-        c.pending ? `<span class="pend">待確認</span>` : ''
-      }<span>${bits.join(' · ')}</span></div>
-      ${cloud}<button class="btn ghost sm" data-client="${c.id}">編輯</button>
+    return `<div class="client-card${c.active?'':' off'}" data-client="${c.id}" data-cli="${c.id}"
+      title="${esc(c.name)}">
+      ${drag ? `<span class="ch" data-cdrag title="按住拖曳：換順序或換分區">⠿</span>` : ''}
+      ${clientAvatar(c)}
+      <div class="ci"><b>${esc(c.short||c.name)}</b><span>${bits.join(' · ')}</span>${
+        c.pending ? `<span class="pend">待確認</span>` : ''}</div>
+      ${cloud}
     </div>`;
   };
-  // 自動建立、還沒確認的客戶排最上面，方便朱兒一次整理掉
-  const on = list.filter(c=>c.active).sort((a,b)=>(b.pending?1:0)-(a.pending?1:0));
-  const off = list.filter(c=>!c.active);
-  $('#clientList').innerHTML =
-    (on.length? on.map(row).join('') : `<div class="empty">還沒有客戶</div>`) +
-    (off.length? `<div class="sec-title">已結案</div>` + off.map(row).join('') : '');
+  // 自動建立、還沒確認的客戶排每一區最上面，方便朱兒一次整理掉
+  const inGroup = k => Object.values(clients)
+    .filter(c => c.active && cgroupOf(c) === k)
+    .sort((a,b)=> (b.pending?1:0)-(a.pending?1:0)
+      || (a.order??99)-(b.order??99) || a.name.localeCompare(b.name,'zh-Hant'));
+
+  let html = CGROUPS.map(g => {
+    const list = inGroup(g.k);
+    return `<div class="csec">
+      <div class="sec-title">${g.ic} ${g.t}（${list.length}）</div>
+      <div class="cgrid" data-cgroup="${g.k}">${
+        list.length ? list.map(c=>card(c,true)).join('')
+                    : `<div class="cempty">把客戶卡拖到這一區就會分過來</div>`}</div>
+    </div>`;
+  }).join('');
+
+  const off = Object.values(clients).filter(c=>!c.active)
+    .sort((a,b)=>(a.order??99)-(b.order??99) || a.name.localeCompare(b.name,'zh-Hant'));
+  if (off.length) html += `<div class="csec">
+    <div class="sec-title">✅ 已結案（${off.length}）</div>
+    <div class="cgrid">${off.map(c=>card(c,false)).join('')}</div></div>`;
+
+  $('#clientList').innerHTML = html;
+}
+
+/* 客戶卡可以拖：同一區換前後順序，拖到別區就直接改分區（不用刪掉重打）。
+   卡片是多欄排列，所以插在前面還後面看的是左右中線。已結案那一區沒有 data-cgroup，不能放。 */
+function makeClientSortable(root){
+  let el=null, ph=null, from=null, dx=0, dy=0, pid=null;
+  const zones = () => [...root.querySelectorAll('[data-cgroup]')];
+  const zoneAt = (x,y) => zones().find(z => {
+    const r = z.getBoundingClientRect();
+    return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+  });
+  const mark = z => zones().forEach(x => x.classList.toggle('dropok', x === z));
+
+  root.addEventListener('pointerdown', e => {
+    const h = e.target.closest('[data-cdrag]'); if (!h) return;
+    el = h.closest('.client-card'); from = el && el.closest('[data-cgroup]');
+    if (!el || !from){ el = null; return; }
+    e.preventDefault();
+    pid = e.pointerId; h.setPointerCapture(pid);
+    const r = el.getBoundingClientRect();
+    dx = e.clientX - r.left; dy = e.clientY - r.top;
+    ph = document.createElement('div');
+    ph.className = 'cli-ph'; ph.style.height = r.height + 'px';
+    el.parentNode.insertBefore(ph, el);
+    el.classList.add('cdrag');
+    Object.assign(el.style, { width:r.width+'px', left:r.left+'px', top:r.top+'px' });
+    mark(from);
+  });
+
+  root.addEventListener('pointermove', e => {
+    if (!el || e.pointerId !== pid) return;
+    e.preventDefault();
+    el.style.left = (e.clientX - dx) + 'px';
+    el.style.top  = (e.clientY - dy) + 'px';
+    if (e.clientY > innerHeight - 80) scrollBy(0, 16);
+    else if (e.clientY < 80) scrollBy(0, -16);
+
+    const z = zoneAt(e.clientX, e.clientY) || ph.parentElement;
+    if (z !== ph.parentElement){ z.appendChild(ph); mark(z); }
+    for (const o of z.querySelectorAll('.client-card')){
+      if (o === el) continue;
+      const r = o.getBoundingClientRect();
+      if (e.clientY >= r.top && e.clientY <= r.bottom && e.clientX >= r.left && e.clientX <= r.right){
+        o.parentNode.insertBefore(ph, (e.clientX - r.left) > r.width/2 ? o.nextSibling : o);
+        break;
+      }
+    }
+  });
+
+  const end = e => {
+    if (!el || (pid !== null && e.pointerId !== pid)) return;
+    el.classList.remove('cdrag'); el.style.cssText = '';
+    const to = ph.parentElement.closest('[data-cgroup]') || from;
+    ph.parentNode.insertBefore(el, ph); ph.remove();
+    mark(null);
+
+    const c = clients[el.dataset.cli];
+    let n = 0, note = '';
+    if (c && to.dataset.cgroup && cgroupOf(c) !== to.dataset.cgroup){
+      c.group = to.dataset.cgroup; n++;
+      note = `「${c.short||c.name}」搬到 ${CGROUPS.find(g=>g.k===c.group).t}`;
+    }
+    [...to.querySelectorAll('.client-card')].forEach((x,i) => {
+      const o = clients[x.dataset.cli];
+      if (o && o.order !== i*10){ o.order = i*10; n++; }
+    });
+    ph = null; el = null; from = null; pid = null;
+    noClickUntil = Date.now() + 400;
+    if (n){ saveLocal(); push('clients', clients); renderAll(); toast(note || '順序已記住'); }
+  };
+  root.addEventListener('pointerup', end);
+  root.addEventListener('pointercancel', end);
 }
 function renderStorageInfo(){
   const el = $('#storageInfo'); if (!el) return;
@@ -2242,6 +2428,50 @@ $('#taskModal').onclick = e => { if (e.target.id === 'taskModal') closeTask(); }
 
 /* ---------- 客戶彈窗 ---------- */
 let editingClient = null;
+/* logo 在瀏覽器裡就縮到 96×96 的白底方框再存，一張約 2–10KB，
+   30 個客戶也只多幾百 KB，不會拖慢開啟速度。
+   整張縮進去、不裁切——客戶 logo 多半是橫的，裁成方形會把字切掉 */
+const LOGO_PX = 96;
+function shrinkLogo(file){
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onerror = () => reject(new Error('讀不到這個檔案'));
+    fr.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('這個檔案不是圖片'));
+      img.onload = () => {
+        const k = Math.min(LOGO_PX/img.width, LOGO_PX/img.height, 1);
+        const w = Math.max(1, Math.round(img.width*k)), h = Math.max(1, Math.round(img.height*k));
+        const cv = document.createElement('canvas');
+        cv.width = cv.height = LOGO_PX;
+        const ctx = cv.getContext('2d');
+        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, LOGO_PX, LOGO_PX);
+        ctx.drawImage(img, (LOGO_PX-w)/2, (LOGO_PX-h)/2, w, h);
+        let out = cv.toDataURL('image/webp', .85);
+        if (!out.startsWith('data:image/webp')) out = cv.toDataURL('image/jpeg', .85);  // Safari 舊版沒有 webp
+        if (out.length > 40000) out = cv.toDataURL('image/jpeg', .6);
+        resolve(out);
+      };
+      img.src = fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+let cmLogo = '';
+function renderLogoPrev(){
+  const name = ($('#cmShort').value || $('#cmName').value || '？').trim().charAt(0) || '？';
+  $('#cmLogoPrev').innerHTML = cmLogo ? `<img src="${esc(cmLogo)}" alt="">` : esc(name);
+}
+$('#cmLogoFile').onchange = async e => {
+  const f = e.target.files?.[0]; if (!f) return;
+  try { cmLogo = await shrinkLogo(f); renderLogoPrev(); toast('logo 已載入，記得按儲存'); }
+  catch (err){ toast(err.message || '這張圖讀不進來'); }
+  e.target.value = '';
+};
+$('#cmLogoDel').onclick = () => { cmLogo = ''; renderLogoPrev(); };
+$('#cmName').oninput = renderLogoPrev;
+$('#cmShort').oninput = renderLogoPrev;
+
 function openClient(id){
   const c = id ? clients[id] : null;
   editingClient = c ? {...c} : null;
@@ -2250,12 +2480,16 @@ function openClient(id){
   $('#cmName').value = c?.name || ''; $('#cmShort').value = c?.short || '';
   $('#cmKw').value = c?.kw || '';
   $('#cmDrive').value = c?.drive || ''; $('#cmNote').value = c?.note || '';
+  $('#cmGroup').innerHTML = CGROUPS.map(g=>`<button data-v="${g.k}">${g.ic} ${g.t}</button>`).join('');
+  segSet('cmGroup', c ? cgroupOf(c) : 'ad');
+  cmLogo = c?.logo || ''; $('#cmLogoFile').value = ''; renderLogoPrev();
   segSet('cmActive', c ? (c.active?1:0) : 1);
   $('#clientModal').classList.add('on');
   if (!c) setTimeout(()=>$('#cmName').focus(), 120);
 }
 const closeClient = () => { $('#clientModal').classList.remove('on'); editingClient = null; };
 $('#cmActive').onclick = e => { const b = e.target.closest('button'); if (b) segSet('cmActive', b.dataset.v); };
+$('#cmGroup').onclick = e => { const b = e.target.closest('button'); if (b) segSet('cmGroup', b.dataset.v); };
 $('#cmSave').onclick = () => {
   const name = $('#cmName').value.trim();
   if (!name){ toast('客戶名稱要填喔'); return; }
@@ -2263,6 +2497,7 @@ $('#cmSave').onclick = () => {
     id: editingClient?.id || uid(), name,
     short: $('#cmShort').value.trim(), drive: $('#cmDrive').value.trim(),
     kw: $('#cmKw').value.trim(),
+    group: segGet('cmGroup') || 'ad', logo: cmLogo || '',
     active: segGet('cmActive') === '1', note: $('#cmNote').value.trim(),
     pending: false,                      // 存過就是確認過了，「待確認」標記拿掉
     order: editingClient?.order ?? Object.keys(clients).length
@@ -2296,6 +2531,8 @@ document.addEventListener('click', e => {
   if (rt){ e.stopPropagation(); toggleRoutine(rt.dataset.routine); return; }
   const open = e.target.closest('[data-open]');
   if (open){ openTask(open.dataset.open); return; }
+  // 客戶卡上的雲朵是連結，點它只開雲端資料夾，不要順便跳出編輯視窗
+  if (e.target.closest('a[href]')) return;
   const cli = e.target.closest('[data-client]');
   if (cli){ openClient(cli.dataset.client); return; }
 });
@@ -2406,6 +2643,34 @@ function renderQuickGuess(){
 $('#qgClient').onchange = () => { qGuess.client = true; $('#qgClient').classList.toggle('blank', !$('#qgClient').value); };
 $('#qgType').onchange   = () => { qGuess.type = true; };
 
+/* 兩段式：第一次 Enter／按「加入」只展開確認區，設定完到期日、重要度、狀態、備註，
+   再按一次 Enter 或「確定加入」才真的存進去。Esc 收起來。 */
+let qStaged = false;
+$('#qgPrio').innerHTML = Object.entries(PRIO).map(([k,v])=>`<option value="${k}">${v.t}</option>`).join('');
+
+function openQuickMore(){
+  if (!$('#quickInput').value.trim()) return;
+  qStaged = true;
+  $('#qgDue').value = TODAY();
+  $('#qgPrio').value = 'today';
+  segSet('qgStatus', 'todo');
+  $('#qgNote').value = '';
+  $('#quickMore').classList.remove('hide');
+  $('#quickBtn').textContent = '確定加入';
+}
+function closeQuickMore(){
+  qStaged = false;
+  $('#quickMore').classList.add('hide');
+  $('#quickBtn').textContent = '加入';
+}
+$('#qgStatus').onclick = e => { const b = e.target.closest('button'); if (b) segSet('qgStatus', b.dataset.v); };
+$('#qgCancel').onclick = closeQuickMore;
+$('#qgOk').onclick = () => quickAdd();
+$('#quickMore').onkeydown = e => {
+  if (e.key === 'Enter'){ e.preventDefault(); quickAdd(); }
+  else if (e.key === 'Escape') closeQuickMore();
+};
+
 function quickAdd(){
   const name = $('#quickInput').value.trim();
   if (!name) return;
@@ -2420,18 +2685,27 @@ function quickAdd(){
   if (qGuess.client && client && client !== d.client && !made) learnPair('client', d.ckey, client);
   if (qGuess.type && type !== d.type) learnPair('type', d.tkey, type);
 
+  const due = $('#qgDue').value || TODAY();
+  const status = segGet('qgStatus') || 'todo';
   saveTask({
     id: uid(), name, area: scope, client, type,
-    prio:'today', status:'todo', repeat:'none', wdays:[], doneDates:{},
-    start:'', due:TODAY(), time:'', mins:0, progress:0, note:'',
-    star:false, notionId:'', createdAt:Date.now(), doneAt:null
+    prio: $('#qgPrio').value || 'today', status, repeat:'none', wdays:[], doneDates:{},
+    start:'', due, time:'', mins:0,
+    progress: status === 'done' ? 100 : status === 'doing' ? 50 : 0,
+    note: $('#qgNote').value.trim(),
+    star:false, notionId:'', createdAt:Date.now(),
+    doneAt: status === 'done' ? Date.now() : null
   });
-  $('#quickInput').value = ''; renderQuickGuess();
-  toast(made ? `已加入今天 · 順便建了新客戶「${made}」` : '已加入今天');
+  $('#quickInput').value = ''; closeQuickMore(); renderQuickGuess();
+  const when = due === TODAY() ? '今天' : due.slice(5).replace('-','/');
+  toast(made ? `已加入 ${when} · 順便建了新客戶「${made}」` : `已加入 ${when}`);
 }
-$('#quickBtn').onclick = quickAdd;
-$('#quickInput').oninput = renderQuickGuess;
-$('#quickInput').onkeydown = e => { if (e.key === 'Enter') quickAdd(); };
+$('#quickBtn').onclick = () => qStaged ? quickAdd() : openQuickMore();
+$('#quickInput').oninput = () => { renderQuickGuess(); if (!$('#quickInput').value.trim()) closeQuickMore(); };
+$('#quickInput').onkeydown = e => {
+  if (e.key === 'Enter'){ e.preventDefault(); qStaged ? quickAdd() : openQuickMore(); }
+  else if (e.key === 'Escape') closeQuickMore();
+};
 $('#fab').onclick = () => openTask(null);
 
 /* ---------- 今日主控台：拖曳排序 ---------- */
@@ -2717,6 +2991,7 @@ $('#importFile').onchange = async e => {
       const id = uid();
       clients[id] = {
         id, name: c.name, short: '', drive: '',
+        group: 'ad', logo: '',
         active: c.active !== false, note: '',
         order: Object.keys(clients).length
       };
@@ -2821,6 +3096,7 @@ function showApp(){
   renderTools(); renderBoardOrder(); renderCardTitles();
   makeSortable($('#board'));
   makeCardSortable($('#boardView')); makeCardSortable($('#dayPlan'));
+  makeClientSortable($('#clientList'));
   renderAll();
 }
 function gateError(e){
