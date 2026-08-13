@@ -175,14 +175,9 @@ header.top .sub{font-size:12px;color:var(--ink3);margin-left:2px;font-weight:400
     <div><label>議題標題</label><input type="text" id="fTitle" placeholder="這篇要講什麼"></div>
     <div><label>這篇的目的</label><input type="text" id="fGoal" placeholder="專業形象 / 帶詢價 / 品牌好感"></div>
     <div>
-      <div class="fieldhd"><label style="margin:0">IG 版文案</label>
+      <div class="fieldhd"><label style="margin:0">貼文文案</label>
         <button class="copy" data-copy="ig">複製</button></div>
       <textarea id="fIg"></textarea>
-    </div>
-    <div>
-      <div class="fieldhd"><label style="margin:0">FB 版文案</label>
-        <button class="copy" data-copy="fb">複製</button></div>
-      <textarea id="fFb" class="fb"></textarea>
     </div>
     <div class="foot">
       <button class="togg" id="fDone"><i></i>已發布</button>
@@ -765,7 +760,6 @@ function openEdit(id){
   $('#fTitle').value = p.title || '';
   $('#fGoal').value = p.goal || '';
   $('#fIg').value = p.ig || '';
-  $('#fFb').value = p.fb || '';
   $('#fDone').classList.toggle('on', !!p.done);
   $('#delBtn').style.display = posts[id] ? '' : 'none';
   $('#mask').classList.add('on');
@@ -780,7 +774,8 @@ $('#saveBtn').onclick = () => {
     title: $('#fTitle').value.trim(),
     goal : $('#fGoal').value.trim(),
     ig   : $('#fIg').value,
-    fb   : $('#fFb').value,
+    // fb 是舊的短版，介面上已經拿掉了，但值先留著不動免得哪天想找回來
+    fb   : (posts[editId] && posts[editId].fb) || '',
     done : $('#fDone').classList.contains('on')
   };
   const d = posts[editId].date;
@@ -797,9 +792,9 @@ $('#mask').onclick = closeEdit;
 $('#fDone').onclick = () => $('#fDone').classList.toggle('on');
 
 $$('.copy').forEach(b => b.onclick = async () => {
-  const txt = b.dataset.copy === 'ig' ? $('#fIg').value : $('#fFb').value;
+  const txt = $('#fIg').value;
   try{ await navigator.clipboard.writeText(txt); }
-  catch(e){ const t=$( b.dataset.copy==='ig'?'#fIg':'#fFb'); t.select(); document.execCommand('copy'); }
+  catch(e){ $('#fIg').select(); document.execCommand('copy'); }
   b.textContent = '已複製'; b.classList.add('ok');
   setTimeout(() => { b.textContent = '複製'; b.classList.remove('ok'); }, 1400);
 });
