@@ -1,0 +1,902 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>禾言社群規劃</title>
+<meta name="theme-color" content="#FFF5F7">
+<style>
+:root{
+  --bg:#FFF5F7; --card:#FFFFFF;
+  --pink:#F48FB1; --pink-d:#E57399; --pink-l:#FFD9E3; --pink-xl:#FFF0F4;
+  --ink:#5B3C46; --ink2:#8C6B76; --ink3:#B79AA4;
+  --line:#F6DCE4;
+  --know:#7FB6E0; --ai:#9C8FD8; --how:#6FC79A; --fest:#FFB86B;
+  --shadow:0 2px 10px rgba(232,150,178,.13);
+  --shadow-l:0 6px 22px rgba(232,150,178,.20);
+  --r:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+button,input,textarea,select{font:inherit;color:inherit;border:none;background:none;outline:none}
+button{cursor:pointer}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Helvetica Neue",sans-serif;
+  background:var(--bg); color:var(--ink); font-size:15px; line-height:1.6;
+  padding:14px 14px 60px; max-width:1240px; margin:0 auto;
+  -webkit-text-size-adjust:100%;
+}
+
+/* ---------- 登入閘門 ---------- */
+#gate{position:fixed;inset:0;background:var(--bg);z-index:99;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center}
+#gate h1{font-size:19px}
+#gate p{margin:0;font-size:13px;color:var(--ink2);max-width:320px;line-height:1.8}
+#gate button{padding:13px 26px;border-radius:14px;background:var(--pink);color:#fff;font-weight:700;
+  box-shadow:var(--shadow-l)}
+#gate .err{color:#E05263;font-size:12.5px}
+
+/* ---------- 頁首 ---------- */
+header.top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+header.top h1{font-size:19px;letter-spacing:.5px}
+header.top .sub{font-size:12px;color:var(--ink3);margin-left:2px;font-weight:400}
+.syncbox{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink3);
+  background:#fff;padding:6px 11px;border-radius:99px;box-shadow:var(--shadow)}
+.dot{width:7px;height:7px;border-radius:99px;background:var(--ink3)}
+.dot.ok{background:#6FC79A}.dot.err{background:#E05263}.dot.wait{background:#FFD97D}
+
+.bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.monthnav{display:flex;align-items:center;gap:4px;background:#fff;border-radius:99px;
+  padding:4px 6px;box-shadow:var(--shadow)}
+.monthnav button{width:28px;height:28px;border-radius:99px;color:var(--ink3);font-size:16px}
+.monthnav button:hover{background:var(--pink-xl);color:var(--pink-d)}
+.monthnav span{font-size:14px;font-weight:700;padding:0 6px;min-width:92px;text-align:center}
+.seg{display:flex;background:#fff;border-radius:99px;padding:3px;box-shadow:var(--shadow)}
+.seg button{padding:6px 15px;border-radius:99px;font-size:13px;font-weight:700;color:var(--ink3)}
+.seg button.on{background:var(--pink);color:#fff}
+.addbtn{margin-left:auto;padding:8px 16px;border-radius:99px;background:var(--pink);color:#fff;
+  font-size:13px;font-weight:700;box-shadow:var(--shadow)}
+.stat{font-size:12px;color:var(--ink3);background:#fff;padding:6px 12px;border-radius:99px;box-shadow:var(--shadow)}
+
+/* ---------- 類型色 ---------- */
+.chip{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap}
+.t-廣告知識{background:var(--know)} .t-AI趨勢{background:var(--ai)}
+.t-操作方法{background:var(--how)}  .t-節慶{background:var(--fest)}
+.t-其他{background:var(--ink3)}
+
+/* ---------- 月曆 ---------- */
+.calwrap{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:14px;overflow-x:auto}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(88px,1fr));gap:6px;min-width:660px}
+.cal .wd{text-align:center;font-size:11.5px;color:var(--ink3);font-weight:700;padding-bottom:4px}
+.cal .day{min-height:82px;border-radius:12px;background:var(--pink-xl);padding:6px;
+  display:flex;flex-direction:column;gap:4px}
+.cal .day.blank{background:transparent}
+.cal .day .n{font-size:11.5px;color:var(--ink3);font-weight:700}
+.cal .day.today{outline:2px solid var(--pink);outline-offset:-2px}
+.cal .ev{background:#fff;border-radius:9px;padding:5px 6px;font-size:11.5px;line-height:1.45;
+  cursor:pointer;box-shadow:var(--shadow);border-left:3px solid var(--ink3);text-align:left;width:100%}
+.cal .ev:hover{box-shadow:var(--shadow-l)}
+.cal .ev.done{opacity:.5}
+.cal .ev.done .t{text-decoration:line-through}
+.ev.c-廣告知識{border-left-color:var(--know)} .ev.c-AI趨勢{border-left-color:var(--ai)}
+.ev.c-操作方法{border-left-color:var(--how)}  .ev.c-節慶{border-left-color:var(--fest)}
+.ev.c-其他{border-left-color:var(--ink3)}
+
+/* ---------- 卡片 ---------- */
+.grid{display:grid;gap:12px;grid-template-columns:1fr}
+@media(min-width:640px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1000px){.grid{grid-template-columns:repeat(3,1fr)}}
+.pc{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:14px;
+  cursor:pointer;display:flex;flex-direction:column;gap:8px;transition:.15s;text-align:left;width:100%}
+.pc:hover{box-shadow:var(--shadow-l);transform:translateY(-1px)}
+.pc .hd{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.pc .dt{font-size:12px;color:var(--ink3);font-weight:700}
+.pc h3{font-size:15px;line-height:1.5;font-weight:700}
+.pc .goal{font-size:12px;color:var(--ink3)}
+.pc .prev{font-size:12.5px;color:var(--ink2);line-height:1.7;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap}
+.pc.done{opacity:.62}
+.pc.done h3{text-decoration:line-through}
+.flag{font-size:11px;color:#6FC79A;font-weight:700}
+.empty{color:var(--ink3);font-size:13px;text-align:center;padding:34px 0;line-height:1.9}
+
+/* ---------- 編輯視窗 ---------- */
+.mask{position:fixed;inset:0;background:rgba(91,60,70,.35);z-index:50;display:none;
+  align-items:flex-start;justify-content:center;padding:18px;overflow-y:auto}
+.mask.on{display:flex}
+.modal{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow-l);
+  width:100%;max-width:620px;padding:18px;display:flex;flex-direction:column;gap:12px;margin:auto 0}
+.modal .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.modal label{font-size:12px;color:var(--ink3);font-weight:700;display:block;margin-bottom:4px}
+.modal input[type=date],.modal select,.modal input[type=text]{
+  background:var(--pink-xl);border-radius:11px;padding:9px 11px;font-size:14px;width:100%}
+.modal textarea{background:var(--pink-xl);border-radius:12px;padding:12px;font-size:13.5px;
+  line-height:1.85;width:100%;min-height:210px;resize:vertical;white-space:pre-wrap;font-family:inherit}
+.modal textarea.fb{min-height:130px}
+.fieldhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.copy{font-size:12px;font-weight:700;color:var(--pink-d);padding:4px 10px;border-radius:99px;background:var(--pink-xl)}
+.copy.ok{background:#6FC79A;color:#fff}
+.modal .foot{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding-top:4px}
+.btn{padding:10px 18px;border-radius:12px;font-size:14px;font-weight:700}
+.btn.p{background:var(--pink);color:#fff;box-shadow:var(--shadow)}
+.btn.g{background:var(--pink-xl);color:var(--ink2)}
+.btn.d{color:#E05263;margin-left:auto;font-size:13px}
+.togg{display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:700;color:var(--ink2);cursor:pointer}
+.togg i{width:18px;height:18px;border-radius:6px;background:var(--pink-xl);display:inline-block;
+  position:relative;transition:.15s}
+.togg.on i{background:#6FC79A}
+.togg.on i::after{content:"";position:absolute;left:5px;top:1px;width:5px;height:10px;
+  border:2px solid #fff;border-top:0;border-left:0;transform:rotate(42deg)}
+.hint{font-size:11.5px;color:var(--ink3);line-height:1.7}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <h1>禾言社群規劃</h1>
+  <p>這裡有客戶與案例資訊，請用朱兒的 Google 帳號登入才看得到內容。</p>
+  <button id="gateBtn">用 Google 登入</button>
+  <div class="err" id="gateErr"></div>
+</div>
+
+<header class="top">
+  <h1>禾言社群規劃 <span class="sub">貼文議題與文案看板</span></h1>
+  <div class="syncbox"><span class="dot" id="dot"></span><span id="syncTxt">連線中…</span></div>
+</header>
+
+<div class="bar">
+  <div class="monthnav">
+    <button id="prevM">‹</button><span id="mLabel">2026 年 9 月</span><button id="nextM">›</button>
+  </div>
+  <div class="seg">
+    <button data-view="cal" class="on">月曆</button>
+    <button data-view="list">卡片</button>
+  </div>
+  <span class="stat" id="stat"></span>
+  <button class="addbtn" id="addBtn">＋ 新增貼文</button>
+</div>
+
+<div id="viewCal" class="calwrap"><div class="cal" id="cal"></div></div>
+<div id="viewList" class="grid" style="display:none"></div>
+
+<div class="mask" id="mask">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="row">
+      <div style="flex:1;min-width:150px">
+        <label>發布日期</label><input type="date" id="fDate">
+      </div>
+      <div style="flex:1;min-width:130px">
+        <label>內容類型</label>
+        <select id="fType">
+          <option>廣告知識</option><option>AI趨勢</option><option>操作方法</option>
+          <option>節慶</option><option>其他</option>
+        </select>
+      </div>
+    </div>
+    <div><label>議題標題</label><input type="text" id="fTitle" placeholder="這篇要講什麼"></div>
+    <div><label>這篇的目的</label><input type="text" id="fGoal" placeholder="專業形象 / 帶詢價 / 品牌好感"></div>
+    <div>
+      <div class="fieldhd"><label style="margin:0">IG 版文案</label>
+        <button class="copy" data-copy="ig">複製</button></div>
+      <textarea id="fIg"></textarea>
+    </div>
+    <div>
+      <div class="fieldhd"><label style="margin:0">FB 版文案</label>
+        <button class="copy" data-copy="fb">複製</button></div>
+      <textarea id="fFb" class="fb"></textarea>
+    </div>
+    <div class="foot">
+      <button class="togg" id="fDone"><i></i>已發布</button>
+      <button class="btn p" id="saveBtn">儲存</button>
+      <button class="btn g" id="closeBtn">取消</button>
+      <button class="btn d" id="delBtn">刪除這篇</button>
+    </div>
+    <div class="hint">改完記得按儲存。內容會同步到雲端，換手機打開也看得到。</div>
+  </div>
+</div>
+
+<script type="module">
+/* 禾言社群規劃看板
+   資料放在工作台同一個 Firebase 專案，但獨立節點，規則一樣綁朱兒的 Google 帳號。
+   沒登入 = 讀不到任何一筆（貼文裡有客戶名稱與案例數據）。 */
+const OWNER_EMAIL = 'zhuer0323@gmail.com';
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAWOXPFBmb-lU90dpBOq2B8Gn7LsR2p-jM",
+  authDomain: "busan-trip-2026-201f8.firebaseapp.com",
+  databaseURL: "https://busan-trip-2026-201f8-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "busan-trip-2026-201f8",
+  storageBucket: "busan-trip-2026-201f8.firebasestorage.app",
+  messagingSenderId: "300878890409",
+  appId: "1:300878890409:web:c80543dc5c43f6d81bb0b8"
+};
+const ROOM = 'hy_social_r7n3k8';   // 改名要同步改 Firebase 規則
+const LS_KEY = 'hy_social_posts';
+
+/* ---------- 九月種子內容（雲端第一次是空的才寫進去） ---------- */
+const SEED = [
+{d:'2026-09-01',t:'廣告知識',g:'專業形象',ti:'「一個月抓三萬夠不夠？」預算到底怎麼算',
+ig:`『一個月抓三萬，到底夠不夠❓』
+
+這是老闆問我們最多的一題 🙋
+老實說沒有標準答案，但有算法。
+
+📢⚟ 先問自己要的是什麼
+
+▍要詢問、要名單
+➠ 用「一筆詢問你願意付多少」回推
+▍要成交、要營收
+➠ 用「客單價 ÷ 目標 ROAS」回推
+
+❚ 實際算一次給你看
+
+客單價 3,000 元
+希望廣告花 1 塊回收 3 塊
+➥ 一筆成交能分配的廣告費 ≈ 1,000 元
+➥ 一個月想成交 30 筆 ＝ 預算三萬 ✅
+
+反過來說，預算定三萬卻想成交 100 筆——
+那不是預算不夠，是期待要調整 😅
+
+🔥 但比「預算太少」更傷的，是「預算太散」
+
+三萬塊開六組廣告
+每組一天不到 170 元
+六組全部卡在學習期，一起做不好 ❌
+
+同樣三萬集中在兩組
+系統才有足夠資料判斷要投給誰 ✅
+
+先把你要的東西算清楚，預算自然會浮出來 ✨
+
+━━━━━━━━━━━━━━
+禾言數位行銷｜策略先於廣告，思維先於行動
+👉 想投但不知道從哪抓起，私訊聊聊
+
+#廣告投放 #Meta廣告 #廣告預算 #數位行銷 #中小企業行銷 #行銷顧問 #台中行銷公司`,
+fb:`『一個月抓三萬，夠不夠❓』老闆問最多的一題。
+
+算法其實不難：
+客單價 3,000、希望花 1 塊回收 3 塊
+➥ 一筆成交能付的廣告費約 1,000 元
+➥ 一個月想成交 30 筆，預算就是三萬 ✅
+
+但比預算太少更傷的是「預算太散」🔥
+三萬開六組，每組一天不到 170 元，六組一起卡在學習期。
+集中在兩組，系統才學得起來。
+
+禾言數位行銷｜策略先於廣告，思維先於行動`},
+
+{d:'2026-09-04',t:'AI趨勢',g:'專業形象',ti:'自動化投放到底該不該全開',
+ig:`『系統叫我全部交給 AI，我到底要不要按❓』🤖
+
+現在打開廣告後台，滿滿都是自動化建議。
+按下去，好像很輕鬆；不按，又怕落後別人。
+
+我們的答案是：看你手上有沒有東西餵它 🍚
+
+📢⚟ 什麼時候該交給 AI
+
+✅ 你的素材夠多（至少 5–6 種不同切角）
+✅ 你的轉換追蹤裝好、資料收得到
+✅ 你的預算撐得住它跑完學習期
+➠ 這時候放手，機器找人比你快得多 💪
+
+❚ 什麼時候先別急著全開
+
+❌ 素材只有一張圖，AI 再聰明也只能重複投同一張
+❌ 追蹤沒裝好，它學不到「什麼叫成功」，只會亂槍打鳥
+❌ 預算太小，它還沒學會就被你關掉了
+
+🔥 一句話總結
+
+自動化不是幫你「不用想」
+是幫你「把想好的事做得更快」
+
+策略還是你的。
+AI 負責執行，方向要你給 ✨
+
+━━━━━━━━━━━━━━
+禾言數位行銷｜策略先於廣告，思維先於行動
+👉 不確定自己該不該開，私訊我們幫你看
+
+#Meta廣告 #AI行銷 #廣告自動化 #數位行銷 #廣告投放 #行銷顧問 #中小企業行銷`,
+fb:`『系統叫我全部交給 AI，到底要不要按❓』🤖
+
+我們的答案：看你手上有沒有東西餵它。
+
+✅ 素材夠多、追蹤裝好、預算撐得住學習期 → 放手交給它，找人比你快
+❌ 素材只有一張圖、追蹤沒裝、預算太小 → 先別急，它學不起來
+
+自動化不是幫你「不用想」，是幫你「把想好的事做得更快」🔥
+策略還是你的，AI 只負責執行。
+
+禾言數位行銷｜策略先於廣告，思維先於行動`},
+
+{d:'2026-09-08',t:'操作方法',g:'專業形象',ti:'受眾設定越細越準？剛好相反',
+ig:`『我把興趣設得超細，為什麼成效反而更差❓』🤔
+
+很多老闆的直覺是：
+受眾越精準 ＝ 廣告越有效
+
+但實際跑起來，常常是反的 📉
+
+📢⚟ 受眾設太窄，會發生三件事
+
+1️⃣ 可觸及人數太少 ➠ 系統沒得挑，只能重複投給同一批人
+2️⃣ 頻率飆高 ➠ 同一個人看第七次，只會滑掉甚至檢舉
+3️⃣ 單次成本被推高 ➠ 池子小，競價自然貴
+
+❚ 那要怎麼設才對
+
+✅ 讓「素材」去篩人，不要讓「設定」去篩人
+✅ 受眾給寬一點，把訊息寫清楚
+✅ 想找誰，就在文案第一行講出來
+
+舉個例：
+與其把興趣鎖到只剩三萬人
+不如受眾開寬，然後在開頭直接寫
+「開餐廳的老闆看過來」🙋
+
+看到的人自己會對號入座
+不是你的人，自然會滑掉 ✨
+
+🔥 廣告的精準，是從內容來的，不是從勾選框來的
+
+━━━━━━━━━━━━━━
+禾言數位行銷｜策略先於廣告，思維先於行動
+👉 受眾一直抓不準？私訊我們幫你看設定
+
+#Meta廣告 #受眾設定 #廣告投放 #數位行銷 #廣告優化 #行銷顧問 #中小企業行銷`,
+fb:`『興趣設得超細，成效反而更差❓』
+
+受眾設太窄會發生三件事：
+1️⃣ 系統沒得挑，一直投同一批人
+2️⃣ 頻率飆高，同一個人看第七次只會滑掉
+3️⃣ 池子小，單次成本被推高 📉
+
+正確做法：讓「素材」篩人，不要讓「設定」篩人。
+受眾開寬，然後在第一行直接寫「開餐廳的老闆看過來」——
+看到的人自己會對號入座 ✅
+
+廣告的精準是從內容來的，不是從勾選框來的 🔥
+
+禾言數位行銷｜策略先於廣告，思維先於行動`},
+
+{d:'2026-09-11',t:'廣告知識',g:'專業形象',ti:'前三秒定生死：素材開頭的四種寫法',
+ig:`『素材做得很漂亮，為什麼還是沒人看❓』🎬
+
+因為漂亮是第四秒的事。
+前三秒沒抓住人，後面再精彩都沒機會 ⏱️
+
+📢⚟ 開頭能用的四種寫法
+
+1️⃣ 直球痛點
+「包膜報價看不懂？三分鐘教你怎麼比」
+➠ 適合服務業、高單價，會問問題的受眾
+
+2️⃣ 反常識
+「受眾設越細，成效越差」
+➠ 適合知識型內容，勾起「蛤？」的反應
+
+3️⃣ 畫面先行
+一開場就是烤串滋滋作響的特寫 🔥
+➠ 適合餐飲、美妝、任何看得到的東西
+
+4️⃣ 數字開場
+「1,500 筆詢問，只靠一張對比圖」
+➠ 適合有實績可講的品牌
+
+❚ 三個常見的浪費
+
+❌ 開場先放 logo 動畫（三秒沒了）
+❌ 開場先自我介紹（沒人在乎你是誰）
+❌ 開場先鋪陳背景（觀眾早滑走了）
+
+🔥 記住：把最好的那句話放第一句，不要留到最後
+
+━━━━━━━━━━━━━━
+禾言數位行銷｜策略先於廣告，思維先於行動
+👉 素材卡關？我們有一整套開頭範本
+
+#廣告素材 #短影音 #Meta廣告 #廣告投放 #數位行銷 #行銷顧問 #素材製作`,
+fb:`『素材做得很漂亮，為什麼還是沒人看❓』
+
+因為漂亮是第四秒的事 ⏱️
+前三秒沒抓住人，後面再精彩都沒機會。
+
+開頭四種寫法：
+1️⃣ 直球痛點 2️⃣ 反常識 3️⃣ 畫面先行 4️⃣ 數字開場
+
+三個最常見的浪費：
+❌ 開場放 logo 動畫 ❌ 開場自我介紹 ❌ 開場鋪陳背景
+
+把最好的那句話放第一句，不要留到最後 🔥
+
+禾言數位行銷｜策略先於廣告，思維先於行動`},
+
+{d:'2026-09-15',t:'操作方法',g:'專業形象',ti:'老闆看廣告報表，先看這三個數字',
+ig:`『後台幾十個欄位，我到底該看哪個❓』📊
+
+老闆不需要看懂全部。
+先看這三個，八成的問題都能定位 ✅
+
+❚ 1️⃣ 點擊率（CTR）
+➠ 看的是「素材」有沒有問題
+低於 1%？先換素材，別急著改受眾
+
+❚ 2️⃣ 單次點擊成本（CPC）
+➠ 看的是「競爭」與「受眾」貴不貴
+突然變貴，通常是檔期撞車或受眾太窄
+
+❚ 3️⃣ 結果數（訊息／名單／購買）
+➠ 看的是「這筆錢有沒有換到東西」
+點擊很多但結果掛零 ➠ 問題出在落地頁或客服回覆速度
+
+📢⚟ 這三個數字怎麼一起讀
+
+✔️ CTR 高、結果低 ➠ 素材吸睛但不對的人被吸來了
+✔️ CTR 低、CPC 高 ➠ 素材沒力，系統也不想幫你送
+✔️ 三個都穩，成本還是高 ➠ 該檢查的是產品定價與轉換流程
+
+🔥 數據不是拿來看爽的，是拿來決定「下一步改哪裡」
+
+━━━━━━━━━━━━━━
+禾言數位行銷｜策略先於廣告，思維先於行動
+👉 報表看不懂？我們有標準報表模版可以直接套用
+
+#廣告數據 #Meta廣告 #廣告優化 #數位行銷 #廣告投放 #行銷顧問 #數據分析`,
+fb:`『後台幾十個欄位，該看哪個❓』📊
+
+先看這三個就好：
+1️⃣ 點擊率 → 看「素材」有沒有問題
+2️⃣ 點擊成本 → 看「受眾與競爭」貴不貴
+3️⃣ 結果數 → 看「這筆錢換到東西沒有」
+
+怎麼一起讀：
+✔️ CTR 高、結果低 → 吸引到不對的人
+✔️ CTR 低、CPC 高 → 素材沒力，系統也不想幫你送
+✔️ 三個都穩但成本高 → 該看的是定價與轉換流程
+
+數據不是拿來看爽的，是拿來決定下一步改哪裡 🔥
+
+禾言數位行銷｜策略先於廣告，思維先於行動`},
+
+{d:'2026-09-18',t:'AI趨勢',g:'專業形象',ti:'用 AI 做廣告素材，能用跟不能用的那條線',
+ig:`『AI 生的圖到底能不能拿去投廣告❓』🎨
+
+可以，但有界線。
+我們自己的判斷標準是這三條 👇
+
+✅ 可以放心用的
+
+▍情境示意、氛圍背景
+▍文案初稿、標題發想（大量產出再篩）
+▍不同版本的排版與配色測試
+➠ 這些用 AI 省下的時間，可以拿去多測三組廣告 💪
+
+❌ 千萬不要用的
+
+▍你的實際商品外觀
+（AI 生的不是你的商品，客人收到會客訴）
+▍人物代言、假的使用者見證
+（信任一旦崩掉，救不回來）
+▍具體療效、功效呈現
+（法規在那裡，AI 不會幫你扛）
+
+⚠️ 灰色地帶，用了要標註
+
+▍AI 生成的模特兒
+▍AI 換臉、換場景的實拍延伸
+
+🔥 最重要的一條
+
+AI 產得出「像廣告的東西」
+產不出「你的品牌信任」
+
+它適合拿來加速前面的發想
+不適合拿來取代後面的真實
+
+━━━━━━━━━━━━━━
+禾言數位行銷｜策略先於廣告，思維先於行動
+👉 想用 AI 又怕踩線？我們幫你把關
+
+#AI行銷 #廣告素材 #AI生成 #Meta廣告 #數位行銷 #行銷顧問 #廣告投放`,
+fb:`『AI 生的圖能不能拿去投廣告❓』🎨
+
+可以，但有界線。
+
+✅ 放心用：情境背景、文案初稿、排版測試
+❌ 不要用：實際商品外觀、假見證、具體療效
+⚠️ 用了要標註：AI 模特兒、AI 換臉延伸
+
+最重要的一條：
+AI 產得出「像廣告的東西」，產不出「你的品牌信任」🔥
+
+它適合加速前面的發想，不適合取代後面的真實。
+
+禾言數位行銷｜策略先於廣告，思維先於行動`},
+
+{d:'2026-09-22',t:'操作方法',g:'帶詢價',ti:'檔期廣告要提前幾週開始跑',
+ig:`『中秋要到了，現在下廣告還來得及嗎❓』🌕
+
+老實說——來得及，但效果會打折 ⏳
+
+📢⚟ 檔期廣告的正確時間表
+
+▍檔期前 4 週｜暖身期
+➠ 先跑觸及、影片觀看，把人養進受眾池
+➠ 這批人之後轉換成本會低很多 ✅
+
+▍檔期前 2 週｜蓄水期
+➠ 開始講活動內容，收藏、分享、加購物車
+➠ 讓系統認得誰是「有興趣的人」
+
+▍檔期當週｜收割期
+➠ 對前面互動過的人重新出擊
+➠ 這時候才是喊「最後三天」的時機 🔥
+
+❚ 為什麼不能只做最後一週
+
+因為系統需要時間認識你的客人。
+檔期當週才開始跑，你等於在最貴的時候
+用最陌生的受眾，跟所有同業硬碰硬 💸
+
+同一筆預算，提前四週開始
+跟當週才開始，成本可以差到一倍以上
+
+🔥 檔期不是從活動那天開始
+是從你開始養人那天開始
+
+現在是 9 月下旬。
+雙十、萬聖、雙 11、年末檔期——
+該動的是現在 ✨
+
+━━━━━━━━━━━━━━
+禾言數位行銷｜策略先於廣告，思維先於行動
+👉 Q4 檔期還沒排？私訊我們幫你抓時間表
+
+#檔期行銷 #節慶行銷 #Meta廣告 #廣告投放 #數位行銷 #行銷顧問 #Q4行銷`,
+fb:`『中秋要到了，現在下廣告還來得及嗎❓』🌕
+
+來得及，但效果會打折。
+
+檔期廣告的正確時間表：
+▍前 4 週｜暖身 → 跑觸及、影片觀看，把人養進受眾池
+▍前 2 週｜蓄水 → 講活動內容，累積互動
+▍當週｜收割 → 對互動過的人重新出擊，這時才喊「最後三天」🔥
+
+只做最後一週，等於在最貴的時候用最陌生的受眾硬碰硬 💸
+同一筆預算，提前四週跟當週才開始，成本差到一倍以上。
+
+雙十、萬聖、雙 11、年末檔期——該動的是現在 ✨
+
+禾言數位行銷｜策略先於廣告，思維先於行動`},
+
+{d:'2026-09-25',t:'節慶',g:'品牌好感',ti:'中秋節祝賀',
+ig:`🌕 中秋快樂
+
+今年的中秋，剛好落在星期五。
+先把工作收一收，回家吃飯吧 🥮
+
+這一年我們陪著不少品牌走過大大小小的檔期——
+有半夜還在改素材的時候
+也有數字終於跑起來、一起在群組裡歡呼的時候 ✨
+
+謝謝每一位願意把品牌交給我們的夥伴。
+
+團圓這件事，跟做品牌其實有點像：
+都急不得，都要花時間慢慢養 🌾
+
+祝大家中秋佳節愉快
+月圓，人團圓，生意也圓滿 🌕
+
+━━━━━━━━━━━━━━
+禾言數位行銷｜策略先於廣告，思維先於行動
+
+#中秋節 #中秋快樂 #團圓 #禾言數位行銷 #數位行銷 #台中行銷公司`,
+fb:`🌕 中秋快樂
+
+今年中秋剛好是星期五，先把工作收一收，回家吃飯吧 🥮
+
+這一年陪著不少品牌走過大大小小的檔期——
+有半夜還在改素材的時候，也有數字終於跑起來、一起歡呼的時候 ✨
+
+團圓這件事跟做品牌有點像：都急不得，都要慢慢養 🌾
+
+祝大家月圓、人團圓、生意也圓滿。
+
+禾言數位行銷｜策略先於廣告，思維先於行動`},
+
+{d:'2026-09-29',t:'廣告知識',g:'帶詢價',ti:'剛開的廣告為什麼不能急著關（學習期）',
+ig:`『才跑兩天完全沒單，我可以關掉了吧❓』✋
+
+先等一下。
+你可能正在殺掉一個還沒長大的廣告 🌱
+
+📢⚟ 什麼是學習期
+
+新廣告上線後，系統需要一段時間
+去試出「誰最可能買你的東西」
+
+這段期間 ➠ 成本會偏高、數據會亂跳
+這是正常的，不是壞掉 ✅
+
+❚ 三個常見的自殺行為
+
+1️⃣ 每天調預算
+➠ 動一次，學習期重來一次 🔄
+2️⃣ 兩天沒單就關掉
+➠ 系統還在試水溫，你先掀桌了
+3️⃣ 同時開十組互相搶
+➠ 自己人跟自己人競價，成本一起被拉高 💸
+
+✅ 正確做法
+
+▍給它至少 3–7 天，或累積到足夠的轉換筆數
+▍要改，一次只改一個變因
+▍真的要停，看的是「趨勢」不是「單日」
+
+🔥 廣告不是拉霸機，是養一套判斷系統
+
+前面幾天花的錢，買的不是訂單
+是系統對你客人的認識 🧠
+
+那筆錢，早晚都得花。
+差別只在你願不願意讓它花完 ✨
+
+━━━━━━━━━━━━━━
+禾言數位行銷｜策略先於廣告，思維先於行動
+👉 10 月想開始投，現在就可以先聊：
+　 廣告投放｜社群經營｜短影音拍攝｜網紅媒合｜顧問陪跑
+
+#廣告投放 #學習期 #Meta廣告 #廣告優化 #數位行銷 #行銷顧問 #中小企業行銷`,
+fb:`『才跑兩天完全沒單，可以關掉了吧❓』✋
+
+先等一下，你可能正在殺掉一個還沒長大的廣告 🌱
+
+新廣告有「學習期」——系統要時間試出誰最可能買你的東西。
+這段期間成本偏高、數據亂跳，是正常的。
+
+三個常見的自殺行為：
+1️⃣ 每天調預算（動一次，學習期重來一次）
+2️⃣ 兩天沒單就關（系統還在試，你先掀桌）
+3️⃣ 同時開十組互相搶（自己跟自己競價）💸
+
+正確做法：給它 3–7 天、一次只改一個變因、看趨勢不看單日 ✅
+
+前面幾天花的錢，買的不是訂單，是系統對你客人的認識 🧠
+那筆錢早晚要花，差別只在你願不願意讓它花完。
+
+禾言數位行銷｜策略先於廣告，思維先於行動`}
+];
+
+/* ---------- 狀態 ---------- */
+let posts = {};              // { id: {date,type,title,goal,ig,fb,done} }
+let cur = { y:2026, m:9 };   // 目前看的月份
+let view = 'cal';
+let editId = null;
+let _db=null,_ref=null,_set=null,_remove=null,_ready=false;
+
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s??'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pad = n => String(n).padStart(2,'0');
+const ymd = (y,m,d) => `${y}-${pad(m)}-${pad(d)}`;
+const uid = () => 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+const todayStr = () => { const t=new Date(); return ymd(t.getFullYear(), t.getMonth()+1, t.getDate()); };
+
+/* ---------- 存取 ---------- */
+function saveLocal(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(posts)); }catch(e){} }
+function loadLocal(){ try{ posts = JSON.parse(localStorage.getItem(LS_KEY) || '{}'); }catch(e){ posts = {}; } }
+function push(){
+  saveLocal();
+  if(!_ready) return;
+  _set(_ref(_db, `${ROOM}/posts`), posts).catch(e => { console.warn(e); setSync('err', e.message); });
+}
+function setSync(state, msg){
+  const dot = $('#dot'), txt = $('#syncTxt');
+  dot.className = 'dot ' + (state==='ok'?'ok':state==='err'?'err':'wait');
+  txt.textContent = state==='ok' ? '雲端已同步' : state==='err' ? (msg||'連線失敗') : '連線中…';
+}
+
+/* ---------- 畫面 ---------- */
+function monthPosts(){
+  const pre = `${cur.y}-${pad(cur.m)}`;
+  return Object.entries(posts)
+    .filter(([,p]) => (p.date||'').startsWith(pre))
+    .sort((a,b) => (a[1].date||'').localeCompare(b[1].date||''));
+}
+
+function renderStat(){
+  const list = monthPosts();
+  const done = list.filter(([,p]) => p.done).length;
+  $('#stat').textContent = list.length ? `共 ${list.length} 篇・已發布 ${done} 篇` : '這個月還沒有內容';
+  $('#mLabel').textContent = `${cur.y} 年 ${cur.m} 月`;
+}
+
+function renderCal(){
+  const box = $('#cal');
+  const first = new Date(cur.y, cur.m-1, 1).getDay();
+  const days = new Date(cur.y, cur.m, 0).getDate();
+  const byDay = {};
+  monthPosts().forEach(([id,p]) => { (byDay[+p.date.slice(8,10)] ||= []).push([id,p]); });
+
+  let h = ['日','一','二','三','四','五','六'].map(w => `<div class="wd">${w}</div>`).join('');
+  for(let i=0;i<first;i++) h += '<div class="day blank"></div>';
+  for(let d=1;d<=days;d++){
+    const isToday = ymd(cur.y,cur.m,d) === todayStr();
+    const evs = (byDay[d]||[]).map(([id,p]) =>
+      `<button class="ev c-${esc(p.type||'其他')} ${p.done?'done':''}" data-open="${id}">
+         <span class="t">${esc(p.title||'（未命名）')}</span></button>`).join('');
+    h += `<div class="day ${isToday?'today':''}"><div class="n">${d}</div>${evs}</div>`;
+  }
+  box.innerHTML = h;
+}
+
+function renderList(){
+  const box = $('#viewList'), list = monthPosts();
+  if(!list.length){
+    box.innerHTML = `<div class="empty" style="grid-column:1/-1">這個月還沒有內容<br>按右上角「＋ 新增貼文」開始排</div>`;
+    return;
+  }
+  box.innerHTML = list.map(([id,p]) => {
+    const dt = new Date(p.date+'T00:00:00');
+    const wd = ['日','一','二','三','四','五','六'][dt.getDay()];
+    return `<button class="pc ${p.done?'done':''}" data-open="${id}">
+      <div class="hd">
+        <span class="dt">${+p.date.slice(5,7)}/${+p.date.slice(8,10)}（${wd}）</span>
+        <span class="chip t-${esc(p.type||'其他')}">${esc(p.type||'其他')}</span>
+        ${p.done?'<span class="flag">✓ 已發布</span>':''}
+      </div>
+      <h3>${esc(p.title||'（未命名）')}</h3>
+      ${p.goal?`<div class="goal">目的：${esc(p.goal)}</div>`:''}
+      <div class="prev">${esc((p.ig||'').slice(0,120))}</div>
+    </button>`;
+  }).join('');
+}
+
+function renderAll(){ renderStat(); view==='cal' ? renderCal() : renderList(); }
+
+/* ---------- 編輯視窗 ---------- */
+function openEdit(id){
+  editId = id;
+  const p = posts[id] || {};
+  $('#fDate').value = p.date || ymd(cur.y,cur.m,1);
+  $('#fType').value = p.type || '廣告知識';
+  $('#fTitle').value = p.title || '';
+  $('#fGoal').value = p.goal || '';
+  $('#fIg').value = p.ig || '';
+  $('#fFb').value = p.fb || '';
+  $('#fDone').classList.toggle('on', !!p.done);
+  $('#delBtn').style.display = posts[id] ? '' : 'none';
+  $('#mask').classList.add('on');
+}
+function closeEdit(){ $('#mask').classList.remove('on'); editId = null; }
+
+$('#saveBtn').onclick = () => {
+  if(!editId) return;
+  posts[editId] = {
+    date : $('#fDate').value || ymd(cur.y,cur.m,1),
+    type : $('#fType').value,
+    title: $('#fTitle').value.trim(),
+    goal : $('#fGoal').value.trim(),
+    ig   : $('#fIg').value,
+    fb   : $('#fFb').value,
+    done : $('#fDone').classList.contains('on')
+  };
+  const d = posts[editId].date;
+  cur = { y:+d.slice(0,4), m:+d.slice(5,7) };   // 存到別的月份就跟著跳過去
+  push(); closeEdit(); renderAll();
+};
+$('#delBtn').onclick = () => {
+  if(!editId || !posts[editId]) return;
+  if(!confirm('確定刪掉這篇？刪了就救不回來了。')) return;
+  delete posts[editId]; push(); closeEdit(); renderAll();
+};
+$('#closeBtn').onclick = closeEdit;
+$('#mask').onclick = closeEdit;
+$('#fDone').onclick = () => $('#fDone').classList.toggle('on');
+
+$$('.copy').forEach(b => b.onclick = async () => {
+  const txt = b.dataset.copy === 'ig' ? $('#fIg').value : $('#fFb').value;
+  try{ await navigator.clipboard.writeText(txt); }
+  catch(e){ const t=$( b.dataset.copy==='ig'?'#fIg':'#fFb'); t.select(); document.execCommand('copy'); }
+  b.textContent = '已複製'; b.classList.add('ok');
+  setTimeout(() => { b.textContent = '複製'; b.classList.remove('ok'); }, 1400);
+});
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-open]');
+  if(t) openEdit(t.dataset.open);
+});
+
+/* ---------- 工具列 ---------- */
+$('#prevM').onclick = () => { cur.m--; if(cur.m<1){cur.m=12;cur.y--;} renderAll(); };
+$('#nextM').onclick = () => { cur.m++; if(cur.m>12){cur.m=1;cur.y++;} renderAll(); };
+$('#addBtn').onclick = () => {
+  // 先不要寫進 posts，不然按取消會留下一筆空白貼文；按儲存才真的存進去
+  openEdit(uid());
+};
+$$('.seg button').forEach(b => b.onclick = () => {
+  $$('.seg button').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  view = b.dataset.view;
+  $('#viewCal').style.display  = view==='cal'  ? '' : 'none';
+  $('#viewList').style.display = view==='list' ? '' : 'none';
+  renderAll();
+});
+
+/* ---------- Firebase ---------- */
+async function initFirebase(interactive){
+  setSync('wait');
+  const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+  const { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } =
+    await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+  const { getDatabase, ref, set, get, remove, onValue } =
+    await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+
+  const app = initializeApp(FIREBASE_CONFIG);
+  const auth = getAuth(app);
+
+  let user = await new Promise(res => { const un = onAuthStateChanged(auth, u => { un(); res(u); }); });
+  if(!user){
+    if(!interactive) return false;
+    user = (await signInWithPopup(auth, new GoogleAuthProvider())).user;
+  }
+  if(user.email !== OWNER_EMAIL){
+    await signOut(auth);
+    throw new Error(`這個帳號（${user.email}）沒有權限，請用 ${OWNER_EMAIL} 登入`);
+  }
+
+  _db = getDatabase(app); _ref = ref; _set = set; _remove = remove;
+  const snap = await get(ref(_db, `${ROOM}/posts`));
+  const cloud = snap.exists() ? snap.val() : null;
+  _ready = true; setSync('ok');
+
+  if(cloud && Object.keys(cloud).length){
+    posts = cloud;
+  }else{
+    // 雲端還是空的 → 把九月那批種進去（只會發生一次）
+    if(!Object.keys(posts).length) seed();
+    push();
+  }
+  saveLocal(); renderAll();
+
+  onValue(ref(_db, `${ROOM}/posts`), s => {
+    const v = s.exists() ? s.val() : {};
+    if(JSON.stringify(v) === JSON.stringify(posts)) return;
+    posts = v; saveLocal(); renderAll();
+  });
+  return true;
+}
+
+function seed(){
+  SEED.forEach(s => {
+    posts[uid()] = { date:s.d, type:s.t, title:s.ti, goal:s.g, ig:s.ig, fb:s.fb, done:false };
+  });
+}
+
+/* ---------- 啟動 ---------- */
+loadLocal();
+renderAll();
+
+$('#gateBtn').onclick = async () => {
+  $('#gateErr').textContent = '';
+  try{
+    await initFirebase(true);
+    $('#gate').style.display = 'none';
+  }catch(e){
+    $('#gateErr').textContent = e.message || '登入失敗，再試一次';
+    setSync('err', e.message);
+  }
+};
+
+(async () => {
+  try{
+    const ok = await initFirebase(false);   // 已經登入過就直接進去
+    if(ok) $('#gate').style.display = 'none';
+    else setSync('wait');
+  }catch(e){ setSync('err', e.message); }
+})();
+</script>
+</body>
+</html>
