@@ -89,6 +89,22 @@ Node.js 透過 nvm 安裝，路徑：`/Users/angela/.nvm/versions/node/v24.15.0/
 
 ---
 
+## 外部安裝的 Skill
+
+> 自己建的 skill 放在 `000_Agent/skills/`（已 symlink 至 `~/.claude/skills`）；
+> 從別人的 repo 裝來的也放同一層，所以會跟著 OneDrive 一起同步到其他機器。
+
+### speak-human-tw（2026-08-13 裝）
+- **來源**：`git clone https://github.com/Raymondhou0917/speak-human-tw.git ~/.claude/skills/speak-human-tw`（作者 Raymond Hou，MIT，目前 v1.4.0）
+- **用途**：繁體中文**去 AI 味**改寫 — 抓 AI 痕跡、校正中國用語與半形標點
+- **觸發**：`/speak-human-tw`，或說「這段好 AI」「去 AI 味」「校對一下再發」
+- **行為**：會先列「原句／為什麼要改／建議改法」編號清單讓朱兒勾選，確認後才動筆，不直接覆蓋原檔
+- **跟寫作類 skill 的分工**：`社群文案撰寫`、`廣告文案撰寫`、`報價單` 負責產出；這個只負責事後除味，**不會加個人語氣**（要語氣還是走 `200_Reference/writing-samples/`）
+- **更新**：`git -C ~/.claude/skills/speak-human-tw pull`
+- **不進 dora-agent 版控**：它自己帶 `.git`，已加進 Dora-Agent 的 `.gitignore`；換機時照上面的 clone 指令重裝即可（OneDrive 檔案本身還是會同步）
+
+---
+
 ## LINE 小助理（Dora賺錢小能手）
 
 - **Bot 名稱**：Dora賺錢小能手（@462xyoib）
