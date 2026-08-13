@@ -233,6 +233,9 @@ Node.js 透過 nvm 安裝，路徑：`/Users/angela/.nvm/versions/node/v24.15.0/
 
 ### 內容
 - 月曆／卡片／**圖文表**三種檢視，可切月份；點卡片開編輯視窗
+- **月曆格子照她試算表的排法**：上面一行是議題（「社群(前台)」＋類型兩個標籤），
+  下面是貼文主題；有填「標題」欄才多顯示一行灰字
+- **月曆上方有議題統計**（`renderCalStats()`）：總篇數、四類各幾篇、其他、已發布／未發布
 - **圖文表**是照朱兒的 Google 試算表「禾言社群規劃」的圖文模板做的
   （<https://docs.google.com/spreadsheets/d/1BGuJUZs9IbZP0FWXuKyM4tZlMT8wPg8RDf-SSIxo_MQ/edit>）：
   一篇貼文一欄，左邊 13 個欄位名固定（`SHEET_ROWS`）—— 素材編號(⭐成效佳)／素材名稱／貼文類型／
