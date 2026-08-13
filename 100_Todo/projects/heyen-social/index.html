@@ -11,7 +11,7 @@
   --pink:#F48FB1; --pink-d:#E57399; --pink-l:#FFD9E3; --pink-xl:#FFF0F4;
   --ink:#5B3C46; --ink2:#8C6B76; --ink3:#B79AA4;
   --line:#F6DCE4;
-  --know:#7FB6E0; --ai:#9C8FD8; --how:#6FC79A; --fest:#FFB86B;
+  --view:#9C8FD8; --teach:#7FB6E0; --life:#FFB86B; --coach:#6FC79A;
   --shadow:0 2px 10px rgba(232,150,178,.13);
   --shadow-l:0 6px 22px rgba(232,150,178,.20);
   --r:18px;
@@ -58,10 +58,11 @@ header.top .sub{font-size:12px;color:var(--ink3);margin-left:2px;font-weight:400
 .stat{font-size:12px;color:var(--ink3);background:#fff;padding:6px 12px;border-radius:99px;box-shadow:var(--shadow)}
 
 /* ---------- 類型色 ---------- */
+/* class 名用英文 slug，因為類型名稱裡有斜線，直接當 class 選擇器要跳脫 */
 .chip{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap}
-.t-廣告知識{background:var(--know)} .t-AI趨勢{background:var(--ai)}
-.t-操作方法{background:var(--how)}  .t-節慶{background:var(--fest)}
-.t-其他{background:var(--ink3)}
+.t-view{background:var(--view)}  .t-teach{background:var(--teach)}
+.t-life{background:var(--life)}  .t-coach{background:var(--coach)}
+.t-etc{background:var(--ink3)}
 
 /* ---------- 月曆 ---------- */
 .calwrap{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:14px;overflow-x:auto}
@@ -77,9 +78,9 @@ header.top .sub{font-size:12px;color:var(--ink3);margin-left:2px;font-weight:400
 .cal .ev:hover{box-shadow:var(--shadow-l)}
 .cal .ev.done{opacity:.5}
 .cal .ev.done .t{text-decoration:line-through}
-.ev.c-廣告知識{border-left-color:var(--know)} .ev.c-AI趨勢{border-left-color:var(--ai)}
-.ev.c-操作方法{border-left-color:var(--how)}  .ev.c-節慶{border-left-color:var(--fest)}
-.ev.c-其他{border-left-color:var(--ink3)}
+.ev.c-view{border-left-color:var(--view)}  .ev.c-teach{border-left-color:var(--teach)}
+.ev.c-life{border-left-color:var(--life)}  .ev.c-coach{border-left-color:var(--coach)}
+.ev.c-etc{border-left-color:var(--ink3)}
 
 /* ---------- 卡片 ---------- */
 .grid{display:grid;gap:12px;grid-template-columns:1fr}
@@ -167,8 +168,8 @@ header.top .sub{font-size:12px;color:var(--ink3);margin-left:2px;font-weight:400
       <div style="flex:1;min-width:130px">
         <label>內容類型</label>
         <select id="fType">
-          <option>廣告知識</option><option>AI趨勢</option><option>操作方法</option>
-          <option>節慶</option><option>其他</option>
+          <option>觀點/趨勢</option><option>教學/新手</option>
+          <option>日常/節慶</option><option>廣告顧問陪跑</option><option>其他</option>
         </select>
       </div>
     </div>
@@ -206,9 +207,39 @@ const FIREBASE_CONFIG = {
 const ROOM = 'hy_social_r7n3k8';   // 改名要同步改 Firebase 規則
 const LS_KEY = 'hy_social_posts';
 
+/* 內容類型（2026-08-13 改成這四類 ＋ 其他）
+   class 選擇器用英文 slug，因為名稱裡有斜線 */
+const SLUG = {
+  '觀點/趨勢':'view', '教學/新手':'teach',
+  '日常/節慶':'life', '廣告顧問陪跑':'coach', '其他':'etc'
+};
+const slugOf = t => SLUG[t] || 'etc';
+
+/* 舊類型自動搬到新類型，照 typesVersion 分版跑，每版只跑一次。
+   跑過就記在雲端的 meta，之後她自己改類型才不會又被搬回去。 */
+const TYPES_VERSION = 2;
+const OLD_TYPE_MAP = {
+  '廣告知識':'教學/新手', 'AI趨勢':'觀點/趨勢',
+  '操作方法':'教學/新手', '節慶':'日常/節慶'
+};
+// 這篇結尾帶到五大服務，歸「廣告顧問陪跑」比通用對應準
+const V2_BY_DATE = { '2026-09-29':'廣告顧問陪跑' };
+
+function migrateTypes(ver){
+  if(ver >= TYPES_VERSION) return false;
+  let changed = false;
+  Object.values(posts).forEach(p => {
+    const byDate = V2_BY_DATE[p.date];
+    if(byDate){ if(p.type !== byDate){ p.type = byDate; changed = true; } return; }
+    const mapped = OLD_TYPE_MAP[p.type];
+    if(mapped){ p.type = mapped; changed = true; }
+  });
+  return changed;
+}
+
 /* ---------- 九月種子內容（雲端第一次是空的才寫進去） ---------- */
 const SEED = [
-{d:'2026-09-01',t:'廣告知識',g:'專業形象',ti:'「一個月抓三萬夠不夠？」預算到底怎麼算',
+{d:'2026-09-01',t:'教學/新手',g:'專業形象',ti:'「一個月抓三萬夠不夠？」預算到底怎麼算',
 ig:`『一個月抓三萬，到底夠不夠❓』
 
 這是老闆問我們最多的一題 🙋
@@ -260,7 +291,7 @@ fb:`『一個月抓三萬，夠不夠❓』老闆問最多的一題。
 
 禾言數位行銷｜策略先於廣告，思維先於行動`},
 
-{d:'2026-09-04',t:'AI趨勢',g:'專業形象',ti:'自動化投放到底該不該全開',
+{d:'2026-09-04',t:'觀點/趨勢',g:'專業形象',ti:'自動化投放到底該不該全開',
 ig:`『系統叫我全部交給 AI，我到底要不要按❓』🤖
 
 現在打開廣告後台，滿滿都是自動化建議。
@@ -306,7 +337,7 @@ fb:`『系統叫我全部交給 AI，到底要不要按❓』🤖
 
 禾言數位行銷｜策略先於廣告，思維先於行動`},
 
-{d:'2026-09-08',t:'操作方法',g:'專業形象',ti:'受眾設定越細越準？剛好相反',
+{d:'2026-09-08',t:'教學/新手',g:'專業形象',ti:'受眾設定越細越準？剛好相反',
 ig:`『我把興趣設得超細，為什麼成效反而更差❓』🤔
 
 很多老闆的直覺是：
@@ -356,7 +387,7 @@ fb:`『興趣設得超細，成效反而更差❓』
 
 禾言數位行銷｜策略先於廣告，思維先於行動`},
 
-{d:'2026-09-11',t:'廣告知識',g:'專業形象',ti:'前三秒定生死：素材開頭的四種寫法',
+{d:'2026-09-11',t:'教學/新手',g:'專業形象',ti:'前三秒定生死：素材開頭的四種寫法',
 ig:`『素材做得很漂亮，為什麼還是沒人看❓』🎬
 
 因為漂亮是第四秒的事。
@@ -408,7 +439,7 @@ fb:`『素材做得很漂亮，為什麼還是沒人看❓』
 
 禾言數位行銷｜策略先於廣告，思維先於行動`},
 
-{d:'2026-09-15',t:'操作方法',g:'專業形象',ti:'老闆看廣告報表，先看這三個數字',
+{d:'2026-09-15',t:'教學/新手',g:'專業形象',ti:'老闆看廣告報表，先看這三個數字',
 ig:`『後台幾十個欄位，我到底該看哪個❓』📊
 
 老闆不需要看懂全部。
@@ -455,7 +486,7 @@ fb:`『後台幾十個欄位，該看哪個❓』📊
 
 禾言數位行銷｜策略先於廣告，思維先於行動`},
 
-{d:'2026-09-18',t:'AI趨勢',g:'專業形象',ti:'用 AI 做廣告素材，能用跟不能用的那條線',
+{d:'2026-09-18',t:'觀點/趨勢',g:'專業形象',ti:'用 AI 做廣告素材，能用跟不能用的那條線',
 ig:`『AI 生的圖到底能不能拿去投廣告❓』🎨
 
 可以，但有界線。
@@ -510,7 +541,7 @@ AI 產得出「像廣告的東西」，產不出「你的品牌信任」🔥
 
 禾言數位行銷｜策略先於廣告，思維先於行動`},
 
-{d:'2026-09-22',t:'操作方法',g:'帶詢價',ti:'檔期廣告要提前幾週開始跑',
+{d:'2026-09-22',t:'教學/新手',g:'帶詢價',ti:'檔期廣告要提前幾週開始跑',
 ig:`『中秋要到了，現在下廣告還來得及嗎❓』🌕
 
 老實說——來得及，但效果會打折 ⏳
@@ -566,7 +597,7 @@ fb:`『中秋要到了，現在下廣告還來得及嗎❓』🌕
 
 禾言數位行銷｜策略先於廣告，思維先於行動`},
 
-{d:'2026-09-25',t:'節慶',g:'品牌好感',ti:'中秋節祝賀',
+{d:'2026-09-25',t:'日常/節慶',g:'品牌好感',ti:'中秋節祝賀',
 ig:`🌕 中秋快樂
 
 今年的中秋，剛好落在星期五。
@@ -601,7 +632,7 @@ fb:`🌕 中秋快樂
 
 禾言數位行銷｜策略先於廣告，思維先於行動`},
 
-{d:'2026-09-29',t:'廣告知識',g:'帶詢價',ti:'剛開的廣告為什麼不能急著關（學習期）',
+{d:'2026-09-29',t:'廣告顧問陪跑',g:'帶詢價',ti:'剛開的廣告為什麼不能急著關（學習期）',
 ig:`『才跑兩天完全沒單，我可以關掉了吧❓』✋
 
 先等一下。
@@ -720,7 +751,7 @@ function renderCal(){
   for(let d=1;d<=days;d++){
     const isToday = ymd(cur.y,cur.m,d) === todayStr();
     const evs = (byDay[d]||[]).map(([id,p]) =>
-      `<button class="ev c-${esc(p.type||'其他')} ${p.done?'done':''}" data-open="${id}">
+      `<button class="ev c-${slugOf(p.type)} ${p.done?'done':''}" data-open="${id}">
          <span class="t">${esc(p.title||'（未命名）')}</span></button>`).join('');
     h += `<div class="day ${isToday?'today':''}"><div class="n">${d}</div>${evs}</div>`;
   }
@@ -739,7 +770,7 @@ function renderList(){
     return `<button class="pc ${p.done?'done':''}" data-open="${id}">
       <div class="hd">
         <span class="dt">${+p.date.slice(5,7)}/${+p.date.slice(8,10)}（${wd}）</span>
-        <span class="chip t-${esc(p.type||'其他')}">${esc(p.type||'其他')}</span>
+        <span class="chip t-${slugOf(p.type)}">${esc(p.type||'其他')}</span>
         ${p.done?'<span class="flag">✓ 已發布</span>':''}
       </div>
       <h3>${esc(p.title||'（未命名）')}</h3>
@@ -756,7 +787,7 @@ function openEdit(id){
   editId = id;
   const p = posts[id] || {};
   $('#fDate').value = p.date || ymd(cur.y,cur.m,1);
-  $('#fType').value = p.type || '廣告知識';
+  $('#fType').value = SLUG[p.type] ? p.type : '教學/新手';
   $('#fTitle').value = p.title || '';
   $('#fGoal').value = p.goal || '';
   $('#fIg').value = p.ig || '';
@@ -843,17 +874,22 @@ async function initFirebase(interactive){
   }
 
   _db = getDatabase(app); _ref = ref; _set = set; _remove = remove;
-  const snap = await get(ref(_db, `${ROOM}/posts`));
-  const cloud = snap.exists() ? snap.val() : null;
+  const snap = await get(ref(_db, ROOM));
+  const d = snap.exists() ? snap.val() : {};
+  const cloud = d.posts;
+  const ver = (d.meta && d.meta.typesVersion) || 1;
   _ready = true; setSync('ok');
 
   if(cloud && Object.keys(cloud).length){
     posts = cloud;
+    // 舊資料的類型搬到新的四類，跑過就記版本，不會再動第二次
+    if(migrateTypes(ver)) push();
   }else{
     // 雲端還是空的 → 把九月那批種進去（只會發生一次）
     if(!Object.keys(posts).length) seed();
     push();
   }
+  if(ver < TYPES_VERSION) _set(_ref(_db, `${ROOM}/meta`), { typesVersion: TYPES_VERSION }).catch(e => console.warn(e));
   saveLocal(); renderAll();
 
   onValue(ref(_db, `${ROOM}/posts`), s => {
