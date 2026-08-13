@@ -100,6 +100,33 @@ header.top .sub{font-size:12px;color:var(--ink3);margin-left:2px;font-weight:400
 .flag{font-size:11px;color:#6FC79A;font-weight:700}
 .empty{color:var(--ink3);font-size:13px;text-align:center;padding:34px 0;line-height:1.9}
 
+/* ---------- 圖文表（照她 Google 試算表的形式：一篇一欄，左邊固定欄位名） ---------- */
+.sheetwrap{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);
+  padding:0;overflow:auto;max-height:78vh;
+  width:max-content;max-width:100%}   /* 只有一兩篇時，白底不要拖出一大片空白 */
+.sheet{border-collapse:separate;border-spacing:0;font-size:12.5px;line-height:1.65}
+.sheet th,.sheet td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+  padding:8px 10px;vertical-align:top;text-align:left}
+/* 左邊那排欄位名固定住，橫向捲動時不會跑掉 */
+.sheet th.rowhd{position:sticky;left:0;z-index:2;background:var(--pink-xl);
+  font-weight:700;color:var(--ink2);width:96px;min-width:96px;font-size:12px;text-align:center}
+.sheet tr.dark th.rowhd{background:var(--ink);color:#fff}
+.sheet tr.tint th.rowhd{background:var(--pink-l)}
+.sheet td{min-width:270px;max-width:340px;background:#fff}
+.sheet td.on{background:var(--pink-xl)}
+.sheet .code{font-weight:700;font-size:14px;text-align:center;letter-spacing:.5px}
+.sheet .copytxt{white-space:pre-wrap;max-height:340px;overflow-y:auto;
+  background:var(--pink-xl);border-radius:10px;padding:9px}
+.sheet .imgbox{height:150px;border:1.5px dashed var(--line);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;color:var(--ink3);font-size:11.5px}
+.sheet .imgbox img{max-width:100%;max-height:150px;border-radius:10px;object-fit:contain}
+.sheet .none{color:var(--ink3)}
+.sheet .rowact{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.sheet .mini{font-size:11.5px;font-weight:700;color:var(--pink-d);
+  padding:3px 9px;border-radius:99px;background:var(--pink-xl)}
+.sheet .mini.ok{background:#6FC79A;color:#fff}
+.sheet a{word-break:break-all}
+
 /* ---------- 編輯視窗 ---------- */
 .mask{position:fixed;inset:0;background:rgba(91,60,70,.35);z-index:50;display:none;
   align-items:flex-start;justify-content:center;padding:18px;overflow-y:auto}
@@ -128,6 +155,13 @@ header.top .sub{font-size:12px;color:var(--ink3);margin-left:2px;font-weight:400
 .togg.on i::after{content:"";position:absolute;left:5px;top:1px;width:5px;height:10px;
   border:2px solid #fff;border-top:0;border-left:0;transform:rotate(42deg)}
 .hint{font-size:11.5px;color:var(--ink3);line-height:1.7}
+.more summary{font-size:12.5px;font-weight:700;color:var(--ink2);cursor:pointer;
+  background:var(--pink-xl);padding:9px 12px;border-radius:11px;list-style:none}
+.more summary::-webkit-details-marker{display:none}
+.more summary::before{content:"▸ ";color:var(--ink3)}
+.more[open] summary::before{content:"▾ "}
+.morebox{display:flex;flex-direction:column;gap:10px;padding:12px 2px 2px}
+.modal textarea.short{min-height:80px}
 </style>
 </head>
 <body>
@@ -151,6 +185,7 @@ header.top .sub{font-size:12px;color:var(--ink3);margin-left:2px;font-weight:400
   <div class="seg">
     <button data-view="cal" class="on">月曆</button>
     <button data-view="list">卡片</button>
+    <button data-view="sheet">圖文表</button>
   </div>
   <span class="stat" id="stat"></span>
   <button class="addbtn" id="addBtn">＋ 新增貼文</button>
@@ -158,6 +193,7 @@ header.top .sub{font-size:12px;color:var(--ink3);margin-left:2px;font-weight:400
 
 <div id="viewCal" class="calwrap"><div class="cal" id="cal"></div></div>
 <div id="viewList" class="grid" style="display:none"></div>
+<div id="viewSheet" class="sheetwrap" style="display:none"><table class="sheet" id="sheet"></table></div>
 
 <div class="mask" id="mask">
   <div class="modal" onclick="event.stopPropagation()">
@@ -180,6 +216,29 @@ header.top .sub{font-size:12px;color:var(--ink3);margin-left:2px;font-weight:400
         <button class="copy" data-copy="ig">複製</button></div>
       <textarea id="fIg"></textarea>
     </div>
+    <details class="more">
+      <summary>圖文表的其他欄位（素材編號、素材圖、貼文連結…）</summary>
+      <div class="morebox">
+        <div class="row">
+          <div style="flex:1;min-width:130px"><label>素材編號</label>
+            <input type="text" id="fCode" placeholder="例如 HB01"></div>
+          <div style="flex:1;min-width:130px"><label>文案編號</label>
+            <input type="text" id="fCopyCode" placeholder="例如 C01"></div>
+        </div>
+        <div><label>素材名稱</label><input type="text" id="fName"></div>
+        <div class="row">
+          <div style="flex:1;min-width:130px"><label>素材類型</label>
+            <input type="text" id="fMedia" placeholder="圖文 / 影片 / 輪播"></div>
+          <div style="flex:1;min-width:130px"><label>廣告格式</label>
+            <input type="text" id="fFormat" placeholder="貼文 / 限動 / Reels"></div>
+        </div>
+        <div><label>標題</label><input type="text" id="fHeadline"></div>
+        <div><label>素材圖網址</label><input type="text" id="fImage" placeholder="貼圖片網址，圖文表會顯示縮圖"></div>
+        <div><label>貼文連結</label><input type="text" id="fLink" placeholder="發布後把連結貼回來"></div>
+        <div><label>歡迎語 / 常見問題</label><textarea id="fFaq" class="short"></textarea></div>
+        <button class="togg" id="fStar"><i></i>⭐ 成效佳</button>
+      </div>
+    </details>
     <div class="foot">
       <button class="togg" id="fDone"><i></i>已發布</button>
       <button class="btn p" id="saveBtn">儲存</button>
@@ -851,7 +910,77 @@ function renderList(){
   }).join('');
 }
 
-function renderAll(){ renderStat(); view==='cal' ? renderCal() : renderList(); }
+/* 圖文表：照朱兒 Google 試算表「禾言社群規劃」的圖文模板排的，
+   一篇貼文一欄，左邊 13 個欄位名固定住。深色底那幾列跟她表單一致。 */
+const SHEET_ROWS = [
+  { k:'code',  n:'素材編號<br>(⭐ 成效佳)', cls:'dark' },
+  { k:'name',  n:'素材名稱' },
+  { k:'type',  n:'貼文類型', cls:'tint' },
+  { k:'title', n:'貼文主題' },
+  { k:'media', n:'素材類型' },
+  { k:'date',  n:'上線時間', cls:'dark' },
+  { k:'link',  n:'貼文連結', cls:'dark' },
+  { k:'image', n:'素材圖' },
+  { k:'format',n:'廣告格式' },
+  { k:'copyCode', n:'文案編號' },
+  { k:'copy',  n:'文案' },
+  { k:'headline', n:'標題' },
+  { k:'faq',   n:'歡迎語/<br>常見問題' }
+];
+
+function sheetCell(k, id, p){
+  const none = '<span class="none">—</span>';
+  switch(k){
+    case 'code':
+      return `<div class="code">${p.star?'⭐ ':''}${esc(p.code) || none}</div>`;
+    case 'type':
+      return `<span class="chip t-etc" style="background:var(--ink3)">社群(前台)</span>
+              <span class="chip t-${slugOf(p.type)}" style="margin-left:4px">${esc(p.type||'其他')}</span>`;
+    case 'title':
+      return `<button class="mini" data-open="${id}" style="margin-bottom:5px">開啟編輯</button>
+              <div>${esc(p.title) || none}</div>`;
+    case 'date': {
+      if(!p.date) return none;
+      const wd = ['日','一','二','三','四','五','六'][new Date(p.date+'T00:00:00').getDay()];
+      return `${p.date}（${wd}）${p.done ? '<br><span style="color:#6FC79A;font-weight:700">✓ 已發布</span>' : ''}`;
+    }
+    case 'link':
+      return p.link ? `<a href="${esc(p.link)}" target="_blank" rel="noopener">${esc(p.link)}</a>` : none;
+    case 'image':
+      return p.image
+        ? `<div class="imgbox"><img src="${esc(p.image)}" alt=""></div>`
+        : `<div class="imgbox">還沒放素材圖</div>`;
+    case 'copy':
+      if(!p.copyText) return none;
+      return `<div class="copytxt">${esc(p.copyText)}</div>
+              <div class="rowact"><button class="mini" data-copytext="${id}">複製文案</button></div>`;
+    default:
+      return esc(p[k]) || none;
+  }
+}
+
+function renderSheet(){
+  const box = $('#sheet'), list = monthPosts();
+  if(!list.length){
+    box.innerHTML = `<tr><td class="empty" style="min-width:auto">這個月還沒有內容<br>按右上角「＋ 新增貼文」開始排</td></tr>`;
+    return;
+  }
+  box.innerHTML = SHEET_ROWS.map(r => {
+    const tds = list.map(([id,p]) => {
+      // 把資料攤平成這一列要的值，文案那欄用 ig（介面上就叫「貼文文案」）
+      const v = { ...p, copyText: p.ig };
+      return `<td class="${p.done?'on':''}">${sheetCell(r.k, id, v)}</td>`;
+    }).join('');
+    return `<tr class="${r.cls||''}"><th class="rowhd">${r.n}</th>${tds}</tr>`;
+  }).join('');
+}
+
+function renderAll(){
+  renderStat();
+  if(view==='cal') renderCal();
+  else if(view==='list') renderList();
+  else renderSheet();
+}
 
 /* ---------- 編輯視窗 ---------- */
 function openEdit(id){
@@ -862,6 +991,16 @@ function openEdit(id){
   $('#fTitle').value = p.title || '';
   $('#fGoal').value = p.goal || '';
   $('#fIg').value = p.ig || '';
+  $('#fCode').value     = p.code || '';
+  $('#fCopyCode').value = p.copyCode || '';
+  $('#fName').value     = p.name || '';
+  $('#fMedia').value    = p.media || '';
+  $('#fFormat').value   = p.format || '';
+  $('#fHeadline').value = p.headline || '';
+  $('#fImage').value    = p.image || '';
+  $('#fLink').value     = p.link || '';
+  $('#fFaq').value      = p.faq || '';
+  $('#fStar').classList.toggle('on', !!p.star);
   $('#fDone').classList.toggle('on', !!p.done);
   $('#delBtn').style.display = posts[id] ? '' : 'none';
   $('#mask').classList.add('on');
@@ -878,7 +1017,18 @@ $('#saveBtn').onclick = () => {
     ig   : $('#fIg').value,
     // fb 是舊的短版，介面上已經拿掉了，但值先留著不動免得哪天想找回來
     fb   : (posts[editId] && posts[editId].fb) || '',
-    done : $('#fDone').classList.contains('on')
+    done : $('#fDone').classList.contains('on'),
+    // 以下是圖文表的欄位
+    code     : $('#fCode').value.trim(),
+    copyCode : $('#fCopyCode').value.trim(),
+    name     : $('#fName').value.trim(),
+    media    : $('#fMedia').value.trim(),
+    format   : $('#fFormat').value.trim(),
+    headline : $('#fHeadline').value.trim(),
+    image    : $('#fImage').value.trim(),
+    link     : $('#fLink').value.trim(),
+    faq      : $('#fFaq').value,
+    star     : $('#fStar').classList.contains('on')
   };
   const d = posts[editId].date;
   cur = { y:+d.slice(0,4), m:+d.slice(5,7) };   // 存到別的月份就跟著跳過去
@@ -892,6 +1042,7 @@ $('#delBtn').onclick = () => {
 $('#closeBtn').onclick = closeEdit;
 $('#mask').onclick = closeEdit;
 $('#fDone').onclick = () => $('#fDone').classList.toggle('on');
+$('#fStar').onclick = () => $('#fStar').classList.toggle('on');
 
 $$('.copy').forEach(b => b.onclick = async () => {
   const txt = $('#fIg').value;
@@ -901,7 +1052,17 @@ $$('.copy').forEach(b => b.onclick = async () => {
   setTimeout(() => { b.textContent = '複製'; b.classList.remove('ok'); }, 1400);
 });
 
-document.addEventListener('click', e => {
+document.addEventListener('click', async e => {
+  // 圖文表裡直接複製整篇文案，不用先開編輯視窗
+  const c = e.target.closest('[data-copytext]');
+  if(c){
+    const p = posts[c.dataset.copytext];
+    if(!p) return;
+    try{ await navigator.clipboard.writeText(p.ig || ''); }catch(err){ console.warn(err); }
+    c.textContent = '已複製'; c.classList.add('ok');
+    setTimeout(() => { c.textContent = '複製文案'; c.classList.remove('ok'); }, 1400);
+    return;
+  }
   const t = e.target.closest('[data-open]');
   if(t) openEdit(t.dataset.open);
 });
@@ -917,8 +1078,9 @@ $$('.seg button').forEach(b => b.onclick = () => {
   $$('.seg button').forEach(x => x.classList.remove('on'));
   b.classList.add('on');
   view = b.dataset.view;
-  $('#viewCal').style.display  = view==='cal'  ? '' : 'none';
-  $('#viewList').style.display = view==='list' ? '' : 'none';
+  $('#viewCal').style.display   = view==='cal'   ? '' : 'none';
+  $('#viewList').style.display  = view==='list'  ? '' : 'none';
+  $('#viewSheet').style.display = view==='sheet' ? '' : 'none';
   renderAll();
 });
 
