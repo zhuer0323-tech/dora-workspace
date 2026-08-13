@@ -64,11 +64,28 @@ header.top .sub{font-size:12px;color:var(--ink3);margin-left:2px;font-weight:400
 .t-life{background:var(--life)}  .t-coach{background:var(--coach)}
 .t-etc{background:var(--ink3)}
 
+/* ---------- 月曆上方的議題統計 ---------- */
+.statwrap{display:grid;gap:8px;margin-bottom:12px;
+  grid-template-columns:repeat(2,1fr)}
+@media(min-width:640px){.statwrap{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:1000px){.statwrap{grid-template-columns:repeat(7,1fr)}}
+.statcell{background:var(--card);border-radius:14px;box-shadow:var(--shadow);
+  padding:10px 12px;display:flex;flex-direction:column;gap:3px}
+.statcell .sn{font-size:11.5px;color:var(--ink3);font-weight:700;
+  display:flex;align-items:center;gap:5px;line-height:1.4}
+.statcell .sv{font-size:21px;font-weight:700;color:var(--ink);line-height:1.2}
+.statcell .sv.small{font-size:17px}
+.statcell .sv .sep{color:var(--ink3);font-weight:400;font-size:14px}
+.statcell.total{background:var(--pink);color:#fff}
+.statcell.total .sn,.statcell.total .sv{color:#fff}
+/* 顏色由 .t-xxx 提供，這裡不設 background 免得蓋掉它 */
+.dotc{width:8px;height:8px;border-radius:99px;flex:none}
+
 /* ---------- 月曆 ---------- */
 .calwrap{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:14px;overflow-x:auto}
 .cal{display:grid;grid-template-columns:repeat(7,minmax(88px,1fr));gap:6px;min-width:660px}
 .cal .wd{text-align:center;font-size:11.5px;color:var(--ink3);font-weight:700;padding-bottom:4px}
-.cal .day{min-height:82px;border-radius:12px;background:var(--pink-xl);padding:6px;
+.cal .day{min-height:104px;border-radius:12px;background:var(--pink-xl);padding:6px;
   display:flex;flex-direction:column;gap:4px}
 .cal .day.blank{background:transparent}
 .cal .day .n{font-size:11.5px;color:var(--ink3);font-weight:700}
@@ -78,7 +95,12 @@ header.top .sub{font-size:12px;color:var(--ink3);margin-left:2px;font-weight:400
   display:flex;align-items:flex-start;gap:4px}
 .cal .ev:active{cursor:grabbing}
 .cal .ev:hover{box-shadow:var(--shadow-l)}
-.cal .ev .t{flex:1;cursor:text}
+.cal .ev .evbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.cal .ev .evtype{display:flex;gap:3px;flex-wrap:wrap}
+.cal .ev .t{cursor:text;font-weight:600}
+.cal .ev .evhead{font-size:11px;color:var(--ink3);line-height:1.4}
+.chip.mini2{padding:1px 6px;font-size:10px;font-weight:700;border-radius:99px}
+.chip.mini2.etc{background:var(--ink3)}
 .cal .ev .evopen{color:var(--ink3);font-size:13px;line-height:1;padding:0 2px;opacity:0;flex:none}
 .cal .ev:hover .evopen{opacity:1}
 .cal .ev.done{opacity:.5}
@@ -210,7 +232,10 @@ td.editing{background:#fff !important}
   <button class="addbtn" id="addBtn">＋ 新增貼文</button>
 </div>
 
-<div id="viewCal" class="calwrap"><div class="cal" id="cal"></div></div>
+<div id="viewCal">
+  <div class="statwrap" id="calStats"></div>
+  <div class="calwrap"><div class="cal" id="cal"></div></div>
+</div>
 <div id="viewList" class="grid" style="display:none"></div>
 <div id="viewSheet" class="sheetwrap" style="display:none"><table class="sheet" id="sheet"></table></div>
 
@@ -1048,7 +1073,31 @@ function renderStat(){
   $('#mLabel').textContent = `${cur.y} 年 ${cur.m} 月`;
 }
 
+/* 月曆上方的議題統計，照她試算表最上面那塊：每一類各排幾篇 */
+function renderCalStats(){
+  const list = monthPosts();
+  const c = {};
+  list.forEach(([,p]) => { const t = SLUG[p.type] ? p.type : '其他'; c[t] = (c[t]||0) + 1; });
+  const cells = Object.keys(SLUG).map(t => `
+    <div class="statcell">
+      <div class="sn"><span class="dotc t-${slugOf(t)}"></span>${t}</div>
+      <div class="sv">${c[t] || 0}</div>
+    </div>`).join('');
+  const done = list.filter(([,p]) => p.done).length;
+  $('#calStats').innerHTML = `
+    <div class="statcell total">
+      <div class="sn">這個月總篇數</div>
+      <div class="sv">${list.length}</div>
+    </div>
+    ${cells}
+    <div class="statcell">
+      <div class="sn">已發布 / 未發布</div>
+      <div class="sv small">${done} <span class="sep">/</span> ${list.length - done}</div>
+    </div>`;
+}
+
 function renderCal(){
+  renderCalStats();
   const box = $('#cal');
   const first = new Date(cur.y, cur.m-1, 1).getDay();
   const days = new Date(cur.y, cur.m, 0).getDate();
@@ -1059,9 +1108,17 @@ function renderCal(){
   for(let i=0;i<first;i++) h += '<div class="day blank"></div>';
   for(let d=1;d<=days;d++){
     const ds = ymd(cur.y,cur.m,d);
+    // 格子裡照她試算表的排法：上面一行是議題（社群(前台) ＋ 類型），下面才是標題
     const evs = (byDay[d]||[]).map(([id,p]) =>
       `<div class="ev c-${slugOf(p.type)} ${p.done?'done':''}" draggable="true" data-drag="${id}">
-         <span class="t" data-caltitle="${id}" title="點一下可以直接改標題">${esc(p.title||'（未命名）')}</span>
+         <div class="evbody">
+           <div class="evtype">
+             <span class="chip mini2 etc">社群(前台)</span>
+             <span class="chip mini2 t-${slugOf(p.type)}">${esc(p.type||'其他')}</span>
+           </div>
+           <span class="t" data-caltitle="${id}" title="點一下可以直接改標題">${esc(p.title||'（未命名）')}</span>
+           ${p.headline ? `<div class="evhead">${esc(p.headline)}</div>` : ''}
+         </div>
          <button class="evopen" data-open="${id}" title="開啟完整編輯">⋯</button>
        </div>`).join('');
     h += `<div class="day ${ds===todayStr()?'today':''}" data-date="${ds}"><div class="n">${d}</div>${evs}</div>`;
