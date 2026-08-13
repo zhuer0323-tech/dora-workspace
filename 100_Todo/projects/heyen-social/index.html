@@ -83,7 +83,7 @@ header.top .sub{font-size:12px;color:var(--ink3);margin-left:2px;font-weight:400
 
 /* ---------- 月曆 ---------- */
 .calwrap{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:14px;overflow-x:auto}
-.cal{display:grid;grid-template-columns:repeat(7,minmax(88px,1fr));gap:6px;min-width:660px}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(96px,1fr));gap:6px;min-width:730px}
 .cal .wd{text-align:center;font-size:11.5px;color:var(--ink3);font-weight:700;padding-bottom:4px}
 .cal .day{min-height:104px;border-radius:12px;background:var(--pink-xl);padding:6px;
   display:flex;flex-direction:column;gap:4px}
@@ -92,16 +92,22 @@ header.top .sub{font-size:12px;color:var(--ink3);margin-left:2px;font-weight:400
 .cal .day.today{outline:2px solid var(--pink);outline-offset:-2px}
 .cal .ev{background:#fff;border-radius:9px;padding:5px 6px;font-size:11.5px;line-height:1.45;
   cursor:grab;box-shadow:var(--shadow);border-left:3px solid var(--ink3);text-align:left;width:100%;
-  display:flex;align-items:flex-start;gap:4px}
+  display:flex;align-items:flex-start;gap:4px;position:relative}
 .cal .ev:active{cursor:grabbing}
 .cal .ev:hover{box-shadow:var(--shadow-l)}
-.cal .ev .evbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
-.cal .ev .evtype{display:flex;gap:3px;flex-wrap:wrap}
+.cal .ev .evbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;padding-right:12px}
+/* 議題兩個標籤排同一行，格子再窄也不換行 */
+.cal .ev .evtype{display:flex;gap:3px;flex-wrap:nowrap;align-items:center;min-width:0}
 .cal .ev .t{cursor:text;font-weight:600}
 .cal .ev .evhead{font-size:11px;color:var(--ink3);line-height:1.4}
-.chip.mini2{padding:1px 6px;font-size:10px;font-weight:700;border-radius:99px}
+.chip.mini2{padding:1px 5px;font-size:9.5px;font-weight:700;border-radius:99px;
+  white-space:nowrap;flex:none}
 .chip.mini2.etc{background:var(--ink3)}
-.cal .ev .evopen{color:var(--ink3);font-size:13px;line-height:1;padding:0 2px;opacity:0;flex:none}
+/* 格子不夠寬就只留類型那顆，「社群(前台)」每篇都一樣，先犧牲它 */
+@media(max-width:1180px){ .cal .ev .evtype .etc{display:none} }
+/* 「⋯」改成疊在右上角，不佔議題那行的寬度 */
+.cal .ev .evopen{position:absolute;top:3px;right:3px;color:var(--ink3);font-size:13px;
+  line-height:1;padding:0 2px;opacity:0}
 .cal .ev:hover .evopen{opacity:1}
 .cal .ev.done{opacity:.5}
 .cal .ev.done .t{text-decoration:line-through}
