@@ -74,8 +74,13 @@ header.top .sub{font-size:12px;color:var(--ink3);margin-left:2px;font-weight:400
 .cal .day .n{font-size:11.5px;color:var(--ink3);font-weight:700}
 .cal .day.today{outline:2px solid var(--pink);outline-offset:-2px}
 .cal .ev{background:#fff;border-radius:9px;padding:5px 6px;font-size:11.5px;line-height:1.45;
-  cursor:pointer;box-shadow:var(--shadow);border-left:3px solid var(--ink3);text-align:left;width:100%}
+  cursor:grab;box-shadow:var(--shadow);border-left:3px solid var(--ink3);text-align:left;width:100%;
+  display:flex;align-items:flex-start;gap:4px}
+.cal .ev:active{cursor:grabbing}
 .cal .ev:hover{box-shadow:var(--shadow-l)}
+.cal .ev .t{flex:1;cursor:text}
+.cal .ev .evopen{color:var(--ink3);font-size:13px;line-height:1;padding:0 2px;opacity:0;flex:none}
+.cal .ev:hover .evopen{opacity:1}
 .cal .ev.done{opacity:.5}
 .cal .ev.done .t{text-decoration:line-through}
 .ev.c-view{border-left-color:var(--view)}  .ev.c-teach{border-left-color:var(--teach)}
@@ -121,6 +126,20 @@ header.top .sub{font-size:12px;color:var(--ink3);margin-left:2px;font-weight:400
   display:flex;align-items:center;justify-content:center;color:var(--ink3);font-size:11.5px}
 .sheet .imgbox img{max-width:100%;max-height:150px;border-radius:10px;object-fit:contain}
 .sheet .none{color:var(--ink3)}
+.sheet td.editable{cursor:text}
+.sheet td.editable:hover{outline:1.5px solid var(--pink-l);outline-offset:-2px}
+.sheet .code[draggable]{cursor:grab}
+.sheet .code[draggable]:active{cursor:grabbing}
+
+/* 就地編輯用的輸入框（表格與月曆共用） */
+.cellinput{width:100%;background:#fff;border:1.5px solid var(--pink);border-radius:8px;
+  padding:6px 8px;font-size:12.5px;line-height:1.6;font-family:inherit}
+.cellinput.area{min-height:200px;white-space:pre-wrap;resize:vertical}
+td.editing{background:#fff !important}
+
+/* 拖曳時目標會亮起來 */
+.dropok{outline:2px dashed var(--pink) !important;outline-offset:-2px}
+.cal .day.dropok{background:var(--pink-l)}
 .sheet .rowact{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 .sheet .mini{font-size:11.5px;font-weight:700;color:var(--pink-d);
   padding:3px 9px;border-radius:99px;background:var(--pink-xl)}
@@ -857,9 +876,19 @@ function setSync(state, msg){
 /* ---------- 畫面 ---------- */
 function monthPosts(){
   const pre = `${cur.y}-${pad(cur.m)}`;
+  // 有自己拖過順序（ord）的排前面，沒拖過的照日期
   return Object.entries(posts)
     .filter(([,p]) => (p.date||'').startsWith(pre))
-    .sort((a,b) => (a[1].date||'').localeCompare(b[1].date||''));
+    .sort((a,b) => {
+      const oa = a[1].ord ?? 9999, ob = b[1].ord ?? 9999;
+      if(oa !== ob) return oa - ob;
+      return (a[1].date||'').localeCompare(b[1].date||'');
+    });
+}
+
+/* 把目前這個月的順序重新編號，拖完就叫一次 */
+function renumber(list){
+  list.forEach(([id], i) => { if(posts[id]) posts[id].ord = i; });
 }
 
 function renderStat(){
@@ -879,11 +908,13 @@ function renderCal(){
   let h = ['日','一','二','三','四','五','六'].map(w => `<div class="wd">${w}</div>`).join('');
   for(let i=0;i<first;i++) h += '<div class="day blank"></div>';
   for(let d=1;d<=days;d++){
-    const isToday = ymd(cur.y,cur.m,d) === todayStr();
+    const ds = ymd(cur.y,cur.m,d);
     const evs = (byDay[d]||[]).map(([id,p]) =>
-      `<button class="ev c-${slugOf(p.type)} ${p.done?'done':''}" data-open="${id}">
-         <span class="t">${esc(p.title||'（未命名）')}</span></button>`).join('');
-    h += `<div class="day ${isToday?'today':''}"><div class="n">${d}</div>${evs}</div>`;
+      `<div class="ev c-${slugOf(p.type)} ${p.done?'done':''}" draggable="true" data-drag="${id}">
+         <span class="t" data-caltitle="${id}" title="點一下可以直接改標題">${esc(p.title||'（未命名）')}</span>
+         <button class="evopen" data-open="${id}" title="開啟完整編輯">⋯</button>
+       </div>`).join('');
+    h += `<div class="day ${ds===todayStr()?'today':''}" data-date="${ds}"><div class="n">${d}</div>${evs}</div>`;
   }
   box.innerHTML = h;
 }
@@ -929,16 +960,17 @@ const SHEET_ROWS = [
 ];
 
 function sheetCell(k, id, p){
-  const none = '<span class="none">—</span>';
+  const none = '<span class="none">點一下填寫</span>';
   switch(k){
     case 'code':
-      return `<div class="code">${p.star?'⭐ ':''}${esc(p.code) || none}</div>`;
+      // 這格同時是拖曳把手，拖它就能換整欄的位置
+      return `<div class="code" draggable="true" data-drag="${id}" title="按住可以拖到別的位置">
+                ${p.star?'⭐ ':''}${esc(p.code) || '<span class="none">—</span>'}</div>`;
     case 'type':
       return `<span class="chip t-etc" style="background:var(--ink3)">社群(前台)</span>
               <span class="chip t-${slugOf(p.type)}" style="margin-left:4px">${esc(p.type||'其他')}</span>`;
     case 'title':
-      return `<button class="mini" data-open="${id}" style="margin-bottom:5px">開啟編輯</button>
-              <div>${esc(p.title) || none}</div>`;
+      return `<div>${esc(p.title) || none}</div>`;
     case 'date': {
       if(!p.date) return none;
       const wd = ['日','一','二','三','四','五','六'][new Date(p.date+'T00:00:00').getDay()];
@@ -951,13 +983,22 @@ function sheetCell(k, id, p){
         ? `<div class="imgbox"><img src="${esc(p.image)}" alt=""></div>`
         : `<div class="imgbox">還沒放素材圖</div>`;
     case 'copy':
-      if(!p.copyText) return none;
-      return `<div class="copytxt">${esc(p.copyText)}</div>
-              <div class="rowact"><button class="mini" data-copytext="${id}">複製文案</button></div>`;
+      return `<div class="copytxt">${esc(p.copyText) || '點一下開始寫'}</div>
+              <div class="rowact">
+                <button class="mini" data-copytext="${id}">複製文案</button>
+                <button class="mini" data-open="${id}">開整篇編輯</button>
+              </div>`;
     default:
       return esc(p[k]) || none;
   }
 }
+
+/* 哪些欄位可以在表格上直接改，以及要用什麼輸入元件 */
+const CELL_EDIT = {
+  code:'text', name:'text', type:'select', title:'text', media:'text',
+  date:'date', link:'text', image:'text', format:'text', copyCode:'text',
+  copy:'textarea', headline:'text', faq:'textarea'
+};
 
 function renderSheet(){
   const box = $('#sheet'), list = monthPosts();
@@ -969,18 +1010,140 @@ function renderSheet(){
     const tds = list.map(([id,p]) => {
       // 把資料攤平成這一列要的值，文案那欄用 ig（介面上就叫「貼文文案」）
       const v = { ...p, copyText: p.ig };
-      return `<td class="${p.done?'on':''}">${sheetCell(r.k, id, v)}</td>`;
+      const canEdit = CELL_EDIT[r.k] ? ` data-cell="${id}|${r.k}"` : '';
+      return `<td class="${p.done?'on':''}${canEdit?' editable':''}"${canEdit}>${sheetCell(r.k, id, v)}</td>`;
     }).join('');
     return `<tr class="${r.cls||''}"><th class="rowhd">${r.n}</th>${tds}</tr>`;
   }).join('');
 }
 
 function renderAll(){
+  if(editingCell) return;        // 正在格子裡打字就先不要重畫，不然字會被洗掉
   renderStat();
   if(view==='cal') renderCal();
   else if(view==='list') renderList();
   else renderSheet();
 }
+
+/* ---------- 表格上直接改（點一下就變輸入框，點別處或按 Esc 就存起來） ---------- */
+let editingCell = null;
+
+function openCellEdit(td){
+  if(editingCell) return;
+  const [id, key] = td.dataset.cell.split('|');
+  const p = posts[id];
+  if(!p) return;
+  const kind = CELL_EDIT[key];
+  const cur  = key === 'copy' ? (p.ig || '') : (p[key] || '');
+
+  let el;
+  if(kind === 'textarea'){
+    el = document.createElement('textarea');
+    el.value = cur;
+    el.className = 'cellinput area';
+  }else if(kind === 'select'){
+    el = document.createElement('select');
+    el.className = 'cellinput';
+    Object.keys(SLUG).forEach(t => {
+      const o = document.createElement('option');
+      o.value = o.textContent = t;
+      if(t === p.type) o.selected = true;
+      el.appendChild(o);
+    });
+  }else{
+    el = document.createElement('input');
+    el.type = kind === 'date' ? 'date' : 'text';
+    el.value = cur;
+    el.className = 'cellinput';
+  }
+
+  editingCell = { id, key, td };
+  td.innerHTML = '';
+  td.appendChild(el);
+  td.classList.add('editing');
+  el.focus();
+  if(el.setSelectionRange && kind !== 'date'){
+    const n = el.value.length;
+    try{ el.setSelectionRange(n, n); }catch(e){}
+  }
+
+  const commit = save => {
+    if(!editingCell) return;
+    editingCell = null;
+    if(save){
+      const v = el.value;
+      if(key === 'copy') p.ig = v;
+      else if(key === 'date'){ if(v) p.date = v; }
+      else p[key] = (kind === 'textarea') ? v : v.trim();
+      push();
+    }
+    td.classList.remove('editing');
+    renderAll();
+  };
+
+  el.addEventListener('blur', () => commit(true));
+  el.addEventListener('keydown', ev => {
+    if(ev.key === 'Escape'){ ev.preventDefault(); commit(false); }
+    // 單行欄位按 Enter 就存；文案是多行，用 Cmd/Ctrl+Enter 存
+    if(ev.key === 'Enter' && (kind !== 'textarea' || ev.metaKey || ev.ctrlKey)){
+      ev.preventDefault(); el.blur();
+    }
+  });
+  if(kind === 'select') el.addEventListener('change', () => el.blur());
+}
+
+/* ---------- 拖曳 ---------- */
+let dragId = null;
+
+// 圖文表：拖「素材編號」那格換整欄的位置
+function sheetDrop(targetId){
+  if(!dragId || dragId === targetId) return;
+  const list = monthPosts();
+  const ids  = list.map(([id]) => id);
+  const from = ids.indexOf(dragId), to = ids.indexOf(targetId);
+  if(from < 0 || to < 0) return;
+  ids.splice(to, 0, ids.splice(from, 1)[0]);
+  ids.forEach((id, i) => { posts[id].ord = i; });
+  push(); renderAll();
+}
+
+// 月曆：拖到別的日期就改上線時間
+function calDrop(dateStr){
+  if(!dragId || !posts[dragId]) return;
+  if(posts[dragId].date === dateStr) return;
+  posts[dragId].date = dateStr;
+  push(); renderAll();
+}
+
+document.addEventListener('dragstart', e => {
+  const h = e.target.closest('[data-drag]');
+  if(!h) return;
+  dragId = h.dataset.drag;
+  e.dataTransfer.effectAllowed = 'move';
+  try{ e.dataTransfer.setData('text/plain', dragId); }catch(err){}
+});
+document.addEventListener('dragend', () => {
+  dragId = null;
+  $$('.dropok').forEach(el => el.classList.remove('dropok'));
+});
+document.addEventListener('dragover', e => {
+  const day = e.target.closest('.cal .day:not(.blank)');
+  const col = e.target.closest('#sheet td');
+  if(!dragId || (!day && !col)) return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  $$('.dropok').forEach(el => el.classList.remove('dropok'));
+  (day || col).classList.add('dropok');
+});
+document.addEventListener('drop', e => {
+  if(!dragId) return;
+  const day = e.target.closest('.cal .day:not(.blank)');
+  const col = e.target.closest('#sheet td[data-cell]');
+  if(day){ e.preventDefault(); calDrop(day.dataset.date); }
+  else if(col){ e.preventDefault(); sheetDrop(col.dataset.cell.split('|')[0]); }
+  $$('.dropok').forEach(el => el.classList.remove('dropok'));
+  dragId = null;
+});
 
 /* ---------- 編輯視窗 ---------- */
 function openEdit(id){
@@ -1064,8 +1227,40 @@ document.addEventListener('click', async e => {
     return;
   }
   const t = e.target.closest('[data-open]');
-  if(t) openEdit(t.dataset.open);
+  if(t){ openEdit(t.dataset.open); return; }
+
+  // 月曆上點標題就直接改
+  const ct = e.target.closest('[data-caltitle]');
+  if(ct){ openCalTitleEdit(ct); return; }
+
+  // 圖文表上點格子就直接改
+  const cell = e.target.closest('#sheet td[data-cell]');
+  if(cell && !cell.classList.contains('editing')) openCellEdit(cell);
 });
+
+/* 月曆上就地改標題 */
+function openCalTitleEdit(span){
+  if(editingCell) return;
+  const id = span.dataset.caltitle, p = posts[id];
+  if(!p) return;
+  const el = document.createElement('input');
+  el.type = 'text'; el.value = p.title || ''; el.className = 'cellinput';
+  editingCell = { id, key:'title' };
+  span.replaceWith(el);
+  el.focus(); el.select();
+
+  const commit = save => {
+    if(!editingCell) return;
+    editingCell = null;
+    if(save){ p.title = el.value.trim(); push(); }
+    renderAll();
+  };
+  el.addEventListener('blur', () => commit(true));
+  el.addEventListener('keydown', ev => {
+    if(ev.key === 'Escape'){ ev.preventDefault(); commit(false); }
+    if(ev.key === 'Enter'){ ev.preventDefault(); el.blur(); }
+  });
+}
 
 /* ---------- 工具列 ---------- */
 $('#prevM').onclick = () => { cur.m--; if(cur.m<1){cur.m=12;cur.y--;} renderAll(); };
