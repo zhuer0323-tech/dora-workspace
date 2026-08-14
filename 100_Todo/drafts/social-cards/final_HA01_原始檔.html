@@ -1,259 +1,267 @@
 <!doctype html>
-<html lang="zh-Hant"><head><meta charset="utf-8"><title>禾言圖卡</title>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>禾言圖卡（Canva 版型骨架）</title>
 <style>
-:root{--y:#FCD501;--y2:#FFCA26;--y3:#FFEDC5;--g:#AED056;--cream:#FFF9F6;
-  --mint:#C9E6E4;--coral:#F8706F;--amber:#FFD36F;--red:#FF3131;--blue:#2F6FD0;--ink:#000}
+:root{
+  /* 全部取自 Canva 版型「廣告上線前」 */
+  --y:#FCD501; --y2:#FFCA26; --y3:#FFEDC5;
+  --g:#AED056; --cream:#FFF9F6; --mint:#C9E6E4;
+  --coral:#F8706F; --amber:#FFD36F; --red:#FF3131; --ink:#000;
+}
 *{box-sizing:border-box;margin:0;padding:0}
-body{margin:0;font-family:"PingFang TC","Heiti TC",sans-serif}
-.card{width:1080px;height:1350px;position:relative;overflow:hidden;background:#F2F2F0;
-  background-image:linear-gradient(rgba(0,0,0,.07) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(0,0,0,.07) 1px,transparent 1px);background-size:32px 32px}
+body{background:#fff;margin:0;font-family:"PingFang TC","Heiti TC","Noto Sans TC",sans-serif}
+
+.card{
+  width:1080px;height:1350px;position:relative;overflow:hidden;margin:0 auto;
+  background:#F2F2F0;
+  background-image:
+    linear-gradient(rgba(0,0,0,.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,.07) 1px, transparent 1px);
+  background-size:32px 32px;
+}
+/* 左上 / 右下 黃色角落裝飾 */
 .corner{position:absolute;width:250px;height:250px;z-index:0}
-.corner.tl{left:-96px;top:-104px}.corner.br{right:-96px;bottom:-104px;transform:rotate(180deg)}
-.logo{position:absolute;left:50%;top:46px;transform:translateX(-50%);width:316px;z-index:5}
+.corner.tl{left:-96px;top:-104px}
+.corner.br{right:-96px;bottom:-104px;transform:rotate(180deg)}
+.corner svg{width:100%;height:100%;display:block}
+
+/* 盾牌形主體（照版型的 path，下方收弧） */
+.logo{position:absolute;left:50%;top:56px;transform:translateX(-50%);width:330px;z-index:5}
 .logo img{width:100%;display:block}
+.shield{position:absolute;left:52px;top:190px;width:976px;height:1108px;z-index:1}
+/* 底部橢圓圓角＝平滑弧線（比拉伸 SVG 順） */
+.shield .back,.shield .front{position:absolute;inset:0;
+  border-radius:16px 16px 50% 50% / 16px 16px 27% 27%}
+.shield .back{background:var(--y2);transform:translate(16px,16px)}
+.shield .front{background:var(--cream)}
+/* 盾牌下方 32% 是收窄的弧形，內容不進去 */
+.inner{position:absolute;left:0;top:0;width:100%;height:68%;
+  padding:44px 62px 0;display:flex;flex-direction:column;z-index:2}
 
-.sheet{position:absolute;left:60px;top:176px;right:60px;bottom:96px;background:var(--y);
-  border-radius:18px;box-shadow:14px 14px 0 var(--y2);padding:52px 50px 44px;
-  display:flex;flex-direction:column;z-index:1}
-.sheet.cream{background:var(--cream)}
-.dots{position:absolute;left:-4px;top:-4px;width:120px;height:100px;opacity:.5;
-  background-image:radial-gradient(var(--ink) 3.2px,transparent 3.4px);background-size:16px 16px}
+/* 頂部品牌 */
+.brand{display:none}
+/* 底部藍綠膠囊（版型底部那條） */
+.bottompill{position:absolute;left:50%;bottom:132px;transform:translateX(-50%);
+  background:var(--mint);border-radius:22px;padding:18px 40px;
+  font-size:34px;font-weight:900;white-space:nowrap;z-index:4}
 
-h1{font-size:78px;font-weight:900;line-height:1.34;letter-spacing:-2px}
-h2{font-size:62px;font-weight:900;line-height:1.42;letter-spacing:-1px}
-.hl{background:var(--ink);color:#fff;padding:3px 18px;display:inline-block}
-.b{color:#7FC3F0}.red{color:var(--red)}.blue{color:var(--blue)}
+/* 左上綠色箭頭標籤 */
+.flag{position:absolute;left:-10px;top:-26px;z-index:4;background:var(--g);
+  padding:16px 46px 16px 30px;font-size:34px;font-weight:900;
+  clip-path:polygon(0 0, 82% 0, 100% 50%, 82% 100%, 0 100%)}
 
-/* 對比卡 */
-.pair{display:flex;gap:24px;margin-top:46px;position:relative}
-.col{flex:1;position:relative;background:#fff;border:4px solid var(--ink);border-radius:14px;
-  box-shadow:8px 8px 0 rgba(0,0,0,.85);padding:26px 22px 28px;display:flex;flex-direction:column}
-.tag{position:absolute;top:-22px;left:22px;border:4px solid var(--ink);border-radius:99px;
-  padding:7px 24px;font-size:29px;font-weight:900}
-.tag.bad{background:var(--coral);color:#fff}.tag.good{background:var(--ink);color:#fff}
-.diagram{height:186px;margin:20px 0 18px}
-.diagram svg{width:100%;height:100%}
-.ct{font-size:34px;font-weight:900;line-height:1.42;margin-bottom:10px}
-.cd{font-size:28px;font-weight:600;color:#333;line-height:1.6}
-.arrow{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);width:70px;height:70px;
-  background:var(--y);border:4px solid var(--ink);border-radius:50%;z-index:6;
-  display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900}
-.sheet.cream .arrow{background:var(--y)}
+/* 文字呈現（沿用前一版的變化） */
+h1{font-size:96px;line-height:1.24;font-weight:900;letter-spacing:-2px;text-align:center}
+h2{font-size:74px;line-height:1.3;font-weight:900;letter-spacing:-1px;text-align:center}
+.hl{background:var(--ink);color:#fff;padding:2px 16px;display:inline-block}
+.mark-y{background:linear-gradient(transparent 58%, var(--y) 58%);padding:0 4px}
+.mark-m{background:linear-gradient(transparent 58%, var(--mint) 58%);padding:0 4px}
+.red{color:var(--red)}
 
-/* 條列項目 */
-.rows{display:flex;flex-direction:column;gap:18px;margin-top:34px}
-.row{background:#fff;border:4px solid var(--ink);border-radius:12px;padding:20px 24px;
-  box-shadow:6px 6px 0 rgba(0,0,0,.85);display:flex;align-items:center;gap:20px}
-.row .n{width:54px;height:54px;flex:none;border:4px solid var(--ink);border-radius:50%;
-  display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900}
-.row .tx b{display:block;font-size:34px;font-weight:900;line-height:1.3}
-.row .tx span{display:block;font-size:27px;font-weight:600;color:#444;margin-top:4px}
+.items{display:flex;flex-direction:column;gap:24px;margin-top:38px}
+.item{position:relative;background:#fff;border:4px solid var(--ink);padding:22px 28px}
+.item .t{font-size:38px;font-weight:900;margin-bottom:8px}
+.item .t.red{color:var(--red)}
+.item .d{font-size:30px;font-weight:600;color:#222;line-height:1.55}
+.item i{position:absolute;width:14px;height:14px;background:#fff;border:4px solid var(--ink)}
+.item i:nth-child(1){left:-9px;top:-9px} .item i:nth-child(2){right:-9px;top:-9px}
+.item i:nth-child(3){left:-9px;bottom:-9px} .item i:nth-child(4){right:-9px;bottom:-9px}
 
-.funnel{margin:30px auto 0;width:700px;height:330px}
-.funnel svg{width:100%;height:100%}
-.bottom{margin-top:auto;text-align:center;font-size:34px;font-weight:900;padding-top:18px}
-.note{text-align:center;font-size:30px;font-weight:700;color:#333;margin-top:16px}
-.cta{margin-top:auto;background:#fff;border:4px solid var(--ink);border-radius:14px;
-  box-shadow:8px 8px 0 rgba(0,0,0,.85);padding:26px 30px;text-align:center}
-.cta b{display:block;font-size:38px;font-weight:900}
-.cta span{display:block;font-size:29px;font-weight:700;color:#333;margin-top:8px}
+.chips{display:flex;flex-wrap:wrap;gap:13px;justify-content:center;margin-top:34px}
+.chips .c{border:4px solid var(--ink);border-radius:99px;padding:10px 22px;
+  font-size:29px;font-weight:800;background:#fff}
+.chips .c.y{background:var(--y)} .chips .c.m{background:var(--mint)}
+.chips .c.g{background:var(--g)} .chips .c.k{background:var(--ink);color:#fff}
+
+.vs{display:flex;gap:18px;margin-top:auto}
+.vs>div{flex:1;border:4px solid var(--ink);padding:26px 24px;background:#fff}
+.vs .lab{font-size:25px;font-weight:800;display:inline-block;padding:6px 16px;
+  border-radius:99px;margin-bottom:12px}
+.vs .bad .lab{background:var(--coral);color:#fff}
+.vs .good .lab{background:var(--g)}
+.vs .txt{font-size:29px;font-weight:700;line-height:1.55}
+
+.sub{font-size:33px;font-weight:700;color:#333;line-height:1.6;text-align:center;margin-top:24px}
+.foot{margin-top:auto;font-size:32px;font-weight:800;text-align:center}
+.pill{display:inline-block;background:var(--ink);color:#fff;font-size:24px;
+  font-weight:800;padding:9px 20px;border-radius:99px;margin-right:10px}
+
+/* 封面專用：對話框、圓點、閱讀全文 */
+.bubble{position:relative;background:var(--mint);border:5px solid var(--ink);
+  border-radius:44px;padding:38px 34px;margin-top:8px}
+.bubble::after{content:"";position:absolute;left:78px;bottom:-38px;width:0;height:0;
+  border-left:34px solid transparent;border-right:34px solid transparent;
+  border-top:38px solid var(--ink)}
+.bubble::before{content:"";position:absolute;left:85px;bottom:-27px;width:0;height:0;z-index:2;
+  border-left:27px solid transparent;border-right:27px solid transparent;
+  border-top:29px solid var(--mint)}
+.dots3{position:absolute;left:34px;top:34px;display:flex;flex-direction:column;gap:14px;z-index:5}
+.dots3 span{width:34px;height:34px;border-radius:50%;border:4px solid var(--ink);display:block}
 .readmore{display:inline-block;background:var(--y3);border:3px solid var(--ink);
-  border-radius:99px;padding:12px 32px;font-size:32px;font-weight:900}
-.brandfoot{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);
-  font-size:23px;font-weight:800;color:#8a8378;letter-spacing:2px;z-index:3}
-.pageno{position:absolute;right:40px;bottom:32px;font-size:24px;font-weight:800;color:#8a8378;z-index:3}
-</style></head><body>
+  border-radius:99px;padding:14px 34px;font-size:34px;font-weight:900}
 
-<!-- ===== 1 封面：漏斗全貌 ===== -->
+.pageno{position:absolute;right:56px;bottom:24px;font-size:25px;font-weight:800;color:#7c766c;z-index:3}
+</style>
+</head>
+<body>
+
+<!-- 1 封面 -->
 <div class="card">
   <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
   <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
-  <div class="logo"><img src="logo_use.png"></div>
-  <div class="sheet cream">
-    <div class="dots"></div>
-    <h1><span class="hl">Meta 廣告這麼多種</span><br><span class="hl">到底要選哪個？</span></h1>
-    <div class="funnel" style="margin-top:38px">
-      <svg viewBox="0 0 660 300">
-        <polygon points="24,14 636,14 556,100 104,100" fill="#C9E6E4" stroke="#000" stroke-width="4"/>
-        <polygon points="108,108 552,108 486,194 174,194" fill="#FCD501" stroke="#000" stroke-width="4"/>
-        <polygon points="178,202 482,202 414,288 246,288" fill="#AED056" stroke="#000" stroke-width="4"/>
-        <text x="330" y="66" font-size="27" font-weight="900" text-anchor="middle">曝光｜品牌認知・互動</text>
-        <text x="330" y="160" font-size="27" font-weight="900" text-anchor="middle">導流｜流量・訊息・名單</text>
-        <text x="330" y="254" font-size="27" font-weight="900" text-anchor="middle">成交｜銷售</text>
-      </svg>
-    </div>
-    <div class="note" style="margin-top:26px">六種目標，其實對應三個生意階段</div>
-    <div style="text-align:center;margin-top:auto"><span class="readmore">閱讀全文 ➤</span></div>
-  </div>
-  <div class="brandfoot">HAYEN DIGITAL MARKETING</div><div class="pageno">01</div>
-</div>
-
-<!-- ===== 2 對比：憑感覺 vs 照階段 ===== -->
-<div class="card">
-  <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
-  <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
-  <div class="logo"><img src="logo_use.png"></div>
-  <div class="sheet">
-    <div class="dots"></div>
-    <h2><span class="hl">① 憑感覺選 <span class="b">廣告目標</span></span><br><span class="hl">會發生什麼事</span></h2>
-    <div class="pair">
-      <div class="col"><div class="tag bad">憑感覺</div>
-        <div class="diagram"><svg viewBox="0 0 240 180" fill="none">
-          <rect x="14" y="26" width="66" height="42" rx="8" fill="#EDEDED" stroke="#000" stroke-width="3"/>
-          <rect x="150" y="16" width="66" height="42" rx="8" fill="#EDEDED" stroke="#000" stroke-width="3"/>
-          <rect x="126" y="112" width="66" height="42" rx="8" fill="#EDEDED" stroke="#000" stroke-width="3"/>
-          <rect x="26" y="106" width="66" height="42" rx="8" fill="#EDEDED" stroke="#000" stroke-width="3"/>
-          <path d="M80 47C104 40 120 26 150 34" stroke="#F8706F" stroke-width="3.5" stroke-dasharray="8 8"/>
-          <path d="M180 58C176 84 150 92 158 112" stroke="#F8706F" stroke-width="3.5" stroke-dasharray="8 8"/>
-          <path d="M126 133C104 140 84 132 92 127" stroke="#F8706F" stroke-width="3.5" stroke-dasharray="8 8"/>
-          <circle cx="120" cy="86" r="21" fill="#FF3131"/>
-          <path d="M112 78l16 16M128 78l-16 16" stroke="#fff" stroke-width="4.5" stroke-linecap="round"/>
-        </svg></div>
-        <div class="ct">目標隨便挑，<br><span class="red">錢花了才發現錯</span></div>
-        <div class="cd">系統不知道要找誰，預算平均分給不會買的人。</div>
+  <div class="logo"><img src="logo_use.png" alt="禾言數位行銷"></div>
+  <div class="shield">
+    <div class="back"></div><div class="front"></div>
+    <div class="dots3"><span style="background:#F8706F"></span><span style="background:#FFD36F"></span><span style="background:#C9E6E4"></span></div>
+    <div class="inner">
+      <div class="bubble">
+        <h1>Meta 廣告<br><span class="hl">這麼多種</span><br>到底要選哪個？</h1>
       </div>
-      <div class="arrow">→</div>
-      <div class="col"><div class="tag good">照階段</div>
-        <div class="diagram"><svg viewBox="0 0 240 180" fill="none">
-          <rect x="12" y="66" width="60" height="48" rx="8" fill="#C9E6E4" stroke="#000" stroke-width="3"/>
-          <rect x="90" y="66" width="60" height="48" rx="8" fill="#FCD501" stroke="#000" stroke-width="3"/>
-          <rect x="168" y="66" width="60" height="48" rx="8" fill="#AED056" stroke="#000" stroke-width="3"/>
-          <path d="M74 90h14M152 90h14" stroke="#000" stroke-width="3.5"/>
-          <path d="M84 84l6 6-6 6M162 84l6 6-6 6" stroke="#000" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <circle cx="198" cy="44" r="19" fill="#2F6FD0"/>
-          <path d="M190 44l6 6 11-12" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <text x="42" y="140" font-size="17" font-weight="700" text-anchor="middle">曝光</text>
-          <text x="120" y="140" font-size="17" font-weight="700" text-anchor="middle">互動</text>
-          <text x="198" y="140" font-size="17" font-weight="700" text-anchor="middle">成交</text>
-        </svg></div>
-        <div class="ct">照生意階段走，<br><span class="blue">每一塊錢有方向</span></div>
-        <div class="cd">先讓人看見，再讓人開口，最後才談成交。</div>
+      <div class="chips" style="margin-top:56px">
+        <span class="c m">品牌認知</span><span class="c m">互動</span>
+        <span class="c y">流量</span><span class="c y">訊息</span>
+        <span class="c g">名單</span><span class="c k">銷售</span>
       </div>
+      <div class="sub" style="margin-top:34px">先把<span class="red">目標</span>定好，再來投放廣告</div>
+      <div style="text-align:center;margin-top:24px"><span class="readmore">閱讀全文 ➤</span></div>
     </div>
-    <div class="bottom">從「隨便挑一個」，變成「照順序來」。</div>
   </div>
-  <div class="brandfoot">HAYEN DIGITAL MARKETING</div><div class="pageno">02</div>
+  <div class="bottompill">六種目標 一次看懂</div>
+  <div class="pageno">01</div>
 </div>
 
-<!-- ===== 3 曝光層 ===== -->
+<!-- 2 常見狀況 -->
 <div class="card">
   <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
   <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
-  <div class="logo"><img src="logo_use.png"></div>
-  <div class="sheet cream">
-    <div class="dots"></div>
-    <h2><span class="hl">② 還沒人認識你</span><br>先做<span class="hl">曝光</span>這兩種</h2>
-    <div class="funnel" style="height:214px;width:600px;margin-top:30px">
-      <svg viewBox="0 0 600 214">
-        <polygon points="20,10 580,10 508,84 92,84" fill="#C9E6E4" stroke="#000" stroke-width="4"/>
-        <polygon points="96,92 504,92 440,158 160,158" fill="#F0F0EE" stroke="#000" stroke-width="3" opacity=".7"/>
-        <polygon points="164,166 436,166 380,208 220,208" fill="#F0F0EE" stroke="#000" stroke-width="3" opacity=".7"/>
-        <text x="300" y="56" font-size="30" font-weight="900" text-anchor="middle">你在這一層</text>
-      </svg>
-    </div>
-    <div class="rows">
-      <div class="row"><div class="n" style="background:var(--mint)">1</div>
-        <div class="tx"><b>品牌認知／觸及</b><span>想讓更多人看到你</span></div></div>
-      <div class="row"><div class="n" style="background:var(--mint)">2</div>
-        <div class="tx"><b>互動廣告</b><span>想增加貼文按讚、留言</span></div></div>
-    </div>
-    <div class="bottom">先被看見，才有後面的事。</div>
-  </div>
-  <div class="brandfoot">HAYEN DIGITAL MARKETING</div><div class="pageno">03</div>
-</div>
-
-<!-- ===== 4 導流層 ===== -->
-<div class="card">
-  <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
-  <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
-  <div class="logo"><img src="logo_use.png"></div>
-  <div class="sheet cream">
-    <div class="dots"></div>
-    <h2><span class="hl">③ 有人認識你了</span><br>讓他<span class="hl">開口</span>的三種</h2>
-    <div class="funnel" style="height:214px;width:600px;margin-top:30px">
-      <svg viewBox="0 0 600 214">
-        <polygon points="20,10 580,10 508,84 92,84" fill="#F0F0EE" stroke="#000" stroke-width="3" opacity=".7"/>
-        <polygon points="96,92 504,92 440,158 160,158" fill="#FCD501" stroke="#000" stroke-width="4"/>
-        <polygon points="164,166 436,166 380,208 220,208" fill="#F0F0EE" stroke="#000" stroke-width="3" opacity=".7"/>
-        <text x="300" y="132" font-size="30" font-weight="900" text-anchor="middle">你在這一層</text>
-      </svg>
-    </div>
-    <div class="rows">
-      <div class="row"><div class="n" style="background:var(--y)">3</div>
-        <div class="tx"><b>流量廣告</b><span>想把人導進網站</span></div></div>
-      <div class="row"><div class="n" style="background:var(--y)">4</div>
-        <div class="tx"><b>訊息廣告</b><span>想讓客戶直接問你</span></div></div>
-      <div class="row"><div class="n" style="background:var(--y)">5</div>
-        <div class="tx"><b>名單廣告</b><span>想蒐集電話、Email</span></div></div>
-    </div>
-  </div>
-  <div class="brandfoot">HAYEN DIGITAL MARKETING</div><div class="pageno">04</div>
-</div>
-
-<!-- ===== 5 成交層：對比 ===== -->
-<div class="card">
-  <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
-  <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
-  <div class="logo"><img src="logo_use.png"></div>
-  <div class="sheet">
-    <div class="dots"></div>
-    <h2><span class="hl">④ 最後才是 <span class="b">銷售廣告</span></span><br><span class="hl">跳過前面會怎樣</span></h2>
-    <div class="pair">
-      <div class="col"><div class="tag bad">直接開銷售</div>
-        <div class="diagram"><svg viewBox="0 0 240 180" fill="none">
-          <polygon points="20,20 220,20 190,58 50,58" fill="#EDEDED" stroke="#000" stroke-width="3"/>
-          <polygon points="54,66 186,66 160,104 80,104" fill="#EDEDED" stroke="#000" stroke-width="3"/>
-          <polygon points="84,112 156,112 138,150 102,150" fill="#FFD6D6" stroke="#FF3131" stroke-width="3.5"/>
-          <path d="M120 12v140" stroke="#FF3131" stroke-width="4" stroke-dasharray="9 9"/>
-          <circle cx="120" cy="86" r="20" fill="#FF3131"/>
-          <path d="M112 78l16 16M128 78l-16 16" stroke="#fff" stroke-width="4.5" stroke-linecap="round"/>
-        </svg></div>
-        <div class="ct">系統還不認識<br><span class="red">你的客人</span></div>
-        <div class="cd">一開始就要人買單，成本高、成效不穩。</div>
+  <div class="logo"><img src="logo_use.png" alt="禾言數位行銷"></div>
+  <div class="shield">
+    <div class="back"></div><div class="front"></div>
+    <div class="flag">常見狀況</div>
+    <div class="inner">
+      <h2 style="margin-top:26px"><span class="hl">你是不是也這樣</span><br>憑感覺<span class="mark-m">選目標</span>？</h2>
+      <div class="items">
+        <div class="item"><i></i><i></i><i></i><i></i>
+          <div class="t">「先跑看看再說」</div>
+          <div class="d">目標隨便挑一個，錢花了才發現方向不對。</div></div>
+        <div class="item"><i></i><i></i><i></i><i></i>
+          <div class="t red">「別人開什麼我開什麼」</div>
+          <div class="d">別人的生意階段跟你不一樣，抄不來。</div></div>
+        <div class="item"><i></i><i></i><i></i><i></i>
+          <div class="t">「全部都想要」</div>
+          <div class="d">又要曝光又要成交，系統不知道該找誰。</div></div>
       </div>
-      <div class="arrow">→</div>
-      <div class="col"><div class="tag good">照順序來</div>
-        <div class="diagram"><svg viewBox="0 0 240 180" fill="none">
-          <polygon points="20,20 220,20 190,58 50,58" fill="#C9E6E4" stroke="#000" stroke-width="3"/>
-          <polygon points="54,66 186,66 160,104 80,104" fill="#FCD501" stroke="#000" stroke-width="3"/>
-          <polygon points="84,112 156,112 138,150 102,150" fill="#AED056" stroke="#000" stroke-width="3.5"/>
-          <path d="M120 62v10M120 106v8" stroke="#000" stroke-width="3.5"/>
-          <path d="M114 66l6 6 6-6M114 110l6 6 6-6" stroke="#000" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <circle cx="196" cy="140" r="19" fill="#2F6FD0"/>
-          <path d="M188 140l6 6 11-12" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg></div>
-        <div class="ct">前面五種在鋪路，<br><span class="blue">這一種才是收成</span></div>
-        <div class="cd">養好的人再出手，一塊錢當兩塊用。</div>
+      <div class="foot">往下看六種目標怎麼分 ➤</div>
+    </div>
+  </div>
+  <div class="bottompill">你中了幾個？</div>
+  <div class="pageno">02</div>
+</div>
+
+<!-- 3 目標 1・2 -->
+<div class="card">
+  <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="logo"><img src="logo_use.png" alt="禾言數位行銷"></div>
+  <div class="shield">
+    <div class="back"></div><div class="front"></div>
+    <div class="flag">目標 1・2</div>
+    <div class="inner">
+      <h2 style="margin-top:26px">先讓人<span class="hl">看見你</span></h2>
+      <div class="items">
+        <div class="item"><i></i><i></i><i></i><i></i>
+          <div class="t">品牌認知／觸及</div>
+          <div class="d">想讓更多人看到你</div></div>
+        <div class="item"><i></i><i></i><i></i><i></i>
+          <div class="t">互動廣告</div>
+          <div class="d">想增加貼文按讚、留言</div></div>
+      </div>
+      <div class="foot"><span class="pill">適合</span>還沒什麼人認識你的時候</div>
+    </div>
+  </div>
+  <div class="bottompill">曝光階段 先被看見</div>
+  <div class="pageno">03</div>
+</div>
+
+<!-- 4 目標 3・4・5 -->
+<div class="card">
+  <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="logo"><img src="logo_use.png" alt="禾言數位行銷"></div>
+  <div class="shield">
+    <div class="back"></div><div class="front"></div>
+    <div class="flag">目標 3・4・5</div>
+    <div class="inner">
+      <h2 style="margin-top:26px">讓客人<span class="hl">主動找你</span></h2>
+      <div class="items">
+        <div class="item"><i></i><i></i><i></i><i></i>
+          <div class="t">流量廣告</div><div class="d">想把人導進網站</div></div>
+        <div class="item"><i></i><i></i><i></i><i></i>
+          <div class="t">訊息廣告</div><div class="d">想讓客戶直接問你</div></div>
+        <div class="item"><i></i><i></i><i></i><i></i>
+          <div class="t">名單廣告</div><div class="d">想蒐集電話、Email</div></div>
+      </div>
+      <div class="foot"><span class="pill">適合</span>有人認識你，但還沒開口問</div>
+    </div>
+  </div>
+  <div class="bottompill">互動階段 讓人開口</div>
+  <div class="pageno">04</div>
+</div>
+
+<!-- 5 目標 6 -->
+<div class="card">
+  <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="logo"><img src="logo_use.png" alt="禾言數位行銷"></div>
+  <div class="shield">
+    <div class="back"></div><div class="front"></div>
+    <div class="flag">目標 6</div>
+    <div class="inner">
+      <h2 style="margin-top:26px">直接<span class="hl">創造購買</span></h2>
+      <div class="items">
+        <div class="item"><i></i><i></i><i></i><i></i>
+          <div class="t red">銷售廣告</div><div class="d">想直接成交</div></div>
+      </div>
+      <div class="vs">
+        <div class="bad"><span class="lab">跳過前面</span>
+          <div class="txt">直接開銷售，系統還不認識你的客人。</div></div>
+        <div class="good"><span class="lab">照順序來</span>
+          <div class="txt">前面五種在鋪路，這一種才是<span class="mark-y">收成</span>。</div></div>
+      </div>
+      <div class="foot" style="margin-top:30px">階段做對，效益才會放大 ➤</div>
+    </div>
+  </div>
+  <div class="bottompill">轉換階段 收成的時候</div>
+  <div class="pageno">05</div>
+</div>
+
+<!-- 6 結尾 -->
+<div class="card">
+  <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="logo"><img src="logo_use.png" alt="禾言數位行銷"></div>
+  <div class="shield">
+    <div class="back"></div><div class="front"></div>
+    <div class="flag">結尾</div>
+    <div class="inner">
+      <h2 style="margin-top:26px">目標對了<br><span class="hl">預算才有用</span></h2>
+      <div class="sub">六種目標對應六種生意階段。<br>選錯了，錢就花在不會買的人身上。</div>
+      <div class="chips" style="margin-top:34px">
+        <span class="c m">品牌認知</span><span class="c m">互動</span>
+        <span class="c y">流量</span><span class="c y">訊息</span>
+        <span class="c g">名單</span><span class="c k">銷售</span>
+      </div>
+      <div class="bubble" style="margin-top:auto;background:#fff">
+        <div style="font-size:38px;font-weight:900;text-align:center">不知道該選哪一種？</div>
+        <div style="font-size:31px;font-weight:700;color:#333;text-align:center;margin-top:10px">私訊禾言小編，讓專員為你解答 👇</div>
       </div>
     </div>
-    <div class="bottom">階段做對，效益才會放大。</div>
   </div>
-  <div class="brandfoot">HAYEN DIGITAL MARKETING</div><div class="pageno">05</div>
+  <div class="bottompill">策略先於廣告，思維先於行動</div>
+  <div class="pageno">06</div>
 </div>
 
-<!-- ===== 6 結尾 ===== -->
-<div class="card">
-  <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
-  <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
-  <div class="logo"><img src="logo_use.png"></div>
-  <div class="sheet cream">
-    <div class="dots"></div>
-    <h2><span class="hl">目標對了</span><br><span class="hl">預算才有用</span></h2>
-    <div class="funnel" style="margin-top:34px">
-      <svg viewBox="0 0 660 300">
-        <polygon points="24,14 636,14 556,100 104,100" fill="#C9E6E4" stroke="#000" stroke-width="4"/>
-        <polygon points="108,108 552,108 486,194 174,194" fill="#FCD501" stroke="#000" stroke-width="4"/>
-        <polygon points="178,202 482,202 414,288 246,288" fill="#AED056" stroke="#000" stroke-width="4"/>
-        <text x="330" y="66" font-size="26" font-weight="900" text-anchor="middle">① 品牌認知　② 互動</text>
-        <text x="330" y="160" font-size="26" font-weight="900" text-anchor="middle">③ 流量　④ 訊息　⑤ 名單</text>
-        <text x="330" y="254" font-size="26" font-weight="900" text-anchor="middle">⑥ 銷售</text>
-      </svg>
-    </div>
-    <div class="note">選錯了，錢就花在不會買的人身上。</div>
-    <div class="cta"><b>不知道該選哪一種？</b><span>私訊禾言小編，讓專員為你解答 👇</span></div>
-  </div>
-  <div class="brandfoot">HAYEN DIGITAL MARKETING</div><div class="pageno">06</div>
-</div>
-
-</body></html>
+</body>
+</html>
