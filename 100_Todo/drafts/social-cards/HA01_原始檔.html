@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>禾言圖卡</title>
+<style>
+:root{
+  /* 全部取自 Canva 版型「廣告上線前」，不另外加色 */
+  --y:#FCD501;      /* 亮黃 */
+  --y2:#FFCA26;     /* 黃（紙張後層） */
+  --y3:#FFEDC5;     /* 淺黃 */
+  --g:#AED056;      /* 綠（標籤） */
+  --cream:#FFF9F6;  /* 米白（紙張） */
+  --mint:#C9E6E4;   /* 藍綠（對話框） */
+  --coral:#F8706F;  /* 珊瑚紅 */
+  --amber:#FFD36F;  /* 橘黃 */
+  --red:#FF3131;    /* 強調紅 */
+  --ink:#000;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#555;font-family:"PingFang TC","Heiti TC","Noto Sans TC",sans-serif}
+
+/* 每張卡 1080×1350（IG 4:5） */
+.card{
+  width:1080px;height:1350px;position:relative;overflow:hidden;
+  background:#F0F0EE;
+  /* 格線背景 */
+  background-image:
+    linear-gradient(rgba(0,0,0,.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,.09) 1px, transparent 1px);
+  background-size:34px 34px;
+  margin:0 auto 40px;
+}
+/* 紙張 */
+.paper{
+  position:absolute;left:74px;top:96px;right:74px;bottom:150px;
+  background:var(--cream);border:5px solid var(--ink);border-radius:8px;
+  box-shadow:14px 14px 0 var(--y2), 14px 14px 0 4px var(--ink);
+  padding:62px 58px;display:flex;flex-direction:column;
+}
+.paper.yellow{background:var(--y)}
+
+/* 上方線圈 */
+.rings{position:absolute;left:0;right:0;top:-26px;display:flex;justify-content:center;gap:44px}
+.rings i{width:34px;height:52px;border:5px solid var(--ink);border-radius:18px;background:var(--cream);display:block}
+.rings i::after{content:"";display:block;width:5px;height:34px;background:var(--ink);margin:6px auto 0}
+
+/* 膠帶 */
+.tape{position:absolute;width:190px;height:66px;background:var(--y3);border:4px solid var(--ink);
+  transform:rotate(-24deg);left:-46px;top:-26px;
+  background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.06) 0 8px,transparent 8px 16px)}
+/* 迴紋針 */
+.clip{position:absolute;right:-30px;top:150px;z-index:3}
+/* 網點 */
+.dots{position:absolute;width:132px;height:110px;z-index:0;opacity:.5;
+  background-image:radial-gradient(var(--ink) 3.4px, transparent 3.6px);
+  background-size:17px 17px}
+
+/* 頁首 */
+.brandbar{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:4px dashed rgba(17,17,17,.35);padding-bottom:26px;margin-bottom:38px}
+.brandbar .who{font-size:27px;font-weight:800;letter-spacing:.5px}
+.brandbar .who small{display:block;font-size:17px;font-weight:600;color:#6b6b6b;letter-spacing:2px;margin-top:3px}
+.brandbar .tag{font-size:23px;font-weight:800;background:var(--ink);color:#fff;padding:9px 20px;border-radius:6px}
+
+/* 封面大標 */
+h1{position:relative;z-index:2;font-size:104px;line-height:1.22;font-weight:900;letter-spacing:-2px}
+h1 .hl{background:var(--ink);color:#fff;padding:2px 14px;display:inline-block;margin:6px 0}
+h1 .u{background:linear-gradient(transparent 62%, var(--y) 62%)}
+.quote{position:relative;z-index:2;margin-top:auto;font-size:38px;font-weight:800;line-height:1.7}
+.quote .mark{color:#b9b3ad;font-size:44px}
+.quote .red{color:var(--red)}
+.sub{font-size:34px;font-weight:700;color:#333;margin-top:22px;line-height:1.65}
+
+/* 內頁標題 */
+h2{position:relative;z-index:2;font-size:66px;font-weight:900;line-height:1.32;letter-spacing:-1px}
+h2 .hl{background:var(--ink);color:#fff;padding:4px 16px;display:inline-block}
+
+/* 條列卡 */
+.items{position:relative;z-index:2;display:flex;flex-direction:column;gap:26px;margin-top:38px}
+.item{position:relative;background:#fff;border:4px solid var(--ink);padding:24px 30px}
+.item .t{font-size:40px;font-weight:900;margin-bottom:10px}
+.item .t.blue{color:var(--ink)} .item .t.red{color:var(--red)} .item .t.green{color:var(--ink)}
+.item .d{font-size:31px;font-weight:600;color:#222;line-height:1.6}
+/* 四角小方塊 */
+.item i{position:absolute;width:15px;height:15px;background:#fff;border:4px solid var(--ink)}
+.item i:nth-child(1){left:-10px;top:-10px} .item i:nth-child(2){right:-10px;top:-10px}
+.item i:nth-child(3){left:-10px;bottom:-10px} .item i:nth-child(4){right:-10px;bottom:-10px}
+
+.foot{position:relative;z-index:2;margin-top:auto;padding-top:30px;font-size:34px;font-weight:800;display:flex;align-items:center;gap:14px}
+.pill{display:inline-block;background:var(--ink);color:#fff;font-size:25px;font-weight:800;
+  padding:10px 22px;border-radius:99px}
+.big{font-size:78px;font-weight:900;line-height:1.35;letter-spacing:-1px}
+.cta{margin-top:34px;background:#fff;border:4px solid var(--ink);padding:30px 34px;
+  box-shadow:9px 9px 0 var(--ink)}
+.cta .l1{font-size:38px;font-weight:900} .cta .l2{font-size:31px;font-weight:700;color:#444;margin-top:10px}
+
+/* 膠囊標籤（用文字當圖案） */
+.chips{position:relative;z-index:2;display:flex;flex-wrap:wrap;gap:15px;margin-top:44px}
+.chips .c{border:4px solid var(--ink);border-radius:99px;padding:11px 24px;
+  font-size:31px;font-weight:800;background:#fff;line-height:1.2}
+.chips .c.y{background:var(--y)} .chips .c.m{background:var(--mint)}
+.chips .c.g{background:var(--g)} .chips .c.a{background:var(--amber)}
+.chips .c.k{background:var(--ink);color:#fff}
+
+/* 螢光筆底線 */
+.mark-y{background:linear-gradient(transparent 58%, var(--y) 58%);padding:0 4px}
+.mark-m{background:linear-gradient(transparent 58%, var(--mint) 58%);padding:0 4px}
+
+/* 大序號 */
+.num{position:absolute;right:44px;top:-6px;font-size:132px;font-weight:900;
+  color:rgba(0,0,0,.08);line-height:1;letter-spacing:-6px;z-index:1}
+
+/* 前後對比 */
+.vs{position:relative;z-index:2;display:flex;gap:20px;margin-top:auto}
+.vs>div{flex:1;border:4px solid var(--ink);padding:30px 28px;background:#fff}
+.vs .lab{font-size:26px;font-weight:800;display:inline-block;padding:6px 16px;
+  border-radius:99px;margin-bottom:14px}
+.vs .bad .lab{background:var(--coral);color:#fff}
+.vs .good .lab{background:var(--g)}
+.vs .txt{font-size:30px;font-weight:700;line-height:1.6}
+
+/* 頁碼與品牌 */
+.pageno{position:absolute;right:96px;bottom:74px;font-size:26px;font-weight:800;color:#8a8378}
+.logo{position:absolute;left:96px;bottom:70px;font-size:28px;font-weight:900;color:#000;letter-spacing:1px}
+.logo small{display:block;font-size:17px;font-weight:600;color:#8a8378;letter-spacing:3px}
+</style>
+</head>
+<body>
+
+<!-- 1 封面 -->
+<div class="card" id="p1">
+  <div class="paper">
+    <div class="tape"></div>
+    <div class="rings">
+      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+    </div>
+    <div class="brandbar">
+      <div class="who">禾言數位行銷<small>HAYEN DIGITAL</small></div>
+      <div class="tag">教學／新手</div>
+    </div>
+    <h1>Meta 廣告<br><span class="hl">這麼多種</span><br>到底要選哪個？</h1>
+    <div class="chips">
+      <span class="c m">品牌認知</span><span class="c m">互動</span>
+      <span class="c y">流量</span><span class="c y">訊息</span>
+      <span class="c g">名單</span><span class="c k">銷售</span>
+    </div>
+    <div class="quote">
+      <span class="mark">❝</span> 先把<span class="red">目標</span>定好，
+      再來投放廣告 <span class="mark">❞</span>
+      <div class="sub">六種目標，先想清楚要哪一種 →</div>
+    </div>
+    <svg class="clip" width="86" height="150" viewBox="0 0 86 150" fill="none">
+      <path d="M63 34v70a20 20 0 0 1-40 0V30a13 13 0 0 1 26 0v70a6 6 0 0 1-12 0V38"
+            stroke="#AED056" stroke-width="9" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="logo">禾言數位行銷<small>策略先於廣告，思維先於行動</small></div>
+  <div class="pageno">01</div>
+</div>
+
+<!-- 2 引言 -->
+<div class="card" id="p2">
+  <div class="paper yellow">
+    <div class="dots" style="right:26px;bottom:26px"></div>
+    <div class="brandbar">
+      <div class="who">禾言數位行銷<small>HAYEN DIGITAL</small></div>
+      <div class="tag">常見狀況</div>
+    </div>
+    <div class="num">01</div>
+    <h2><span class="hl">你是不是也這樣</span><br>憑感覺<span class="mark-m">選目標</span>？</h2>
+    <div class="items">
+      <div class="item"><i></i><i></i><i></i><i></i>
+        <div class="t blue">「先跑看看再說」</div>
+        <div class="d">目標隨便挑一個，錢花了才發現方向不對。</div>
+      </div>
+      <div class="item"><i></i><i></i><i></i><i></i>
+        <div class="t red">「別人開什麼我開什麼」</div>
+        <div class="d">別人的生意階段跟你不一樣，抄不來。</div>
+      </div>
+      <div class="item"><i></i><i></i><i></i><i></i>
+        <div class="t green">「全部都想要」</div>
+        <div class="d">又要曝光又要成交，系統不知道該找誰。</div>
+      </div>
+    </div>
+    <div class="foot">往下看六種目標怎麼分 →</div>
+  </div>
+  <div class="logo">禾言數位行銷<small>策略先於廣告，思維先於行動</small></div>
+  <div class="pageno">02</div>
+</div>
+
+<!-- 3 目標 1-2 -->
+<div class="card" id="p3">
+  <div class="paper">
+    <div class="brandbar">
+      <div class="who">禾言數位行銷<small>HAYEN DIGITAL</small></div>
+      <div class="tag">目標 1・2</div>
+    </div>
+    <div class="num">02</div>
+    <h2>先讓人<span class="hl">看見你</span></h2>
+    <div class="items">
+      <div class="item"><i></i><i></i><i></i><i></i>
+        <div class="t blue">品牌認知／觸及</div>
+        <div class="d">想讓更多人看到你</div>
+      </div>
+      <div class="item"><i></i><i></i><i></i><i></i>
+        <div class="t blue">互動廣告</div>
+        <div class="d">想增加貼文按讚、留言</div>
+      </div>
+    </div>
+    <div class="foot"><span class="pill">適合</span> 還沒什麼人認識你的時候</div>
+  </div>
+  <div class="logo">禾言數位行銷<small>策略先於廣告，思維先於行動</small></div>
+  <div class="pageno">03</div>
+</div>
+
+<!-- 4 目標 3-5 -->
+<div class="card" id="p4">
+  <div class="paper">
+    <div class="dots" style="left:26px;bottom:26px"></div>
+    <div class="brandbar">
+      <div class="who">禾言數位行銷<small>HAYEN DIGITAL</small></div>
+      <div class="tag">目標 3・4・5</div>
+    </div>
+    <div class="num">03</div>
+    <h2>讓客人<span class="hl">主動找你</span></h2>
+    <div class="items">
+      <div class="item"><i></i><i></i><i></i><i></i>
+        <div class="t green">流量廣告</div>
+        <div class="d">想把人導進網站</div>
+      </div>
+      <div class="item"><i></i><i></i><i></i><i></i>
+        <div class="t green">訊息廣告</div>
+        <div class="d">想讓客戶直接問你</div>
+      </div>
+      <div class="item"><i></i><i></i><i></i><i></i>
+        <div class="t green">名單廣告</div>
+        <div class="d">想蒐集電話、Email</div>
+      </div>
+    </div>
+    <div class="foot"><span class="pill">適合</span> 有人認識你，但還沒開口問</div>
+  </div>
+  <div class="logo">禾言數位行銷<small>策略先於廣告，思維先於行動</small></div>
+  <div class="pageno">04</div>
+</div>
+
+<!-- 5 目標 6 -->
+<div class="card" id="p5">
+  <div class="paper yellow">
+    <div class="brandbar">
+      <div class="who">禾言數位行銷<small>HAYEN DIGITAL</small></div>
+      <div class="tag">目標 6</div>
+    </div>
+    <div class="num">04</div>
+    <h2>直接<span class="hl">創造購買</span></h2>
+    <div class="items">
+      <div class="item"><i></i><i></i><i></i><i></i>
+        <div class="t red">銷售廣告</div>
+        <div class="d">想直接成交</div>
+      </div>
+    </div>
+    <div class="vs">
+      <div class="bad"><span class="lab">跳過前面</span>
+        <div class="txt">直接開銷售，系統還不認識你的客人。</div></div>
+      <div class="good"><span class="lab">照順序來</span>
+        <div class="txt">前面五種在鋪路，這一種才是<span class="mark-y">收成</span>。</div></div>
+    </div>
+    <div class="foot" style="margin-top:34px">階段做對，效益才會放大 →</div>
+  </div>
+  <div class="logo">禾言數位行銷<small>策略先於廣告，思維先於行動</small></div>
+  <div class="pageno">05</div>
+</div>
+
+<!-- 6 結尾 -->
+<div class="card" id="p6">
+  <div class="paper">
+    <div class="tape" style="left:auto;right:-46px;transform:rotate(22deg)"></div>
+    <div class="brandbar">
+      <div class="who">禾言數位行銷<small>HAYEN DIGITAL</small></div>
+      <div class="tag">結尾</div>
+    </div>
+    <div class="big">目標對了，<br><span class="hl" style="background:var(--ink);color:#fff;padding:4px 16px;display:inline-block">預算才有用</span></div>
+    <div class="sub" style="margin-top:30px">六種目標對應六種生意階段。<br>選錯了，錢就花在不會買的人身上。</div>
+    <div class="chips" style="margin-top:38px">
+      <span class="c m">品牌認知</span><span class="c m">互動</span>
+      <span class="c y">流量</span><span class="c y">訊息</span>
+      <span class="c g">名單</span><span class="c k">銷售</span>
+    </div>
+    <div class="cta" style="margin-top:auto">
+      <div class="l1">不知道該選哪一種？</div>
+      <div class="l2">私訊禾言小編，讓專員為你解答 👇</div>
+    </div>
+  </div>
+  <div class="logo">禾言數位行銷<small>策略先於廣告，思維先於行動</small></div>
+  <div class="pageno">06</div>
+</div>
+
+</body>
+</html>
