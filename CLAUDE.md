@@ -114,21 +114,32 @@ Node.js 透過 nvm 安裝，路徑：`/Users/angela/.nvm/versions/node/v24.15.0/
 
 ### 8:30 自動早報（週一～週五）
 - **腳本**：`~/Library/Scripts/dora-morning-briefing.sh`
-- **憑證**：`~/Library/Scripts/dora.env`（LINE/Notion token，權限 600）
+- **憑證**：`~/Library/Scripts/dora.env`（LINE token ＋ 工作台連線設定，權限 600）
 - **排程**：`~/Library/LaunchAgents/com.dora.morning-briefing.plist`（已啟用，週一～週五 8:30，假日不觸發）
 - **內容**：櫻花粉 Flex Message 卡片，包含：
   - ♈ 牡羊座今日運勢（從 astro.click108.com.tw 即時抓取）
   - 幸運數字、幸運色、方位
-  - 📋 Notion 今日待辦（日任務、未完成）
+  - 📋 今日待辦（**來源＝工作台，2026-08-17 起不再讀 Notion**）
   - 每日輪替加油語
+- **卡片文字一律靠左**（2026-08-17 改；原本標題、運勢、幸運速查都是置中，現在整張統一 `align:start`，
+  待辦區沿用 Flex 預設不另外寫）
 - **Mac 要開機才會觸發**
 - **注意**：腳本與憑證必須放在 `~/Library/Scripts/`，放 `~/Downloads/` 會因 macOS TCC 權限被擋
 
-### Notion API 串接（直接 API，不走 MCP）
-- **Token**：`NOTION_TOKEN` 存於 `~/.claude/settings.json` env
-- **資料庫**：`NOTION_TASKS_DB` = 計畫資料庫（`072246ee-87a8-8346-b4e8-81e0e239de3d`）
-- **Integration 名稱**：Dora早報（已在「禾言專案管理」頁面授權）
-- **用途**：腳本直接查詢今日日任務，不需要 Claude 在線
+### 早報的待辦怎麼來（2026-08-17 改）
+- **資料來源**：工作台的 Firebase（`ws_k7m2q9xr4t/tasks` ＋ `clients`），**只讀不寫**
+- **憑證**：服務帳號金鑰 `~/Library/Scripts/dora-workspace-sa.json`（權限 600，等同後門鑰匙，
+  絕不進版控；`.gitignore` 已擋 `*firebase-adminsdk*.json`）。
+  重生金鑰走 Firebase 控制台 → 專案設定 → 服務帳戶 → 產生新的私密金鑰
+- **怎麼拿 token**：腳本自己簽 JWT 換 OAuth token，**RSA 簽章交給系統 `openssl`**，
+  不裝 `cryptography`／`PyJWT`／`google-auth`（系統 python3 是 3.9.6，什麼套件都沒有，
+  launchd 環境也不吃 venv）
+- **篩選規則**：分「❗拖到的」（到期日 < 今天且未完成）與「📌今天要做的」（到期日 = 今天），
+  各自照重要度排、各最多列 6 條、超過顯示「還有 N 件」；**每日例行不列**（每天都出現會洗版）；
+  每條前面帶客戶簡稱 `[短名]`（任務存的是客戶 id，靠 `clients` 對照，對不到就只列任務名）
+- **讀不到時**：待辦區顯示「暫時讀不到工作台資料」，運勢與加油語照常推，不會整則不見
+- Notion 的 `NOTION_TOKEN` / `NOTION_TASKS_DB` 仍留在 `dora.env` 與 `~/.claude/settings.json`，
+  但**早報已經不用它們**（其他地方要用再說）
 
 ### /morning skill（AI 版早報，需在 Claude 內觸發）
 - 唯一的 AI 早報入口（舊的 `.claude/commands/morning.md` 已於 2026-07-06 併入此 skill）
@@ -245,7 +256,9 @@ Node.js 透過 nvm 安裝，路徑：`/Users/angela/.nvm/versions/node/v24.15.0/
 - **重跑匯入是安全的**：已匯過的不會變兩筆，只補原本空著的客戶欄，不會蓋掉後來改的內容
 - **設定頁「用新規則補一次分類」**：只填空的客戶欄與還是「其他」的類型欄，不覆蓋、不建新客戶
 - **時間軸固定 8:00–19:00**（朱兒上班時段）；沒填預計時段的任務放在每天上方的「未排時間」區
-- **還沒做**：甘特圖、個人區（只有佔位頁）、8:30 早報改讀工作台（需 Firebase 服務帳號金鑰）；
+- **8:30 早報已經改讀這裡的任務**（2026-08-17 完成，走服務帳號金鑰唯讀，設定寫在上面「早報的待辦怎麼來」）
+- **還沒做**：甘特圖、個人區（只有佔位頁）、把運勢與每日一句寫回工作台變成網頁上的卡片
+  （金鑰已備好，要做就是加寫入那一段）；
   復盤區之後可加的：心得／反思填寫區、月復盤、連續幾週的趨勢折線（等資料累積 5–6 週再做才有意義）
 
 ---

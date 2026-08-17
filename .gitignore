@@ -4,3 +4,7 @@
 
 # 會議錄音的逐字稿與筆記含客戶機密，絕不推上公開倉庫（網頁版走 Firebase，不經 git）
 100_Todo/meetings/
+
+# Firebase 服務帳號金鑰（等同後門鑰匙，只放本機 ~/Library/Scripts/）
+*firebase-adminsdk*.json
+*-sa.json
