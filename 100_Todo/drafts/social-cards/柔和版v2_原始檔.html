@@ -121,11 +121,11 @@ h2 .hl{background:linear-gradient(transparent 7%, var(--y) 7%, var(--y) 93%, tra
 /* 原本是黑底白字，改成橘黃底深字：色塊萬一蓋住文字也不會變成一條黑槓 */
 .chips .c.k{background:var(--amber);color:var(--ink)}
 
-/* 黃色紙張那幾頁：黃底強調在黃紙上等於沒效果，改成白底深字 */
-.paper.yellow h1 .hl, .paper.yellow h2 .hl, .paper.yellow .big .hl{
-  background:linear-gradient(transparent 7%, #fff 7%, #fff 93%, transparent 93%)}
-.paper.yellow .pill{background:linear-gradient(transparent 52%, #fff 52%)}
-.paper.yellow .mark-y, .paper.yellow .mark-m{background:linear-gradient(transparent 58%, #fff 58%)}
+/* 黃色紙張那幾頁：黃底強調在黃紙上等於沒效果，白底匯入 Canva 又會多出白方塊，
+   所以這幾頁的強調一律不靠底色，改用深紅字 —— 純文字顏色匯入不會走樣 */
+.paper.yellow h1 .hl, .paper.yellow h2 .hl, .paper.yellow .big .hl,
+.paper.yellow .pill, .paper.yellow .mark-y, .paper.yellow .mark-m{
+  background:none;color:#C7302F;padding:0}
 
 /* 螢光筆底線 */
 .mark-y{background:linear-gradient(transparent 58%, var(--y) 58%);padding:0 4px}
