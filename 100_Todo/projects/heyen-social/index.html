@@ -272,7 +272,8 @@ td.editing{background:#fff !important}
       <div class="morebox">
         <div class="row">
           <div style="flex:1;min-width:130px"><label>素材編號</label>
-            <input type="text" id="fCode" placeholder="例如 HB01"></div>
+            <input type="text" id="fCode" readonly title="照上線日期自動編，改日期就會跟著變"
+                   style="background:#f4f1ee;color:#8a8378;cursor:not-allowed"></div>
           <div style="flex:1;min-width:130px"><label>文案編號</label>
             <input type="text" id="fCopyCode" placeholder="例如 C01"></div>
         </div>
@@ -1121,13 +1122,32 @@ const SHEET_ROWS = [
   { k:'faq',   n:'歡迎語/<br>常見問題' }
 ];
 
+/* 素材編號自動算（2026-08-17 朱兒定的規則）：
+   H ＋ 該月英文的第一個字母 ＋ 兩位順序號，順序照上線日期，同一天再看拖曳順序。
+   月曆上把貼文拖到別的日期，編號就跟著重算，不用自己填。
+   ⚠️ 1／6／7 月都是 J、3／5 月都是 M、4／8 月都是 A（英文首字母本來就會重複），
+   跨月比對時要連日期一起看。 */
+const MONTH_LETTER = ['J','F','M','A','M','J','J','A','S','O','N','D'];
+function autoCode(p, id){
+  if(!p || !p.date) return '';
+  const m = p.date.slice(0, 7);
+  const same = Object.entries(posts)
+    .filter(([, x]) => (x.date || '').slice(0, 7) === m)
+    .sort((a, b) => (a[1].date || '').localeCompare(b[1].date || '')
+                 || (a[1].ord ?? 999) - (b[1].ord ?? 999));
+  const i = id ? same.findIndex(([k]) => k === id)
+               : same.findIndex(([, x]) => x === p);
+  if(i < 0) return '';
+  return 'H' + MONTH_LETTER[+m.slice(5, 7) - 1] + String(i + 1).padStart(2, '0');
+}
+
 function sheetCell(k, id, p){
   const none = '<span class="none">點一下填寫</span>';
   switch(k){
     case 'code':
       // 這格同時是拖曳把手，拖它就能換整欄的位置
-      return `<div class="code" draggable="true" data-drag="${id}" title="按住可以拖到別的位置">
-                ${p.star?'⭐ ':''}${esc(p.code) || '<span class="none">—</span>'}</div>`;
+      return `<div class="code" draggable="true" data-drag="${id}" title="編號照日期自動編；按住可以拖到別的位置">
+                ${p.star?'⭐ ':''}${autoCode(p, id) || '<span class="none">—</span>'}</div>`;
     case 'type':
       return `<span class="chip t-etc" style="background:var(--ink3)">社群(前台)</span>
               <span class="chip t-${slugOf(p.type)}" style="margin-left:4px">${esc(p.type||'其他')}</span>`;
@@ -1158,7 +1178,7 @@ function sheetCell(k, id, p){
 
 /* 哪些欄位可以在表格上直接改，以及要用什麼輸入元件 */
 const CELL_EDIT = {
-  code:'text', name:'text', type:'select', title:'text', media:'text',
+  name:'text', type:'select', title:'text', media:'text',   /* code 是自動算的，不給手改 */
   date:'date', link:'text', image:'text', format:'text', copyCode:'text',
   copy:'textarea', headline:'text', faq:'textarea'
 };
@@ -1317,7 +1337,7 @@ function openEdit(id){
   $('#fTitle').value = p.title || '';
   $('#fGoal').value = p.goal || '';
   $('#fIg').value = p.ig || '';
-  $('#fCode').value     = p.code || '';
+  $('#fCode').value     = autoCode(p, id) || '（存檔後自動編）';
   $('#fCopyCode').value = p.copyCode || '';
   $('#fName').value     = p.name || '';
   $('#fMedia').value    = p.media || '';
@@ -1345,7 +1365,7 @@ $('#saveBtn').onclick = () => {
     fb   : (posts[editId] && posts[editId].fb) || '',
     done : $('#fDone').classList.contains('on'),
     // 以下是圖文表的欄位
-    code     : $('#fCode').value.trim(),
+    code     : (posts[editId] && posts[editId].code) || '',  /* 自動編號不進資料，舊值留著備查 */
     copyCode : $('#fCopyCode').value.trim(),
     name     : $('#fName').value.trim(),
     media    : $('#fMedia').value.trim(),
@@ -1372,9 +1392,9 @@ $('#fStar').onclick = () => $('#fStar').classList.toggle('on');
 
 $('#forClaudeBtn').onclick = () => copyForClaude({
   date: $('#fDate').value, type: $('#fType').value, title: $('#fTitle').value,
-  goal: $('#fGoal').value, code: $('#fCode').value,
+  goal: $('#fGoal').value,
   headline: $('#fHeadline').value, ig: $('#fIg').value
-}, $('#forClaudeBtn'), '複製這篇給 Claude');
+}, $('#forClaudeBtn'), '複製這篇給 Claude', editId);
 
 $$('.copy[data-copy]').forEach(b => b.onclick = async () => {
   const txt = $('#fIg').value;
@@ -1385,7 +1405,7 @@ $$('.copy[data-copy]').forEach(b => b.onclick = async () => {
 });
 
 /* 把一篇整理成貼給 Claude 的格式，讓它直接做成六頁圖卡 */
-function briefForClaude(p){
+function briefForClaude(p, id){
   if(!p) return '';
   const wd = p.date ? ['日','一','二','三','四','五','六'][new Date(p.date+'T00:00:00').getDay()] : '';
   const L = ['請把這篇禾言貼文做成六頁 IG 圖卡（柔和版模板，最後匯入 Canva 給我可編輯的連結）。',''];
@@ -1393,13 +1413,14 @@ function briefForClaude(p){
   L.push('內容類型：' + (p.type || '未定'));
   L.push('議題標題：' + (p.title || ''));
   if(p.goal)     L.push('這篇的目的：' + p.goal);
-  if(p.code)     L.push('素材編號：' + p.code);
+  const code = autoCode(p, id);
+  if(code)       L.push('素材編號：' + code);
   if(p.headline) L.push('標題：' + p.headline);
   L.push('', '文案：', (p.ig || '（還沒寫）'));
   return L.join('\n');
 }
-async function copyForClaude(p, btn, label){
-  const txt = briefForClaude(p);
+async function copyForClaude(p, btn, label, id){
+  const txt = briefForClaude(p, id);
   try{ await navigator.clipboard.writeText(txt); }
   catch(err){ console.warn(err); }
   const old = btn.textContent;
@@ -1412,7 +1433,7 @@ document.addEventListener('click', async e => {
   const fc = e.target.closest('[data-forclaude]');
   if(fc){
     const p = posts[fc.dataset.forclaude];
-    if(p) copyForClaude(p, fc, '複製這篇給 Claude');
+    if(p) copyForClaude(p, fc, '複製這篇給 Claude', fc.dataset.forclaude);
     return;
   }
   // 圖文表裡直接複製整篇文案，不用先開編輯視窗
