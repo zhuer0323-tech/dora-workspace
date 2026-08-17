@@ -263,7 +263,8 @@ td.editing{background:#fff !important}
     <div><label>這篇的目的</label><input type="text" id="fGoal" placeholder="專業形象 / 帶詢價 / 品牌好感"></div>
     <div>
       <div class="fieldhd"><label style="margin:0">貼文文案</label>
-        <button class="copy" data-copy="ig">複製</button></div>
+        <button class="copy" data-copy="ig">複製</button>
+        <button class="copy" id="forClaudeBtn">複製這篇給 Claude</button></div>
       <textarea id="fIg"></textarea>
     </div>
     <details class="more">
@@ -1147,6 +1148,7 @@ function sheetCell(k, id, p){
       return `<div class="copytxt">${esc(p.copyText) || '點一下開始寫'}</div>
               <div class="rowact">
                 <button class="mini" data-copytext="${id}">複製文案</button>
+                <button class="mini" data-forclaude="${id}">複製這篇給 Claude</button>
                 <button class="mini" data-open="${id}">開整篇編輯</button>
               </div>`;
     default:
@@ -1368,7 +1370,13 @@ $('#mask').onclick = closeEdit;
 $('#fDone').onclick = () => $('#fDone').classList.toggle('on');
 $('#fStar').onclick = () => $('#fStar').classList.toggle('on');
 
-$$('.copy').forEach(b => b.onclick = async () => {
+$('#forClaudeBtn').onclick = () => copyForClaude({
+  date: $('#fDate').value, type: $('#fType').value, title: $('#fTitle').value,
+  goal: $('#fGoal').value, code: $('#fCode').value,
+  headline: $('#fHeadline').value, ig: $('#fIg').value
+}, $('#forClaudeBtn'), '複製這篇給 Claude');
+
+$$('.copy[data-copy]').forEach(b => b.onclick = async () => {
   const txt = $('#fIg').value;
   try{ await navigator.clipboard.writeText(txt); }
   catch(e){ $('#fIg').select(); document.execCommand('copy'); }
@@ -1376,7 +1384,37 @@ $$('.copy').forEach(b => b.onclick = async () => {
   setTimeout(() => { b.textContent = '複製'; b.classList.remove('ok'); }, 1400);
 });
 
+/* 把一篇整理成貼給 Claude 的格式，讓它直接做成六頁圖卡 */
+function briefForClaude(p){
+  if(!p) return '';
+  const wd = p.date ? ['日','一','二','三','四','五','六'][new Date(p.date+'T00:00:00').getDay()] : '';
+  const L = ['請把這篇禾言貼文做成六頁 IG 圖卡（柔和版模板，最後匯入 Canva 給我可編輯的連結）。',''];
+  L.push('上線時間：' + (p.date ? `${p.date}（${wd}）` : '未定'));
+  L.push('內容類型：' + (p.type || '未定'));
+  L.push('議題標題：' + (p.title || ''));
+  if(p.goal)     L.push('這篇的目的：' + p.goal);
+  if(p.code)     L.push('素材編號：' + p.code);
+  if(p.headline) L.push('標題：' + p.headline);
+  L.push('', '文案：', (p.ig || '（還沒寫）'));
+  return L.join('\n');
+}
+async function copyForClaude(p, btn, label){
+  const txt = briefForClaude(p);
+  try{ await navigator.clipboard.writeText(txt); }
+  catch(err){ console.warn(err); }
+  const old = btn.textContent;
+  btn.textContent = '已複製'; btn.classList.add('ok');
+  setTimeout(() => { btn.textContent = label || old; btn.classList.remove('ok'); }, 1400);
+}
+
 document.addEventListener('click', async e => {
+  // 圖文表裡把整篇（議題＋文案）複製成給 Claude 的格式
+  const fc = e.target.closest('[data-forclaude]');
+  if(fc){
+    const p = posts[fc.dataset.forclaude];
+    if(p) copyForClaude(p, fc, '複製這篇給 Claude');
+    return;
+  }
   // 圖文表裡直接複製整篇文案，不用先開編輯視窗
   const c = e.target.closest('[data-copytext]');
   if(c){
