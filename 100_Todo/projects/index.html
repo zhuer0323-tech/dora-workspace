@@ -244,6 +244,38 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 .dtabs button{padding:4px 10px;border-radius:99px;font-size:11.5px;font-weight:700;color:var(--ink3)}
 .dtabs button.on{background:var(--pink);color:#fff}
 
+/* ---------- 復盤 ---------- */
+/* 卡片各自照內容長，不要被同一排拉成一樣高（不然完成數那張會空一大塊） */
+#rvDash{align-items:start}
+@media(min-width:900px){#rvDash{grid-template-columns:1fr 1fr}}
+.rvnav{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.rvarrow{width:34px;height:34px;flex:none;border-radius:11px;background:#fff;box-shadow:var(--shadow);
+  font-size:19px;line-height:1;color:var(--pink-d);transition:.15s}
+.rvarrow:hover:not(:disabled){background:var(--pink-xl);transform:translateY(-1px)}
+.rvarrow:disabled{opacity:.3;cursor:default}
+.rvwhen{flex:1;text-align:center;line-height:1.35}
+.rvwhen b{display:block;font-size:15px;font-weight:800}
+.rvwhen span{font-size:11.5px;color:var(--ink3)}
+/* 本週完成的大數字：跟上週比的增減放在旁邊 */
+.rvhero{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.rvhero .big{font-size:38px;font-weight:800;line-height:1;color:var(--pink-d)}
+.rvhero .unit{font-size:13px;color:var(--ink3);font-weight:600}
+.rvdiff{font-size:12px;font-weight:700;padding:3px 9px;border-radius:99px;background:var(--pink-xl);color:var(--pink-d)}
+.rvdiff.up{background:#E6F5EC;color:#3C8A5F}
+.rvdiff.down{background:#FFECEC;color:#E05263}
+.rvdiff.same{background:#F1F0F1;color:var(--ink2)}
+/* 拖延清單：一列一件，點了就開編輯視窗 */
+.rvlate{display:flex;flex-direction:column;gap:6px;max-height:340px;overflow-y:auto}
+.rvlate .row{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:11px;
+  background:var(--pink-xl);cursor:pointer;transition:.15s}
+/* hover 只用位移，不加陰影：不然會蓋掉紅色那條 inset 邊 */
+.rvlate .row:hover{transform:translateX(3px)}
+.rvlate .row.bad{background:#FFECEC;box-shadow:inset 3.5px 0 0 #E05263}
+.rvlate .nm{flex:1;font-size:12.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rvlate .cl{font-size:10.5px;color:var(--ink3);flex:none}
+.rvlate .dy{flex:none;font-size:11px;font-weight:800;color:var(--pink-d)}
+.rvlate .row.bad .dy{color:#E05263}
+
 #taskList{display:grid;gap:8px}
 @media(min-width:980px){#taskList{grid-template-columns:1fr 1fr}}
 #taskList .empty{grid-column:1/-1}
@@ -607,6 +639,7 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
       <button data-tab="tasks">工作規劃</button>
       <button data-tab="tools">寶藏工具</button>
       <button data-tab="clients">專案客戶</button>
+      <button data-tab="review">復盤</button>
       <button data-tab="settings">設定</button>
     </nav>
 
@@ -785,6 +818,17 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
         <button class="btn sm" id="addClientBtn">＋ 新增客戶</button>
       </div>
       <div id="clientList"></div>
+    </section>
+
+    <!-- 復盤：一週一次回頭看，純讀取不寫入（唯一例外是點逾期任務去編輯） -->
+    <section class="page" id="p-review">
+      <div class="rvnav">
+        <button class="rvarrow" id="rvPrev" title="上一週">‹</button>
+        <div class="rvwhen"><b id="rvTitle">本週</b><span id="rvRange"></span></div>
+        <button class="rvarrow" id="rvNext" title="下一週">›</button>
+      </div>
+      <div class="dash" id="rvDash"></div>
+      <p class="tiny" id="rvFoot" style="margin-top:14px;text-align:center"></p>
     </section>
 
     <section class="page" id="p-settings">
@@ -2189,6 +2233,151 @@ function makeClientSortable(root){
   root.addEventListener('pointerup', end);
   root.addEventListener('pointercancel', end);
 }
+/* ---------- 復盤 ----------
+   一週一次回頭看，資料全部從既有任務算出來，這一頁只讀不寫
+   （唯一的例外是點拖延清單去開任務，那是走既有的編輯流程）。
+   完成時間：一般任務看 doneAt、每日例行看 doneDates，兩套算法不混用。 */
+let rvOffset = 0;                       // 0＝本週、-1＝上週，以此類推
+
+// 第 n 週的起訖（週一到週日，跟 weekRange() 同一套算法，只是可以往前推）
+function weekRangeOf(offset){
+  const d = new Date(), day = (d.getDay()+6)%7;
+  const s = new Date(d); s.setDate(d.getDate()-day+offset*7);
+  const e = new Date(s); e.setDate(s.getDate()+6);
+  return [ymd(s), ymd(e)];
+}
+const doneDay = t => t.doneAt ? ymd(new Date(t.doneAt)) : '';
+
+function reviewData(offset){
+  const [ws,we] = weekRangeOf(offset), td = TODAY();
+  const all  = scopeTasks();
+  const once = all.filter(t=>!isRepeat(t));
+  const inWeek = (t,a,b) => t.status==='done' && t.doneAt && doneDay(t)>=a && doneDay(t)<=b;
+
+  // 這週完成的：只認 doneAt。沒有時間戳的舊任務寧可不算，也不要拿到期日硬湊出假數字
+  const done = once.filter(t=>inWeek(t,ws,we));
+  const [pws,pwe] = weekRangeOf(offset-1);
+  const prev = once.filter(t=>inWeek(t,pws,pwe)).length;
+  const noStamp = once.filter(t=>t.status==='done' && !t.doneAt).length;
+
+  // 拖延清單看的是「現在」還沒完成的，不隨週次改變
+  const late = once.filter(t=>t.due && t.due<td && t.status!=='done')
+    .map(t=>({ t, days: Math.round((new Date(td+'T00:00:00') - new Date(t.due+'T00:00:00'))/86400000) }))
+    .sort((a,b)=>b.days-a.days);
+
+  // 每日例行單獨算完成率，不併進上面的件數（每天打勾會把客戶統計灌爆）
+  const last = we < td ? we : td;       // 這週還沒過完的日子不列入應做天數
+  let repDue = 0, repDone = 0;
+  all.filter(isRepeat).forEach(t=>{
+    const born = t.createdAt ? ymd(new Date(t.createdAt)) : '';
+    for (let d = new Date(ws+'T00:00:00'); ymd(d) <= last; d.setDate(d.getDate()+1)){
+      const ds = ymd(d);
+      if (born && ds < born) continue;  // 任務建立之前的日子不算它沒做
+      if (!repeatDueOn(t, ds)) continue;
+      repDue++; if (repeatDone(t, ds)) repDone++;
+    }
+  });
+
+  const tally = keyFn => {
+    const m = {};
+    done.forEach(t=>{ const k = keyFn(t); m[k] = (m[k]||0) + 1; });
+    return Object.entries(m).sort((a,b)=>b[1]-a[1]);
+  };
+  return { ws, we, done, prev, noStamp, late, repDue, repDone,
+    byClient: tally(t => t.client ? clientName(t.client) : '（未指定客戶）'),
+    byType:   tally(t => t.type || '其他') };
+}
+
+// 橫條排行：超過 cap 名就把剩下的併成「其他」，不然一堆一件的會排到看不完
+function rvBars(rows, cap){
+  if (!rows.length) return `<div class="dempty">這週還沒有完成的紀錄 🌿</div>`;
+  let list = rows;
+  if (rows.length > cap){
+    const rest = rows.slice(cap-1).reduce((s,r)=>s+r[1], 0);
+    list = rows.slice(0, cap-1).concat([['其他', rest]]);
+  }
+  const max = list[0][1] || 1;
+  return `<div class="drank">` + list.map(([n,c])=>`
+    <div class="drow" style="cursor:default">
+      <span class="nm" title="${esc(n)}">${esc(n)}</span>
+      <span class="tr"><i style="width:${Math.round(c/max*100)}%"></i></span>
+      <span class="ct"><b>${c}</b> 件</span>
+    </div>`).join('') + `</div>`;
+}
+
+function renderReview(){
+  const box = $('#rvDash'); if (!box) return;
+  const d = reviewData(rvOffset);
+  const fmt = s => s.slice(5).replace('-','/');
+  $('#rvTitle').textContent = rvOffset===0 ? '本週' : rvOffset===-1 ? '上週' : `${-rvOffset} 週前`;
+  $('#rvRange').textContent = `${fmt(d.ws)} – ${fmt(d.we)}`;
+  $('#rvNext').disabled = rvOffset >= 0;
+
+  const n = d.done.length, diff = n - d.prev;
+  const diffCls = diff>0 ? 'up' : diff<0 ? 'down' : 'same';
+  const diffTxt = diff>0 ? `比前一週多 ${diff} 件` : diff<0 ? `比前一週少 ${-diff} 件` : '跟前一週一樣';
+  const repPct = d.repDue ? Math.round(d.repDone/d.repDue*100) : 0;
+
+  const cardDone = `
+    <div class="dbox">
+      <h4>這週完成了多少</h4>
+      <div class="rvhero">
+        <span class="big">${n}</span><span class="unit">件</span>
+        <span class="rvdiff ${diffCls}">${diffTxt}</span>
+      </div>
+      <div class="tiny" style="margin-top:10px">
+        ${d.repDue
+          ? `每日例行做了 ${d.repDone}／${d.repDue} 次（${repPct}%）${rvOffset===0 ? '，本週還沒過完的日子不列入' : ''}`
+          : '這週沒有排定的每日例行'}
+      </div>
+      <div class="tiny" style="margin-top:5px;color:var(--ink3)">
+        例行的打勾另外算，不併進上面的件數
+      </div>
+    </div>`;
+
+  // 拖延清單講的是「現在」還沒完成的事，所以只在本週出現；翻到舊週次時不顯示，免得被當成那一週的數字
+  const cardLate = `
+    <div class="dbox">
+      <h4>什麼事一直在拖 ${d.late.length ? `<em>${d.late.length} 件</em>` : ''}</h4>
+      ${d.late.length ? `<div class="rvlate">` + d.late.map(({t,days})=>`
+        <div class="row ${days>7?'bad':''}" data-id="${esc(t.id)}">
+          <span class="dy">${days} 天</span>
+          <span class="nm" title="${esc(t.name||'')}">${esc(t.name||'（沒有標題）')}</span>
+          ${t.client ? `<span class="cl">${esc(clientName(t.client))}</span>` : ''}
+        </div>`).join('') + `</div>`
+      : `<div class="dempty">沒有拖過期的事，很可以 🌿</div>`}
+      <div class="tiny" style="margin-top:9px">
+        ${d.late.length ? '點任何一列可以直接打開修改。拖超過 7 天的用紅色標出來。' : ''}
+      </div>
+    </div>`;
+
+  const cardClient = `
+    <div class="dbox">
+      <h4>時間花在哪個客戶</h4>
+      ${rvBars(d.byClient, 8)}
+      <div class="tiny" style="margin-top:9px">算的是完成件數，不是實際工時。一份結案報表跟一則限動都算一件，要看份量請對照旁邊的工作類型。</div>
+    </div>`;
+
+  const cardType = `
+    <div class="dbox">
+      <h4>做的是哪些類型的事</h4>
+      ${rvBars(d.byType, 8)}
+      <div class="tiny" style="margin-top:9px">看到某一類特別多，就是可以考慮交出去或自動化的訊號。</div>
+    </div>`;
+
+  // 一件都沒完成時，客戶與類型那兩張只會是空卡，不如不要放
+  const stat = n ? cardClient + cardType : '';
+  box.innerHTML = rvOffset === 0
+    ? cardDone + cardLate + stat
+    : (n || d.repDone
+        ? cardDone + stat
+        : `<div class="dbox" style="grid-column:1/-1"><div class="dempty">這一週沒有留下紀錄</div></div>`);
+
+  $('#rvFoot').textContent = d.noStamp
+    ? `有 ${d.noStamp} 筆已完成的舊任務沒有記到完成時間，沒有列入上面的統計。`
+    : '統計只算有建成任務的工作，臨時被叫去做的事不會出現在這裡。';
+}
+
 function renderStorageInfo(){
   const el = $('#storageInfo'); if (!el) return;
   const n = Object.keys(tasks).length, c = Object.keys(clients).length;
@@ -2235,7 +2424,7 @@ function renderAll(){
   invalidateKw();
   renderSelects(); renderGreetNote(); renderFocus(); renderRoutine();
   renderDayPlan(); renderRings(); renderAlerts(); renderScore();
-  renderStats(); renderBoard(); renderClients(); renderStorageInfo();
+  renderStats(); renderBoard(); renderClients(); renderReview(); renderStorageInfo();
   renderTypeList(); renderLearnList();
 }
 
@@ -2559,6 +2748,14 @@ function switchTab(name){
   window.scrollTo({top:0, behavior:'smooth'});
 }
 $$('nav.tabs button').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
+
+/* 復盤：翻週次與點開拖延的任務 */
+$('#rvPrev').onclick = () => { rvOffset--; renderReview(); };
+$('#rvNext').onclick = () => { if (rvOffset < 0){ rvOffset++; renderReview(); } };
+$('#rvDash').addEventListener('click', e => {
+  const row = e.target.closest('.rvlate .row');
+  if (row && row.dataset.id) openTask(row.dataset.id);
+});
 $('#scopeSw').onclick = e => {
   const b = e.target.closest('button'); if (!b) return;
   scope = b.dataset.scope;
