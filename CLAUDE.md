@@ -243,7 +243,8 @@ Node.js 透過 nvm 安裝，路徑：`/Users/angela/.nvm/versions/node/v24.15.0/
   順序照上線日期（同一天再看 `ord`）。8 月 August＝HA01…、9 月 September＝HS01…、10 月 October＝HO01…。
   **在月曆上把貼文拖到別的日期，編號就自己重算**，圖文表那格與編輯視窗都改成唯讀，不給手填。
   資料裡舊的 `code` 值留著沒刪，但介面一律顯示自動算的（`autoCode()`）。
-  ⚠️ 英文首字母本來就會撞：1／6／7 月都是 J、3／5 月都是 M、4／8 月都是 A，跨月比對要連日期看
+  會撞的月份用兩碼（2026-08-17 定）：1月 HJA、3月 HMA、4月 HAP、5月 HMY、6月 HJU、7月 HJL；
+  **8 月維持單碼 HA**（HA01–HA03 已發布也在她試算表裡，不能改）。十二個月的碼互不重複
 - **圖文表**是照朱兒的 Google 試算表「禾言社群規劃」的圖文模板做的
   （<https://docs.google.com/spreadsheets/d/1BGuJUZs9IbZP0FWXuKyM4tZlMT8wPg8RDf-SSIxo_MQ/edit>）：
   一篇貼文一欄，左邊 13 個欄位名固定（`SHEET_ROWS`）—— 素材編號(⭐成效佳)／素材名稱／貼文類型／
