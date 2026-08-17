@@ -101,11 +101,10 @@ h2 .hl{background:linear-gradient(transparent 7%, var(--y) 7%, var(--y) 93%, tra
 .item i:nth-child(3){left:-10px;bottom:-10px} .item i:nth-child(4){right:-10px;bottom:-10px}
 
 .foot{position:relative;z-index:2;margin-top:auto;padding-top:30px;font-size:34px;font-weight:800;display:flex;align-items:center;gap:14px}
-/* 「適合」這種夾在句子裡的標籤同樣用漸層，避免匯入 Canva 後膠囊跑位 */
-.pill{display:inline-block;
-  background:linear-gradient(transparent 6%, var(--y) 6%, var(--y) 94%, transparent 94%);
-  color:var(--ink);font-size:25px;font-weight:800;
-  padding:10px 22px;border-radius:99px}
+/* 「適合」這種夾在句子裡的標籤：膠囊匯入 Canva 會被擠成兩行，改用螢光筆底線 */
+.pill{display:inline;
+  background:linear-gradient(transparent 52%, var(--y) 52%);
+  color:var(--ink);font-size:34px;font-weight:900;padding:0 6px}
 .big{font-size:78px;font-weight:900;line-height:1.35;letter-spacing:-1px}
 .big .hl{background:linear-gradient(transparent 7%, var(--y) 7%, var(--y) 93%, transparent 93%);
   color:var(--ink);padding:4px 16px;display:inline-block}
@@ -121,6 +120,12 @@ h2 .hl{background:linear-gradient(transparent 7%, var(--y) 7%, var(--y) 93%, tra
 .chips .c.g{background:var(--g)} .chips .c.a{background:var(--amber)}
 /* 原本是黑底白字，改成橘黃底深字：色塊萬一蓋住文字也不會變成一條黑槓 */
 .chips .c.k{background:var(--amber);color:var(--ink)}
+
+/* 黃色紙張那幾頁：黃底強調在黃紙上等於沒效果，改成白底深字 */
+.paper.yellow h1 .hl, .paper.yellow h2 .hl, .paper.yellow .big .hl{
+  background:linear-gradient(transparent 7%, #fff 7%, #fff 93%, transparent 93%)}
+.paper.yellow .pill{background:linear-gradient(transparent 52%, #fff 52%)}
+.paper.yellow .mark-y, .paper.yellow .mark-m{background:linear-gradient(transparent 58%, #fff 58%)}
 
 /* 螢光筆底線 */
 .mark-y{background:linear-gradient(transparent 58%, var(--y) 58%);padding:0 4px}
@@ -151,7 +156,7 @@ h2 .hl{background:linear-gradient(transparent 7%, var(--y) 7%, var(--y) 93%, tra
 <div class="card" id="p1" data-document-role="page" data-label="封面">
   <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
   <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
-  <div class="hylogo"><img src="logo_use.png" alt="禾言數位行銷"></div>
+  <div class="hylogo"><img src="https://zhuer0323-tech.github.io/dora-workspace/heyen-cards/logo_use.png" alt="禾言數位行銷"></div>
   <div class="paper">
     <div class="flag">教學／新手</div>
     <h1>Meta 廣告<br><span class="hl">這麼多種</span><br>到底要選哪個？</h1>
@@ -177,7 +182,7 @@ h2 .hl{background:linear-gradient(transparent 7%, var(--y) 7%, var(--y) 93%, tra
 <div class="card" id="p2" data-document-role="page" data-label="常見狀況">
   <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
   <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
-  <div class="hylogo"><img src="logo_use.png" alt="禾言數位行銷"></div>
+  <div class="hylogo"><img src="https://zhuer0323-tech.github.io/dora-workspace/heyen-cards/logo_use.png" alt="禾言數位行銷"></div>
   <div class="paper yellow">
     <div class="flag">常見狀況</div>
     <div class="dots" style="right:26px;bottom:26px"></div>
@@ -207,7 +212,7 @@ h2 .hl{background:linear-gradient(transparent 7%, var(--y) 7%, var(--y) 93%, tra
 <div class="card" id="p3" data-document-role="page" data-label="目標1-2">
   <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
   <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
-  <div class="hylogo"><img src="logo_use.png" alt="禾言數位行銷"></div>
+  <div class="hylogo"><img src="https://zhuer0323-tech.github.io/dora-workspace/heyen-cards/logo_use.png" alt="禾言數位行銷"></div>
   <div class="paper">
     <div class="flag">目標 1・2</div>
     <div class="num">02</div>
@@ -232,7 +237,7 @@ h2 .hl{background:linear-gradient(transparent 7%, var(--y) 7%, var(--y) 93%, tra
 <div class="card" id="p4" data-document-role="page" data-label="目標3-5">
   <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
   <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
-  <div class="hylogo"><img src="logo_use.png" alt="禾言數位行銷"></div>
+  <div class="hylogo"><img src="https://zhuer0323-tech.github.io/dora-workspace/heyen-cards/logo_use.png" alt="禾言數位行銷"></div>
   <div class="paper">
     <div class="flag">目標 3・4・5</div>
     <div class="dots" style="left:26px;bottom:26px"></div>
@@ -262,7 +267,7 @@ h2 .hl{background:linear-gradient(transparent 7%, var(--y) 7%, var(--y) 93%, tra
 <div class="card" id="p5" data-document-role="page" data-label="目標6">
   <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
   <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
-  <div class="hylogo"><img src="logo_use.png" alt="禾言數位行銷"></div>
+  <div class="hylogo"><img src="https://zhuer0323-tech.github.io/dora-workspace/heyen-cards/logo_use.png" alt="禾言數位行銷"></div>
   <div class="paper yellow">
     <div class="flag">目標 6</div>
     <div class="num">04</div>
@@ -289,7 +294,7 @@ h2 .hl{background:linear-gradient(transparent 7%, var(--y) 7%, var(--y) 93%, tra
 <div class="card" id="p6" data-document-role="page" data-label="結尾">
   <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
   <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
-  <div class="hylogo"><img src="logo_use.png" alt="禾言數位行銷"></div>
+  <div class="hylogo"><img src="https://zhuer0323-tech.github.io/dora-workspace/heyen-cards/logo_use.png" alt="禾言數位行銷"></div>
   <div class="paper">
     <div class="flag">結尾</div>
     <div class="big">目標對了，<br><span class="hl">預算才有用</span></div>
