@@ -138,10 +138,11 @@ h2 .hl{background:linear-gradient(transparent 7%, var(--y) 7%, var(--y) 93%, tra
 /* 前後對比 */
 .vs{position:relative;z-index:2;display:flex;gap:20px;margin-top:auto}
 .vs>div{flex:1;border:none;border-radius:20px;padding:30px 28px;background:#fff}
-.vs .lab{font-size:26px;font-weight:800;display:inline-block;padding:6px 16px;
-  border-radius:99px;margin-bottom:14px}
-.vs .bad .lab{background:var(--coral);color:#3A0D0D}
-.vs .good .lab{background:var(--g);color:var(--ink)}
+/* 這兩個標籤原本是色塊，匯入 Canva 會把字壓成一團，改成純色字加底線 */
+.vs .lab{font-size:28px;font-weight:900;display:block;margin-bottom:14px;
+  padding-bottom:8px;border-bottom:4px solid currentColor}
+.vs .bad .lab{color:#E0524F}
+.vs .good .lab{color:#7FA52E}
 .vs .txt{font-size:30px;font-weight:700;line-height:1.6}
 
 /* 頁碼與品牌 */
