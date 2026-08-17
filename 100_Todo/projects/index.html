@@ -245,9 +245,10 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 .dtabs button.on{background:var(--pink);color:#fff}
 
 /* ---------- 復盤 ---------- */
-/* 卡片各自照內容長，不要被同一排拉成一樣高（不然完成數那張會空一大塊） */
-#rvDash{align-items:start}
 @media(min-width:900px){#rvDash{grid-template-columns:1fr 1fr}}
+/* 同一排等高對齊（跟今日代辦頁同一套規則），底部那行說明一律貼齊卡片下緣 */
+#rvDash .dbox{display:flex;flex-direction:column}
+#rvDash .dbox>.tiny:last-child{margin-top:auto;padding-top:10px}
 .rvnav{display:flex;align-items:center;gap:10px;margin-bottom:14px}
 .rvarrow{width:34px;height:34px;flex:none;border-radius:11px;background:#fff;box-shadow:var(--shadow);
   font-size:19px;line-height:1;color:var(--pink-d);transition:.15s}
@@ -258,6 +259,7 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 .rvwhen span{font-size:11.5px;color:var(--ink3)}
 /* 本週完成的大數字：跟上週比的增減放在旁邊 */
 .rvhero{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.rvhero .rvrep{font-size:12px;color:var(--ink3);font-weight:600}
 .rvhero .big{font-size:38px;font-weight:800;line-height:1;color:var(--pink-d)}
 .rvhero .unit{font-size:13px;color:var(--ink3);font-weight:600}
 .rvdiff{font-size:12px;font-weight:700;padding:3px 9px;border-radius:99px;background:var(--pink-xl);color:var(--pink-d)}
@@ -2318,20 +2320,20 @@ function renderReview(){
   const diffTxt = diff>0 ? `比前一週多 ${diff} 件` : diff<0 ? `比前一週少 ${-diff} 件` : '跟前一週一樣';
   const repPct = d.repDue ? Math.round(d.repDone/d.repDue*100) : 0;
 
+  // 過去的週次只有三張卡，兩欄排會落單，所以讓這張橫跨整排、下面兩張並排
   const cardDone = `
-    <div class="dbox">
+    <div class="dbox"${rvOffset===0 ? '' : ' style="grid-column:1/-1"'}>
       <h4>這週完成了多少</h4>
       <div class="rvhero">
         <span class="big">${n}</span><span class="unit">件</span>
         <span class="rvdiff ${diffCls}">${diffTxt}</span>
+        <span class="rvrep">${d.repDue
+          ? `每日例行做了 ${d.repDone}／${d.repDue} 次（${repPct}%）`
+          : '這週沒有排定的每日例行'}</span>
       </div>
-      <div class="tiny" style="margin-top:10px">
-        ${d.repDue
-          ? `每日例行做了 ${d.repDone}／${d.repDue} 次（${repPct}%）${rvOffset===0 ? '，本週還沒過完的日子不列入' : ''}`
-          : '這週沒有排定的每日例行'}
-      </div>
-      <div class="tiny" style="margin-top:5px;color:var(--ink3)">
-        例行的打勾另外算，不併進上面的件數
+      <div class="tiny">
+        例行的打勾另外算，不併進上面的件數${
+          d.repDue && rvOffset===0 ? '；本週還沒過完的日子不列入應做次數' : ''}
       </div>
     </div>`;
 
@@ -2346,7 +2348,7 @@ function renderReview(){
           ${t.client ? `<span class="cl">${esc(clientName(t.client))}</span>` : ''}
         </div>`).join('') + `</div>`
       : `<div class="dempty">沒有拖過期的事，很可以 🌿</div>`}
-      <div class="tiny" style="margin-top:9px">
+      <div class="tiny">
         ${d.late.length ? '點任何一列可以直接打開修改。拖超過 7 天的用紅色標出來。' : ''}
       </div>
     </div>`;
@@ -2355,14 +2357,14 @@ function renderReview(){
     <div class="dbox">
       <h4>時間花在哪個客戶</h4>
       ${rvBars(d.byClient, 8)}
-      <div class="tiny" style="margin-top:9px">算的是完成件數，不是實際工時。一份結案報表跟一則限動都算一件，要看份量請對照旁邊的工作類型。</div>
+      <div class="tiny">算的是件數不是工時。一份結案報表跟一則限動都算一件，份量要看旁邊的類型分布。</div>
     </div>`;
 
   const cardType = `
     <div class="dbox">
       <h4>做的是哪些類型的事</h4>
       ${rvBars(d.byType, 8)}
-      <div class="tiny" style="margin-top:9px">看到某一類特別多，就是可以考慮交出去或自動化的訊號。</div>
+      <div class="tiny">看到某一類特別多，就是可以考慮交出去或自動化的訊號。</div>
     </div>`;
 
   // 一件都沒完成時，客戶與類型那兩張只會是空卡，不如不要放
