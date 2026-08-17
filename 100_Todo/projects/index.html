@@ -277,6 +277,15 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 .rvlate .cl{font-size:10.5px;color:var(--ink3);flex:none}
 .rvlate .dy{flex:none;font-size:11px;font-weight:800;color:var(--pink-d)}
 .rvlate .row.bad .dy{color:#E05263}
+/* 點橫條跳出來的那幾件清單 */
+.drow[data-rvkind]{cursor:pointer}
+.rvlist{display:flex;flex-direction:column;gap:7px}
+.rvlist .row{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:12px;
+  background:#fff;cursor:pointer;transition:.15s}
+.rvlist .row:hover{background:var(--pink-xl)}
+.rvlist .dt{flex:none;font-size:11px;font-weight:700;color:var(--pink-d);width:38px}
+.rvlist .nm{flex:1;font-size:13px;font-weight:600;line-height:1.4}
+.rvlist .tag{flex:none}
 
 #taskList{display:grid;gap:8px}
 @media(min-width:980px){#taskList{grid-template-columns:1fr 1fr}}
@@ -989,6 +998,16 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
       <button class="btn ghost" id="tmCancel2">取消</button>
       <button class="btn" id="tmSave">建立</button>
     </div>
+  </div>
+</div>
+
+<!-- 復盤：點橫條看那幾件是什麼 -->
+<div class="modal" id="rvModal">
+  <div class="sheet">
+    <h3 id="rvmTitle"></h3>
+    <div class="tiny" id="rvmSub" style="margin:-8px 0 12px"></div>
+    <div id="rvmList"></div>
+    <div class="sheet-actions"><button class="btn ghost" id="rvmClose">關閉</button></div>
   </div>
 </div>
 
@@ -2290,22 +2309,57 @@ function reviewData(offset){
     byType:   tally(t => t.type || '其他') };
 }
 
-// 橫條排行：超過 cap 名就把剩下的併成「其他」，不然一堆一件的會排到看不完
-function rvBars(rows, cap){
+// 併起來那一列代表哪些名稱，點開時要用（工作類型本身就有一個叫「其他」的，所以合併列叫「其餘 N 項」不撞名）
+let rvRest = { client:[], type:[] };
+
+// 橫條排行：超過 cap 名就把剩下的併成一列，不然一堆一件的會排到看不完
+function rvBars(rows, cap, kind){
   if (!rows.length) return `<div class="dempty">這週還沒有完成的紀錄 🌿</div>`;
   let list = rows;
+  rvRest[kind] = [];
   if (rows.length > cap){
-    const rest = rows.slice(cap-1).reduce((s,r)=>s+r[1], 0);
-    list = rows.slice(0, cap-1).concat([['其他', rest]]);
+    const restRows = rows.slice(cap-1);
+    rvRest[kind] = restRows.map(r=>r[0]);
+    list = rows.slice(0, cap-1).concat([[`其餘 ${restRows.length} 項`, restRows.reduce((s,r)=>s+r[1], 0), true]]);
   }
   const max = list[0][1] || 1;
-  return `<div class="drank">` + list.map(([n,c])=>`
-    <div class="drow" style="cursor:default">
+  return `<div class="drank">` + list.map(([n,c,isRest])=>`
+    <div class="drow" data-rvkind="${kind}"${isRest ? ' data-rvrest="1"' : ` data-rvname="${esc(n)}"`}>
       <span class="nm" title="${esc(n)}">${esc(n)}</span>
       <span class="tr"><i style="width:${Math.round(c/max*100)}%"></i></span>
       <span class="ct"><b>${c}</b> 件</span>
     </div>`).join('') + `</div>`;
 }
+
+// 點某一條橫條：把那幾件到底是什麼列出來
+const rvNameOf = (t, kind) => kind === 'client'
+  ? (t.client ? clientName(t.client) : '（未指定客戶）')
+  : (t.type || '其他');
+
+function openRvList(kind, name, isRest){
+  const d = reviewData(rvOffset);
+  const list = (isRest
+      ? d.done.filter(t => rvRest[kind].includes(rvNameOf(t, kind)))
+      : d.done.filter(t => rvNameOf(t, kind) === name))
+    .sort((a,b) => (a.doneAt||0) - (b.doneAt||0));
+  const fmt = s => s.slice(5).replace('-','/');
+
+  $('#rvmTitle').textContent = name;
+  $('#rvmSub').textContent =
+    `${rvOffset===0 ? '本週' : rvOffset===-1 ? '上週' : `${-rvOffset} 週前`}`
+    + ` ${fmt(d.ws)} – ${fmt(d.we)}　完成 ${list.length} 件`;
+  // 另一個維度當標籤：看客戶就顯示工作類型，看類型就顯示客戶
+  const other = kind === 'client' ? 'type' : 'client';
+  $('#rvmList').innerHTML = list.length ? `<div class="rvlist">` + list.map(t=>`
+    <div class="row" data-id="${esc(t.id)}">
+      <span class="dt">${fmt(ymd(new Date(t.doneAt)))}</span>
+      <span class="nm">${esc(t.name||'（沒有標題）')}</span>
+      <span class="tag">${esc(rvNameOf(t, other))}</span>
+    </div>`).join('') + `</div>`
+    : `<div class="dempty">這一週沒有完成的紀錄</div>`;
+  $('#rvModal').classList.add('on');
+}
+const closeRvList = () => $('#rvModal').classList.remove('on');
 
 function renderReview(){
   const box = $('#rvDash'); if (!box) return;
@@ -2356,14 +2410,14 @@ function renderReview(){
   const cardClient = `
     <div class="dbox">
       <h4>時間花在哪個客戶</h4>
-      ${rvBars(d.byClient, 8)}
+      ${rvBars(d.byClient, 8, 'client')}
       <div class="tiny">算的是件數不是工時。一份結案報表跟一則限動都算一件，份量要看旁邊的類型分布。</div>
     </div>`;
 
   const cardType = `
     <div class="dbox">
       <h4>做的是哪些類型的事</h4>
-      ${rvBars(d.byType, 8)}
+      ${rvBars(d.byType, 8, 'type')}
       <div class="tiny">看到某一類特別多，就是可以考慮交出去或自動化的訊號。</div>
     </div>`;
 
@@ -2755,8 +2809,18 @@ $$('nav.tabs button').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
 $('#rvPrev').onclick = () => { rvOffset--; renderReview(); };
 $('#rvNext').onclick = () => { if (rvOffset < 0){ rvOffset++; renderReview(); } };
 $('#rvDash').addEventListener('click', e => {
-  const row = e.target.closest('.rvlate .row');
-  if (row && row.dataset.id) openTask(row.dataset.id);
+  const late = e.target.closest('.rvlate .row');
+  if (late && late.dataset.id){ openTask(late.dataset.id); return; }
+  const bar = e.target.closest('.drow[data-rvkind]');
+  if (bar) openRvList(bar.dataset.rvkind, bar.querySelector('.nm').textContent, !!bar.dataset.rvrest);
+});
+$('#rvmClose').onclick = closeRvList;
+$('#rvModal').onclick = e => { if (e.target.id === 'rvModal') closeRvList(); };
+// 清單裡點某一件：先收起這個視窗再開任務，兩層視窗才不會疊在一起
+$('#rvmList').addEventListener('click', e => {
+  const row = e.target.closest('.row[data-id]');
+  if (!row) return;
+  closeRvList(); openTask(row.dataset.id);
 });
 $('#scopeSw').onclick = e => {
   const b = e.target.closest('button'); if (!b) return;
