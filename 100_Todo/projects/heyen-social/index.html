@@ -1125,9 +1125,10 @@ const SHEET_ROWS = [
 /* 素材編號自動算（2026-08-17 朱兒定的規則）：
    H ＋ 該月英文的第一個字母 ＋ 兩位順序號，順序照上線日期，同一天再看拖曳順序。
    月曆上把貼文拖到別的日期，編號就跟著重算，不用自己填。
-   ⚠️ 1／6／7 月都是 J、3／5 月都是 M、4／8 月都是 A（英文首字母本來就會重複），
-   跨月比對時要連日期一起看。 */
-const MONTH_LETTER = ['J','F','M','A','M','J','J','A','S','O','N','D'];
+   會撞的月份改用兩碼（2026-08-17 朱兒定）：
+   1月 JA(January)、6月 JU(June)、7月 JL(July)；同理 3月 MA、5月 MY、4月 AP。
+   8 月維持單碼 A —— HA01–HA03 已經發過也在她試算表裡，不能改。 */
+const MONTH_CODE = ['JA','F','MA','AP','MY','JU','JL','A','S','O','N','D'];
 function autoCode(p, id){
   if(!p || !p.date) return '';
   const m = p.date.slice(0, 7);
@@ -1138,7 +1139,7 @@ function autoCode(p, id){
   const i = id ? same.findIndex(([k]) => k === id)
                : same.findIndex(([, x]) => x === p);
   if(i < 0) return '';
-  return 'H' + MONTH_LETTER[+m.slice(5, 7) - 1] + String(i + 1).padStart(2, '0');
+  return 'H' + MONTH_CODE[+m.slice(5, 7) - 1] + String(i + 1).padStart(2, '0');
 }
 
 function sheetCell(k, id, p){
