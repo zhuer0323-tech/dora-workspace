@@ -100,6 +100,11 @@ h2 .hl{background:linear-gradient(transparent 7%, var(--y) 7%, var(--y) 93%, tra
 .item i:nth-child(1){left:-10px;top:-10px} .item i:nth-child(2){right:-10px;top:-10px}
 .item i:nth-child(3){left:-10px;bottom:-10px} .item i:nth-child(4){right:-10px;bottom:-10px}
 
+/* 只有標題、沒有說明文字的列表：卡片加高吃掉多餘空間，不然底紙下半會空一大塊 */
+.items.plain{flex:1;justify-content:center;gap:30px}
+.items.plain .item{padding:40px 34px}
+.items.plain .t{font-size:54px;margin-bottom:0}
+
 .foot{position:relative;z-index:2;margin-top:auto;padding-top:30px;font-size:34px;font-weight:800;display:flex;align-items:center;gap:14px}
 /* 「適合」這種夾在句子裡的標籤：膠囊匯入 Canva 會被擠成兩行，改用螢光筆底線 */
 .pill{display:inline;
