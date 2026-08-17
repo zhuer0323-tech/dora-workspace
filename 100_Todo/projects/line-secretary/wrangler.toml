@@ -1,0 +1,15 @@
+name = "dora-line-secretary"
+main = "src/index.js"
+compatibility_date = "2026-08-17"
+workers_dev = true
+
+# 工作台的雲端位置（不是機密，機密走 wrangler secret）
+[vars]
+WS_DB_URL = "https://busan-trip-2026-201f8-default-rtdb.asia-southeast1.firebasedatabase.app"
+WS_ROOM = "ws_k7m2q9xr4t"
+
+# 需要另外設定的機密（wrangler secret put <名稱>）：
+#   LINE_CHANNEL_SECRET  驗證訊息真的來自 LINE
+#   LINE_ACCESS_TOKEN    回訊息用（跟 8:30 早報同一組）
+#   LINE_USER_ID         只聽這個人的話
+#   FIREBASE_SA          Firebase 服務帳號金鑰的完整 json 內容

@@ -149,6 +149,24 @@ Node.js 透過 nvm 安裝，路徑：`/Users/angela/.nvm/versions/node/v24.15.0/
 ### 廣告週報推播
 - 用 `/廣告週報` skill 產出週報後，自動推播到 LINE 並複製剪貼簿
 
+### LINE 小秘書（2026-08-17 上線）：在 LINE 打字就排進工作台
+同一隻機器人現在是**雙向**的——早報是推出去，小秘書是收進來。
+
+- **程式**：`100_Todo/projects/line-secretary/`（Cloudflare Workers，免費方案，詳見該資料夾 README）
+- **接線生網址**：<https://dora-line-secretary.zhuer0323.workers.dev>（已填進 LINE 的 webhook）
+- **用法**：打「`8/20 漁三 結案報表`」→ 排進工作台 → 回一句確認（日期漏寫就排今天並註明）
+- **這一版只做新增**：查詢、打勾完成、改內容都還沒做
+- **兩道門檻**：驗 LINE 簽章 ＋ 只認朱兒的 userId（工作台有客戶名稱，兩道都不能拿掉）
+- **機密存在 Cloudflare**（`wrangler secret`），程式碼與 repo 裡都沒有：
+  `LINE_CHANNEL_SECRET`／`LINE_ACCESS_TOKEN`／`LINE_USER_ID`／`FIREBASE_SA`
+- ⚠️ **分類規則是抄的，要手動同步**：`src/classify.js` 複製自工作台 `index.html`
+  （`CLIENT_ALIASES`／`DEFAULT_TYPES`／`TYPE_PRIORITY`／`extractHead`／`normKey`）。
+  改網頁那邊的規則時，這裡要一起改，不會自動同步
+- **不自動建新客戶**：認不出客戶只在回覆裡提一句，由朱兒到工作台決定（免得 LINE 隨手打字長出假客戶）
+- **不寫 `ui.learn`**：學習只走網頁那邊，小秘書只讀
+- **Worker 跑在 UTC**：`date.js` 一律先加 8 小時算台灣時間
+- **本機測 webhook 要帶 User-Agent**：不帶會被 Cloudflare 擋成 403，不是程式壞掉
+
 ---
 
 ## 朱兒專屬工作台（2026-08-09 上線）

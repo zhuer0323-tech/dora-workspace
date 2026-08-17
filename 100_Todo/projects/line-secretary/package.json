@@ -1,0 +1,10 @@
+{
+  "name": "dora-line-secretary",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  }
+}
