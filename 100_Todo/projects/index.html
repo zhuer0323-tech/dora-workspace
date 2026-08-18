@@ -2527,6 +2527,7 @@ const segGet = el => $(`#${el} button.on`)?.dataset.v || '';
 function autoGrow(el){ el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
 
 function openTask(id, preset){
+  flushAutoSave();                                // 上一筆還沒存完的先存掉，免得寫到這一筆身上
   const t = id ? tasks[id] : null;
   editingTask = t ? {...t} : null;
   // 每次打開都重來一次：清掉上一筆留下的「新客戶」猜測與手改紀錄
@@ -2565,7 +2566,9 @@ function syncRepeatFields(){
   $('#tmStatus').closest('.prop').classList.toggle('hide', rep);
 }
 const closeTask = () => {
-  $('#taskModal').classList.remove('on'); editingTask = null;
+  flushAutoSave();                                // 倒數中的存檔先結清：存完再關，
+  $('#taskModal').classList.remove('on');         // 不然它醒來時找不到原本那筆，會另外存成新的一筆
+  editingTask = null;
   newClientGuess = ''; tmDetect = null; tmTouched = { name:"", client:false, type:false };
 };
 
@@ -2633,19 +2636,35 @@ function readTaskForm(){
 }
 
 /* 自動儲存：只對「已存在的任務」生效，打字停 500ms 後寫入 */
-let autoT;
+let autoT = null;
 function autoSave(){
   if (!editingTask) return;                       // 新任務要按「建立」
   clearTimeout(autoT);
+  const id = editingTask.id;                      // 排程的當下就記住是哪一筆
   $('#tmSaved').textContent = '編輯中…';
   autoT = setTimeout(() => {
-    const t = readTaskForm();
-    if (!t.name){ $('#tmSaved').textContent = '標題不能空白'; return; }
-    editingTask = {...t};
-    saveTask(t);
-    $('#tmSaved').textContent = '已儲存 ✓';
-    setTimeout(()=>{ if ($('#tmSaved').textContent === '已儲存 ✓') $('#tmSaved').textContent = '變更會自動儲存'; }, 1800);
+    autoT = null;
+    // 視窗已經關掉、或中途換成別筆 → 這次存檔作廢。
+    // 少了這一關，readTaskForm() 會拿不到原本的 id 而發一個新的，
+    // 改一改就多出一筆、剛刪掉的也會被寫回來
+    if (!editingTask || editingTask.id !== id) return;
+    writeTaskForm();
   }, 500);
+}
+/* 倒數還沒到就要關視窗（或換一筆）→ 立刻存完，剛改的字才不會不見 */
+function flushAutoSave(){
+  if (!autoT) return;
+  clearTimeout(autoT); autoT = null;
+  if (editingTask) writeTaskForm(true);
+}
+function writeTaskForm(quiet){
+  const t = readTaskForm();
+  if (!t.name){ if (!quiet) $('#tmSaved').textContent = '標題不能空白'; return; }
+  editingTask = {...t};
+  saveTask(t);
+  if (quiet) return;                              // 關視窗的當下沒必要再閃「已儲存」
+  $('#tmSaved').textContent = '已儲存 ✓';
+  setTimeout(()=>{ if ($('#tmSaved').textContent === '已儲存 ✓') $('#tmSaved').textContent = '變更會自動儲存'; }, 1800);
 }
 // 頁面裡任何欄位改動都觸發自動儲存
 ['input','change'].forEach(ev => $('#taskModal').addEventListener(ev, e => {
@@ -2678,6 +2697,7 @@ $('#tmCancel2').onclick = () => closeTask();
 $('#tmDel').onclick = () => {
   if (!editingTask) return;
   if (!confirm(`確定刪除「${editingTask.name}」？`)) return;
+  clearTimeout(autoT); autoT = null;              // 這條路是丟棄不是補存，不然剛刪的會被寫回來
   delTask(editingTask.id); closeTask(); toast('已刪除');
 };
 $('#tmCancel').onclick = closeTask;
