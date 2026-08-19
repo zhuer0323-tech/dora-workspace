@@ -1035,6 +1035,15 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
       <textarea id="cmDuty" rows="3"
         placeholder="這裡打什麼，客戶卡上就顯示什麼，例：&#10;Meta 廣告投放&#10;每月成效報表&#10;IG 貼文企劃"></textarea>
     </div>
+    <div class="f"><label>廣告專案資訊<span class="tiny" style="font-weight:400;margin-left:6px">週報會自動帶入，可留空</span></label>
+      <input id="cmRun" placeholder="專案走期，例：2026-08-01 ~ 2026-10-31" style="margin-bottom:6px">
+      <input id="cmFmt" placeholder="廣告格式，例：單圖、輪播、影片、限動" style="margin-bottom:6px">
+      <input id="cmMat" placeholder="素材類型，例：實拍照、KOL 開箱、活動主視覺" style="margin-bottom:6px">
+      <input id="cmBudget" placeholder="廣告預算，例：月 30,000 或 全期 90,000">
+    </div>
+    <div class="f"><label>每週三要做週報</label>
+      <div class="seg" id="cmWk"><button data-v="1">要</button><button data-v="0">不用</button></div>
+    </div>
     <div class="f"><label>認字關鍵字</label>
       <input id="cmKw" placeholder="打到這些字就算這個客戶，用逗號分開，例：李享家,李老闆,李老板">
     </div>
@@ -2756,17 +2765,22 @@ function openClient(id){
   $('#cmDel').classList.toggle('hide', !c);
   $('#cmName').value = c?.name || ''; $('#cmShort').value = c?.short || '';
   $('#cmKw').value = c?.kw || ''; $('#cmDuty').value = c?.duty || '';
+  /* 廣告專案資訊：週報會讀這幾格當背景（走期、格式、素材、預算） */
+  $('#cmRun').value = c?.run || ''; $('#cmFmt').value = c?.fmt || '';
+  $('#cmMat').value = c?.mat || ''; $('#cmBudget').value = c?.budget || '';
   $('#cmDrive').value = c?.drive || ''; $('#cmNote').value = c?.note || '';
   $('#cmGroup').innerHTML = CGROUPS.map(g=>`<button data-v="${g.k}">${g.ic} ${g.t}</button>`).join('');
   segSet('cmGroup', c ? cgroupOf(c) : 'ad');
   cmLogo = c?.logo || ''; $('#cmLogoFile').value = ''; renderLogoPrev();
   segSet('cmActive', c ? (c.active?1:0) : 1);
+  segSet('cmWk', c ? (c.wk?1:0) : 0);   // 沒設過的舊客戶一律當「不用」，不要自己冒出來
   $('#clientModal').classList.add('on');
   if (!c) setTimeout(()=>$('#cmName').focus(), 120);
 }
 const closeClient = () => { $('#clientModal').classList.remove('on'); editingClient = null; };
 $('#cmActive').onclick = e => { const b = e.target.closest('button'); if (b) segSet('cmActive', b.dataset.v); };
 $('#cmGroup').onclick = e => { const b = e.target.closest('button'); if (b) segSet('cmGroup', b.dataset.v); };
+$('#cmWk').onclick = e => { const b = e.target.closest('button'); if (b) segSet('cmWk', b.dataset.v); };
 $('#cmSave').onclick = () => {
   const name = $('#cmName').value.trim();
   if (!name){ toast('客戶名稱要填喔'); return; }
@@ -2776,6 +2790,9 @@ $('#cmSave').onclick = () => {
     kw: $('#cmKw').value.trim(),
     group: segGet('cmGroup') || 'ad', logo: cmLogo || '',
     duty: $('#cmDuty').value.trim(),
+    run: $('#cmRun').value.trim(), fmt: $('#cmFmt').value.trim(),
+    mat: $('#cmMat').value.trim(), budget: $('#cmBudget').value.trim(),
+    wk: segGet('cmWk') === '1',
     active: segGet('cmActive') === '1', note: $('#cmNote').value.trim(),
     pending: false,                      // 存過就是確認過了，「待確認」標記拿掉
     order: editingClient?.order ?? Object.keys(clients).length
