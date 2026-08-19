@@ -58,11 +58,11 @@ header.top h1 .sub{font-size:12px;color:var(--ink3);font-weight:400;margin-left:
   display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--ink2);flex:none}
 
 /* ---------- 卡片 ---------- */
-.card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:14px;margin-bottom:12px}
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:12px;margin-bottom:11px}
 .card h2{margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:8px}
 
 /* ---------- 預算細條（記帳頁頂端） ---------- */
-.budgetbar{background:#fff;border-radius:14px;box-shadow:var(--shadow);padding:10px 13px;margin-bottom:11px}
+.budgetbar{background:#fff;border-radius:14px;box-shadow:var(--shadow);padding:9px 13px;margin-bottom:9px}
 .budgetbar .row{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--ink2)}
 .budgetbar .left{font-size:15px;font-weight:800;color:var(--ink)}
 .budgetbar.over .left{color:var(--bad)}
@@ -74,27 +74,28 @@ header.top h1 .sub{font-size:12px;color:var(--ink3);font-weight:400;margin-left:
 
 /* ---------- 記一筆 ---------- */
 .seg{display:flex;background:var(--pink-xl);border-radius:99px;padding:3px}
-.seg button{flex:1;padding:7px 0;border-radius:99px;font-size:13.5px;font-weight:700;color:var(--ink3)}
+.seg button{flex:1;padding:6px 0;border-radius:99px;font-size:13.5px;font-weight:700;color:var(--ink3)}
 .seg button.on{background:#fff;color:var(--pink-d);box-shadow:var(--shadow)}
-.amtbox{display:flex;align-items:center;gap:10px;margin:14px 2px 12px}
+.amtbox{display:flex;align-items:center;gap:10px;margin:9px 2px 9px}
 .amtbox .cur{font-size:17px;color:var(--ink3);font-weight:700}
-.amtbox .val{flex:1;font-size:42px;font-weight:800;letter-spacing:1px;line-height:1.1;
+.amtbox .val{flex:1;font-size:38px;font-weight:800;letter-spacing:1px;line-height:1.1;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .amtbox .val.zero{color:var(--pink-l)}
 .amtbox.in .val{color:var(--ok)}
 .scanrow{width:100%;text-align:left;background:var(--pink-xl);color:var(--ink2);
   border-radius:12px;padding:11px 13px;font-size:14px;font-weight:600}
-.cats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
-@media(max-width:360px){.cats{grid-template-columns:repeat(3,1fr)}}
-.cats button{padding:9px 2px;border-radius:13px;background:var(--pink-xl);font-size:13px;
+/* 一排五個：十類剛好兩排排完。窄螢幕退回四欄（「固定支出」四個字塞不下） */
+.cats{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+@media(max-width:359px){.cats{grid-template-columns:repeat(4,1fr)}}
+.cats button{padding:7px 2px;border-radius:12px;background:var(--pink-xl);font-size:12.5px;
   color:var(--ink2);font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;line-height:1.3}
 .cats button .cdot{width:8px;height:8px;border-radius:99px}
 .cats button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow)}
 .cats button.on .cdot{background:#fff !important}
 /* 帳戶：一排小膠囊，比分類低調一點 */
-.acclab{font-size:11.5px;color:var(--ink3);font-weight:600;margin:11px 2px 5px}
+.acclab{font-size:11.5px;color:var(--ink3);font-weight:600;margin:8px 2px 4px}
 .accs{display:flex;flex-wrap:wrap;gap:6px}
-.accs button{padding:7px 13px;border-radius:11px;background:var(--pink-xl);font-size:13px;
+.accs button{padding:6px 12px;border-radius:11px;background:var(--pink-xl);font-size:13px;
   color:var(--ink2);font-weight:600;display:flex;align-items:center;gap:5px}
 .accs button .ty{font-size:10px;color:var(--ink3)}
 .accs button.on{background:var(--ink);color:#fff}
@@ -130,15 +131,16 @@ header.top h1 .sub{font-size:12px;color:var(--ink3);font-weight:400;margin-left:
 .addacc select{flex:1;width:auto;background:var(--pink-xl);border-radius:12px;padding:8px 10px;font-size:13.5px}
 .addacc button{padding:8px 20px;border-radius:12px;background:var(--pink);color:#fff;font-weight:700;font-size:13.5px}
 
-.metarow{display:flex;gap:7px;margin-top:11px}
-.metarow input[type=date]{background:var(--pink-xl);border-radius:12px;padding:8px 10px;font-size:13px;color:var(--ink2)}
-.metarow input.note{flex:1;background:var(--pink-xl);border-radius:12px;padding:8px 12px;font-size:13.5px;min-width:0}
-.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
-.pad button{padding:14px 0;border-radius:15px;background:#fff;box-shadow:var(--shadow);
-  font-size:21px;font-weight:700;color:var(--ink)}
+.metarow{display:flex;gap:7px;margin-top:8px}
+.metarow input[type=date]{background:var(--pink-xl);border-radius:12px;padding:7px 10px;font-size:13px;color:var(--ink2)}
+.metarow input.note{flex:1;background:var(--pink-xl);border-radius:12px;padding:7px 12px;font-size:13.5px;min-width:0}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px}
+/* 高度壓過的鍵盤：還是 44px 以上，手指按得到 */
+.pad button{padding:10px 0;border-radius:14px;background:#fff;box-shadow:var(--shadow);
+  font-size:20px;font-weight:700;color:var(--ink)}
 .pad button.sm{font-size:16px;color:var(--ink2)}
 .pad button:active{background:var(--pink-xl)}
-.savebtn{width:100%;margin-top:10px;padding:15px 0;border-radius:16px;background:var(--pink);color:#fff;
+.savebtn{width:100%;margin-top:9px;padding:13px 0;border-radius:16px;background:var(--pink);color:#fff;
   font-size:16px;font-weight:800;box-shadow:var(--shadow-l)}
 .savebtn:disabled{background:var(--pink-l);box-shadow:none;color:#fff}
 .savebtn.in{background:var(--ok)}
