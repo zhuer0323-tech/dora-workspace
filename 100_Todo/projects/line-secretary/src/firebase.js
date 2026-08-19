@@ -52,8 +52,8 @@ async function accessToken(saJson){
   return cachedToken.token;
 }
 
-export function makeDb(env){
-  const base = `${env.WS_DB_URL.replace(/\/$/, '')}/${env.WS_ROOM}`;
+export function makeDb(env, room){
+  const base = `${env.WS_DB_URL.replace(/\/$/, '')}/${room || env.WS_ROOM}`;
   const auth = async () => ({ Authorization: `Bearer ${await accessToken(env.FIREBASE_SA)}` });
   return {
     async get(path){

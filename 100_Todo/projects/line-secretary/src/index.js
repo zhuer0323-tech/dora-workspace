@@ -12,9 +12,16 @@
 import { makeDb } from './firebase.js';
 import { classify } from './classify.js';
 import { parseDue, todayStr } from './date.js';
+import { addMoney } from './money.js';
 
 export default {
   async fetch(request, env, ctx){
+    const url = new URL(request.url);
+
+    // iPhone 捷徑走這條：POST /money，帶 x-dora-token
+    // 走自己的路徑，跟 LINE 的 webhook（根目錄）完全分開，改這裡不會影響排任務
+    if (url.pathname === '/money') return handleShortcut(request, env, url);
+
     if (request.method === 'GET') return new Response('OK');           // 給自己確認有活著用
     if (request.method !== 'POST') return new Response('Not found', { status: 404 });
 
@@ -56,12 +63,55 @@ async function handleEvent(ev, env){
   if (!text) return;
 
   try {
-    const reply = await addTask(text, env);
+    // 「記帳 120 午餐」「$120 午餐」→ 記個人帳；沒有這些開頭一律當任務，
+    // 不用猜的，免得「8/20 漁三 結案報表」被當成花了 8 塊
+    const reply = MONEY_PREFIX.test(text)
+      ? await addMoney(text, env, makeDb(env, env.MN_ROOM))
+      : await addTask(text, env);
     await lineReply(ev.replyToken, reply, env);
   } catch (err) {
     console.log('出錯：', err && err.message);
     await lineReply(ev.replyToken, '⚠️ 沒存成功，請稍後再試一次', env);
   }
+}
+
+const MONEY_PREFIX = /^(記帳|記一筆|花了|支出|花費|消費|收入|入帳|[$＄+＋])/;
+
+/* iPhone 捷徑：POST /money
+   身分認什麼？一組只有她手機裡有的密碼（MONEY_TOKEN）。
+   LINE 那邊靠簽章＋userId，捷徑沒有那些，所以改用密碼。 */
+async function handleShortcut(request, env, url){
+  if (request.method !== 'POST')
+    return new Response('只收 POST', { status: 405 });
+
+  const token = request.headers.get('x-dora-token') || '';
+  if (!env.MONEY_TOKEN || !safeEqual(token, env.MONEY_TOKEN))
+    return new Response('密碼不對', { status: 401 });
+
+  let text = '';
+  const body = await request.text();
+  try {
+    const j = JSON.parse(body);
+    text = String(j.text ?? j.q ?? '').trim();
+  } catch { text = body.trim(); }          // 直接送純文字也接受
+
+  if (!text) return new Response('沒有內容', { status: 400 });
+
+  try {
+    const dry = url.searchParams.get('dry') === '1';     // 測試用：只回結果不寫進帳本
+    const reply = await addMoney(text, env, makeDb(env, env.MN_ROOM), dry);
+    return new Response(reply, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+  } catch (err) {
+    console.log('記帳出錯：', err && err.message);
+    return new Response('沒存成功，請稍後再試一次', { status: 500 });
+  }
+}
+
+function safeEqual(a, b){
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
 }
 
 async function addTask(text, env){

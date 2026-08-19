@@ -77,3 +77,29 @@ curl -X PUT https://api.line.me/v2/bot/channel/webhook/endpoint \
 - **Worker 跑在 UTC**：日期一律先加 8 小時算台灣時間，改 `date.js` 時別忘了
 - **Cloudflare 會擋奇怪的 User-Agent**：本機用 curl／python 測試要帶 `User-Agent`，
   不帶會收到 403（那不是程式的錯）
+
+---
+
+## 這隻 Worker 現在有兩條路
+
+| 路徑 | 誰在用 | 認什麼身分 | 做什麼 |
+|:--|:--|:--|:--|
+| `/`（根目錄） | LINE 的 webhook | LINE 簽章 ＋ 朱兒的 userId | 排任務進工作台（`ws_k7m2q9xr4t`） |
+| `/money` | iPhone 捷徑 | `x-dora-token` 標頭 | 記個人帳（`mn_x3f9b6qz`） |
+
+兩條路各自認身分、各寫各的節點，改一邊不會影響另一邊。
+
+### 記帳（2026-08-19 加）
+
+- 程式：`src/money.js`（拆句子 ＋ 寫入），路由在 `src/index.js` 的 `handleShortcut`
+- 機密：`MONEY_TOKEN`（`wrangler secret put`）。**倉庫是公開的，這串不能寫進任何檔案**；
+  本機備份在 `~/Library/Scripts/dora-money-token.txt`
+- LINE 也能記帳：訊息開頭有 `記帳／花了／支出／收入／$／+` 才走記帳，其餘一律照舊當任務。
+  **不用猜的**，免得「8/20 漁三 結案報表」被當成花了 8 塊
+- 日期跟排任務相反：任務往未來找（8/20 是下週要交），記帳往回找（8/17 是前天花的），
+  所以 `money.js` 自己寫了一個 `parseSpentDate`，沒有共用 `date.js` 的 `parseDue`
+- 分類清單**讀雲端的 `settings`**（她在 App 設定頁改什麼就是什麼），
+  對不到就丟「其他」，**不自動長出新分類**
+- 講法對照表在 `money.js` 的 `ALIAS`，加詞改那裡
+- 測試不想弄髒帳本：網址加 `?dry=1`，只回結果不寫入
+- 手把手的捷徑設定寫在 `100_Todo/plans/2026-08-19-記帳-手機捷徑.md`
