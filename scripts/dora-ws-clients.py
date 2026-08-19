@@ -13,7 +13,8 @@
 設定沿用早報那份 ~/Library/Scripts/dora.env（WS_SA_KEY / WS_DB_URL / WS_ROOM），
 簽章一樣交給系統 openssl，不裝任何 python 套件。
 """
-import base64, json, os, subprocess, sys, tempfile, time
+import base64, json, os, re, subprocess, sys, tempfile, time
+from datetime import date
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
@@ -86,9 +87,42 @@ def matches(c, q):
     return any(p and (q in p.lower() or p.lower() in q) for p in pool)
 
 
+def runs_of(c):
+    """走期清單。舊資料只有一個字串 run，轉成第一期。"""
+    rs = c.get('runs')
+    if isinstance(rs, list) and rs:
+        return [r for r in rs if isinstance(r, dict)]
+    old = (c.get('run') or '').strip()
+    if not old:
+        return []
+    m = re.search(r'(\d{4}-\d{2}-\d{2})\s*[~～-]+\s*(\d{4}-\d{2}-\d{2})', old)
+    return [{'no': '1', 'start': m.group(1), 'end': m.group(2)}] if m else []
+
+
+def current_run(c):
+    """週報要用的那一期：含今天的；都不含就用最後一期（走期剛結束還沒排下一期）"""
+    rs = [r for r in runs_of(c) if r.get('start') or r.get('end')]
+    if not rs:
+        return None
+    today = date.today().isoformat()
+    for r in rs:
+        if (not r.get('start') or r['start'] <= today) and (not r.get('end') or r['end'] >= today):
+            return r
+    return rs[-1]
+
+
 def show(c):
     out = [f"客戶：{c.get('name','')}" + (f"（{c['short']}）" if c.get('short') else '')]
-    fields = [('專案走期', 'run'), ('廣告格式', 'fmt'), ('素材類型', 'mat'),
+    rs = runs_of(c)
+    if rs:
+        now = current_run(c)
+        out.append('  專案走期：')
+        for r in rs:
+            mark = '  ← 週報用這期' if r is now else ''
+            out.append(f"    第 {r.get('no','?')} 期  {r.get('start','?')} ～ {r.get('end','?')}{mark}")
+    else:
+        out.append('  專案走期：（還沒填）')
+    fields = [('廣告格式', 'fmt'), ('素材類型', 'mat'),
               ('廣告預算', 'budget'), ('我負責的項目', 'duty'), ('認字關鍵字', 'kw')]
     for label, k in fields:
         v = (c.get(k) or '').strip()
