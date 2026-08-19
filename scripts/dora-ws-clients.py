@@ -20,6 +20,16 @@ from urllib.request import Request, urlopen
 
 ENV = os.path.expanduser('~/Library/Scripts/dora.env')
 
+# 廣告回報日：'' 不用／'3' 週三／'4' 週四。2026-08-19 前存的是布林 True（＝每週三）
+WKNAME = {'3': '週三', '4': '週四'}
+
+
+def wk_of(c):
+    v = c.get('wk')
+    if v is True:
+        return '3'
+    return str(v) if str(v) in WKNAME else ''
+
 
 def load_env():
     cfg = {}
@@ -127,7 +137,7 @@ def show(c):
     for label, k in fields:
         v = (c.get(k) or '').strip()
         out.append(f"  {label}：{v if v else '（還沒填）'}")
-    out.append(f"  每週三要做週報：{'要' if c.get('wk') else '不用'}")
+    out.append(f"  廣告回報日：{WKNAME.get(wk_of(c), '不用')}")
     out.append(f"  狀態：{'進行中' if c.get('active') else '已結案'}")
     if (c.get('note') or '').strip():
         out.append(f"  備註：{c['note'].strip()}")
@@ -148,17 +158,22 @@ def main():
         hit = [c for c in rows if matches(c, args[0])]
         title = f'查「{args[0]}」'
     else:
-        hit = [c for c in rows if c.get('wk') and c.get('active')]
-        title = '每週三要回報的客戶'
+        hit = [c for c in rows if wk_of(c) and c.get('active')]
+        today_wd = str(date.today().isoweekday())          # 1=一 … 7=日
+        todays = [c for c in hit if wk_of(c) == today_wd]
+        wd = WKNAME.get(today_wd)
+        title = '有設廣告回報日的客戶'
+        note = f'今天{wd}要回報 {len(todays)} 家' if todays else '今天沒有要回報的'
 
     if as_json:
         print(json.dumps(hit, ensure_ascii=False, indent=2))
         return
     if not hit:
         print(f'{title}：沒有符合的。'
-              + ('（週報開關要在工作台的客戶卡裡打開）' if not args else ''))
+              + ('（回報日要在工作台的客戶卡裡設）' if not args else ''))
         return
-    print(f'== {title}（{len(hit)} 家）==')
+    note = locals().get('note')
+    print(f'== {title}（{len(hit)} 家）' + (f'｜{note}' if note else '') + ' ==')
     for c in sorted(hit, key=lambda x: x.get('order', 0)):
         print(show(c))
         print()

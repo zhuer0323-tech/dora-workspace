@@ -1054,8 +1054,10 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
       <input id="cmMat" placeholder="素材類型，例：實拍照、KOL 開箱、活動主視覺" style="margin-bottom:6px">
       <input id="cmBudget" placeholder="廣告預算，例：月 30,000 或 全期 90,000">
     </div>
-    <div class="f"><label>每週三要做週報</label>
-      <div class="seg" id="cmWk"><button data-v="1">要</button><button data-v="0">不用</button></div>
+    <div class="f"><label>廣告回報日<span class="tiny" style="font-weight:400;margin-left:6px">當天早上 9:00 提醒</span></label>
+      <div class="seg" id="cmWk">
+        <button data-v="">不用</button><button data-v="3">週三</button><button data-v="4">週四</button>
+      </div>
     </div>
     <div class="f"><label>認字關鍵字</label>
       <input id="cmKw" placeholder="打到這些字就算這個客戶，用逗號分開，例：李享家,李老闆,李老板">
@@ -2772,6 +2774,14 @@ $('#cmLogoDel').onclick = () => { cmLogo = ''; renderLogoPrev(); };
 $('#cmName').oninput = renderLogoPrev;
 $('#cmShort').oninput = renderLogoPrev;
 
+/* 廣告回報日：'' 不用／'3' 週三／'4' 週四。
+   2026-08-19 之前存的是布林 true（＝每週三），這裡一律轉成 '3'，不用另外搬移 */
+const wkOf = c => {
+  const v = c?.wk;
+  if (v === true) return '3';
+  return ['3','4'].includes(String(v)) ? String(v) : '';
+};
+
 /* ---------- 專案走期（可以好幾期，長期約用） ----------
    資料存客戶的 `runs`：[{no:'1', start:'2026-08-01', end:'2026-08-31'}, ...]
    舊資料只有一個字串 `run`，開啟時轉成第一期，不用另外搬移。
@@ -2867,7 +2877,7 @@ function openClient(id){
   segSet('cmGroup', c ? cgroupOf(c) : 'ad');
   cmLogo = c?.logo || ''; $('#cmLogoFile').value = ''; renderLogoPrev();
   segSet('cmActive', c ? (c.active?1:0) : 1);
-  segSet('cmWk', c ? (c.wk?1:0) : 0);   // 沒設過的舊客戶一律當「不用」，不要自己冒出來
+  segSet('cmWk', wkOf(c));   // 沒設過的舊客戶一律當「不用」，不要自己冒出來
   $('#clientModal').classList.add('on');
   if (!c) setTimeout(()=>$('#cmName').focus(), 120);
 }
@@ -2886,7 +2896,7 @@ $('#cmSave').onclick = () => {
     duty: $('#cmDuty').value.trim(),
     runs: readRuns(), run: editingClient?.run || '', fmt: $('#cmFmt').value.trim(),
     mat: $('#cmMat').value.trim(), budget: $('#cmBudget').value.trim(),
-    wk: segGet('cmWk') === '1',
+    wk: segGet('cmWk'),          // '' 不用／'3' 週三／'4' 週四
     active: segGet('cmActive') === '1', note: $('#cmNote').value.trim(),
     pending: false,                      // 存過就是確認過了，「待確認」標記拿掉
     order: editingClient?.order ?? Object.keys(clients).length

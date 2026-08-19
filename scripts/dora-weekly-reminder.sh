@@ -1,6 +1,6 @@
 #!/bin/bash
-# 週報提醒 - 每週三 9:00 推 LINE，列出這週要回報哪幾家
-# 名單來源：工作台客戶的「每週三要做週報」開關（wk = true 且進行中）
+# 廣告回報提醒 - 週三與週四 9:00 各跑一次，只推「今天」要回報的客戶
+# 名單來源：工作台客戶的「廣告回報日」（wk：'3' 週三／'4' 週四，舊的布林 True 當週三）
 # 只讀不寫。腳本必須放在 ~/Library/Scripts/，放 ~/Downloads 會被 macOS TCC 擋
 
 set -euo pipefail
@@ -14,6 +14,7 @@ source /Users/angela/Library/Scripts/dora.env
 
 MSG=$(WS_SA_KEY="${WS_SA_KEY:-}" WS_DB_URL="${WS_DB_URL:-}" WS_ROOM="${WS_ROOM:-}" python3 << 'PYEOF'
 import base64, json, os, subprocess, sys, tempfile, time
+from datetime import datetime
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
@@ -61,25 +62,49 @@ except Exception:
     # 讀不到就不推，免得每週三丟一則沒用的訊息；失敗原因看 log
     print('', end=''); sys.exit(0)
 
+WKNAME = {'3': '週三', '4': '週四'}
+
+def wk_of(c):
+    v = c.get('wk')
+    if v is True:
+        return '3'
+    return str(v) if str(v) in WKNAME else ''
+
+# launchd 跑在本機時間，直接用今天星期幾（1=一 … 7=日）
+today_wd = str(datetime.now().isoweekday())
 rows = [c for c in clients.values()
-        if isinstance(c, dict) and c.get('wk') and c.get('active')]
+        if isinstance(c, dict) and c.get('active') and wk_of(c) == today_wd]
 if not rows:
-    # 一家都沒開開關 → 不推（她還沒設定，推了也沒意義）
+    # 今天沒有人要回報 → 不推
     print('', end=''); sys.exit(0)
 
 rows.sort(key=lambda c: c.get('order', 0))
-lines = ['🗓 今天週三，該做週報了', '', f'這 {len(rows)} 家要回報：']
+lines = [f'🗓 今天{WKNAME[today_wd]}，該做廣告回報了', '', f'這 {len(rows)} 家要回報：']
+def cur_run(c):
+    """當期走期：含今天的那一期，都不含就用最後一期（走期剛結束還沒排下一期）"""
+    rs = [r for r in (c.get('runs') or [])
+          if isinstance(r, dict) and (r.get('start') or r.get('end'))]
+    if not rs:
+        return ''
+    today = datetime.now().strftime('%Y-%m-%d')
+    hit = next((r for r in rs
+                if (not r.get('start') or r['start'] <= today)
+                and (not r.get('end') or r['end'] >= today)), rs[-1])
+    md = lambda d: f'{int(d[5:7])}/{int(d[8:10])}' if d and len(d) >= 10 else '?'
+    no = str(hit.get('no') or '').strip()
+    return (f'第{no}期 ' if no else '') + f"{md(hit.get('start'))}-{md(hit.get('end'))}"
+
 for c in rows:
     nm = (c.get('short') or c.get('name') or '').strip()
-    run = (c.get('run') or '').strip()
-    lines.append(f'・{nm}' + (f'（走期 {run}）' if run else ''))
-lines += ['', '到電腦跟 Claude 說「跑這週週報」就好，', '數字、分析我會一起弄好推回來給你。']
+    run = cur_run(c)
+    lines.append(f'・{nm}' + (f'（{run}）' if run else ''))
+lines += ['', '到電腦跟 Claude 說「跑今天的廣告回報」就好，', '數字、分析我會一起弄好推回來給你。']
 print('\n'.join(lines))
 PYEOF
 )
 
 if [ -z "$MSG" ]; then
-    echo "$(date '+%F %T') 沒有要回報的客戶或讀不到工作台，這次不推"
+    echo "$(date '+%F %T') 今天沒有要回報的客戶或讀不到工作台，這次不推"
     exit 0
 fi
 
@@ -92,4 +117,4 @@ print(json.dumps({"to": os.environ["LINE_USER_ID"],
                   "messages": [{"type": "text", "text": msg}]}, ensure_ascii=False))' <<< "$MSG")" \
     > /dev/null
 
-echo "$(date '+%F %T') 週報提醒已推播"
+echo "$(date '+%F %T') 廣告回報提醒已推播"

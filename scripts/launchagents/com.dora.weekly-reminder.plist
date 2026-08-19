@@ -16,6 +16,11 @@
             <key>Hour</key><integer>9</integer>
             <key>Minute</key><integer>0</integer>
         </dict>
+        <dict>
+            <key>Weekday</key><integer>4</integer>
+            <key>Hour</key><integer>9</integer>
+            <key>Minute</key><integer>0</integer>
+        </dict>
     </array>
     <key>StandardOutPath</key>
     <string>/tmp/dora-weekly-reminder.log</string>
