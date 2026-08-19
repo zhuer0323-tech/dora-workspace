@@ -547,6 +547,16 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
   border-radius:13px;background:#fff;outline:none}
 .f textarea{min-height:62px;resize:vertical}
 .f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+/* 走期一列：期數＋起訖日＋刪除。長期約會有好幾期，週報自動抓含今天的那一期 */
+.runrow{display:grid;grid-template-columns:64px 1fr 14px 1fr 30px;gap:6px;align-items:center;
+  margin-bottom:6px}
+.runrow input{padding:9px 8px !important;font-size:13px}
+.runrow .rsep{text-align:center;color:var(--ink3);font-size:12px}
+.runrow .runx{border:none;background:none;color:var(--ink3);font-size:18px;cursor:pointer;
+  line-height:1;padding:4px;border-radius:8px}
+.runrow .runx:hover{background:var(--pink-xl);color:var(--pink)}
+.runrow.now input{border-color:var(--pink)}
+.runnow{font-size:11px;color:var(--pink);font-weight:700;margin:-2px 0 6px 2px}
 .seg{display:flex;gap:6px;flex-wrap:wrap}
 .seg button{flex:1;min-width:70px;padding:9px 6px;border-radius:12px;background:#fff;
   border:1.5px solid var(--line);font-size:13px;font-weight:600;color:var(--ink2)}
@@ -1035,8 +1045,11 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
       <textarea id="cmDuty" rows="3"
         placeholder="這裡打什麼，客戶卡上就顯示什麼，例：&#10;Meta 廣告投放&#10;每月成效報表&#10;IG 貼文企劃"></textarea>
     </div>
+    <div class="f"><label>專案走期<span class="tiny" style="font-weight:400;margin-left:6px">長期約可以一期一列，週報自動抓當期</span></label>
+      <div id="cmRuns"></div>
+      <button type="button" class="btn ghost sm" id="cmRunAdd" style="margin-top:6px">＋ 新增一期</button>
+    </div>
     <div class="f"><label>廣告專案資訊<span class="tiny" style="font-weight:400;margin-left:6px">週報會自動帶入，可留空</span></label>
-      <input id="cmRun" placeholder="專案走期，例：2026-08-01 ~ 2026-10-31" style="margin-bottom:6px">
       <input id="cmFmt" placeholder="廣告格式，例：單圖、輪播、影片、限動" style="margin-bottom:6px">
       <input id="cmMat" placeholder="素材類型，例：實拍照、KOL 開箱、活動主視覺" style="margin-bottom:6px">
       <input id="cmBudget" placeholder="廣告預算，例：月 30,000 或 全期 90,000">
@@ -2759,6 +2772,85 @@ $('#cmLogoDel').onclick = () => { cmLogo = ''; renderLogoPrev(); };
 $('#cmName').oninput = renderLogoPrev;
 $('#cmShort').oninput = renderLogoPrev;
 
+/* ---------- 專案走期（可以好幾期，長期約用） ----------
+   資料存客戶的 `runs`：[{no:'1', start:'2026-08-01', end:'2026-08-31'}, ...]
+   舊資料只有一個字串 `run`，開啟時轉成第一期，不用另外搬移。
+   週報要的是「含今天的那一期」，抓不到就用最後一期（走期剛結束還沒排下一期時） */
+let cmRuns = [];
+
+const todayKey = () => new Date().toLocaleDateString('sv-SE');   // sv-SE 剛好是 YYYY-MM-DD
+
+function normRuns(c){
+  if (Array.isArray(c?.runs) && c.runs.length) return c.runs.map(r => ({...r}));
+  const old = (c?.run || '').trim();
+  if (!old) return [];
+  // 舊字串「2026-08-01 ~ 2026-08-31」拆得出日期就拆，拆不出來就整串塞進起日
+  const m = old.match(/(\d{4}-\d{2}-\d{2})\s*[~～-]+\s*(\d{4}-\d{2}-\d{2})/);
+  return [m ? { no:'1', start:m[1], end:m[2] } : { no:'1', start:'', end:'', note:old }];
+}
+
+/* 現在是第幾期：含今天的那一期，沒有就用最後一期 */
+function currentRun(runs){
+  const list = (runs || []).filter(r => r.start || r.end);
+  if (!list.length) return null;
+  const t = todayKey();
+  return list.find(r => (!r.start || r.start <= t) && (!r.end || r.end >= t)) || list[list.length - 1];
+}
+
+function renderRuns(){
+  const box = $('#cmRuns');
+  if (!cmRuns.length){
+    box.innerHTML = '<div class="tiny" style="color:var(--ink3)">還沒填走期，按下面「新增一期」</div>';
+    return;
+  }
+  const now = currentRun(cmRuns);
+  box.innerHTML = cmRuns.map((r, i) => `
+    <div class="runrow${r === now ? ' now' : ''}" data-i="${i}">
+      <input class="rno" value="${esc(r.no || '')}" placeholder="期數" inputmode="numeric">
+      <input class="rst" type="date" value="${esc(r.start || '')}">
+      <span class="rsep">～</span>
+      <input class="ren" type="date" value="${esc(r.end || '')}">
+      <button type="button" class="runx" title="刪掉這一期">×</button>
+    </div>`).join('')
+    + (now ? `<div class="runnow">週報會用第 ${esc(now.no || '?')} 期（${esc(now.start || '?')} ～ ${esc(now.end || '?')}）</div>` : '');
+}
+
+/* 從畫面上讀回來，使用者可能剛打完還沒觸發任何事件 */
+function readRuns(){
+  return [...$$('#cmRuns .runrow')].map(row => ({
+    no:    row.querySelector('.rno').value.trim(),
+    start: row.querySelector('.rst').value,
+    end:   row.querySelector('.ren').value,
+  })).filter(r => r.no || r.start || r.end);
+}
+
+$('#cmRunAdd').onclick = () => {
+  cmRuns = readRuns();
+  const last = cmRuns[cmRuns.length - 1];
+  const nextNo = String(Math.max(0, ...cmRuns.map(r => parseInt(r.no, 10) || 0)) + 1);
+  // 接在上一期結束的隔天，省得每次都要自己算
+  let start = '';
+  if (last?.end){
+    const d = new Date(last.end + 'T00:00:00');
+    d.setDate(d.getDate() + 1);
+    start = d.toLocaleDateString('sv-SE');
+  }
+  cmRuns.push({ no: nextNo, start, end: '' });
+  renderRuns();
+  $$('#cmRuns .runrow').at(-1)?.querySelector('.rst')?.focus();
+};
+
+$('#cmRuns').onclick = e => {
+  const x = e.target.closest('.runx'); if (!x) return;
+  const i = +x.closest('.runrow').dataset.i;
+  cmRuns = readRuns(); cmRuns.splice(i, 1); renderRuns();
+};
+
+/* 改日期就重畫，讓「週報會用第 N 期」跟著更新 */
+$('#cmRuns').onchange = e => {
+  if (e.target.matches('.rst, .ren')){ cmRuns = readRuns(); renderRuns(); }
+};
+
 function openClient(id){
   const c = id ? clients[id] : null;
   editingClient = c ? {...c} : null;
@@ -2767,7 +2859,8 @@ function openClient(id){
   $('#cmName').value = c?.name || ''; $('#cmShort').value = c?.short || '';
   $('#cmKw').value = c?.kw || ''; $('#cmDuty').value = c?.duty || '';
   /* 廣告專案資訊：週報會讀這幾格當背景（走期、格式、素材、預算） */
-  $('#cmRun').value = c?.run || ''; $('#cmFmt').value = c?.fmt || '';
+  cmRuns = normRuns(c); renderRuns();
+  $('#cmFmt').value = c?.fmt || '';
   $('#cmMat').value = c?.mat || ''; $('#cmBudget').value = c?.budget || '';
   $('#cmDrive').value = c?.drive || ''; $('#cmNote').value = c?.note || '';
   $('#cmGroup').innerHTML = CGROUPS.map(g=>`<button data-v="${g.k}">${g.ic} ${g.t}</button>`).join('');
@@ -2791,7 +2884,7 @@ $('#cmSave').onclick = () => {
     kw: $('#cmKw').value.trim(),
     group: segGet('cmGroup') || 'ad', logo: cmLogo || '',
     duty: $('#cmDuty').value.trim(),
-    run: $('#cmRun').value.trim(), fmt: $('#cmFmt').value.trim(),
+    runs: readRuns(), run: editingClient?.run || '', fmt: $('#cmFmt').value.trim(),
     mat: $('#cmMat').value.trim(), budget: $('#cmBudget').value.trim(),
     wk: segGet('cmWk') === '1',
     active: segGet('cmActive') === '1', note: $('#cmNote').value.trim(),
