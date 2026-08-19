@@ -110,7 +110,7 @@ Node.js 透過 nvm 安裝，路徑：`/Users/angela/.nvm/versions/node/v24.15.0/
 - **Bot 名稱**：Dora賺錢小能手（@462xyoib）
 - **用途**：從 Claude 推播訊息到朱兒的 LINE
 - **憑證**：`LINE_PUSH_TOKEN`、`LINE_USER_ID` 存於 `~/.claude/settings.json` env 區塊
-- **推播方式**：內容寫入 `/tmp/dora_*.txt` → 執行共用腳本 `scripts/dora-line-push.sh <文字檔>`（morning 與廣告週報 skill 均使用；改 token 或格式只改這一處）
+- **推播方式**：內容寫入 `/tmp/dora_*.txt` → 執行共用腳本 `scripts/dora-line-push.sh <文字檔>`（morning 與廣告回報 skill 均使用；改 token 或格式只改這一處）
 
 ### 8:30 自動早報（週一～週五）
 - **腳本**：`~/Library/Scripts/dora-morning-briefing.sh`
@@ -146,8 +146,9 @@ Node.js 透過 nvm 安裝，路徑：`/Users/angela/.nvm/versions/node/v24.15.0/
 - 讀取 Notion 計畫資料庫今日待辦 + 專案管理進行中專案 + 本地 plans/daily log
 - 產出個人化早報並推播到 LINE
 
-### 廣告週報推播
-- 用 `/廣告週報` skill 產出週報後，自動推播到 LINE 並複製剪貼簿
+### 廣告回報推播
+- 用 `/廣告回報` skill 產出回報後，自動推播到 LINE 並複製剪貼簿
+  （2026-08-19 從「廣告週報」改名，因為做的是走期累積的回報、不一定以週為單位）
 
 ### 週三 9:00 週報提醒（2026-08-19 上線）
 - **腳本**：`~/Library/Scripts/dora-weekly-reminder.sh`（repo 備份在 `scripts/`）
