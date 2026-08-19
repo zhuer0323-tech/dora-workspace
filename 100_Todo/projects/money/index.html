@@ -469,7 +469,12 @@ const ROOM   = 'mn_x3f9b6qz';        // 改名要同步改 Firebase 規則
 const LS_KEY = 'dora_money_v1';
 const PQ_KEY = 'dora_money_pending'; // 沒訊號時先存這裡，連上再補寫
 
-const DEF_OUT = ['飲食','交通','日用','娛樂','醫療','人情','其他'];
+/* 支出分類（2026-08-19 朱兒定的十類）。
+   「固定支出」單獨拉一類是關鍵：房租水電不是她能決定要不要花的，
+   混在日用裡會讓佔比圖每個月都長一樣，看不出哪裡失控 */
+const DEF_OUT = ['固定支出','飲食','交通','日用','娛樂','醫療','人情','治裝','學習','其他'];
+const OLD_OUT_V1 = ['飲食','交通','日用','娛樂','醫療','人情','其他'];
+const CATS_VERSION = 2;
 const DEF_IN  = ['薪水','獎金','接案','其他'];
 /* 帳戶。信用卡用「餘額變負數」表示欠款：
    刷卡 3000 → 卡的餘額 -3000（就是你欠的）
@@ -482,7 +487,7 @@ const DEF_ACCS = [
   { id:'card', name:'信用卡', type:'card', open:0, openD:'' },
 ];
 const defSettings = () => ({
-  budget:0, goal:0,
+  budget:0, goal:0, catsV:CATS_VERSION,
   cats:DEF_OUT.slice(), catsIn:DEF_IN.slice(),
   accs:DEF_ACCS.map(a => ({...a}))
 });
@@ -516,6 +521,16 @@ function ymShift(ym,n){
 function ymLabel(ym){ const [y,m]=ym.split('-'); return `${y} 年 ${Number(m)} 月`; }
 function money(n){ return (n<0?'-':'') + 'NT$' + Math.abs(Math.round(n)).toLocaleString('en-US'); }
 function plain(n){ return Math.abs(Math.round(n)).toLocaleString('en-US'); }
+/* 換分類只跑一次，而且只在「還是原本那七類、她沒改過」的時候才換 */
+function migrateCats(){
+  if((settings.catsV || 1) >= CATS_VERSION) return false;
+  const cur = settings.cats || [];
+  const same = cur.length === OLD_OUT_V1.length && cur.every((c,i) => c === OLD_OUT_V1[i]);
+  if(same) settings.cats = DEF_OUT.slice();
+  settings.catsV = CATS_VERSION;
+  return true;
+}
+
 function accList(){ return Array.isArray(settings.accs) ? settings.accs : []; }
 function accById(id){ return accList().find(a => a.id === id) || null; }
 function accName(id){ const a = accById(id); return a ? a.name : ''; }
@@ -1281,7 +1296,10 @@ async function initFirebase(interactive){
   const snap = await get(ref(_db, ROOM));
   const d = snap.exists() ? snap.val() : {};
   if(d.items) items = d.items;
-  if(d.settings) settings = Object.assign(defSettings(), d.settings);
+  if(d.settings){
+    settings = Object.assign(defSettings(), d.settings);
+    if(migrateCats()) cloudSettings();           // 舊的七類換成十類，只跑一次
+  }
   else cloudSettings();                          // 第一次用，把預設分類寫上去
   setSync('ok'); saveLocal(); renderAll();
 
