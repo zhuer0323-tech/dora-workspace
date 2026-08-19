@@ -91,6 +91,45 @@ header.top h1 .sub{font-size:12px;color:var(--ink3);font-weight:400;margin-left:
 .cats button .cdot{width:8px;height:8px;border-radius:99px}
 .cats button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow)}
 .cats button.on .cdot{background:#fff !important}
+/* 帳戶：一排小膠囊，比分類低調一點 */
+.acclab{font-size:11.5px;color:var(--ink3);font-weight:600;margin:11px 2px 5px}
+.accs{display:flex;flex-wrap:wrap;gap:6px}
+.accs button{padding:7px 13px;border-radius:11px;background:var(--pink-xl);font-size:13px;
+  color:var(--ink2);font-weight:600;display:flex;align-items:center;gap:5px}
+.accs button .ty{font-size:10px;color:var(--ink3)}
+.accs button.on{background:var(--ink);color:#fff}
+.accs button.on .ty{color:rgba(255,255,255,.65)}
+.accs .none{font-size:12.5px;color:var(--ink3);padding:6px 2px}
+
+/* 總覽的帳戶餘額清單 */
+.acclist{display:flex;flex-direction:column;gap:2px;margin-top:10px}
+.acclist .ar{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--line);font-size:13.5px}
+.acclist .ar:first-child{border-top:0}
+.acclist .ar .nm{flex:1}
+.acclist .ar .ty{font-size:11px;color:var(--ink3)}
+.acclist .ar b{font-weight:700}
+.acclist .ar b.debt{color:var(--bad)}
+
+/* 設定裡的帳戶：一個帳戶兩行，橫著排會擠爆 */
+.accitem{padding:9px 0;border-top:1px solid var(--line)}
+.accitem:first-child{border-top:0}
+.accitem .r1{display:flex;align-items:center;gap:8px}
+.accitem .r1 .nm{flex:1;font-size:14px;font-weight:700;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.accitem .r1 button{width:24px;height:24px;border-radius:99px;background:var(--pink-xl);
+  color:var(--ink3);font-size:12px;flex:none}
+.accitem .r2{display:flex;align-items:center;gap:7px;margin-top:6px}
+/* 要寫 width:auto，不然會被上面 .fld select{width:100%} 撐滿整行、把餘額框擠出畫面 */
+.accitem .r2 select{background:var(--pink-xl);border-radius:10px;padding:7px 9px;font-size:12.5px;
+  flex:none;width:auto}
+.accitem .r2 input{width:104px;background:var(--pink-xl);border-radius:10px;padding:7px 10px;
+  font-size:13px;text-align:right;flex:none}
+.accitem .r2 .cur{flex:1;text-align:right;font-size:11.5px;color:var(--ink3);min-width:0}
+.addacc{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.addacc input{flex:1 1 100%;background:var(--pink-xl);border-radius:12px;padding:8px 12px;font-size:13.5px}
+.addacc select{flex:1;width:auto;background:var(--pink-xl);border-radius:12px;padding:8px 10px;font-size:13.5px}
+.addacc button{padding:8px 20px;border-radius:12px;background:var(--pink);color:#fff;font-weight:700;font-size:13.5px}
+
 .metarow{display:flex;gap:7px;margin-top:11px}
 .metarow input[type=date]{background:var(--pink-xl);border-radius:12px;padding:8px 10px;font-size:13px;color:var(--ink2)}
 .metarow input.note{flex:1;background:var(--pink-xl);border-radius:12px;padding:8px 12px;font-size:13.5px;min-width:0}
@@ -218,6 +257,7 @@ header.top h1 .sub{font-size:12px;color:var(--ink3);font-weight:400;margin-left:
     <div class="seg">
       <button data-kind="out" class="on">支出</button>
       <button data-kind="in">收入</button>
+      <button data-kind="tr">轉帳</button>
     </div>
 
     <div class="amtbox" id="amtBox">
@@ -226,6 +266,18 @@ header.top h1 .sub{font-size:12px;color:var(--ink3);font-weight:400;margin-left:
     </div>
 
     <div class="cats" id="catBox"></div>
+
+    <div id="accWrap">
+      <div class="acclab">從哪個帳戶出</div>
+      <div class="accs" id="accBox"></div>
+    </div>
+
+    <div id="trWrap" style="display:none">
+      <div class="acclab">從哪裡</div>
+      <div class="accs" id="trFromBox"></div>
+      <div class="acclab">轉到哪裡</div>
+      <div class="accs" id="trToBox"></div>
+    </div>
 
     <div class="metarow">
       <input type="date" id="fDate">
@@ -245,24 +297,36 @@ header.top h1 .sub{font-size:12px;color:var(--ink3);font-weight:400;margin-left:
 
 <!-- ======== 總覽 ======== -->
 <section id="pgSum" style="display:none">
+  <div class="card" id="cardNet">
+    <h2>目前有多少錢<span class="tiny" id="sNetSub"></span></h2>
+    <div class="big" id="sNet">—</div>
+    <div class="acclist" id="sAccList"></div>
+  </div>
+
+  <div class="seg" id="rgSeg" style="margin-bottom:10px">
+    <button data-rg="w">這週</button>
+    <button data-rg="m" class="on">這個月</button>
+    <button data-rg="y">今年</button>
+  </div>
+
   <div class="monthnav">
     <button id="sPrev">‹</button><span id="sMon"></span><button id="sNext">›</button>
   </div>
 
   <div class="card">
-    <h2>這個月還能花多少</h2>
+    <h2 id="sLeftTitle">這個月還能花多少</h2>
     <div class="big" id="sLeft">—</div>
     <div class="subline" id="sLeftSub"></div>
     <div class="track" style="height:10px;margin-top:10px"><i id="sLeftFill" style="width:0"></i></div>
   </div>
 
   <div class="card">
-    <h2>錢花到哪去 <span class="tiny" id="sOutTot"></span></h2>
+    <h2><span id="sRankTitle">錢花到哪去</span> <span class="tiny" id="sOutTot"></span></h2>
     <div class="rank" id="sRank"></div>
   </div>
 
   <div class="card">
-    <h2>這個月存了多少</h2>
+    <h2 id="sSaveTitle">這個月存了多少</h2>
     <div class="big" id="sSave">—</div>
     <div class="subline" id="sSaveSub"></div>
     <div class="track" style="height:10px;margin-top:10px"><i id="sSaveFill" style="width:0"></i></div>
@@ -302,7 +366,8 @@ header.top h1 .sub{font-size:12px;color:var(--ink3);font-weight:400;margin-left:
   <div class="sheet">
     <h3>改這一筆<button class="x" data-close>✕</button></h3>
     <div class="fld"><label>金額</label><input id="eAmt" type="number" inputmode="numeric"></div>
-    <div class="fld"><label>分類</label><select id="eCat"></select></div>
+    <div class="fld" id="eCatFld"><label>分類</label><select id="eCat"></select></div>
+    <div class="fld" id="eAccFld"><label>帳戶</label><select id="eAcc"></select></div>
     <div class="fld"><label>日期</label><input id="eDate" type="date"></div>
     <div class="fld"><label>備註</label><input id="eNote" maxlength="40"></div>
     <div class="tiny" id="eInv"></div>
@@ -332,6 +397,22 @@ header.top h1 .sub{font-size:12px;color:var(--ink3);font-weight:400;margin-left:
       <input id="setBudget" type="number" inputmode="numeric" placeholder="例如 20000"></div>
     <div class="fld"><label>存錢目標（每個月想存多少）</label>
       <input id="setGoal" type="number" inputmode="numeric" placeholder="例如 10000"></div>
+
+    <div class="fld" style="margin-top:16px">
+      <label>帳戶（填目前餘額，信用卡填目前未付金額）</label>
+      <div id="setAccs"></div>
+      <div class="addacc">
+        <input id="newAcc" placeholder="新增帳戶名稱（例如 玉山、街口）" maxlength="8">
+        <select id="newAccType">
+          <option value="cash">現金</option><option value="bank">銀行</option><option value="card">信用卡</option>
+        </select>
+        <button data-addacc>加進來</button>
+      </div>
+      <div class="tiny" style="margin-top:5px">
+        餘額填「今天當下」的數字就好，今天之前的帳不會再重複扣。
+        付信用卡帳單記成「轉帳」，不要記成支出（刷的當下已經算過一次了）。
+      </div>
+    </div>
 
     <div class="fld" style="margin-top:16px">
       <label>支出分類</label>
@@ -390,17 +471,34 @@ const PQ_KEY = 'dora_money_pending'; // 沒訊號時先存這裡，連上再補�
 
 const DEF_OUT = ['飲食','交通','日用','娛樂','醫療','人情','其他'];
 const DEF_IN  = ['薪水','獎金','接案','其他'];
+/* 帳戶。信用卡用「餘額變負數」表示欠款：
+   刷卡 3000 → 卡的餘額 -3000（就是你欠的）
+   月底從銀行轉 3000 過去 → 銀行 -3000、卡回到 0
+   這樣總資產自動把卡債扣掉，不用另外算一套 */
+const ACC_TYPES = { cash:'現金', bank:'銀行', card:'信用卡' };
+const DEF_ACCS = [
+  { id:'cash', name:'現金',   type:'cash', open:0, openD:'' },
+  { id:'bank', name:'銀行',   type:'bank', open:0, openD:'' },
+  { id:'card', name:'信用卡', type:'card', open:0, openD:'' },
+];
+const defSettings = () => ({
+  budget:0, goal:0,
+  cats:DEF_OUT.slice(), catsIn:DEF_IN.slice(),
+  accs:DEF_ACCS.map(a => ({...a}))
+});
 const PALETTE = ['#F48FB1','#7FB6E0','#FFB86B','#6FC79A','#9C8FD8',
                  '#E9A6C0','#7FD1C4','#F0C36A','#B0A8E6','#8FC7A0','#E58A7B','#8FB4D9'];
 
 /* ---------- 狀態 ---------- */
-let items = {};                       // id -> {d,amt,cat,note,kind,inv,ts}
-let settings = { budget:0, goal:0, cats:DEF_OUT.slice(), catsIn:DEF_IN.slice() };
+let items = {};    // id -> {d,amt,cat,note,kind,inv,ts,acc}／轉帳是 {kind:'tr',from,to}
+let settings = defSettings();
 let pending = [];
 let _db=null,_ref=null,_set=null,_remove=null,_ready=false;
 
 let kind='out', amt='', cat='', tab='add';
-let sumMon = ymNow(), listMon = ymNow();
+let acc='', trFrom='', trTo='';
+let rg = 'm', rgCur = today();        // 總覽的區間：w 週／m 月／y 年，rgCur 是游標日期
+let listMon = ymNow();
 let editingId = null, catModalKey = null;
 
 const $  = s => document.querySelector(s);
@@ -418,6 +516,30 @@ function ymShift(ym,n){
 function ymLabel(ym){ const [y,m]=ym.split('-'); return `${y} 年 ${Number(m)} 月`; }
 function money(n){ return (n<0?'-':'') + 'NT$' + Math.abs(Math.round(n)).toLocaleString('en-US'); }
 function plain(n){ return Math.abs(Math.round(n)).toLocaleString('en-US'); }
+function accList(){ return Array.isArray(settings.accs) ? settings.accs : []; }
+function accById(id){ return accList().find(a => a.id === id) || null; }
+function accName(id){ const a = accById(id); return a ? a.name : ''; }
+
+/* 每個帳戶現在有多少錢。
+   起始餘額 = 建立帳戶那天當下的餘額，所以那天之前的帳不再重複扣 */
+function accBalances(){
+  const accs = accList();
+  const bal = {};
+  accs.forEach(a => bal[a.id] = Number(a.open) || 0);
+  const hit = (id, v, d) => {
+    const a = accById(id); if(!a) return;
+    if(a.openD && d && d < a.openD) return;
+    bal[id] += v;
+  };
+  Object.values(items).forEach(it => {
+    const n = Number(it.amt) || 0, d = it.d || '';
+    if(it.kind === 'tr'){ hit(it.from, -n, d); hit(it.to, n, d); }
+    else if(it.kind === 'in') hit(it.acc, n, d);
+    else hit(it.acc, -n, d);
+  });
+  return bal;
+}
+
 function catColor(name,k){
   const isIn = k==='in';
   const list = isIn ? settings.catsIn : settings.cats;
@@ -482,29 +604,103 @@ async function flushPending(){
 }
 
 /* ---------- 統計 ---------- */
-function monthItems(ym){
+function monthItems(ym){ return rangeItems(ym + '-01', ym + '-31'); }
+function rangeItems(a, b){
   return Object.entries(items)
-    .filter(([,it]) => (it.d||'').slice(0,7) === ym)
+    .filter(([,it]) => { const d = it.d || ''; return d >= a && d <= b; })
     .map(([id,it]) => ({ id, ...it }));
 }
-function monthSum(ym){
-  const list = monthItems(ym);
+/* 轉帳不是花錢也不是賺錢（只是把錢從左口袋搬到右口袋），統計一律跳過 */
+function sumOf(list){
   let out=0, inc=0; const byCat = {};
   list.forEach(it => {
     const a = Number(it.amt)||0;
-    if(it.kind==='in'){ inc += a; }
+    if(it.kind === 'tr') return;
+    if(it.kind === 'in'){ inc += a; }
     else { out += a; byCat[it.cat||'其他'] = (byCat[it.cat||'其他']||0) + a; }
   });
   return { list, out, inc, byCat };
 }
+function monthSum(ym){ return sumOf(monthItems(ym)); }
+
+/* 週一為一週的開始（台灣習慣） */
+function mondayOf(d){
+  const t = new Date(d + 'T00:00:00');
+  t.setDate(t.getDate() - ((t.getDay() + 6) % 7));
+  return `${t.getFullYear()}-${pad2(t.getMonth()+1)}-${pad2(t.getDate())}`;
+}
+function lastDay(ym){ const [y,m]=ym.split('-').map(Number); return new Date(y,m,0).getDate(); }
+
+/** 目前選的區間 → 起訖、標題、預算、能不能往後翻 */
+function period(){
+  const t = today();
+  if(rg === 'w'){
+    const a = mondayOf(rgCur), b = ymdShift(a, 6);
+    const md = x => `${Number(x.slice(5,7))}/${Number(x.slice(8,10))}`;
+    return { a, b, label:`${md(a)}–${md(b)}`, word: a === mondayOf(t) ? '這週' : '那一週',
+             budget: (Number(settings.budget)||0) / lastDay(a.slice(0,7)) * 7,
+             canNext: a < mondayOf(t), days: a === mondayOf(t) ? 7 - ((new Date(t+'T00:00:00').getDay()+6)%7) : 0 };
+  }
+  if(rg === 'y'){
+    const y = rgCur.slice(0,4);
+    return { a:`${y}-01-01`, b:`${y}-12-31`, label:`${y} 年`,
+             word: y === t.slice(0,4) ? '今年' : `${y} 年`,
+             budget: (Number(settings.budget)||0) * 12,
+             canNext: y < t.slice(0,4), days: 0 };
+  }
+  const ym = rgCur.slice(0,7);
+  return { a:`${ym}-01`, b:`${ym}-${lastDay(ym)}`, label: ymLabel(ym),
+           word: ym === t.slice(0,7) ? '這個月' : '那個月',
+           budget: Number(settings.budget)||0,
+           canNext: ym < t.slice(0,7),
+           days: ym === t.slice(0,7) ? lastDay(ym) - new Date().getDate() + 1 : 0 };
+}
+function shiftPeriod(n){
+  if(rg === 'w') rgCur = ymdShift(mondayOf(rgCur), n*7);
+  else if(rg === 'y') rgCur = `${Number(rgCur.slice(0,4)) + n}-01-01`;
+  else rgCur = ymShift(rgCur.slice(0,7), n) + '-01';
+}
 
 /* ---------- 記一筆頁 ---------- */
 function renderCats(){
-  const list = kind==='in' ? settings.catsIn : settings.cats;
-  if(!list.includes(cat)) cat = list[0] || '';
-  $('#catBox').innerHTML = list.map(c =>
-    `<button data-cat="${esc(c)}" class="${c===cat?'on':''}">
-       <i class="cdot" style="background:${catColor(c,kind)}"></i>${esc(c)}</button>`).join('');
+  const isTr = kind === 'tr';
+  $('#catBox').style.display  = isTr ? 'none' : '';
+  $('#accWrap').style.display = isTr ? 'none' : '';
+  $('#trWrap').style.display  = isTr ? '' : 'none';
+  if(!isTr){
+    const list = kind==='in' ? settings.catsIn : settings.cats;
+    if(!list.includes(cat)) cat = list[0] || '';
+    $('#catBox').innerHTML = list.map(c =>
+      `<button data-cat="${esc(c)}" class="${c===cat?'on':''}">
+         <i class="cdot" style="background:${catColor(c,kind)}"></i>${esc(c)}</button>`).join('');
+  }
+  renderAccs();
+}
+
+function accChips(sel, chosen, attr){
+  const accs = accList();
+  const box = $(sel); if(!box) return;
+  if(!accs.length){ box.innerHTML = '<div class="none">還沒有帳戶，到設定頁加一個</div>'; return; }
+  box.innerHTML = accs.map(a => {
+    const ty = ACC_TYPES[a.type] || '';
+    return `<button ${attr}="${esc(a.id)}" class="${a.id===chosen?'on':''}">${esc(a.name)}` +
+      (ty && ty !== a.name ? `<span class="ty">${ty}</span>` : '') + `</button>`;
+  }).join('');
+}
+function renderAccs(){
+  const accs = accList();
+  const ids = accs.map(a => a.id);
+  if(!ids.includes(acc))    acc    = ids[0] || '';
+  if(!ids.includes(trFrom)) trFrom = ids.find(i => (accById(i)||{}).type !== 'card') || ids[0] || '';
+  if(!ids.includes(trTo) || trTo === trFrom) trTo = ids.find(i => i !== trFrom) || '';
+  if(kind === 'tr'){
+    accChips('#trFromBox', trFrom, 'data-from');
+    accChips('#trToBox',   trTo,   'data-to');
+  }else{
+    $('#accWrap').style.display = accs.length > 1 ? '' : 'none';   // 只有一個帳戶就不用選
+    accChips('#accBox', acc, 'data-acc');
+  }
+  $('.acclab').textContent = kind === 'in' ? '進到哪個帳戶' : '從哪個帳戶出';
 }
 function renderAmt(){
   const v = amt === '' ? '0' : String(Number(amt));
@@ -512,9 +708,9 @@ function renderAmt(){
   $('#amtVal').classList.toggle('zero', !Number(amt));
   $('#amtBox').classList.toggle('in', kind==='in');
   const b = $('#btnSave');
-  b.disabled = !Number(amt);
+  b.disabled = !Number(amt) || (kind==='tr' && (!trFrom || !trTo || trFrom===trTo));
   b.classList.toggle('in', kind==='in');
-  b.textContent = kind==='in' ? '記一筆收入' : '記一筆';
+  b.textContent = kind==='in' ? '記一筆收入' : kind==='tr' ? '轉過去' : '記一筆';
 }
 function renderBudget(){
   const ym = ymNow(), s = monthSum(ym), bud = Number(settings.budget)||0;
@@ -535,25 +731,31 @@ function renderBudget(){
 
 /* ---------- 總覽 ---------- */
 function renderSum(){
-  const ym = sumMon, s = monthSum(ym);
-  $('#sMon').textContent = ymLabel(ym);
-  $('#sNext').disabled = ym >= ymNow();
+  renderNet();
+  const p = period(), s = sumOf(rangeItems(p.a, p.b));
+  $('#sMon').textContent = p.label;
+  $('#sNext').disabled = !p.canNext;
+  $('#sLeftTitle').textContent = rg==='y' ? `${p.word}花了多少` : `${p.word}還能花多少`;
+  $('#sRankTitle').textContent = `${p.word}的錢花到哪去`;
+  $('#sSaveTitle').textContent = `${p.word}存了多少`;
 
-  // 1 還能花多少
-  const bud = Number(settings.budget)||0;
-  if(!bud){
+  // 1 還能花多少（年檢視改成看花了多少，年預算不是她設的東西）
+  const bud = Math.round(p.budget);
+  if(rg === 'y' || !bud){
     $('#sLeft').textContent = money(s.out);
     $('#sLeft').className = 'big';
-    $('#sLeftSub').textContent = '這個月的支出。設好每月預算後，這裡會變成「還能花多少」。';
+    const months = rg==='y' ? monthsCounted(p) : 0;
+    $('#sLeftSub').textContent = rg==='y'
+      ? (months ? `平均一個月 ${money(s.out/months)}（算了 ${months} 個月）` : '今年還沒有紀錄')
+      : `${p.word}的支出。設好每月預算後，這裡會變成「還能花多少」。`;
     $('#sLeftFill').style.width = '0';
   }else{
     const left = bud - s.out, pct = Math.min(100, s.out/bud*100);
     $('#sLeft').textContent = left>=0 ? money(left) : '超支 ' + money(-left);
     $('#sLeft').className = 'big' + (left<0 ? ' bad' : '');
-    const days = daysLeft(ym);
     $('#sLeftSub').textContent =
-      `預算 ${money(bud)}，已花 ${money(s.out)}` +
-      (left>=0 && days>0 ? `　·　剩 ${days} 天，一天可以花 ${money(left/days)}` : '');
+      `${rg==='w' ? '一週抓' : '預算'} ${money(bud)}，已花 ${money(s.out)}` +
+      (left>=0 && p.days>0 ? `　·　剩 ${p.days} 天，一天可以花 ${money(left/p.days)}` : '');
     const f = $('#sLeftFill');
     f.style.width = pct + '%';
     f.className = left<0 ? 'over' : pct>=80 ? 'warn' : '';
@@ -568,10 +770,11 @@ function renderSum(){
       <div class="l"><b>${esc(c)}</b><span>${money(v)} <span class="pct">${pct.toFixed(0)}%</span></span></div>
       <div class="rbar"><i style="width:${pct}%;background:${catColor(c,'out')}"></i></div>
     </div>`;
-  }).join('') : '<div class="empty">這個月還沒有支出</div>';
+  }).join('') : `<div class="empty">${p.word}還沒有支出</div>`;
 
   // 3 存了多少
-  const net = s.inc - s.out, goal = Number(settings.goal)||0;
+  const net = s.inc - s.out;
+  const goal = (Number(settings.goal)||0) * (rg==='y' ? 12 : rg==='w' ? 7/lastDay(p.a.slice(0,7)) : 1);
   $('#sSave').textContent = money(net);
   $('#sSave').className = 'big' + (net<0 ? ' bad' : net>0 ? ' ok' : '');
   if(!goal){
@@ -584,6 +787,43 @@ function renderSum(){
     const f = $('#sSaveFill'); f.style.width = pct+'%'; f.className = pct>=100 ? 'ok' : '';
   }
 }
+
+/* 年檢視算平均時，只算「有紀錄的月份」，一月就開始記跟十二月才開始記不能用同一個分母 */
+function monthsCounted(p){
+  const set = new Set();
+  rangeItems(p.a, p.b).forEach(it => { if(it.kind !== 'tr') set.add((it.d||'').slice(0,7)); });
+  return set.size;
+}
+
+/* 目前有多少錢：各帳戶餘額加總，信用卡的負數就是卡債，自動被扣掉 */
+function renderNet(){
+  const accs = accList();
+  const card = $('#cardNet');
+  if(!accs.length){
+    card.style.display = '';
+    $('#sNet').textContent = '—';
+    $('#sNet').className = 'big';
+    $('#sNetSub').textContent = '';
+    $('#sAccList').innerHTML = '<div class="empty">還沒有帳戶。到設定頁加現金、銀行、信用卡，並填目前餘額。</div>';
+    return;
+  }
+  const bal = accBalances();
+  const total = accs.reduce((t,a) => t + (bal[a.id]||0), 0);
+  const debt  = accs.filter(a => a.type==='card')
+                    .reduce((t,a) => t + Math.min(0, bal[a.id]||0), 0);
+  $('#sNet').textContent = money(total);
+  $('#sNet').className = 'big' + (total<0 ? ' bad' : '');
+  $('#sNetSub').textContent = debt < 0 ? `（已扣掉卡費 ${money(-debt)}）` : '';
+  $('#sAccList').innerHTML = accs.map(a => {
+    const v = bal[a.id] || 0;
+    const isDebt = a.type==='card' && v < 0;
+    const ty = ACC_TYPES[a.type] || '';
+    return `<div class="ar"><span class="nm">${esc(a.name)}</span>` +
+      (ty && ty !== a.name ? `<span class="ty">${ty}</span>` : '') +
+      `<b class="${isDebt?'debt':''}">${isDebt ? '未付 ' + money(-v) : money(v)}</b></div>`;
+  }).join('');
+}
+
 function daysLeft(ym){
   if(ym !== ymNow()) return 0;
   const [y,m] = ym.split('-').map(Number);
@@ -603,7 +843,8 @@ function renderList(){
   s.list.forEach(it => (byDay[it.d] = byDay[it.d] || []).push(it));
   box.innerHTML = Object.keys(byDay).sort().reverse().map(d => {
     const arr = byDay[d].sort((a,b)=>(b.ts||0)-(a.ts||0));
-    const dayOut = arr.filter(x=>x.kind!=='in').reduce((s,x)=>s+(Number(x.amt)||0),0);
+    const dayOut = arr.filter(x=>x.kind!=='in' && x.kind!=='tr')
+                      .reduce((s,x)=>s+(Number(x.amt)||0),0);
     return `<div class="daygrp">
       <div class="dayhd"><span>${dayLabel(d)}</span><span>${dayOut ? '支出 '+money(dayOut) : ''}</span></div>
       ${arr.map(it=>itemRow(it)).join('')}
@@ -621,31 +862,45 @@ function ymdShift(d,n){
   return `${t.getFullYear()}-${pad2(t.getMonth()+1)}-${pad2(t.getDate())}`;
 }
 function itemRow(it){
+  if(it.kind === 'tr'){
+    return `<div class="item" data-id="${it.id}">
+      <i class="cdot" style="background:var(--ink3)"></i>
+      <div class="nm"><b>轉帳</b>
+        <span class="n2">${esc(accName(it.from)||'?')} → ${esc(accName(it.to)||'?')}${it.note?'　'+esc(it.note):''}</span></div>
+      <div class="amt" style="color:var(--ink3)">${money(it.amt)}</div>
+    </div>`;
+  }
   const isIn = it.kind==='in';
+  const sub = [it.note || (it.inv ? '發票 '+it.inv : ''), accName(it.acc)].filter(Boolean).join('　·　');
   return `<div class="item" data-id="${it.id}">
     <i class="cdot" style="background:${catColor(it.cat, isIn?'in':'out')}"></i>
     <div class="nm"><b>${esc(it.cat||'其他')}</b>
-      ${it.note || it.inv ? `<span class="n2">${esc(it.note || ('發票 '+it.inv))}</span>` : ''}</div>
+      ${sub ? `<span class="n2">${esc(sub)}</span>` : ''}</div>
     <div class="amt ${isIn?'in':''}">${isIn?'+':''}${money(it.amt)}</div>
   </div>`;
 }
 function esc(s){ return String(s??'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
 function renderAll(){ renderCats(); renderAmt(); renderBudget(); renderSum(); renderList(); }
+// renderCats 裡面就會叫 renderAccs，所以這裡不用另外再叫一次
 
 /* ---------- 新增一筆 ---------- */
 function addItem(){
   const n = Number(amt);
   if(!n) return;
+  if(kind==='tr' && (!trFrom || !trTo || trFrom===trTo)){ toast('轉帳要選兩個不同的帳戶'); return; }
   const id = uid();
-  items[id] = {
-    d: $('#fDate').value || today(),
-    amt: n, cat: cat || '其他', note: $('#fNote').value.trim(),
-    kind, inv: pendingInv || '', ts: Date.now()
-  };
+  const base = { d: $('#fDate').value || today(), amt: n,
+                 note: $('#fNote').value.trim(), kind, ts: Date.now() };
+  items[id] = kind==='tr'
+    ? { ...base, from: trFrom, to: trTo }
+    : { ...base, cat: cat || '其他', acc, inv: pendingInv || '' };
   pendingInv = '';
   saveLocal(); cloudSetItem(id);
-  toast(`記好了　${kind==='in'?'+':''}${money(n)}　${cat}`);
+  localStorage.setItem('dora_money_lastacc', acc);      // 下次預設用同一個帳戶
+  toast(kind==='tr'
+    ? `轉好了　${money(n)}　${accName(trFrom)} → ${accName(trTo)}`
+    : `記好了　${kind==='in'?'+':''}${money(n)}　${cat}`);
   amt=''; $('#fNote').value=''; $('#fDate').value = today();
   renderAll();
 }
@@ -661,6 +916,27 @@ $('#catBox').onclick = e => {
   const b = e.target.closest('button[data-cat]'); if(!b) return;
   cat = b.dataset.cat; renderCats();
 };
+$('#accBox').onclick = e => {
+  const b = e.target.closest('button[data-acc]'); if(!b) return;
+  acc = b.dataset.acc; renderAccs(); renderAmt();
+};
+$('#trFromBox').onclick = e => {
+  const b = e.target.closest('button[data-from]'); if(!b) return;
+  trFrom = b.dataset.from;
+  if(trTo === trFrom) trTo = accList().map(a=>a.id).find(i => i !== trFrom) || '';
+  renderAccs(); renderAmt();
+};
+$('#trToBox').onclick = e => {
+  const b = e.target.closest('button[data-to]'); if(!b) return;
+  trTo = b.dataset.to;
+  if(trFrom === trTo) trFrom = accList().map(a=>a.id).find(i => i !== trTo) || '';
+  renderAccs(); renderAmt();
+};
+$$('#rgSeg button').forEach(b => b.onclick = () => {
+  $$('#rgSeg button').forEach(x => x.classList.toggle('on', x===b));
+  rg = b.dataset.rg; rgCur = today();      // 換區間一律回到現在
+  renderSum();
+});
 $('.pad').onclick = e => {
   const b = e.target.closest('button[data-k]'); if(!b) return;
   const k = b.dataset.k;
@@ -691,12 +967,12 @@ $$('.tabbar button').forEach(b => b.onclick = () => {
   $('#pgAdd').style.display  = tab==='add'  ? '' : 'none';
   $('#pgSum').style.display  = tab==='sum'  ? '' : 'none';
   $('#pgList').style.display = tab==='list' ? '' : 'none';
-  if(tab==='sum'){ sumMon = sumMon; renderSum(); }
+  if(tab==='sum') renderSum();
   if(tab==='list') renderList();
   window.scrollTo(0,0);
 });
-$('#sPrev').onclick = ()=>{ sumMon = ymShift(sumMon,-1); renderSum(); };
-$('#sNext').onclick = ()=>{ if(sumMon<ymNow()){ sumMon = ymShift(sumMon,1); renderSum(); } };
+$('#sPrev').onclick = ()=>{ shiftPeriod(-1); renderSum(); };
+$('#sNext').onclick = ()=>{ if(period().canNext){ shiftPeriod(1); renderSum(); } };
 $('#lPrev').onclick = ()=>{ listMon = ymShift(listMon,-1); renderList(); };
 $('#lNext').onclick = ()=>{ if(listMon<ymNow()){ listMon = ymShift(listMon,1); renderList(); } };
 
@@ -718,18 +994,31 @@ function openEdit(id){
   $('#eAmt').value = it.amt;
   $('#eDate').value = it.d;
   $('#eNote').value = it.note || '';
-  const list = it.kind==='in' ? settings.catsIn : settings.cats;
-  const opts = list.includes(it.cat) ? list : list.concat(it.cat);
-  $('#eCat').innerHTML = opts.map(c=>`<option ${c===it.cat?'selected':''}>${esc(c)}</option>`).join('');
-  $('#eInv').textContent = it.inv ? `發票號碼 ${it.inv}` : '';
+  const isTr = it.kind === 'tr';
+  $('#eCatFld').style.display = isTr ? 'none' : '';
+  $('#eAccFld').style.display = (isTr || accList().length < 2) ? 'none' : '';
+  if(!isTr){
+    const list = it.kind==='in' ? settings.catsIn : settings.cats;
+    const opts = list.includes(it.cat) ? list : list.concat(it.cat);
+    $('#eCat').innerHTML = opts.map(c=>`<option ${c===it.cat?'selected':''}>${esc(c)}</option>`).join('');
+    $('#eAcc').innerHTML = accList().map(a =>
+      `<option value="${esc(a.id)}" ${a.id===it.acc?'selected':''}>${esc(a.name)}</option>`).join('');
+  }
+  $('#eInv').textContent = isTr
+    ? `轉帳：${accName(it.from)||'?'} → ${accName(it.to)||'?'}（帳戶要改請刪掉重記）`
+    : it.inv ? `發票號碼 ${it.inv}` : '';
   openM('#mEdit');
 }
 $('#eSave').onclick = () => {
   const it = items[editingId]; if(!it) return;
   const n = Number($('#eAmt').value);
   if(!n){ toast('金額不能是 0'); return; }
-  it.amt = n; it.cat = $('#eCat').value; it.d = $('#eDate').value || it.d;
+  it.amt = n; it.d = $('#eDate').value || it.d;
   it.note = $('#eNote').value.trim();
+  if(it.kind !== 'tr'){
+    it.cat = $('#eCat').value;
+    if(accList().length) it.acc = $('#eAcc').value || it.acc;
+  }
   saveLocal(); cloudSetItem(editingId); closeM('#mEdit'); renderAll(); toast('改好了');
 };
 $('#eDel').onclick = () => {
@@ -742,11 +1031,12 @@ $('#eDel').onclick = () => {
 $('#sRank').onclick = e => {
   const r = e.target.closest('.rrow[data-cat]'); if(!r) return;
   catModalKey = r.dataset.cat;
-  const list = monthItems(sumMon)
-    .filter(it => it.kind!=='in' && (it.cat||'其他')===catModalKey)
+  const p = period();
+  const list = rangeItems(p.a, p.b)
+    .filter(it => it.kind!=='in' && it.kind!=='tr' && (it.cat||'其他')===catModalKey)
     .sort((a,b)=> (b.d===a.d ? (b.ts||0)-(a.ts||0) : (b.d>a.d?1:-1)));
   const tot = list.reduce((s,x)=>s+(Number(x.amt)||0),0);
-  $('#cTitle').innerHTML = `${esc(catModalKey)}　<span class="tiny">${ymLabel(sumMon)} 共 ${money(tot)}</span>
+  $('#cTitle').innerHTML = `${esc(catModalKey)}　<span class="tiny">${p.label} 共 ${money(tot)}</span>
     <button class="x" data-close>✕</button>`;
   $('#cBox').innerHTML = list.length ? list.map(it =>
     `<div class="item" data-id="${it.id}">
@@ -767,8 +1057,33 @@ $('#cBox').onclick = e => {
 $('#btnSet').onclick = () => {
   $('#setBudget').value = settings.budget || '';
   $('#setGoal').value   = settings.goal || '';
-  renderSetCats(); openM('#mSet');
+  renderSetCats(); renderSetAccs(); openM('#mSet');
 };
+function renderSetAccs(){
+  const accs = accList();
+  const bal = accBalances();
+  $('#setAccs').innerHTML = accs.length ? accs.map(a => {
+    const v = bal[a.id] || 0;
+    const now = (a.type==='card' && v < 0) ? '未付 ' + money(-v) : money(v);
+    return `<div class="accitem" data-id="${esc(a.id)}">
+      <div class="r1">
+        <span class="nm" title="點一下改名">${esc(a.name)}</span>
+        <button data-delacc title="刪掉">✕</button>
+      </div>
+      <div class="r2">
+        <select data-ty>${Object.entries(ACC_TYPES).map(([k,t]) =>
+          `<option value="${k}" ${k===a.type?'selected':''}>${t}</option>`).join('')}</select>
+        <input type="number" inputmode="numeric" data-open value="${Number(a.open)||0}" title="起始餘額">
+        <span class="cur">目前 ${now}</span>
+      </div>
+    </div>`;
+  }).join('') : '<div class="tiny">還沒有帳戶</div>';
+}
+
+function accUsed(id){
+  return Object.values(items).some(it => it.acc === id || it.from === id || it.to === id);
+}
+
 function renderSetCats(){
   const draw = (list,k) => list.map(c =>
     `<span class="chip" data-k="${k}" data-c="${esc(c)}">
@@ -781,6 +1096,37 @@ function catUsed(name,k){
   return Object.values(items).some(it => (it.kind==='in'?'in':'out')===k && (it.cat||'其他')===name);
 }
 $('#mSet').addEventListener('click', e => {
+  // ---- 帳戶 ----
+  if(e.target.closest('button[data-addacc]')){
+    const nm = $('#newAcc').value.trim();
+    if(!nm) return;
+    const accs = accList();
+    if(accs.some(a => a.name === nm)){ toast('已經有同名的帳戶'); return; }
+    const id = 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2,5);
+    accs.push({ id, name:nm, type:$('#newAccType').value, open:0, openD: today() });
+    settings.accs = accs; $('#newAcc').value = '';
+    saveLocal(); cloudSettings(); renderSetAccs(); renderAll();
+    return;
+  }
+  const delA = e.target.closest('button[data-delacc]');
+  if(delA){
+    const id = delA.closest('.accitem').dataset.id;
+    if(accUsed(id)){ toast('這個帳戶還有帳在用，刪不掉'); return; }
+    settings.accs = accList().filter(a => a.id !== id);
+    saveLocal(); cloudSettings(); renderSetAccs(); renderAll();
+    return;
+  }
+  const accNm = e.target.closest('.accitem .nm');
+  if(accNm){
+    const id = accNm.closest('.accitem').dataset.id, a = accById(id);
+    const v = prompt('帳戶改叫什麼？', a ? a.name : '');
+    if(v === null) return;
+    const nv = v.trim(); if(!nv || !a || nv === a.name) return;
+    if(accList().some(x => x.name === nv)){ toast('已經有同名的帳戶'); return; }
+    a.name = nv; saveLocal(); cloudSettings(); renderSetAccs(); renderAll();
+    return;
+  }
+
   const add = e.target.closest('button[data-add]');
   if(add){
     const k = add.dataset.add;
@@ -820,6 +1166,17 @@ $('#mSet').addEventListener('click', e => {
     saveLocal(); cloudSettings(); renderSetCats(); renderAll();
   }
 });
+$('#setAccs').addEventListener('change', e => {
+  const row = e.target.closest('.accitem'); if(!row) return;
+  const a = accById(row.dataset.id); if(!a) return;
+  if(e.target.hasAttribute('data-ty'))   a.type = e.target.value;
+  if(e.target.hasAttribute('data-open')){
+    a.open = Number(e.target.value) || 0;
+    if(!a.openD) a.openD = today();      // 第一次填餘額才決定起算日
+  }
+  saveLocal(); cloudSettings(); renderSetAccs(); renderAll();
+});
+
 ['setBudget','setGoal'].forEach(id => $('#'+id).onchange = () => {
   settings.budget = Number($('#setBudget').value) || 0;
   settings.goal   = Number($('#setGoal').value) || 0;
@@ -924,7 +1281,7 @@ async function initFirebase(interactive){
   const snap = await get(ref(_db, ROOM));
   const d = snap.exists() ? snap.val() : {};
   if(d.items) items = d.items;
-  if(d.settings) settings = Object.assign({ budget:0, goal:0, cats:DEF_OUT.slice(), catsIn:DEF_IN.slice() }, d.settings);
+  if(d.settings) settings = Object.assign(defSettings(), d.settings);
   else cloudSettings();                          // 第一次用，把預設分類寫上去
   setSync('ok'); saveLocal(); renderAll();
 
@@ -935,7 +1292,7 @@ async function initFirebase(interactive){
   });
   onValue(ref(_db, `${ROOM}/settings`), s => {
     if(!s.exists()) return;
-    const v = Object.assign({ budget:0, goal:0, cats:DEF_OUT.slice(), catsIn:DEF_IN.slice() }, s.val());
+    const v = Object.assign(defSettings(), s.val());
     if(JSON.stringify(v) === JSON.stringify(settings)) return;
     settings = v; saveLocal(); renderAll();
   });
@@ -949,6 +1306,7 @@ document.addEventListener('visibilitychange', () => { if(!document.hidden) flush
 
 /* ---------- 啟動 ---------- */
 loadLocal();
+acc = localStorage.getItem('dora_money_lastacc') || '';
 renderAll();
 
 $('#gateBtn').onclick = async () => {
