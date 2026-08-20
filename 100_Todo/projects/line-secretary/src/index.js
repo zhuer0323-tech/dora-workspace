@@ -13,6 +13,7 @@ import { makeDb } from './firebase.js';
 import { classify } from './classify.js';
 import { parseDue, todayStr } from './date.js';
 import { addMoney } from './money.js';
+import { makeReport } from './report.js';
 
 export default {
   async fetch(request, env, ctx){
@@ -65,10 +66,25 @@ async function handleEvent(ev, env){
   try {
     // 「記帳 120 午餐」「$120 午餐」→ 記個人帳；沒有這些開頭一律當任務，
     // 不用猜的，免得「8/20 漁三 結案報表」被當成花了 8 塊
-    const reply = MONEY_PREFIX.test(text)
-      ? await addMoney(text, env, makeDb(env, env.MN_ROOM))
-      : await addTask(text, env);
-    await lineReply(ev.replyToken, reply, env);
+    if (MONEY_PREFIX.test(text)){
+      await lineReply(ev.replyToken, await addMoney(text, env, makeDb(env, env.MN_ROOM)), env);
+      return;
+    }
+    // 「漁三回報」「回報 優逸」→ 跑廣告回報。要抓數字還要寫分析，20–30 秒跑不完，
+    // 所以先回一句，好了再用 push 推第二則（LINE 的 replyToken 只能用一次）
+    if (isReport(text)){
+      await lineReply(ev.replyToken, '📊 收到，正在跑' + reportTargetLabel(text) + '的廣告回報，大約 20-30 秒', env);
+      let out;
+      try {
+        out = await makeReport(text, env, makeDb(env));
+      } catch (err){
+        console.log('回報出錯：', err && err.message);
+        out = '⚠️ 回報沒跑成功：' + (err && err.message ? err.message : '未知錯誤');
+      }
+      await linePush(out, env);
+      return;
+    }
+    await lineReply(ev.replyToken, await addTask(text, env), env);
   } catch (err) {
     console.log('出錯：', err && err.message);
     await lineReply(ev.replyToken, '⚠️ 沒存成功，請稍後再試一次', env);
@@ -76,6 +92,20 @@ async function handleEvent(ev, env){
 }
 
 const MONEY_PREFIX = /^(記帳|記一筆|花了|支出|花費|消費|收入|入帳|[$＄+＋])/;
+
+/* 什麼樣的句子算「要跑廣告回報」：**以「回報」開頭或結尾**。
+   帶日期的一律當任務——「8/20 漁三 廣告回報」是要排一件事，不是要現在跑數字 */
+function isReport(text){
+  const t = text.trim();
+  if (/\d+\s*[\/月-]\s*\d+/.test(t)) return false;          // 有日期 → 排任務
+  return /^(廣告)?回報\s*/.test(t) || /回報$/.test(t);
+}
+
+/** 回覆「正在跑OO的」用的，抓不到就不寫客戶名 */
+function reportTargetLabel(text){
+  const m = text.trim().replace(/^(廣告)?回報\s*/, '').replace(/\s*(廣告)?回報$/, '').trim();
+  return m ? `「${m}」` : '';
+}
 
 /* iPhone 捷徑：POST /money
    身分認什麼？一組只有她手機裡有的密碼（MONEY_TOKEN）。
@@ -150,6 +180,19 @@ async function addTask(text, env){
   ];
   if (!parsedDue) lines.push('（沒抓到日期，先排今天）');
   return lines.join('\n');
+}
+
+/** 主動推一則（replyToken 只能用一次，第二則以後走這裡） */
+async function linePush(text, env){
+  const r = await fetch('https://api.line.me/v2/bot/message/push', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${env.LINE_ACCESS_TOKEN}`
+    },
+    body: JSON.stringify({ to: env.LINE_USER_ID, messages: [{ type: 'text', text }] })
+  });
+  if (!r.ok) console.log('推播失敗', r.status, await r.text());
 }
 
 async function lineReply(replyToken, text, env){

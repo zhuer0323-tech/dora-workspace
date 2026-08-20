@@ -103,3 +103,31 @@ curl -X PUT https://api.line.me/v2/bot/channel/webhook/endpoint \
 - 講法對照表在 `money.js` 的 `ALIAS`，加詞改那裡
 - 測試不想弄髒帳本：網址加 `?dry=1`，只回結果不寫入
 - 手把手的捷徑設定寫在 `100_Todo/plans/2026-08-19-記帳-手機捷徑.md`
+
+## 廣告回報（2026-08-20 加）
+
+在 LINE 打「漁三回報」「回報 優逸」→ 抓走期內的數字、看素材文案、寫分析 →
+回一則可以直接轉傳給客戶的成效回報。
+
+- **怎麼認得要跑回報**：句子**以「回報」開頭或結尾**才算。
+  **帶日期的一律當任務**（「8/20 漁三 廣告回報」是要排一件事，不是現在跑數字）
+- **會分兩則回**：先回一句「收到，正在跑」（LINE 的 replyToken 只能用一次，
+  而且規定 10 秒內要回），跑完再用 push 推第二則
+- **規格哪裡來**：工作台 `clients/{id}.rpt`，由 `scripts/sync-report-spec.py`
+  從 `200_Reference/clients/*.md` 的「回報規格」段落同步上來。
+  **改規格要改客戶檔再跑一次同步**，不要直接改雲端
+- **新客戶要能跑回報**：在 `sync-report-spec.py` 的 `FEEDS` 加一筆
+  （廣告帳戶、活動名稱開頭、要排除哪些別家的活動），再跑一次同步
+- **數字怎麼抓**：`act_X/insights`（ad 層一次撈齊、campaign 層拿去重觸及）
+  ＋ `act_X/ads` 拿目前 ACTIVE 的素材與文案。
+  查進行中的素材**不能篩有花錢的**，剛開的新素材會漏掉
+- **分析交給 Claude 寫**（`claude-opus-5`）：每家格式都不一樣，寫死在程式裡會變成
+  每家一套 if；而且素材面分析要讀文案才寫得出來
+- **成本一律不進客戶版**——這條寫在 `report.js` 的 SYSTEM 提示裡
+
+### 這條路要的兩把鑰匙
+```bash
+npx wrangler secret put META_TOKEN          # 廣告帳戶（跟每日日報同一把，會過期）
+npx wrangler secret put ANTHROPIC_API_KEY   # 分析用，console.anthropic.com 申請
+```
+鑰匙過期或沒設，LINE 會回一句講清楚是哪一把，不會默默失敗。

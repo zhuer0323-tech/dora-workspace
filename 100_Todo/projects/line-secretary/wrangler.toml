@@ -15,3 +15,5 @@ MN_ROOM = "mn_x3f9b6qz"          # 記帳（個人開銷），跟工作台不同
 #   LINE_USER_ID         只聽這個人的話
 #   FIREBASE_SA          Firebase 服務帳號金鑰的完整 json 內容
 #   MONEY_TOKEN          iPhone 捷徑記帳用的密碼（自己想一串長的，捷徑那邊要填一樣的）
+#   META_TOKEN           Meta 廣告帳戶的長期權杖（跟每日日報同一把，會過期要換）
+#   ANTHROPIC_API_KEY    廣告回報的分析交給 Claude 寫，這是 API 金鑰
