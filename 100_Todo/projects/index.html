@@ -65,9 +65,31 @@ header.top .sub{font-size:12px;color:var(--ink3);margin-left:2px}
 
 nav.tabs{display:flex;gap:6px;overflow-x:auto;padding:2px 2px 10px;scrollbar-width:none}
 nav.tabs::-webkit-scrollbar{display:none}
-nav.tabs button{padding:9px 16px;border-radius:99px;background:#fff;color:var(--ink2);
-  font-size:14px;font-weight:600;white-space:nowrap;box-shadow:var(--shadow);transition:.15s}
-nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
+nav.tabs .tb{display:flex;align-items:center;gap:8px;padding:9px 16px;border-radius:99px;
+  background:#fff;color:var(--ink2);font-size:14px;font-weight:600;white-space:nowrap;
+  box-shadow:var(--shadow);transition:.15s;cursor:pointer;user-select:none}
+nav.tabs .tb.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
+nav.tabs .tname{border-radius:6px;padding:1px 4px;margin:-1px -4px}
+nav.tabs .tname:focus{background:#fff;outline:1.5px solid var(--pink);color:var(--ink);cursor:text}
+/* 拖曳握把：只在桌機出現，滑過那一列才淡入 */
+nav.tabs .tgrip{display:none;margin-left:auto;font-size:13px;color:var(--ink3);
+  cursor:grab;touch-action:none;opacity:0;transition:.15s}
+nav.tabs .tb.on .tgrip{color:#fff}
+nav.tabs .tb.dragging{position:fixed;z-index:60;pointer-events:none;opacity:.95;
+  box-shadow:var(--shadow-l)}
+.tb-ph{border-radius:14px;background:var(--pink-xl);border:1.5px dashed var(--pink-l)}
+
+/* 桌機：分頁改成左側直排選單，內容排在右邊 */
+@media(min-width:901px){
+  .wrap{max-width:1436px}
+  #workArea{display:flex;align-items:flex-start;gap:18px}
+  nav.tabs{flex:none;width:178px;flex-direction:column;gap:5px;overflow:visible;
+    position:sticky;top:14px;padding:2px 0 0}
+  nav.tabs .tb{border-radius:14px;padding:10px 14px}
+  nav.tabs .tgrip{display:block}
+  nav.tabs .tb:hover .tgrip{opacity:.75}
+  .page.on{flex:1;min-width:0}
+}
 
 .page{display:none}
 .page.on{display:block}
@@ -192,7 +214,7 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 .btn.sm{padding:6px 12px;font-size:13px}
 /* ---------- 任務頁儀表板 ---------- */
 .dash{display:grid;gap:12px;margin-bottom:14px;grid-template-columns:1fr}
-@media(min-width:900px){.dash{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}}
+@media(min-width:1060px){.dash{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}}
 .dbox{background:#fff;border-radius:var(--r);box-shadow:var(--shadow);padding:15px 16px}
 .dbox h4{margin:0 0 11px;font-size:12px;font-weight:700;color:var(--ink3);letter-spacing:.6px;
   display:flex;align-items:center;gap:6px}
@@ -245,7 +267,7 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 .dtabs button.on{background:var(--pink);color:#fff}
 
 /* ---------- 復盤 ---------- */
-@media(min-width:900px){#rvDash{grid-template-columns:1fr 1fr}}
+@media(min-width:1060px){#rvDash{grid-template-columns:1fr 1fr}}
 /* 同一排等高對齊（跟今日代辦頁同一套規則），底部那行說明一律貼齊卡片下緣 */
 #rvDash .dbox{display:flex;flex-direction:column}
 #rvDash .dbox>.tiny:last-child{margin-top:auto;padding-top:10px}
@@ -288,7 +310,7 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 .rvlist .tag{flex:none}
 
 #taskList{display:grid;gap:8px}
-@media(min-width:980px){#taskList{grid-template-columns:1fr 1fr}}
+@media(min-width:1140px){#taskList{grid-template-columns:1fr 1fr}}
 #taskList .empty{grid-column:1/-1}
 .task{display:flex;align-items:flex-start;gap:10px;background:#fff;border-radius:14px;
   padding:12px 13px;box-shadow:var(--shadow);border-left:5px solid var(--todo)}
@@ -402,8 +424,8 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 .unbox .bt{font-size:12.5px;margin-bottom:0}
 .unbox .bt-ph{margin-bottom:0}
 @media(min-width:520px){ .unbox{grid-template-columns:repeat(2,minmax(0,1fr))} }
-@media(min-width:1000px){ .unbox{grid-template-columns:repeat(3,minmax(0,1fr))} }
-@media(min-width:1300px){ .unbox{grid-template-columns:repeat(4,minmax(0,1fr))} }
+@media(min-width:1160px){ .unbox{grid-template-columns:repeat(3,minmax(0,1fr))} }
+@media(min-width:1460px){ .unbox{grid-template-columns:repeat(4,minmax(0,1fr))} }
 /* 手機：卡片壓扁一點，十幾筆才不會滑不完 */
 @media(max-width:519px){
   .unbox{gap:5px;padding:9px}
@@ -462,8 +484,8 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 .cgrid{display:grid;gap:10px;grid-template-columns:1fr 1fr;
   border-radius:16px;padding:2px;transition:background .15s}
 @media(min-width:640px){.cgrid{grid-template-columns:repeat(3,1fr)}}
-@media(min-width:980px){.cgrid{grid-template-columns:repeat(4,1fr)}}
-@media(min-width:1240px){.cgrid{grid-template-columns:repeat(5,1fr)}}
+@media(min-width:1140px){.cgrid{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:1440px){.cgrid{grid-template-columns:repeat(5,1fr)}}
 .cgrid.dropok{background:var(--pink-xl);box-shadow:inset 0 0 0 2px var(--pink-l)}
 .cgrid .cempty{grid-column:1/-1;text-align:center;color:var(--ink3);font-size:11.5px;
   padding:11px 0;border:1.5px dashed var(--line);border-radius:14px}
@@ -610,6 +632,11 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 .doc-note:focus{background:#fff}
 .doc-note::placeholder{color:#D9C2CB}
 
+/* 左上角標題也可以改名（連點兩下） */
+header.top .rn{border-radius:6px;padding:0 4px;margin:0 -4px}
+header.top .rn:hover{background:var(--pink-xl)}
+header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text}
+
 /* 可改名的卡片標題 */
 .card h2 .cname{cursor:text;border-radius:6px;padding:1px 4px;margin:-1px -4px}
 .card h2 .cname:hover{background:var(--pink-xl);outline:1px dashed var(--pink-l)}
@@ -642,8 +669,8 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 
   <header class="top">
     <div>
-      <h1>工作台</h1>
-      <div class="sub">Dora Workspace</div>
+      <h1><span class="rn" data-rename="app.title" title="連點兩下可以改名字">工作台</span></h1>
+      <div class="sub"><span class="rn" data-rename="app.sub" title="連點兩下可以改名字">Dora Workspace</span></div>
     </div>
     <div class="spacer"></div>
     <div class="scope" id="scopeSw">
@@ -655,13 +682,13 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 
   <!-- ===== 工作區 ===== -->
   <div id="workArea">
-    <nav class="tabs">
-      <button class="on" data-tab="today">今日代辦</button>
-      <button data-tab="tasks">工作規劃</button>
-      <button data-tab="tools">寶藏工具</button>
-      <button data-tab="clients">專案客戶</button>
-      <button data-tab="review">復盤</button>
-      <button data-tab="settings">設定</button>
+    <nav class="tabs" id="tabNav">
+      <div class="tb on" data-tab="today" role="button" tabindex="0"><span class="tname rn" data-rename="tab.today" title="連點兩下可以改名字">今日代辦</span><span class="tgrip" data-tabdrag title="按住可以換順序">⠿</span></div>
+      <div class="tb" data-tab="tasks" role="button" tabindex="0"><span class="tname rn" data-rename="tab.tasks" title="連點兩下可以改名字">工作規劃</span><span class="tgrip" data-tabdrag title="按住可以換順序">⠿</span></div>
+      <div class="tb" data-tab="tools" role="button" tabindex="0"><span class="tname rn" data-rename="tab.tools" title="連點兩下可以改名字">寶藏工具</span><span class="tgrip" data-tabdrag title="按住可以換順序">⠿</span></div>
+      <div class="tb" data-tab="clients" role="button" tabindex="0"><span class="tname rn" data-rename="tab.clients" title="連點兩下可以改名字">專案客戶</span><span class="tgrip" data-tabdrag title="按住可以換順序">⠿</span></div>
+      <div class="tb" data-tab="review" role="button" tabindex="0"><span class="tname rn" data-rename="tab.review" title="連點兩下可以改名字">復盤</span><span class="tgrip" data-tabdrag title="按住可以換順序">⠿</span></div>
+      <div class="tb" data-tab="settings" role="button" tabindex="0"><span class="tname rn" data-rename="tab.settings" title="連點兩下可以改名字">設定</span><span class="tgrip" data-tabdrag title="按住可以換順序">⠿</span></div>
     </nav>
 
     <section class="page on" id="p-today">
@@ -904,10 +931,13 @@ nav.tabs button.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
 
       <div class="set-card">
         <h3>🎛 版面</h3>
-        <p>今日主控台的卡片順序是你自己拖出來的，這裡可以復原成預設排列。</p>
+        <p>分頁與卡片的名稱、順序都是你自己改的。改到找不到某一頁的時候，按這裡全部還原成預設。</p>
         <div class="set-row">
-          <button class="btn ghost sm" id="resetBoard">重設今日版面</button>
+          <button class="btn ghost sm" id="resetBoard">重設版面與名稱</button>
         </div>
+        <p class="tiny" style="margin-top:8px">
+          小提醒：分頁名稱、左上角的「工作台」都是<b>連點兩下</b>就能改；
+          電腦上按住分頁右邊的 ⠿ 可以上下拖換順序。</p>
       </div>
 
       <div class="set-card">
@@ -1213,6 +1243,7 @@ let shownCount = PAGE_SIZE;
 let filter  = { client:'', type:'', prio:'', status:'open', range:'', repeat:'', q:'' };
 
 const DEFAULT_ORDER = ['clock','focus','quick','dayplan','routine','vitals','alerts'];
+const DEFAULT_TABS  = ['today','tasks','tools','clients','review','settings'];
 
 function saveLocal(){
   localStorage.setItem(LS.tasks, JSON.stringify(tasks));
@@ -1439,7 +1470,7 @@ async function initFirebase(interactive){
       const v = s.exists() ? s.val() : {};
       if (JSON.stringify(v) === JSON.stringify(ui)) return;
       // ui 現在也放工作類型與學過的對應，換裝置改過就要整頁重畫
-      ui = v; saveLocal(); renderBoardOrder(); renderCardTitles(); renderAll();
+      ui = v; saveLocal(); renderBoardOrder(); renderCardTitles(); renderTabOrder(); renderNames(); renderAll();
     });
     return true;
   }catch(e){
@@ -2938,13 +2969,22 @@ document.addEventListener('click', e => {
 
 /* ---------- 分頁與工作／個人切換 ---------- */
 function switchTab(name){
-  $$('nav.tabs button').forEach(x=>x.classList.toggle('on', x.dataset.tab===name));
+  $$('#tabNav .tb').forEach(x=>x.classList.toggle('on', x.dataset.tab===name));
   $$('.page').forEach(p=>p.classList.remove('on'));
   $(`#p-${name}`).classList.add('on');
   $('#fab').style.display = (name==='today' || name==='tasks') ? 'flex' : 'none';
   window.scrollTo({top:0, behavior:'smooth'});
 }
-$$('nav.tabs button').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
+$('#tabNav').addEventListener('click', e => {
+  const tb = e.target.closest('.tb'); if (!tb) return;
+  // 正在改名字的時候點到自己，不要順便捲回頁首
+  if (e.target.closest('[data-rename]')?.isContentEditable) return;
+  switchTab(tb.dataset.tab);
+});
+$('#tabNav').addEventListener('keydown', e => {
+  const tb = e.target.closest?.('.tb'); if (!tb || e.target.isContentEditable) return;
+  if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); switchTab(tb.dataset.tab); }
+});
 
 /* 復盤：翻週次與點開拖延的任務 */
 $('#rvPrev').onclick = () => { rvOffset--; renderReview(); };
@@ -3126,23 +3166,26 @@ $('#quickInput').onkeydown = e => {
 $('#fab').onclick = () => openTask(null);
 
 /* ---------- 今日主控台：拖曳排序 ---------- */
-function renderBoardOrder(){
-  const board = $('#board');
-  const saved = (ui.boardOrder && ui.boardOrder.length) ? ui.boardOrder : DEFAULT_ORDER;
-  const byId = Object.fromEntries($$('#board .tile').map(el=>[el.dataset.card, el]));
-  // 後來才加的卡片（存檔裡不會有它）要插回它在預設排列裡的位置，
-  // 不能一律接在最後面——不然新卡片永遠掉到版面最底下。
+/* 存檔裡沒有的項目（後來才加的卡片或分頁）要插回它在預設排列裡的位置，
+   不能一律接在最後面——不然新東西永遠掉到最底下。 */
+function mergeOrder(saved, def){
   const order = [...saved];
-  DEFAULT_ORDER.forEach((id, i) => {
+  def.forEach((id, i) => {
     if (order.includes(id)) return;
     let at = order.length;
     for (let j = i - 1; j >= 0; j--){
-      const k = order.indexOf(DEFAULT_ORDER[j]);
+      const k = order.indexOf(def[j]);
       if (k >= 0){ at = k + 1; break; }
     }
     order.splice(at, 0, id);
   });
-  [...new Set(order)].forEach(id => { if (byId[id]) board.appendChild(byId[id]); });
+  return [...new Set(order)];
+}
+function renderBoardOrder(){
+  const board = $('#board');
+  const saved = (ui.boardOrder && ui.boardOrder.length) ? ui.boardOrder : DEFAULT_ORDER;
+  const byId = Object.fromEntries($$('#board .tile').map(el=>[el.dataset.card, el]));
+  mergeOrder(saved, DEFAULT_ORDER).forEach(id => { if (byId[id]) board.appendChild(byId[id]); });
 }
 function saveBoardOrder(){
   ui.boardOrder = $$('#board .tile').map(el=>el.dataset.card);
@@ -3181,6 +3224,93 @@ $('#board').addEventListener('blur', e => {
   el.textContent = name;
   saveLocal(); push('ui', ui);
 }, true);
+/* ---------- 分頁：名稱可以自己改、順序可以自己拖 ---------- */
+/* 連點兩下就能改名（分頁名稱、左上角標題共用這一套）。
+   分頁不用 <button> 而用 <div class="tb">，因為 button 裡面的可編輯文字在瀏覽器上打不了字。 */
+const RENAME_DEF = {};   // 各處的原始名稱，第一次渲染時記下來，「重設版面」才有東西可以還原
+function renderNames(){
+  $$('[data-rename]').forEach(el => {
+    const k = el.dataset.rename;
+    if (!(k in RENAME_DEF)) RENAME_DEF[k] = el.textContent.trim();
+    const want = (ui.names && ui.names[k]) || RENAME_DEF[k];
+    if (el.textContent !== want) el.textContent = want;
+  });
+}
+document.addEventListener('dblclick', e => {
+  const el = e.target.closest('[data-rename]'); if (!el || el.isContentEditable) return;
+  el.contentEditable = 'true'; el.spellcheck = false; el.focus();
+  document.getSelection().selectAllChildren(el);
+});
+document.addEventListener('keydown', e => {
+  const el = e.target.closest?.('[data-rename]'); if (!el || !el.isContentEditable) return;
+  if (e.key === 'Enter'){ e.preventDefault(); el.blur(); }
+  if (e.key === 'Escape'){ renderNames(); el.blur(); }
+});
+document.addEventListener('blur', e => {
+  const el = e.target.closest?.('[data-rename]'); if (!el || !el.isContentEditable) return;
+  el.contentEditable = 'false';
+  const k = el.dataset.rename;
+  // 左側選單只有 178px 寬，分頁名稱留 8 個字，再長會被握把擠掉
+  const name = el.textContent.trim().slice(0, k.startsWith('tab.') ? 8 : 12);
+  if (!name){ renderNames(); return; }     // 清成空白就回到原本的名稱
+  ui.names = ui.names || {};
+  ui.names[k] = name;
+  el.textContent = name;
+  saveLocal(); push('ui', ui);
+}, true);
+
+function renderTabOrder(){
+  const nav = $('#tabNav');
+  const saved = (ui.tabOrder && ui.tabOrder.length) ? ui.tabOrder : DEFAULT_TABS;
+  const byId = Object.fromEntries($$('#tabNav .tb').map(el=>[el.dataset.tab, el]));
+  mergeOrder(saved, DEFAULT_TABS).forEach(id => { if (byId[id]) nav.appendChild(byId[id]); });
+}
+function saveTabOrder(){
+  ui.tabOrder = $$('#tabNav .tb').map(el=>el.dataset.tab);
+  saveLocal(); push('ui', ui);
+}
+/* 按住握把上下拖換順序。手機的握把是隱藏的，所以只有桌機拖得動 */
+function makeTabSortable(nav){
+  let el=null, ph=null, dy=0, pid=null;
+  nav.addEventListener('pointerdown', e => {
+    const h = e.target.closest('[data-tabdrag]'); if (!h) return;
+    el = h.closest('.tb'); if (!el) return;
+    e.preventDefault();
+    pid = e.pointerId; h.setPointerCapture(pid);
+    const r = el.getBoundingClientRect();
+    dy = e.clientY - r.top;
+    ph = document.createElement('div');
+    ph.className = 'tb-ph'; ph.style.height = r.height + 'px';
+    el.parentNode.insertBefore(ph, el);
+    el.classList.add('dragging');
+    Object.assign(el.style, { width:r.width+'px', height:r.height+'px', left:r.left+'px', top:r.top+'px' });
+  });
+  nav.addEventListener('pointermove', e => {
+    if (!el || e.pointerId !== pid) return;
+    e.preventDefault();
+    el.style.top = (e.clientY - dy) + 'px';
+    // 左側選單是單欄，用上下中線決定插在哪一格前面還後面
+    for (const o of $$('#tabNav .tb').filter(x => x !== el)){
+      const r = o.getBoundingClientRect();
+      if (e.clientY >= r.top && e.clientY <= r.bottom){
+        const after = (e.clientY - r.top) > r.height / 2;
+        o.parentNode.insertBefore(ph, after ? o.nextSibling : o);
+        break;
+      }
+    }
+  });
+  const end = e => {
+    if (!el || (pid !== null && e.pointerId !== pid)) return;
+    el.classList.remove('dragging');
+    el.style.cssText = '';
+    ph.parentNode.insertBefore(el, ph);
+    ph.remove(); ph = null; el = null; pid = null;
+    saveTabOrder();
+  };
+  nav.addEventListener('pointerup', end);
+  nav.addEventListener('pointercancel', end);
+}
+
 function makeSortable(board){
   let el=null, ph=null, dx=0, dy=0, pid=null;
   board.addEventListener('pointerdown', e => {
@@ -3225,8 +3355,11 @@ function makeSortable(board){
   board.addEventListener('pointercancel', end);
 }
 $('#resetBoard').onclick = () => {
-  ui.boardOrder = DEFAULT_ORDER.slice(); ui.cardTitles = {}; saveLocal(); push('ui', ui);
-  renderBoardOrder(); renderCardTitles(); toast('版面與標題已復原');
+  ui.boardOrder = DEFAULT_ORDER.slice(); ui.cardTitles = {};
+  ui.tabOrder   = DEFAULT_TABS.slice();  ui.names      = {};
+  saveLocal(); push('ui', ui);
+  renderBoardOrder(); renderCardTitles(); renderTabOrder(); renderNames();
+  toast('版面與名稱已復原');
 };
 
 /* ---------- 設定頁：工作類型 ---------- */
@@ -3511,7 +3644,8 @@ function showApp(){
   renderClock(); setInterval(renderClock, 1000);
   setInterval(()=>{ renderGreetNote(); renderAlerts(); }, 60000);
   renderTools(); renderBoardOrder(); renderCardTitles();
-  makeSortable($('#board'));
+  renderTabOrder(); renderNames();
+  makeSortable($('#board')); makeTabSortable($('#tabNav'));
   makeCardSortable($('#boardView')); makeCardSortable($('#dayPlan'));
   makeClientSortable($('#clientList'));
   renderAll();
