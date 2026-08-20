@@ -13,7 +13,7 @@ import { makeDb } from './firebase.js';
 import { classify } from './classify.js';
 import { parseDue, todayStr } from './date.js';
 import { addMoney } from './money.js';
-import { makeReport } from './report.js';
+import { queueReport } from './report.js';
 
 export default {
   async fetch(request, env, ctx){
@@ -70,18 +70,10 @@ async function handleEvent(ev, env){
       await lineReply(ev.replyToken, await addMoney(text, env, makeDb(env, env.MN_ROOM)), env);
       return;
     }
-    // 「漁三回報」「回報 優逸」→ 跑廣告回報。要抓數字還要寫分析，20–30 秒跑不完，
-    // 所以先回一句，好了再用 push 推第二則（LINE 的 replyToken 只能用一次）
+    // 「漁三回報」「回報 優逸」→ 排一筆待辦，由她的 Mac 跑完再推回來
+    // （分析要 AI，Worker 自己做就得另外接付費 API，所以交給電腦上現成的 Claude Code）
     if (isReport(text)){
-      await lineReply(ev.replyToken, '📊 收到，正在跑' + reportTargetLabel(text) + '的廣告回報，大約 20-30 秒', env);
-      let out;
-      try {
-        out = await makeReport(text, env, makeDb(env));
-      } catch (err){
-        console.log('回報出錯：', err && err.message);
-        out = '⚠️ 回報沒跑成功：' + (err && err.message ? err.message : '未知錯誤');
-      }
-      await linePush(out, env);
+      await lineReply(ev.replyToken, await queueReport(text, env, makeDb(env)), env);
       return;
     }
     await lineReply(ev.replyToken, await addTask(text, env), env);

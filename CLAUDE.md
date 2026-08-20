@@ -173,6 +173,12 @@ Node.js 透過 nvm 安裝，路徑：`/Users/angela/.nvm/versions/node/v24.15.0/
   改網頁那邊的規則時，這裡要一起改，不會自動同步
 - **不自動建新客戶**：認不出客戶只在回覆裡提一句，由朱兒到工作台決定（免得 LINE 隨手打字長出假客戶）
 - **不寫 `ui.learn`**：學習只走網頁那邊，小秘書只讀
+- **廣告回報（2026-08-20 加）**：打「漁三回報」「回報 優逸」→ 小秘書記一筆待辦 →
+  **Mac 上的 `dora-report-runner.py`（launchd 每分鐘）叫 `claude -p` 跑完推回 LINE**，
+  約 1-2 分鐘。分析要 AI，所以用她現成的 Claude Code 當引擎，**不另外接付費 API**。
+  Mac 沒開機就不會跑（超過 6 小時的待辦作廢）。
+  各家規格走 `scripts/sync-report-spec.py` 從客戶檔同步到工作台的 `clients/{id}.rpt`。
+  **帶日期的句子一律當任務**，不會誤觸發
 - **Worker 跑在 UTC**：`date.js` 一律先加 8 小時算台灣時間
 - **本機測 webhook 要帶 User-Agent**：不帶會被 Cloudflare 擋成 403，不是程式壞掉
 

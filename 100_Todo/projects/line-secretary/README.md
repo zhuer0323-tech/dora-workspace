@@ -106,28 +106,47 @@ curl -X PUT https://api.line.me/v2/bot/channel/webhook/endpoint \
 
 ## 廣告回報（2026-08-20 加）
 
-在 LINE 打「漁三回報」「回報 優逸」→ 抓走期內的數字、看素材文案、寫分析 →
-回一則可以直接轉傳給客戶的成效回報。
+在 LINE 打「漁三回報」「回報 優逸」→ 約 1-2 分鐘後推回一則可以直接轉傳給客戶的成效回報。
 
-- **怎麼認得要跑回報**：句子**以「回報」開頭或結尾**才算。
-  **帶日期的一律當任務**（「8/20 漁三 廣告回報」是要排一件事，不是現在跑數字）
-- **會分兩則回**：先回一句「收到，正在跑」（LINE 的 replyToken 只能用一次，
-  而且規定 10 秒內要回），跑完再用 push 推第二則
-- **規格哪裡來**：工作台 `clients/{id}.rpt`，由 `scripts/sync-report-spec.py`
-  從 `200_Reference/clients/*.md` 的「回報規格」段落同步上來。
-  **改規格要改客戶檔再跑一次同步**，不要直接改雲端
-- **新客戶要能跑回報**：在 `sync-report-spec.py` 的 `FEEDS` 加一筆
-  （廣告帳戶、活動名稱開頭、要排除哪些別家的活動），再跑一次同步
-- **數字怎麼抓**：`act_X/insights`（ad 層一次撈齊、campaign 層拿去重觸及）
-  ＋ `act_X/ads` 拿目前 ACTIVE 的素材與文案。
-  查進行中的素材**不能篩有花錢的**，剛開的新素材會漏掉
-- **分析交給 Claude 寫**（`claude-opus-5`）：每家格式都不一樣，寫死在程式裡會變成
-  每家一套 if；而且素材面分析要讀文案才寫得出來
-- **成本一律不進客戶版**——這條寫在 `report.js` 的 SYSTEM 提示裡
+### 為什麼分兩段跑
 
-### 這條路要的兩把鑰匙
-```bash
-npx wrangler secret put META_TOKEN          # 廣告帳戶（跟每日日報同一把，會過期）
-npx wrangler secret put ANTHROPIC_API_KEY   # 分析用，console.anthropic.com 申請
+回報要抓數字、讀素材文案、照各家規格排版、還要寫分析。**分析那段要 AI**，
+Worker 自己做就得另外接一個付費 API。朱兒不想多一個服務，所以改成
+**她的 Mac 當引擎**——那邊已經有 Claude Code（現成的訂閱）與廣告帳戶權限。
+
 ```
-鑰匙過期或沒設，LINE 會回一句講清楚是哪一把，不會默默失敗。
+LINE 打「漁三回報」
+  → Worker 認出客戶、在工作台記一筆 reportJobs/{id}，回一句「收到」
+  → Mac 上的 dora-report-runner.py（launchd 每分鐘跑一次）看到待辦
+  → 叫 claude -p 跑（自己走「廣告回報」skill、抓數字、寫分析）
+  → 推回 LINE、把待辦標成 done
+```
+
+- **Mac 沒開機就不會跑**。開機後會補跑，但**超過 6 小時的待辦直接作廢**
+  （那天的數字她也不要了）
+- **一次只跑一筆**（`/tmp/dora-report-runner.lock`），上一筆還在跑就跳過這一分鐘
+- 跑完的待辦留一週自動清掉
+
+### 怎麼認得要跑回報
+
+句子**以「回報」開頭或結尾**才算。**帶日期的一律當任務**
+（「8/20 漁三 廣告回報」是要排一件事，不是現在跑數字）。
+
+### 規格哪裡來
+
+工作台 `clients/{id}.rpt`，由 `scripts/sync-report-spec.py` 從
+`200_Reference/clients/*.md` 的「回報規格」段落同步上來。
+**改規格要改客戶檔再跑一次同步**，不要直接改雲端。
+新客戶要能跑回報：在 `sync-report-spec.py` 的 `FEEDS` 加一筆再同步。
+
+### Mac 那端
+
+- **程式**：`~/Library/Scripts/dora-report-runner.py`（repo 備份在 `scripts/`）
+- **排程**：`~/Library/LaunchAgents/com.dora.report-runner.plist`（每 60 秒）
+- **憑證**：沿用 `~/Library/Scripts/dora.env` 的 `WS_*` 與 LINE token
+- **給 Claude 的權限**只開讀檔、查廣告數字、跑 python 腳本；
+  **不給寫檔與推播**——推播由 runner 自己做，AI 不能亂推
+- 卡住看 `/tmp/dora-report-runner.log` 與 `-err.log`
+
+> Worker 這邊**不需要** META_TOKEN 與 ANTHROPIC_API_KEY（2026-08-20 架構改過，
+> 抓數字與分析都在 Mac 上做）。
