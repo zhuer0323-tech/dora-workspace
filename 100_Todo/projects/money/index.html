@@ -20,6 +20,7 @@
   --ink:#5B3C46; --ink2:#8C6B76; --ink3:#B79AA4;
   --line:#F6DCE4;
   --ok:#6FC79A; --warn:#F0A24B; --bad:#E05263;
+  --bar:#D95C86; --bar-on:#B03A63;   /* 柱狀圖：對白底 3.6:1，跟粉色系同一家 */
   --shadow:0 2px 10px rgba(232,150,178,.13);
   --shadow-l:0 6px 22px rgba(232,150,178,.20);
   --r:18px;
@@ -161,6 +162,32 @@ header.top h1 .sub{font-size:12px;color:var(--ink3);font-weight:400;margin-left:
 .rrow .l .pct{color:var(--ink3);font-size:12px;font-weight:400}
 .rbar{height:9px;border-radius:99px;background:var(--pink-xl);overflow:hidden}
 .rbar i{display:block;height:100%;border-radius:99px;transition:width .35s}
+/* 柱狀圖：一根一天（或一個月）。單一組資料所以不用圖例，標題就說明了它是什麼 */
+.bars{position:relative;display:flex;align-items:flex-end;gap:2px;height:104px;
+  border-bottom:1px solid var(--line);padding-top:16px}
+.bars .b{flex:1;min-width:0;display:flex;align-items:flex-end;height:100%;cursor:pointer}
+.bars .b i{display:block;width:100%;background:var(--bar);border-radius:4px 4px 0 0;min-height:2px;
+  transition:background .15s}
+.bars .b.on i{background:var(--bar-on)}
+.bars .b.none i{background:var(--pink-l)}
+.bars .avg{position:absolute;left:0;right:0;border-top:1px dashed var(--ink3);opacity:.45;pointer-events:none}
+.bars .avgtag{position:absolute;right:0;transform:translateY(-100%);font-size:10px;color:var(--ink3);
+  background:#fff;padding:0 3px;pointer-events:none}
+.barx{display:flex;gap:2px;margin-top:5px}
+/* 每根柱子只有 9px 寬，兩位數字放不下。旁邊那格是空的，讓它溢出去反而剛好置中 */
+.barx span{flex:1;min-width:0;text-align:center;font-size:10px;color:var(--ink3);
+  overflow:visible;white-space:nowrap}
+.bartip{margin-top:7px;font-size:12.5px;color:var(--ink2);min-height:19px}
+.bartip b{font-weight:700;color:var(--ink)}
+
+/* 固定 vs 可以控制的：兩塊而已，這種才適合用一條分割條 */
+.split{display:flex;gap:2px;height:20px;border-radius:7px;overflow:hidden;margin-bottom:6px}
+.split i{display:block;height:100%}
+.splitlab{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;
+  color:var(--ink2);margin-bottom:13px}
+.splitlab .k{display:inline-flex;align-items:center;gap:5px}
+.splitlab .k i{width:8px;height:8px;border-radius:2px;display:inline-block}
+
 .empty{color:var(--ink3);font-size:13px;text-align:center;padding:16px 0}
 
 /* ---------- 明細 ---------- */
@@ -336,8 +363,17 @@ header.top h1 .sub{font-size:12px;color:var(--ink3);font-weight:400;margin-left:
     <div class="track" style="height:10px;margin-top:10px"><i id="sLeftFill" style="width:0"></i></div>
   </div>
 
+  <div class="card" id="cardBars">
+    <h2 id="sBarTitle">每天花多少</h2>
+    <div class="bars" id="sBars"></div>
+    <div class="barx" id="sBarX"></div>
+    <div class="bartip" id="sBarTip"></div>
+  </div>
+
   <div class="card">
     <h2><span id="sRankTitle">錢花到哪去</span> <span class="tiny" id="sOutTot"></span></h2>
+    <div class="tiny" id="sVsPrev" style="margin:-6px 0 10px"></div>
+    <div id="sSplitWrap"></div>
     <div class="rank" id="sRank"></div>
   </div>
 
@@ -507,8 +543,20 @@ const defSettings = () => ({
   cats:DEF_OUT.slice(), catsIn:DEF_IN.slice(),
   accs:DEF_ACCS.map(a => ({...a}))
 });
-const PALETTE = ['#F48FB1','#7FB6E0','#FFB86B','#6FC79A','#9C8FD8',
-                 '#E9A6C0','#7FD1C4','#F0C36A','#B0A8E6','#8FC7A0','#E58A7B','#8FB4D9'];
+/* 分類顏色。這十色是跑色盲模擬選出來的，兩兩之間在紅綠色弱與一般視覺下都分得開
+   （全配對 CVD ΔE 8.4、一般視覺 ΔE 15.4，都在門檻之上）。
+   原本那組有兩個綠、兩個紫、兩個橘，紅綠色弱的人看「醫療」跟「人情」幾乎一樣。
+   ⚠️ 顏色綁在**分類名稱**上，不是綁在它排第幾個——
+   不然刪掉一個分類，後面每一類的顏色都會跟著換人 */
+const PALETTE = ['#1874ed','#d4a22a','#b4065f','#28c2be','#96a4f6',
+                 '#60974d','#f86680','#773ac1','#934f00','#a96caf'];
+const CAT_COLORS = {
+  固定支出:'#773ac1', 飲食:'#f86680', 交通:'#1874ed', 日用:'#28c2be', 娛樂:'#d4a22a',
+  醫療:'#60974d', 人情:'#b4065f', 治裝:'#a96caf', 學習:'#96a4f6', 其他:'#934f00',
+  薪水:'#60974d', 獎金:'#d4a22a', 接案:'#1874ed',
+};
+const BAR_COLOR = '#D95C86';        // 柱狀圖單色，對白底 3.6:1
+const BAR_COLOR_ON = '#B03A63';     // 點到的那一根
 
 /* ---------- 狀態 ---------- */
 let items = {};    // id -> {d,amt,cat,note,kind,inv,ts,acc}／轉帳是 {kind:'tr',from,to}
@@ -571,12 +619,12 @@ function accBalances(){
   return bal;
 }
 
-function catColor(name,k){
-  const isIn = k==='in';
-  const list = isIn ? settings.catsIn : settings.cats;
-  const i = list.indexOf(name);
-  // 收入的顏色往後挪 6 格，才不會跟支出撞色（例如接案跟日用都變橘的）
-  return PALETTE[((i<0 ? list.length : i) + (isIn ? 6 : 0)) % PALETTE.length];
+function catColor(name){
+  if(CAT_COLORS[name]) return CAT_COLORS[name];
+  // 她自己加的分類：照名字算出一個固定的顏色，改名以外都不會變
+  let h = 0;
+  for(const ch of String(name||'')) h = (h*31 + ch.charCodeAt(0)) % 100000;
+  return PALETTE[h % PALETTE.length];
 }
 function toast(t){
   const el=$('#toast'); el.textContent=t; el.classList.add('on');
@@ -703,7 +751,7 @@ function renderCats(){
     if(!list.includes(cat)) cat = list[0] || '';
     $('#catBox').innerHTML = list.map(c =>
       `<button data-cat="${esc(c)}" class="${c===cat?'on':''}">
-         <i class="cdot" style="background:${catColor(c,kind)}"></i>${esc(c)}</button>`).join('');
+         <i class="cdot" style="background:${catColor(c)}"></i>${esc(c)}</button>`).join('');
   }
   renderAccs();
 }
@@ -792,14 +840,18 @@ function renderSum(){
     f.className = left<0 ? 'over' : pct>=80 ? 'warn' : '';
   }
 
+  renderBars(p);
+
   // 2 錢花到哪去
   $('#sOutTot').textContent = s.out ? `共 ${money(s.out)}` : '';
+  $('#sVsPrev').textContent = s.out ? prevCompare(p, s.out) : '';
+  renderSplit(s);
   const rows = Object.entries(s.byCat).sort((a,b)=>b[1]-a[1]);
   $('#sRank').innerHTML = rows.length ? rows.map(([c,v])=>{
     const pct = s.out ? v/s.out*100 : 0;
     return `<div class="rrow" data-cat="${esc(c)}">
       <div class="l"><b>${esc(c)}</b><span>${money(v)} <span class="pct">${pct.toFixed(0)}%</span></span></div>
-      <div class="rbar"><i style="width:${pct}%;background:${catColor(c,'out')}"></i></div>
+      <div class="rbar"><i style="width:${pct}%;background:${catColor(c)}"></i></div>
     </div>`;
   }).join('') : `<div class="empty">${p.word}還沒有支出</div>`;
 
@@ -817,6 +869,114 @@ function renderSum(){
       `收入 ${money(s.inc)} － 支出 ${money(s.out)}　·　目標 ${money(goal)}，達成 ${pct.toFixed(0)}%`;
     const f = $('#sSaveFill'); f.style.width = pct+'%'; f.className = pct>=100 ? 'ok' : '';
   }
+}
+
+/* 柱狀圖的資料：週＝七天、月＝當月每一天、年＝十二個月 */
+function barBuckets(p){
+  // 不算固定支出：房租在 1 號一筆一萬多，會把其他每天的幾百塊壓成一條線，
+  // 整張圖只剩「1 號很高」這個每個月都一樣的廢資訊。固定那塊交給上面的分割條講
+  const list = rangeItems(p.a, p.b)
+    .filter(it => it.kind !== 'in' && it.kind !== 'tr' && (it.cat||'') !== '固定支出');
+  const sum = {};
+  list.forEach(it => { const k = rg==='y' ? (it.d||'').slice(0,7) : it.d;
+                       sum[k] = (sum[k]||0) + (Number(it.amt)||0); });
+  const out = [];
+  if(rg === 'y'){
+    const y = p.a.slice(0,4);
+    for(let m=1;m<=12;m++){
+      const k = `${y}-${pad2(m)}`;
+      out.push({ k, v: sum[k]||0, lab: `${m}`, full: `${y} 年 ${m} 月` });
+    }
+  }else{
+    const n = rg==='w' ? 7 : lastDay(p.a.slice(0,7));
+    for(let i=0;i<n;i++){
+      const k = ymdShift(p.a, i);
+      const w = ['日','一','二','三','四','五','六'][new Date(k+'T00:00:00').getDay()];
+      out.push({ k, v: sum[k]||0,
+                 lab: rg==='w' ? w : String(Number(k.slice(8,10))),
+                 full: `${Number(k.slice(5,7))}/${Number(k.slice(8,10))}（${w}）` });
+    }
+  }
+  return out;
+}
+
+function renderBars(p){
+  const rows = barBuckets(p);
+  const max = Math.max(...rows.map(r => r.v), 0);
+  const spent = rows.filter(r => r.v > 0);
+  $('#sBarTitle').innerHTML = (rg==='y' ? '每個月花多少' : '每天花多少')
+    + ' <span class="tiny" style="font-weight:400">不含固定支出</span>';
+
+  if(!max){
+    $('#sBars').innerHTML = `<div class="empty" style="flex:1">${p.word}還沒有支出</div>`;
+    $('#sBarX').innerHTML = ''; $('#sBarTip').textContent = '';
+    return;
+  }
+  // 平均只算「有花錢的那幾天」，不然一堆 0 會把平均壓到看不出意義
+  const avg = spent.reduce((a,b)=>a+b.v,0) / spent.length;
+  const today_ = today();
+  $('#sBars').innerHTML =
+    rows.map((r,i) => `<div class="b${r.v?'':' none'}${r.k===today_?' istoday':''}" data-i="${i}"
+        title="${esc(r.full)} ${money(r.v)}">
+        <i style="height:${r.v ? Math.max(2, r.v/max*100) : 2}%"></i></div>`).join('') +
+    `<div class="avg" style="bottom:${avg/max*(100-16)}%"></div>
+     <div class="avgtag" style="bottom:${avg/max*(100-16)}%">平均 ${money(avg)}</div>`;
+
+  // x 軸標籤：月檢視三十幾根全標會糊成一團，只標 1、5、10…跟最後一天
+  $('#sBarX').innerHTML = rows.map((r,i) => {
+    let show = true;
+    if(rg === 'm'){ const d = Number(r.k.slice(8,10)); show = d===1 || d%5===0; }
+    return `<span>${show ? esc(r.lab) : ''}</span>`;
+  }).join('');
+
+  const top = rows.reduce((a,b)=> b.v>a.v ? b : a, rows[0]);
+  $('#sBarTip').innerHTML = `最高的是 <b>${esc(top.full)} ${money(top.v)}</b>`
+    + `　·　點一根看${rg==='y' ? '那個月' : '那天'}`;
+}
+
+/* 固定支出 vs 可以控制的。只有兩塊，這種才適合分割條 */
+function renderSplit(sum){
+  const box = $('#sSplitWrap');
+  const fixed = sum.byCat['固定支出'] || 0;
+  if(!sum.out || !settings.cats.includes('固定支出') || !fixed){ box.innerHTML = ''; return; }
+  const free = sum.out - fixed;
+  const fp = fixed/sum.out*100;
+  box.innerHTML = `
+    <div class="split">
+      <i style="width:${fp}%;background:${catColor('固定支出')}"></i>
+      <i style="width:${100-fp}%;background:var(--bar)"></i>
+    </div>
+    <div class="splitlab">
+      <span class="k"><i style="background:${catColor('固定支出')}"></i>固定 ${money(fixed)}（${fp.toFixed(0)}%）</span>
+      <span class="k"><i style="background:var(--bar)"></i>可以控制的 ${money(free)}（${(100-fp).toFixed(0)}%）</span>
+    </div>`;
+}
+
+/* 跟上一期比。注意：這個月才過一半，要跟上個月「同樣過一半」的時候比，
+   拿半個月去比人家整個月，數字會好看得莫名其妙 */
+function prevCompare(p, out){
+  const t = today();
+  let pa, pb;
+  if(rg === 'w'){
+    pa = ymdShift(p.a, -7);
+    pb = p.b >= t ? ymdShift(t, -7) : ymdShift(p.b, -7);
+  }else if(rg === 'y'){
+    const y = Number(p.a.slice(0,4)) - 1;
+    pa = `${y}-01-01`;
+    pb = p.b >= t ? `${y}${t.slice(4)}` : `${y}-12-31`;
+  }else{
+    const pm = ymShift(p.a.slice(0,7), -1);
+    pa = `${pm}-01`;
+    const dayCap = p.b >= t ? Number(t.slice(8,10)) : lastDay(p.a.slice(0,7));
+    pb = `${pm}-${pad2(Math.min(dayCap, lastDay(pm)))}`;
+  }
+  const prev = sumOf(rangeItems(pa, pb)).out;
+  if(!prev) return '';
+  const diff = (out - prev) / prev * 100;
+  const word = rg==='w' ? '上週' : rg==='y' ? '去年' : '上個月';
+  const same = p.b >= t ? '同期' : '';
+  if(Math.abs(diff) < 1) return `跟${word}${same}差不多`;
+  return `比${word}${same}${diff>0 ? '多' : '少'}花 ${Math.abs(diff).toFixed(0)}%`;
 }
 
 /* 年檢視算平均時，只算「有紀錄的月份」，一月就開始記跟十二月才開始記不能用同一個分母 */
@@ -904,7 +1064,7 @@ function itemRow(it){
   const isIn = it.kind==='in';
   const sub = [it.note || (it.inv ? '發票 '+it.inv : ''), accName(it.acc)].filter(Boolean).join('　·　');
   return `<div class="item" data-id="${it.id}">
-    <i class="cdot" style="background:${catColor(it.cat, isIn?'in':'out')}"></i>
+    <i class="cdot" style="background:${catColor(it.cat)}"></i>
     <div class="nm"><b>${esc(it.cat||'其他')}</b>
       ${sub ? `<span class="n2">${esc(sub)}</span>` : ''}</div>
     <div class="amt ${isIn?'in':''}">${isIn?'+':''}${money(it.amt)}</div>
@@ -1059,6 +1219,42 @@ $('#eDel').onclick = () => {
 };
 
 /* ---------- 分類明細（總覽點橫條） ---------- */
+$('#sBars').onclick = e => {
+  const b = e.target.closest('.b[data-i]'); if(!b) return;
+  const rows = barBuckets(period());
+  const r = rows[+b.dataset.i]; if(!r) return;
+  $$('#sBars .b').forEach(x => x.classList.toggle('on', x===b));
+  $('#sBarTip').innerHTML = r.v
+    ? `<b>${esc(r.full)}　${money(r.v)}</b>　·　再點一下看每一筆`
+    : `${esc(r.full)}　沒有花錢`;
+  if(r.v && b.classList.contains('was')){ openDay(r); return; }
+  $$('#sBars .b').forEach(x => x.classList.remove('was'));
+  b.classList.add('was');
+};
+/* 點兩下某一天 → 開那天的明細（沿用分類明細那個視窗） */
+function openDay(r){
+  // 年檢視點的是一個月，日檢視點的是一天；一樣不算固定支出，
+  // 口徑要跟柱狀圖一致，不然點進去金額對不起來
+  const a = rg==='y' ? `${r.k}-01` : r.k;
+  const b = rg==='y' ? `${r.k}-31` : r.k;
+  const list = rangeItems(a, b)
+    .filter(it => it.kind!=='in' && it.kind!=='tr' && (it.cat||'') !== '固定支出')
+    .sort((x,y) => (y.d===x.d ? (y.ts||0)-(x.ts||0) : (y.d>x.d?1:-1)));
+  $('#cTitle').innerHTML = `${esc(r.full)}　<span class="tiny">共 ${money(r.v)}（不含固定支出）</span>
+    <button class="x" data-close>✕</button>`;
+  $('#cBox').innerHTML = list.map(it => {
+    const sub = [rg==='y' ? `${Number(it.d.slice(5,7))}/${Number(it.d.slice(8,10))}` : '',
+                 it.note || '', accName(it.acc)].filter(Boolean).join('　·　');
+    return `<div class="item" data-id="${it.id}">
+       <i class="cdot" style="background:${catColor(it.cat)}"></i>
+       <div class="nm"><b>${esc(it.cat||'其他')}</b>
+         ${sub ? `<span class="n2">${esc(sub)}</span>` : ''}</div>
+       <div class="amt">${money(it.amt)}</div>
+     </div>`;
+  }).join('') || '<div class="empty">沒有紀錄</div>';
+  openM('#mCat');
+}
+
 $('#sRank').onclick = e => {
   const r = e.target.closest('.rrow[data-cat]'); if(!r) return;
   catModalKey = r.dataset.cat;
@@ -1071,7 +1267,7 @@ $('#sRank').onclick = e => {
     <button class="x" data-close>✕</button>`;
   $('#cBox').innerHTML = list.length ? list.map(it =>
     `<div class="item" data-id="${it.id}">
-       <i class="cdot" style="background:${catColor(it.cat,'out')}"></i>
+       <i class="cdot" style="background:${catColor(it.cat)}"></i>
        <div class="nm"><b>${Number(it.d.slice(5,7))}/${Number(it.d.slice(8,10))}</b>
          ${it.note||it.inv ? `<span class="n2">${esc(it.note || ('發票 '+it.inv))}</span>` : ''}</div>
        <div class="amt">${money(it.amt)}</div>
@@ -1118,7 +1314,7 @@ function accUsed(id){
 function renderSetCats(){
   const draw = (list,k) => list.map(c =>
     `<span class="chip" data-k="${k}" data-c="${esc(c)}">
-       <i class="cdot" style="width:8px;height:8px;border-radius:99px;display:inline-block;background:${catColor(c,k)}"></i>
+       <i class="cdot" style="width:8px;height:8px;border-radius:99px;display:inline-block;background:${catColor(c)}"></i>
        <span class="nm">${esc(c)}</span><button data-del>✕</button></span>`).join('');
   $('#setCatsOut').innerHTML = draw(settings.cats,'out');
   $('#setCatsIn').innerHTML  = draw(settings.catsIn,'in');
