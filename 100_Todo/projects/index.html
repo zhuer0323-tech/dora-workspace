@@ -1086,7 +1086,7 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
     </div>
     <div class="f"><label>廣告回報日<span class="tiny" style="font-weight:400;margin-left:6px">當天早上 9:00 提醒</span></label>
       <div class="seg" id="cmWk">
-        <button data-v="">不用</button><button data-v="3">週三</button><button data-v="4">週四</button>
+        <button data-v="">不用</button><button data-v="3">週三</button><button data-v="4">週四</button><button data-v="5">週五</button>
       </div>
     </div>
     <div class="f"><label>認字關鍵字</label>
@@ -2805,12 +2805,12 @@ $('#cmLogoDel').onclick = () => { cmLogo = ''; renderLogoPrev(); };
 $('#cmName').oninput = renderLogoPrev;
 $('#cmShort').oninput = renderLogoPrev;
 
-/* 廣告回報日：'' 不用／'3' 週三／'4' 週四。
+/* 廣告回報日：'' 不用／'3' 週三／'4' 週四／'5' 週五。
    2026-08-19 之前存的是布林 true（＝每週三），這裡一律轉成 '3'，不用另外搬移 */
 const wkOf = c => {
   const v = c?.wk;
   if (v === true) return '3';
-  return ['3','4'].includes(String(v)) ? String(v) : '';
+  return ['3','4','5'].includes(String(v)) ? String(v) : '';
 };
 
 /* ---------- 專案走期（可以好幾期，長期約用） ----------

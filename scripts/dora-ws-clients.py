@@ -20,8 +20,8 @@ from urllib.request import Request, urlopen
 
 ENV = os.path.expanduser('~/Library/Scripts/dora.env')
 
-# 廣告回報日：'' 不用／'3' 週三／'4' 週四。2026-08-19 前存的是布林 True（＝每週三）
-WKNAME = {'3': '週三', '4': '週四'}
+# 廣告回報日：'' 不用／'3' 週三／'4' 週四／'5' 週五。2026-08-19 前存的是布林 True（＝每週三）
+WKNAME = {'3': '週三', '4': '週四', '5': '週五'}
 
 
 def wk_of(c):
