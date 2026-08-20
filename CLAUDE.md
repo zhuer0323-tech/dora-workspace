@@ -186,7 +186,13 @@ Node.js 透過 nvm 安裝，路徑：`/Users/angela/.nvm/versions/node/v24.15.0/
 - **原始檔**：`100_Todo/projects/money/index.html`（單一檔案，push main 就自動部署）
   ＋ 自己的 `manifest.webmanifest`／`sw.js`／圖示（粉底白錢包，跟工作台的花圖示分得出來）
 - **資料**：Firebase 同一個專案 `busan-trip-2026-201f8` → **`mn_x3f9b6qz`** 節點，
-  規則一樣綁 `zhuer0323@gmail.com`；設定說明在 `100_Todo/plans/2026-08-19-記帳-Firebase設定.md`
+  規則一樣綁 `zhuer0323@gmail.com`（**2026-08-20 已寫入**，朱兒不用手動貼）；
+  說明在 `100_Todo/plans/2026-08-19-記帳-Firebase設定.md`
+- 💡 **Firebase 規則可以用服務帳號金鑰直接改，不用開後台**：
+  `GET/PUT https://<db>/.settings/rules.json`，帶 SA 換來的 OAuth token（scope 要有
+  `firebase.database`）。金鑰在 `~/Library/Scripts/dora-workspace-sa.json`。
+  **改之前一定要先讀下來備份，改完再讀回來逐段比對**——這份規則是所有 App 共用的
+  （工作台、釜山、會議報告、禾言都在裡面），弄壞一段全部一起掛
 
 ### 內容
 - **三個分頁**（底部），預設開在「記一筆」
