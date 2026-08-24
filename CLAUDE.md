@@ -159,8 +159,27 @@ Node.js 透過 nvm 安裝，路徑：`/Users/angela/.nvm/versions/node/v24.15.0/
 - **憑證**：沿用 `dora.env` 的 `WS_*` 與 LINE token；腳本必須放 `~/Library/Scripts/`（TCC）
 
 ### 廣告日報（2026-08-23 大改版）
-每天 9:00（昨日）與 17:00（今日截至目前）推的紫色卡片，腳本 `~/Library/Scripts/dora-ads-anomaly.sh`
-（repo 備份在 `scripts/`，兩邊要同步；改版前的舊版留在 `.bak-20260823`）。
+每天 9:00（昨日）與 17:00（今日截至目前）推的紫色卡片。
+進入點 `~/Library/Scripts/dora-ads-anomaly.sh`（launchd 指向的檔名不動），
+**程式在 `dora-ads-daily.py`**；repo 備份在 `scripts/`，兩邊要同步。
+舊版留在 `.bak-20260823`（只認四家的原版）與 `.bak-graph-20260823`（純 Graph 版）。
+
+⚠️ **她的 Meta 開發人員帳號已停權**（2026-08-23 查到，違反開放平台使用條款 7.e.i.2）：
+Graph API Explorer 與 App 後台都進不去，**8/30 token 到期後沒辦法再產生新的**。
+申訴頁 `developers.facebook.com/account_status/disputes/`，**表單她自己填，不代填不代送**。
+廣告帳戶、投放、Ads Manager 都不受影響。
+
+- **抓數字兩條路，先 token 後 Claude**：
+  `fetch_via_graph()` 打 Graph API（十幾秒、不吃額度，但 8/30 後會死）→ 失敗才
+  `fetch_via_claude()` 叫 `claude -p` 用 claude.ai 的 Meta Ads 連線（約 70 秒，
+  **吃 Claude 用量額度**，跟廣告回報同一個池子；2026-08-23 實測時撞到月額度上限）。
+  用第二條時卡片底部會標「token 失效，這次是用 Claude 抓的」。
+  **Claude 只搬數字**（呼叫 ads 工具、寫 JSON 檔），版面與推播都由 Python 做
+- ⚠️ **成果類型以「活動目標」為準，不是看哪個 action 有數字**
+  （訊息廣告歸因到一筆購買，整家會被誤判成銷售）
+- ⚠️ **走期累計要照每一家自己的走期起日切**（抓數字從所有客戶最早那天開始抓，
+  不切的話走期晚開始的那家會多算，漁三一度算成 108%）
+- **快結束提醒（`dora-campaign-end-checker.sh`）還沒改雙路徑，8/30 後會停**
 
 - **列誰的規則只有一條：今天在走期內 ＋ 當天有花費**。
   走期是朱兒自己在工作台填的，等於「這案子我在跑」的現成標記——
