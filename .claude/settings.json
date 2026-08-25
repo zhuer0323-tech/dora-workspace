@@ -5,7 +5,7 @@
       "Bash(npm --version)",
       "Bash(gem list:*)",
       "Read(//usr/local/bin/**)",
-      "Read(//Users/angela/.rbenv/shims/**)",
+      "Read(//Users/zhuer/.rbenv/shims/**)",
       "Bash(mux)",
       "Bash(tmuxinator)",
       "Bash(tmux -V)",
@@ -44,7 +44,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash /Users/angela/Downloads/Dora專屬/000_Agent/hooks/inject-context.sh"
+            "command": "bash $HOME/Downloads/Dora專屬/000_Agent/hooks/inject-context.sh"
           }
         ]
       }
@@ -54,7 +54,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash /Users/angela/Downloads/Dora專屬/000_Agent/hooks/save-snapshot.sh"
+            "command": "bash $HOME/Downloads/Dora專屬/000_Agent/hooks/save-snapshot.sh"
           }
         ]
       }
@@ -64,7 +64,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash /Users/angela/Downloads/Dora專屬/000_Agent/hooks/write-session-end.sh"
+            "command": "bash $HOME/Downloads/Dora專屬/000_Agent/hooks/write-session-end.sh"
           }
         ]
       }
