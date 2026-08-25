@@ -7,7 +7,7 @@
 launchd 每分鐘叫一次。沒有待辦就直接結束，什麼都不做。
 腳本必須放在 ~/Library/Scripts/，放 ~/Downloads 會被 macOS TCC 擋。
 """
-import base64, json, os, subprocess, sys, tempfile, time
+import base64, json, os, re, subprocess, sys, tempfile, time
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
@@ -17,6 +17,7 @@ WORKDIR = '/Users/angela/Downloads/Dora專屬'
 TIMEOUT = 900              # 一筆最多跑 15 分鐘
 MAX_AGE = 6 * 3600         # 超過 6 小時就不補跑了（電腦關太久，那天的數字她也不要了）
 LOCK    = '/tmp/dora-report-runner.lock'
+CLIENTS = os.path.join(WORKDIR, '200_Reference', 'clients')
 
 # 只開跑回報會用到的：讀檔、查廣告數字、跑讀工作台的腳本。
 # 不給寫檔與推播的權限——推播由這支自己做，才不會被 AI 亂推
@@ -109,6 +110,27 @@ def line_push(cfg, text):
         r.read()
 
 
+def has_spec(client):
+    """這家客戶有沒有回報規格。沒有的話硬叫 AI 只會生出爛東西（2026-08-24 耀聞水果事件）
+
+    檔名比對容錯：去掉空白、不分大小寫（`of AZIKU.md` 這種）。
+    客戶檔目錄整個不在（換機、路徑改了）就不擋，維持原本流程。
+    """
+    if not os.path.isdir(CLIENTS):
+        return True
+    want = ''.join(client.split()).lower()
+    for fn in os.listdir(CLIENTS):
+        if not fn.endswith('.md') or fn.startswith('_'):
+            continue
+        if ''.join(fn[:-3].split()).lower() != want:
+            continue
+        with open(os.path.join(CLIENTS, fn), encoding='utf-8') as f:
+            md = f.read()
+        # 檔案在、但只是照模板建的空殼（沒有規格那一段）一樣算沒規格
+        return bool(re.search(r'^## [^\n]*(回報規格|週報規格)', md, re.M))
+    return False
+
+
 def run_claude(client):
     """叫 Claude Code 跑回報。工作目錄要在 Dora專屬，才讀得到 CLAUDE.md 與客戶檔"""
     p = subprocess.run(
@@ -136,7 +158,7 @@ def main():
         # 跑完的待辦留一週就清掉，不然會一直長
         cutoff = int((time.time() - 7 * 86400) * 1000)
         for j in list(jobs.values()):
-            if isinstance(j, dict) and j.get('status') in ('done', 'error', 'expired', 'timeout') \
+            if isinstance(j, dict) and j.get('status') in ('done', 'error', 'expired', 'timeout', 'noSpec') \
                and (j.get('doneAt') or 0) < cutoff:
                 db_patch(cfg, tok, 'reportJobs', {j['id']: None})
 
@@ -152,6 +174,16 @@ def main():
             if age > MAX_AGE:
                 db_patch(cfg, tok, f'reportJobs/{jid}', {'status': 'expired', 'doneAt': int(time.time() * 1000)})
                 print(f'{jid} 太舊（{age/3600:.1f} 小時）跳過')
+                continue
+
+            # 沒規格就直說，不要叫 AI 硬做（省 1-2 分鐘、也省 Claude 額度）
+            if not has_spec(client):
+                line_push(cfg, f'「{client}」還沒寫過廣告回報規格，所以做不出回報。\n\n'
+                               f'要先定一份格式（回報要放哪些數字、素材怎麼列、期間怎麼算），'
+                               f'跟 Claude 說「幫{client}定回報規格」就會帶你走一次。定好之後再叫一次回報就行。')
+                db_patch(cfg, tok, f'reportJobs/{jid}',
+                         {'status': 'noSpec', 'doneAt': int(time.time() * 1000)})
+                print(f"{time.strftime('%F %T')} {client} 沒有回報規格，跳過")
                 continue
 
             db_patch(cfg, tok, f'reportJobs/{jid}', {'status': 'running'})
