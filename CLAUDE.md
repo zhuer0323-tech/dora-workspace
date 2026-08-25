@@ -118,6 +118,22 @@ Node.js 透過 nvm 安裝，路徑：`/Users/angela/.nvm/versions/node/v24.15.0/
 
 ---
 
+## Claude Code Statusline（2026-08-25 上線）
+
+看到別人（雷蒙）的 statusline 客製化後仿照做的，改成單行中文標籤版。
+
+- **腳本**：`~/Library/CloudStorage/OneDrive-個人/Dora-Agent/.claude/statusline-command.sh`（OneDrive 母體，兩台 Mac 自動同步）
+- `~/.claude/statusline-command.sh` 是指向它的 symlink，跟 `settings.json` 做法一致
+- `~/.claude/settings.json` 的 `statusLine.command` 已指到這支腳本（**全域設定**，不限單一專案，任何資料夾開 Claude Code 都會顯示）
+- **格式**：`🐷 模型：{model} | {專案資料夾} | 文脈：{進度條} {pct}% | 5時窗：{剩餘時間} {pct}% | 7日窗：{剩餘時間} {pct}%`
+- **資料來源**：Claude Code 官方 statusLine JSON payload 原生欄位（`context_window.used_percentage`、`rate_limits.five_hour`、`rate_limits.seven_day`），**不用裝第三方工具**（如 ccusage）
+- **顏色規則**：依用量百分比自動變色，<50% 綠、50–79% 黃、≥80% 紅（進度條跟數字一起變）
+- 原本做過含 git 分支／程式碼異動行數的兩行英文版，她看過範例圖後改成單行中文版，**這版拿掉了 git 分支與異動行數**（要加回來這是唯一被移除的資訊）
+- 最下面「auto mode on / bypass permissions on...」那行是 Claude Code 原生固定顯示，不是這支腳本畫的，改不了
+- 改完腳本要 `chmod +x`，測試法：`echo '{JSON}' | bash ~/.claude/statusline-command.sh`
+
+---
+
 ## 外部安裝的 Skill
 
 > 自己建的 skill 放在 `000_Agent/skills/`（已 symlink 至 `~/.claude/skills`）；
