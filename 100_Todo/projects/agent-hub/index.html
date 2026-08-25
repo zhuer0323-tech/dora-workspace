@@ -11,7 +11,7 @@
   --pink:#F48FB1; --pink-d:#E57399; --pink-l:#FFD9E3; --pink-xl:#FFF0F4;
   --ink:#5B3C46; --ink2:#8C6B76; --ink3:#B79AA4;
   --line:#F6DCE4;
-  --s-plan:#7FB6E0; --s-make:#F4A6C6; --s-review:#6FC79A; --s-wait:#F5A623; --s-done:#B98CD1;
+  --s-plan:#7FB6E0; --s-make:#F4A6C6; --s-review:#6FC79A; --s-design:#C79AE0; --s-wait:#F5A623; --s-done:#8FCB7A;
   --shadow:0 2px 10px rgba(232,150,178,.13);
   --shadow-l:0 6px 22px rgba(232,150,178,.20);
   --r:16px;
@@ -53,8 +53,9 @@ nav.tabs .tb .cnt{background:rgba(0,0,0,.12);border-radius:99px;font-size:10.5px
 nav.tabs .tb.on .cnt{background:rgba(255,255,255,.3)}
 
 /* ---------- 工位列 ---------- */
-.workbar{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
-@media(max-width:640px){.workbar{grid-template-columns:1fr}}
+.workbar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+@media(max-width:900px){.workbar{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.workbar{grid-template-columns:1fr}}
 .wscard{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:12px;
   display:flex;flex-direction:column;gap:8px;border:2px solid transparent}
 .wscard.busy{border-color:var(--pink)}
@@ -64,6 +65,7 @@ nav.tabs .tb.on .cnt{background:rgba(255,255,255,.3)}
 .ws-planner .wsavatar{background:#E3F0FB}
 .ws-maker .wsavatar{background:var(--pink-xl)}
 .ws-reviewer .wsavatar{background:#FFF3E3}
+.ws-designer .wsavatar{background:#F3E9FB}
 .wsinfo{min-width:0}
 .wsinfo .wn{font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px}
 .wsinfo .wr{font-size:11.5px;color:var(--ink3)}
@@ -93,14 +95,14 @@ nav.tabs .tb.on .cnt{background:rgba(255,255,255,.3)}
 .boardhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap}
 .addbtn{padding:9px 16px;border-radius:12px;background:var(--pink);color:#fff;
   font-size:13.5px;font-weight:700;box-shadow:var(--shadow)}
-.board{display:grid;grid-template-columns:repeat(5,minmax(200px,1fr));gap:10px;overflow-x:auto;padding-bottom:6px}
-@media(max-width:900px){.board{grid-template-columns:repeat(5,80vw)}}
+.board{display:grid;grid-template-columns:repeat(6,minmax(200px,1fr));gap:10px;overflow-x:auto;padding-bottom:6px}
+@media(max-width:900px){.board{grid-template-columns:repeat(6,80vw)}}
 .col{background:var(--pink-xl);border-radius:14px;padding:10px;min-height:100px}
 .col h3{font-size:12.5px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;color:var(--ink2)}
 .col h3 .cdot{width:8px;height:8px;border-radius:99px}
 .cd-planning{background:var(--s-plan)} .cd-making{background:var(--s-make)}
-.cd-reviewing{background:var(--s-review)} .cd-waiting_human{background:var(--s-wait)}
-.cd-done{background:var(--s-done)}
+.cd-reviewing{background:var(--s-review)} .cd-designing{background:var(--s-design)}
+.cd-waiting_human{background:var(--s-wait)} .cd-done{background:var(--s-done)}
 .col .cnt{margin-left:auto;color:var(--ink3);font-weight:400}
 .card{background:#fff;border-radius:12px;padding:10px;margin-bottom:8px;cursor:pointer;box-shadow:var(--shadow)}
 .card:hover{box-shadow:var(--shadow-l)}
@@ -115,8 +117,13 @@ nav.tabs .tb.on .cnt{background:rgba(255,255,255,.3)}
 .dhead .brief{font-size:12.5px;color:var(--ink2);margin-top:4px;white-space:pre-wrap}
 .badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap}
 .b-planning{background:var(--s-plan)} .b-making{background:var(--s-make)}
-.b-reviewing{background:var(--s-review)} .b-waiting_human{background:var(--s-wait)}
-.b-done{background:var(--s-done)}
+.b-reviewing{background:var(--s-review)} .b-designing{background:var(--s-design)}
+.b-waiting_human{background:var(--s-wait)} .b-done{background:var(--s-done)}
+
+.canvabox{background:#F3E9FB;border:1px solid #E0C9F5;border-radius:12px;padding:12px;margin-bottom:14px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.canvabox .ct{font-size:13px;font-weight:700;color:#6B3FA0}
+.canvabox a{background:#8B5CC7;color:#fff;padding:8px 14px;border-radius:10px;font-size:12.5px;font-weight:700;text-decoration:none}
 
 .steps{display:flex;align-items:center;margin-bottom:16px;overflow-x:auto}
 .step{display:flex;flex-direction:column;align-items:center;gap:5px;flex:none;width:74px}
@@ -149,6 +156,7 @@ nav.tabs .tb.on .cnt{background:rgba(255,255,255,.3)}
 .msg.r-planner .body{background:#EFF6FF}
 .msg.r-maker .body{background:var(--pink-xl)}
 .msg.r-reviewer .body{background:#ECFDF5}
+.msg.r-designer .body{background:#F3E9FB}
 .msg.r-human .body{background:#FFF3E3}
 .msg.r-system .body{background:var(--bg);color:var(--ink2);font-size:12.5px}
 
@@ -191,6 +199,11 @@ nav.tabs .tb.on .cnt{background:rgba(255,255,255,.3)}
 .seg2{display:flex;background:var(--bg);border-radius:99px;padding:3px;margin-top:4px}
 .seg2 button{flex:1;padding:7px;border-radius:99px;font-size:12.5px;font-weight:700;color:var(--ink3)}
 .seg2 button.on{background:var(--pink);color:#fff}
+.typegrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px}
+.typegrid button{padding:9px 6px;border-radius:12px;background:var(--bg);font-size:12.5px;font-weight:700;color:var(--ink3)}
+.typegrid button.on{background:var(--pink);color:#fff}
+.row2{display:flex;gap:8px}
+.row2>div{flex:1}
 .modal .foot{display:flex;gap:8px;margin-top:16px}
 .modal .foot button{flex:1;padding:11px;border-radius:12px;font-size:13.5px;font-weight:700}
 .modal .foot .cancel{background:var(--bg);color:var(--ink2)}
@@ -201,14 +214,14 @@ nav.tabs .tb.on .cnt{background:rgba(255,255,255,.3)}
 <body>
 
 <div id="gate">
-  <h1>🤝 AI 協作平台</h1>
-  <p>小梟、小兔、小狐三個 AI 小幫手接力處理你的文案任務。資料只有你看得到，需要用 zhuer0323@gmail.com 登入。</p>
+  <h1>🤝 禾言社群規劃團隊</h1>
+  <p>小梟、小兔、小狐、小蝶四個 AI 小幫手接力處理禾言每個月的社群貼文——規劃方向、寫文案、審內容、做圖卡。資料只有你看得到，需要用 zhuer0323@gmail.com 登入。</p>
   <button id="gateBtn">用 Google 登入</button>
   <div class="err" id="gateErr"></div>
 </div>
 
 <header class="top">
-  <h1>🤝 AI 協作平台</h1>
+  <h1>🤝 禾言社群規劃團隊</h1>
   <div class="syncbox"><span class="dot" id="dot"></span><span id="syncTxt">連線中…</span></div>
 </header>
 
@@ -248,24 +261,24 @@ nav.tabs .tb.on .cnt{background:rgba(255,255,255,.3)}
   <div class="modal">
     <h3>新任務</h3>
 
-    <label>從工作台既有任務挑一個（選填）</label>
-    <select id="wsPick"><option value="">— 不挑，自己打 —</option></select>
-    <div class="hint">挑了會自動帶入標題與客戶，需求簡述你再補一下</div>
-
-    <label>類型</label>
-    <div class="seg2" id="typeSeg">
-      <button class="on" data-v="social">社群文案</button>
-      <button data-v="ad">廣告投放文案</button>
+    <label>內容類型</label>
+    <div class="typegrid" id="typeSeg">
+      <button class="on" data-v="觀點/趨勢">觀點/趨勢</button>
+      <button data-v="教學/新手">教學/新手</button>
+      <button data-v="日常/節慶">日常/節慶</button>
+      <button data-v="廣告顧問陪跑">廣告顧問陪跑</button>
     </div>
 
-    <label>標題</label>
-    <input type="text" id="fTitle" placeholder="例如：9 月中秋檔期貼文">
+    <div class="row2">
+      <div><label>預計發布日</label><input type="date" id="fDate"></div>
+      <div><label>目的（選填）</label><input type="text" id="fGoal" placeholder="例如：專業形象"></div>
+    </div>
 
-    <label>客戶（選填）</label>
-    <input type="text" id="fClient" placeholder="例如：漁三">
+    <label>標題（選填）</label>
+    <input type="text" id="fTitle" placeholder="留白的話小梟規劃時會幫你想">
 
-    <label>需求簡述</label>
-    <textarea id="fBrief" placeholder="這篇要達成什麼目標、有什麼重點、素材類型等等，寫得越清楚小幫手判斷越準"></textarea>
+    <label>這個月客戶最想了解的內容／這篇的重點方向</label>
+    <textarea id="fBrief" placeholder="例如：這個月客戶常問廣告成效變差要怎麼看、想多了解名單廣告怎麼設定…"></textarea>
 
     <div class="foot">
       <button class="cancel" id="cancelBtn">取消</button>
@@ -286,29 +299,29 @@ const FIREBASE_CONFIG = {
   appId: "1:300878890409:web:c80543dc5c43f6d81bb0b8"
 };
 const ROOM = 'ah_4j2ppkn8rq';     // 改名要同步改 Firebase 規則
-const WS_ROOM = 'ws_k7m2q9xr4t';  // 工作台節點，唯讀，拿既有任務給新任務表單挑
 
 const $ = s => document.querySelector(s);
 const esc = s => (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 let db, dbRef, dbSet, dbUpdate, dbPush, dbOnValue, dbGet;
-let tasks = {}, messages = {}, dms = {}, wsTasks = {}, wsClients = {};
+let tasks = {}, messages = {}, dms = {};
 let activeTab = 'tasks', selectedTask = null, selectedDM = 'planner';
 
-/* 三個小幫手的「人設」——固定的規劃→製作→審閱流程，各自配一個角色 */
+/* 禾言社群規劃團隊的四個角色，固定流程：規劃→製作→審閱→製圖 */
 const PERSONA = {
   planner:  {name:'小梟', avatar:'🦉', desc:'規劃方向', cls:'ws-planner'},
   maker:    {name:'小兔', avatar:'🐰', desc:'製作初稿', cls:'ws-maker'},
   reviewer: {name:'小狐', avatar:'🦊', desc:'審閱把關', cls:'ws-reviewer'},
+  designer: {name:'小蝶', avatar:'🦋', desc:'製作圖卡', cls:'ws-designer'},
 };
-const ROLE_ORDER = ['planner','maker','reviewer'];
-const STAGE_OF_ROLE = {planner:'planning', maker:'making', reviewer:'reviewing'};
-const STAGE_ORDER = ['planning','making','reviewing','waiting_human','done'];
-const STAGE_LABEL = {planning:'規劃中', making:'製作中', reviewing:'審閱中', waiting_human:'待你確認', done:'已完成'};
+const ROLE_ORDER = ['planner','maker','reviewer','designer'];
+const STAGE_OF_ROLE = {planner:'planning', maker:'making', reviewer:'reviewing', designer:'designing'};
+const STAGE_ORDER = ['planning','making','reviewing','designing','waiting_human','done'];
+const STAGE_LABEL = {planning:'規劃中', making:'製作中', reviewing:'審閱中', designing:'製圖中', waiting_human:'待你確認', done:'已完成'};
 const ROLE_META = {
   planner:{label:'🦉 小梟', cls:'r-planner'}, maker:{label:'🐰 小兔', cls:'r-maker'},
-  reviewer:{label:'🦊 小狐', cls:'r-reviewer'}, human:{label:'🙋 你', cls:'r-human'},
-  system:{label:'⚙️ 系統', cls:'r-system'},
+  reviewer:{label:'🦊 小狐', cls:'r-reviewer'}, designer:{label:'🦋 小蝶', cls:'r-designer'},
+  human:{label:'🙋 你', cls:'r-human'}, system:{label:'⚙️ 系統', cls:'r-system'},
 };
 
 function setSync(state, msg){
@@ -422,7 +435,7 @@ function renderBoard(){
         return `<div class="card" data-id="${t.id}">
           <div class="tt">${esc(t.title)}</div>
           <div class="meta">${p?`<span class="av" style="background:var(--pink-xl)">${p.avatar}</span>`:''}
-            ${t.client?esc(t.client)+' · ':''}${timeAgo(t.updatedAt||t.createdAt)}</div>
+            ${t.type?esc(t.type)+' · ':''}${timeAgo(t.updatedAt||t.createdAt)}</div>
         </div>`;
       }).join('') || '<div class="empty" style="padding:14px 0;font-size:12px">空的</div>'}
     </div>`;
@@ -444,6 +457,7 @@ function renderTaskDetail(){
     {key:'planning', label:'規劃', role:'planner'},
     {key:'making', label:'製作', role:'maker'},
     {key:'reviewing', label:'審閱', role:'reviewer'},
+    {key:'designing', label:'製圖', role:'designer'},
     {key:'done', label:'完成', role:null},
   ];
   const curIdx = t.stage==='waiting_human'
@@ -466,7 +480,7 @@ function renderTaskDetail(){
     </div>${line}`;
   }).join('') + '</div>';
 
-  if(t.stage==='planning'||t.stage==='making'||t.stage==='reviewing'){
+  if(t.stage==='planning'||t.stage==='making'||t.stage==='reviewing'||t.stage==='designing'){
     html += `<div class="working"><span class="sp"></span>${PERSONA[Object.keys(STAGE_OF_ROLE).find(r=>STAGE_OF_ROLE[r]===t.stage)].name}處理中，每分鐘會檢查一次，跑完自動出現在下面</div>`;
   }
 
@@ -485,6 +499,10 @@ function renderTaskDetail(){
     html += `</div></div>`;
   }
 
+  if(t.canvaUrl){
+    html += `<div class="canvabox"><span class="ct">🎨 圖卡做好了</span><a href="${esc(t.canvaUrl)}" target="_blank" rel="noopener">開啟 Canva 編輯</a></div>`;
+  }
+
   html += '<div class="feedtitle">活動流</div>';
   html += '<div class="msglist">' + msgs.map(m=>{
     const meta = ROLE_META[m.role] || {label:m.role, cls:'r-system'};
@@ -496,8 +514,9 @@ function renderTaskDetail(){
   }).join('') + '</div>';
 
   html += `<div class="propgrid">
-    <div><div class="pk">類型</div><div class="pv">${t.type==='ad'?'廣告投放文案':'社群文案'}</div></div>
-    <div><div class="pk">客戶</div><div class="pv">${esc(t.client)||'—'}</div></div>
+    <div><div class="pk">類型</div><div class="pv">${esc(t.type)||'—'}</div></div>
+    <div><div class="pk">預計發布日</div><div class="pv">${esc(t.postDate)||'—'}</div></div>
+    <div><div class="pk">目的</div><div class="pv">${esc(t.goal)||'—'}</div></div>
     <div><div class="pk">建立時間</div><div class="pv">${new Date(t.createdAt).toLocaleString('zh-TW',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div></div>
   </div>`;
 
@@ -517,8 +536,17 @@ function renderTaskDetail(){
   }
   if($('#btnFinalize')){
     $('#btnFinalize').onclick = async () => {
-      await dbUpdate(dbRef(db, `${ROOM}/tasks/${selectedTask}`), {stage:'done', updatedAt: Date.now()});
-      await dbPush(dbRef(db, `${ROOM}/messages/${selectedTask}`), {role:'system', text:'你選擇採用目前版本，定稿。', createdAt: Date.now()});
+      const rows = Object.values(messages[selectedTask]||{}).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+      const lastMaker = [...rows].reverse().find(m=>m.role==='maker');
+      const finalCopy = lastMaker ? lastMaker.text : '';
+      const postRef = await dbPush(dbRef(db, 'hy_social_r7n3k8/posts'), {
+        date: t.postDate||'', type: t.type||'其他', title: t.title||'', goal: t.goal||'',
+        ig: finalCopy, fb: '', done: false,
+      });
+      await dbUpdate(dbRef(db, `${ROOM}/tasks/${selectedTask}`), {
+        stage:'designing', hySocialId: postRef.key, round: 0, updatedAt: Date.now()});
+      await dbPush(dbRef(db, `${ROOM}/messages/${selectedTask}`), {
+        role:'system', text:'你選擇採用目前版本，定稿，已經寫進禾言社群規劃，接下來換小蝶做圖卡。', createdAt: Date.now()});
     };
   }
 }
@@ -576,8 +604,14 @@ function renderAll(){
 }
 
 /* ---------- 新任務表單 ---------- */
-let newType = 'social';
-function openModal(){ $('#modalBg').style.display='flex'; populateWsPick(); }
+let newType = '觀點/趨勢';
+function nextTuesday(){
+  const d = new Date();
+  const add = (9 - d.getDay()) % 7 || 7; // 0=週日…2=週二；今天週二也跳到下週二
+  d.setDate(d.getDate() + add);
+  return d.toISOString().slice(0,10);
+}
+function openModal(){ $('#modalBg').style.display='flex'; if(!$('#fDate').value) $('#fDate').value = nextTuesday(); }
 $('#typeSeg').addEventListener('click', e=>{
   const b = e.target.closest('button'); if(!b) return;
   newType = b.dataset.v;
@@ -587,36 +621,20 @@ $('#cancelBtn').onclick = () => { $('#modalBg').style.display='none'; resetForm(
 $('#modalBg').addEventListener('click', e=>{ if(e.target.id==='modalBg'){ $('#modalBg').style.display='none'; resetForm(); }});
 
 function resetForm(){
-  $('#fTitle').value=''; $('#fClient').value=''; $('#fBrief').value=''; $('#wsPick').value='';
+  $('#fTitle').value=''; $('#fGoal').value=''; $('#fBrief').value=''; $('#fDate').value='';
 }
-function clientName(id){ return (wsClients[id]||{}).name || (wsClients[id]||{}).short || ''; }
-function populateWsPick(){
-  const sel = $('#wsPick');
-  const rows = Object.entries(wsTasks).filter(([,t])=>t && !t.done && t.type!=='內部' && t.type!=='禾言')
-    .sort((a,b)=>(a[1].due||'').localeCompare(b[1].due||''))
-    .slice(0,50);
-  sel.innerHTML = '<option value="">— 不挑，自己打 —</option>' +
-    rows.map(([id,t])=>`<option value="${id}">${esc(t.name||'')}${t.client?'（'+esc(clientName(t.client))+'）':''}</option>`).join('');
-}
-$('#wsPick').addEventListener('change', e=>{
-  const t = wsTasks[e.target.value];
-  if(!t) return;
-  $('#fTitle').value = t.name || '';
-  if(t.client) $('#fClient').value = clientName(t.client);
-  if(t.note) $('#fBrief').value = t.note;
-});
 
 $('#submitBtn').onclick = async () => {
-  const title = $('#fTitle').value.trim();
   const brief = $('#fBrief').value.trim();
-  if(!title){ $('#fTitle').focus(); return; }
+  if(!brief){ $('#fBrief').focus(); return; }
   const now = Date.now();
   const id = dbPush(dbRef(db, `${ROOM}/tasks`)).key;
   await dbSet(dbRef(db, `${ROOM}/tasks/${id}`), {
-    title, client: $('#fClient').value.trim(), brief, type: newType,
+    title: $('#fTitle').value.trim(), type: newType,
+    postDate: $('#fDate').value || '', goal: $('#fGoal').value.trim(), brief,
     stage: 'planning', round: 0, createdAt: now, updatedAt: now,
   });
-  await dbPush(dbRef(db, `${ROOM}/messages/${id}`), {role:'human', text: brief || title, createdAt: now});
+  await dbPush(dbRef(db, `${ROOM}/messages/${id}`), {role:'human', text: brief, createdAt: now});
   $('#modalBg').style.display='none'; resetForm();
   selectedTask = id; activeTab='tasks';
   $('#navTabs').querySelectorAll('.tb').forEach(x=>x.classList.toggle('on', x.dataset.tab==='tasks'));
@@ -652,10 +670,6 @@ async function initFirebase(interactive){
   onValue(ref(db, `${ROOM}/tasks`), s => { tasks = s.exists()? s.val() : {}; renderAll(); });
   onValue(ref(db, `${ROOM}/messages`), s => { messages = s.exists()? s.val() : {}; renderAll(); });
   onValue(ref(db, `${ROOM}/dms`), s => { dms = s.exists()? s.val() : {}; renderAll(); });
-
-  // 工作台既有任務，唯讀，讓新任務表單可以挑——讀不到就算了，不擋主流程
-  get(ref(db, `${WS_ROOM}/tasks`)).then(s=>{ wsTasks = s.exists()? s.val() : {}; }).catch(()=>{});
-  get(ref(db, `${WS_ROOM}/clients`)).then(s=>{ wsClients = s.exists()? s.val() : {}; }).catch(()=>{});
 
   return true;
 }
