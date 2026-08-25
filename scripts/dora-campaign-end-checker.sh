@@ -31,19 +31,31 @@ META_TOKEN_EXPIRES = int('${META_TOKEN_EXPIRES:-0}')
 LINE_TOKEN = '${LINE_PUSH_TOKEN}'
 LINE_USER  = '${LINE_USER_ID}'
 
-# 要監控的廣告帳號清單（從 me/adaccounts 取得）
-AD_ACCOUNTS = [
-    ("act_330773076",        "陳妍霖"),
-    ("act_497022705117217",  "廣告帳號"),
-    ("act_1514218312328092", "Jia Xain Guo"),
-    ("act_594623605697795",  "屬於花藝 / Y"),
-    ("act_1614860865916078", "JiaYu Chu"),
-    ("act_1011359997807756", "TO / 十八 / 優逸 / H / 卡威"),
-    ("act_1711564422807708", "李老闆 / YO / 漁互動"),
-    ("act_1082805773432972", "M互動 / 漁KOL / 工研 /花徑 / 沐"),
-    ("act_2454052435035039", "翠芙思"),
-    ("act_973020305475229",  "華信"),
-]
+# 要監控的廣告帳號：**問 Meta「這把 token 看得到哪些」**，不寫死。
+# 2026-08-25 改：原本寫死那 10 個是舊的個人 token 看得到的，換成系統使用者 token 之後
+# 其中 4 個空的個人帳戶（陳妍霖、廣告帳號、Jia Xain Guo、JiaYu Chu）沒指派給它，
+# 每次都噴 403 雜訊。日報那支早就是動態問的，這裡跟它一致。
+def _list_accounts():
+    url = ("https://graph.facebook.com/v25.0/me/adaccounts"
+           f"?fields=account_id,name&limit=100&access_token={META_TOKEN}")
+    with urlopen(Request(url, headers={"User-Agent": "DoraMonitor/1.0"}), timeout=25) as r:
+        data = json.loads(r.read())
+    return [(f"act_{a['account_id']}", a.get('name') or a['account_id'])
+            for a in data.get('data', [])]
+
+try:
+    AD_ACCOUNTS = _list_accounts()
+except Exception as e:
+    # 問不到就退回原本那份清單，寧可多問幾個也不要整支不跑
+    print(f"Warning: 拿不到帳戶清單，退回寫死的名單：{e}", file=sys.stderr)
+    AD_ACCOUNTS = [
+        ("act_594623605697795",  "屬於花藝 / Y"),
+        ("act_1011359997807756", "TO / 十八 / 優逸 / H / 卡威"),
+        ("act_1711564422807708", "李老闆 / YO / 漁互動"),
+        ("act_1082805773432972", "M互動 / 漁KOL / 工研 /花徑 / 沐"),
+        ("act_2454052435035039", "翠芙思"),
+        ("act_973020305475229",  "華信"),
+    ]
 
 DAYS_AHEAD = 3  # 幾天內即將結束要提醒
 now = datetime.now(timezone.utc)

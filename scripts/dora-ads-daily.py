@@ -27,6 +27,13 @@ NTD = "NT$"
 
 DRY = '--dry' in sys.argv
 RAW = '--raw' in sys.argv
+# 17:00 那則要不要「沒異常就安靜」。
+# 2026-08-25 早上因為 token 快死、只剩吃額度的 Claude 那條路，一度改成 True 省額度；
+# 同一天下午換到系統使用者 token、Graph API 活過來不吃額度，朱兒要求恢復每天照推。
+# 異常偵測的程式碼留著沒刪，哪天又要省額度把這裡改回 True 就好。
+EVENING_QUIET = False
+FULL = '--full' in sys.argv   # EVENING_QUIET 開著時，強制推完整版
+alerts = []                   # 17:00 判斷要不要推的依據
 
 # 卡片顏色。進度條三色跑過 dataviz 的 validate_palette.js（最差 CVD ΔE 15.1）
 INK, INK_SOFT, CARD_BG = "#2E2740", "#6E6784", "#F7F5FB"
@@ -65,7 +72,8 @@ def load_env():
 CFG = load_env()
 
 tw_now = datetime.now(timezone.utc) + timedelta(hours=8)
-if tw_now.hour < 12:
+# --as-evening：不管現在幾點都當成 17:00 那則來跑，用來測「沒異常就不推」那條路
+if tw_now.hour < 12 and '--as-evening' not in sys.argv:
     report_date, report_label = (tw_now - timedelta(days=1)).strftime("%Y-%m-%d"), "昨日"
 else:
     report_date, report_label = tw_now.strftime("%Y-%m-%d"), "今日截至目前"
@@ -411,13 +419,18 @@ def client_card(label, emoji, spend_total, run_line, budget, groups):
             "cornerRadius": "10px", "paddingAll": "14px", "contents": contents}
 
 
-def bubble(body_boxes, rd_str, suffix="", footer=True):
+def bubble(body_boxes, rd_str, suffix="", footer=True, alert=False):
+    # 異常提醒版換成橘紅底＋不一樣的標題，她才不會把它當成例行日報滑掉
     b = {"type": "bubble",
-         "header": {"type": "box", "layout": "vertical", "backgroundColor": "#9C88CC",
+         "header": {"type": "box", "layout": "vertical",
+                    "backgroundColor": "#C2603F" if alert else "#9C88CC",
                     "paddingAll": "20px", "contents": [
-                        {"type": "text", "text": f"📊 廣告日報{suffix}", "weight": "bold",
+                        {"type": "text",
+                         "text": (f"⚠️ 廣告要注意{suffix}" if alert else f"📊 廣告日報{suffix}"),
+                         "weight": "bold",
                          "size": "xl", "color": "#FFFFFF", "align": "center"},
-                        {"type": "text", "text": rd_str, "size": "sm", "color": "#EDE7F6",
+                        {"type": "text", "text": rd_str, "size": "sm",
+                         "color": "#F6E7E1" if alert else "#EDE7F6",
                          "align": "center", "margin": "sm"}]},
          "body": {"type": "box", "layout": "vertical", "spacing": "none", "paddingAll": "16px",
                   "contents": body_boxes}}
@@ -452,15 +465,25 @@ def main():
     # 先用她自己的 token（快、不吃 Claude 額度），失敗才叫 Claude 抓（慢、吃額度）
     day_rows = range_rows = None
     errs = []
-    for how, fn in (('token', fetch_via_graph), ('Claude', fetch_via_claude)):
-        try:
-            day_rows, range_rows = fn(since)
-            if how == 'Claude':
-                warnings.append("token 失效，這次是用 Claude 抓的")
+    # token 那條重試 3 次（間隔 60 秒）才放棄。2026-08-25 早上整則掛掉的原因是
+    # 9:00 網路還沒起來、Graph API 整批 DNS 失敗，一次失敗就跳去叫 Claude，
+    # 而 Claude 那條的 Meta Ads 連線剛好要重新授權 —— 兩條同時斷。
+    # 網路抖一下不該讓整則日報消失，token 沒壞就等它回來。
+    for how, fn, tries in (('token', fetch_via_graph, 3), ('Claude', fetch_via_claude, 1)):
+        for t in range(tries):
+            try:
+                day_rows, range_rows = fn(since)
+                if how == 'Claude':
+                    warnings.append("token 失效，這次是用 Claude 抓的")
+                break
+            except Exception as e:
+                last = f"{how}：{str(e)[:150]}"
+                print(f"Warning: fetch via {how} failed ({t+1}/{tries}): {e}", file=sys.stderr)
+                if t + 1 < tries:
+                    time.sleep(60)
+        if day_rows is not None:
             break
-        except Exception as e:
-            errs.append(f"{how}：{str(e)[:150]}")
-            print(f"Warning: fetch via {how} failed: {e}", file=sys.stderr)
+        errs.append(last)
     if day_rows is None:
         msg = f"⚠️ 廣告日報抓不到數字（{report_date} {report_label}）\n" + "\n".join(errs)
         print(msg)
@@ -535,6 +558,11 @@ def main():
                     gap = pct - time_pct
                     state = 'fast' if gap > 10 else ('slow' if gap < -10 else 'ok')
                     budget_ui = budget_block(pct, time_pct, spent, budget, state)
+                    # 什麼算「要注意」：燒太快，或走期快收了預算還剩一大截
+                    if state == 'fast':
+                        alerts.append(f"{label} 預算燒太快（已花 {pct:.0f}%、時間才過 {time_pct:.0f}%）")
+                    elif time_pct >= 90 and pct < 80:
+                        alerts.append(f"{label} 走期剩 {total_days - passed} 天，預算還有 {100 - pct:.0f}% 沒花")
             except Exception:
                 run_line, budget_ui = "", None
 
@@ -550,6 +578,7 @@ def main():
               and spent_by_client.get(c.get('id') or c.get('short') or c.get('name'))]
     if silent:
         warnings.append("走期內但今天沒跑量：" + "、".join(silent[:6]))
+        alerts.append("走期內但今天沒跑量：" + "、".join(silent[:6]))
     if skipped:
         warnings.append("關鍵字「" + "、".join(sorted(set(k for k, _ in skipped))) + "」只有一個字，沒採用")
 
@@ -557,25 +586,41 @@ def main():
         print("NO_DATA")
         return
 
+    # 17:00 那則平常不推，只有出事才響。
+    # 2026-08-25 改：她的開發人員帳號停權沒解開，8/30 token 死掉之後只剩 claude.ai
+    # 連接器那條路，而那條吃 Claude 額度（跟 LINE 廣告回報同一個池子，8/23 撞過上限）。
+    # 早上那則是回顧昨天、照推；下午這則的用途本來就是盯場，沒事不用響。
+    is_evening = report_label == "今日截至目前"
+    quiet = EVENING_QUIET and is_evening and not alerts and not FULL
+    if quiet:
+        print("QUIET: 今日截至目前沒有異常，不推播（要看完整版加 --full）")
+        return
+
     rd = datetime.fromisoformat(report_date)
     days_zh = {0: "週一", 1: "週二", 2: "週三", 3: "週四", 4: "週五", 5: "週六", 6: "週日"}
     rd_str = f"{rd.strftime('%Y/%m/%d')}（{days_zh[rd.weekday()]}）{report_label}"
+    alert_mode = EVENING_QUIET and is_evening and bool(alerts)
+    if alert_mode:
+        # 把觸發原因放在最前面，不用捲到底才知道為什麼響
+        warnings[:0] = [a for a in alerts if a not in warnings]
 
     chunks = [boxes]
     if len(json.dumps(bubble(boxes, rd_str), ensure_ascii=False).encode()) > 9000 and len(boxes) > 1:
         half = max(1, len(boxes) // 2)
         chunks = [boxes[:half], boxes[half:]]
 
-    messages = [{"type": "flex", "altText": f"廣告日報 {report_date} {report_label}",
+    alt = ("廣告要注意 " if alert_mode else "廣告日報 ") + f"{report_date} {report_label}"
+    messages = [{"type": "flex", "altText": alt,
                  "contents": bubble(ch, rd_str, f"（{i + 1}/{len(chunks)}）" if len(chunks) > 1 else "",
-                                    footer=(i == len(chunks) - 1))}
+                                    footer=(i == len(chunks) - 1), alert=alert_mode)}
                 for i, ch in enumerate(chunks)]
 
     if DRY:
         print(json.dumps({'messages': messages}, ensure_ascii=False))
     else:
         print(line_push(messages))
-        print(f"LINE sent: ads daily report ({len(boxes)} clients, {len(chunks)} msg)")
+        kind = "ALERT" if alert_mode else "daily"
+        print(f"LINE sent: ads {kind} report ({len(boxes)} clients, {len(chunks)} msg)")
 
 
 if __name__ == '__main__':

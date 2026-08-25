@@ -11,10 +11,13 @@
 
 set -euo pipefail
 
-# 開機後 launchd 可能比網路早醒，等一下再跑
-for i in $(seq 1 6); do
-    curl -s --max-time 3 https://api.line.me > /dev/null 2>&1 && break
-    sleep 5
+# 開機／睡醒後 launchd 可能比網路早醒。2026-08-25 早上就是這樣整則掛掉：
+# 原本只等 30 秒、而且探測的是 api.line.me —— LINE 通不代表 Facebook 通，
+# 結果 graph.facebook.com 整批 DNS 解析失敗（Errno 8）。
+# 改成等真正要打的那台，最多等 3 分鐘。
+for i in $(seq 1 18); do
+    curl -s --max-time 5 https://graph.facebook.com/v25.0/ > /dev/null 2>&1 && break
+    sleep 10
 done
 
 exec /usr/bin/python3 "$HOME/Library/Scripts/dora-ads-daily.py" "$@"
