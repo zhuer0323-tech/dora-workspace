@@ -51,6 +51,35 @@
 - `curl *`（API 呼叫，包含 LINE 推播）
 - `pbcopy *`（複製到剪貼簿）
 
+### Claude Code 工具清單（2026-08-25 補記）
+> 這是 Claude Code 這個工具本身內建的能力範圍，跟上面「本專案 allow/deny」是兩層：
+> 上面決定「哪些指令不用問就能跑／永遠不能跑」，這裡是「總共有哪些工具可以用」。
+
+**核心工具（一開始就能用）**
+`Bash`（執行終端機指令，受 allow/deny 規則限制）、`Read`／`Edit`／`Write`（讀寫檔案）、
+`Agent`（呼叫子代理處理任務）、`Artifact`（發布/更新 claude.ai 網頁 Artifact）、
+`AskUserQuestion`（跳選項框確認）、`Skill`（呼叫技能，如 `/廣告回報`）、
+`ScheduleWakeup`（`/loop` 排程下次醒來）、`SendUserFile`（傳檔案給朱兒）、
+`ListAgents`（列出可對話的其他 agent/session）、`ToolSearch`（載入下面延遲工具）、
+`ReportFindings`（程式碼審查結構化回報）
+
+**延遲工具（要先用 ToolSearch 載入才能呼叫）**
+`WebFetch`／`WebSearch`（網頁擷取與搜尋）、
+`mcp__claude-in-chrome__*`（Chrome 瀏覽器自動化：點擊、截圖、讀 console、填表單）、
+`mcp__playwright__*`（另一套瀏覽器自動化，見上方「MCP 工具」）、
+`mcp__firecrawl__*`（網頁爬取，見上方「MCP 工具」）、
+`mcp__claude_ai_Canva__*`／`mcp__claude_ai_Gmail__*`／`mcp__claude_ai_Google_Drive__*`／
+`mcp__claude_ai_Notion__*`（claude.ai 整合工具，見上方「claude.ai 整合工具」）、
+`CronCreate`／`CronList`／`CronDelete`／`RemoteTrigger`（排程/雲端）、
+`Monitor`（監看背景程序）、`NotebookEdit`、`EnterPlanMode`／`ExitPlanMode`、
+`SendMessage`（跟其他 agent 通訊）、`EndConversation` 等
+
+**目前不具備 / 被擋住**
+- 沒有系統管理員權限（`sudo` 被 deny 擋死）
+- 沒有主動刪檔能力（`rm` 系列指令被封鎖，僅能用 `trash` 或詢問朱兒確認，見上方 NEVER/ALWAYS 清單）
+- 危險 Git 操作（強制推送、`reset --hard` 等）被封鎖
+- 這份清單會隨 Claude Code 版本更新而變動，僅供參考，實際以當次 session 系統訊息列出的為準
+
 ---
 
 ## MCP 工具
@@ -764,9 +793,13 @@ HTML 覆蓋到 `100_Todo/projects/heyen-cards/index.html` → push → 等 Pages
 
 ## 我的 NEVER / ALWAYS 清單
 
-> 這一區會隨我糾正你的次數慢慢長出來。一開始是空的。
+> 這一區會隨我糾正你的次數慢慢長出來。
 
-（尚無規則）
+### 刪除檔案（2026-08-25 立）
+- **ALWAYS**：要刪檔一律先用 `trash <檔案>`（macOS 內建，移到垃圾桶，救得回來）。
+- **ALWAYS**：真的需要永久刪除時，先把要刪的清單列給朱兒看，她點頭才動手。
+- **NEVER**：不用 `rm -rf` / `rm -r` / `rm -f` 這類寫法（settings.json 的 deny 已經擋掉，但指示本身不能省——AI 可能繞去用別的刪除方式）。
+- **原因**：黑名單擋的是常見寫法，不是萬用防護；垃圾桶才是真正的反悔空間。重要的東西照樣要靠 Git 與 OneDrive 備份。
 
 ---
 
