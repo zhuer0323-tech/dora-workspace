@@ -12,8 +12,8 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 ENV     = os.path.expanduser('~/Library/Scripts/dora.env')
-CLAUDE  = '/Users/angela/.local/bin/claude'
-WORKDIR = '/Users/angela/Downloads/Dora專屬'
+CLAUDE  = '/Users/zhuer/.local/bin/claude'
+WORKDIR = '/Users/zhuer/Downloads/Dora專屬'
 TIMEOUT = 900              # 一筆最多跑 15 分鐘
 MAX_AGE = 6 * 3600         # 超過 6 小時就不補跑了（電腦關太久，那天的數字她也不要了）
 LOCK    = '/tmp/dora-report-runner.lock'

@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AI 協作平台</title>
+<meta name="theme-color" content="#F4F5FB">
+<style>
+:root{
+  --bg:#F4F5FB; --card:#FFFFFF;
+  --accent:#6366F1; --accent-d:#4F46E5; --accent-l:#E7E7FC;
+  --ink:#2B2D42; --ink2:#6B7280; --ink3:#9CA3AF;
+  --line:#E7E8F3;
+  --plan:#60A5FA; --make:#A78BFA; --review:#34D399; --wait:#F59E0B; --done:#10B981;
+  --shadow:0 2px 10px rgba(99,102,241,.10);
+  --shadow-l:0 6px 22px rgba(99,102,241,.18);
+  --r:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+button,input,textarea,select{font:inherit;color:inherit;border:none;background:none;outline:none}
+button{cursor:pointer}
+body{
+  font-family:"PingFang TC","Noto Sans TC","Helvetica Neue",sans-serif;
+  background:var(--bg); color:var(--ink); font-size:15px; line-height:1.6;
+  padding:14px 14px 40px; max-width:1180px; margin:0 auto;
+  -webkit-text-size-adjust:100%;
+}
+
+/* ---------- 登入閘門 ---------- */
+#gate{position:fixed;inset:0;background:var(--bg);z-index:99;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center}
+#gate h1{font-size:19px}
+#gate p{margin:0;font-size:13px;color:var(--ink2);max-width:320px;line-height:1.8}
+#gate button{padding:13px 26px;border-radius:14px;background:var(--accent);color:#fff;font-weight:700;
+  box-shadow:var(--shadow-l)}
+#gate .err{color:#E05263;font-size:12.5px}
+
+/* ---------- 頁首 ---------- */
+header.top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+header.top h1{font-size:19px;letter-spacing:.5px}
+header.top .sub{font-size:12px;color:var(--ink3);margin-left:2px;font-weight:400}
+.syncbox{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink3);
+  background:#fff;padding:6px 11px;border-radius:99px;box-shadow:var(--shadow)}
+.dot{width:7px;height:7px;border-radius:99px;background:var(--ink3)}
+.dot.ok{background:var(--done)}.dot.err{background:#E05263}.dot.wait{background:var(--wait)}
+
+/* ---------- 版面：左任務列表 / 右對話 ---------- */
+.layout{display:flex;gap:14px;align-items:flex-start}
+.col-tasks{flex:none;width:100%}
+.col-chat{flex:1;min-width:0}
+@media(min-width:860px){
+  .layout{flex-direction:row}
+  .col-tasks{width:300px}
+}
+.panel{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:14px}
+
+.addbtn{width:100%;padding:10px;border-radius:12px;background:var(--accent);color:#fff;
+  font-size:13.5px;font-weight:700;box-shadow:var(--shadow);margin-bottom:12px}
+
+.tasklist{display:flex;flex-direction:column;gap:8px}
+.taskitem{background:var(--bg);border-radius:12px;padding:10px 12px;cursor:pointer;
+  border:2px solid transparent;display:flex;flex-direction:column;gap:5px}
+.taskitem.on{border-color:var(--accent);background:var(--accent-l)}
+.taskitem .tt{font-size:14px;font-weight:700;line-height:1.4}
+.taskitem .meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.taskitem .cl{font-size:11.5px;color:var(--ink3)}
+.badge{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap}
+.b-planning{background:var(--plan)} .b-making{background:var(--make)}
+.b-reviewing{background:var(--review)} .b-waiting_human{background:var(--wait)}
+.b-done{background:var(--done)}
+.empty{color:var(--ink3);font-size:13px;text-align:center;padding:24px 0}
+
+/* ---------- 對話串 ---------- */
+.chatHead{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.chatHead h2{font-size:16px}
+.chatHead .brief{font-size:12.5px;color:var(--ink2);margin-top:3px;white-space:pre-wrap}
+.msglist{display:flex;flex-direction:column;gap:10px;margin-bottom:12px;max-height:60vh;overflow-y:auto;padding-right:2px}
+.msg{border-radius:12px;padding:10px 12px;font-size:13.5px;line-height:1.7;white-space:pre-wrap}
+.msg .who{font-size:11.5px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.msg.r-planner{background:#EFF6FF;border-left:3px solid var(--plan)}
+.msg.r-maker{background:#F5F3FF;border-left:3px solid var(--make)}
+.msg.r-reviewer{background:#ECFDF5;border-left:3px solid var(--review)}
+.msg.r-human{background:var(--accent-l);border-left:3px solid var(--accent)}
+.msg.r-system{background:var(--bg);border-left:3px solid var(--ink3);color:var(--ink2);font-size:12.5px}
+
+.working{font-size:12.5px;color:var(--ink3);display:flex;align-items:center;gap:6px;padding:4px 2px}
+.working .sp{width:7px;height:7px;border-radius:99px;background:var(--accent);animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
+
+.waitbox{background:#FFFBEB;border:1px solid #FDE68A;border-radius:12px;padding:12px;margin-bottom:12px}
+.waitbox .wt{font-size:13px;font-weight:700;color:#92400E;margin-bottom:4px}
+.waitbox .wr{font-size:13px;color:#78350F;white-space:pre-wrap;margin-bottom:8px}
+.waitbox textarea{width:100%;border-radius:10px;background:#fff;border:1px solid #FDE68A;padding:8px;font-size:13px;min-height:56px;margin-bottom:8px}
+.waitbox .btns{display:flex;gap:8px;flex-wrap:wrap}
+.wbtn{padding:8px 14px;border-radius:10px;font-size:12.5px;font-weight:700}
+.wbtn.p{background:var(--accent);color:#fff}
+.wbtn.g{background:#fff;color:var(--ink2);border:1px solid var(--line)}
+
+/* ---------- 新任務表單 ---------- */
+.modal-bg{position:fixed;inset:0;background:rgba(43,45,66,.35);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+@media(min-width:640px){.modal-bg{align-items:center}}
+.modal{background:#fff;border-radius:20px 20px 0 0;padding:18px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto}
+@media(min-width:640px){.modal{border-radius:20px}}
+.modal h3{font-size:16px;margin-bottom:12px}
+.modal label{font-size:12px;color:var(--ink2);font-weight:700;display:block;margin:10px 0 4px}
+.modal input,.modal textarea,.modal select{width:100%;background:var(--bg);border-radius:10px;padding:9px 11px;font-size:13.5px}
+.modal textarea{min-height:80px}
+.seg2{display:flex;background:var(--bg);border-radius:99px;padding:3px;margin-top:4px}
+.seg2 button{flex:1;padding:7px;border-radius:99px;font-size:12.5px;font-weight:700;color:var(--ink3)}
+.seg2 button.on{background:var(--accent);color:#fff}
+.modal .foot{display:flex;gap:8px;margin-top:16px}
+.modal .foot button{flex:1;padding:11px;border-radius:12px;font-size:13.5px;font-weight:700}
+.modal .foot .cancel{background:var(--bg);color:var(--ink2)}
+.modal .foot .submit{background:var(--accent);color:#fff;box-shadow:var(--shadow)}
+.pickrow{display:flex;gap:6px;margin-top:4px}
+.pickrow select{flex:1}
+.hint{font-size:11.5px;color:var(--ink3);margin-top:4px}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <h1>🤝 AI 協作平台</h1>
+  <p>規劃、製作、審閱三個 AI 小幫手接力處理你的文案任務。資料只有你看得到，需要用 zhuer0323@gmail.com 登入。</p>
+  <button id="gateBtn">用 Google 登入</button>
+  <div class="err" id="gateErr"></div>
+</div>
+
+<header class="top">
+  <div><h1>🤝 AI 協作平台<span class="sub">規劃 → 製作 → 審閱</span></h1></div>
+  <div class="syncbox"><span class="dot" id="dot"></span><span id="syncTxt">連線中…</span></div>
+</header>
+
+<div class="layout">
+  <div class="col-tasks">
+    <div class="panel">
+      <button class="addbtn" id="newBtn">＋ 新任務</button>
+      <div class="tasklist" id="taskList"><div class="empty">還沒有任務</div></div>
+    </div>
+  </div>
+  <div class="col-chat">
+    <div class="panel" id="chatPanel">
+      <div class="empty">從左邊選一個任務，或按「＋ 新任務」開始一輪</div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalBg" style="display:none">
+  <div class="modal">
+    <h3>新任務</h3>
+
+    <label>從工作台既有任務挑一個（選填）</label>
+    <div class="pickrow">
+      <select id="wsPick"><option value="">— 不挑，自己打 —</option></select>
+    </div>
+    <div class="hint">挑了會自動帶入標題與客戶，需求簡述你再補一下</div>
+
+    <label>類型</label>
+    <div class="seg2" id="typeSeg">
+      <button class="on" data-v="social">社群文案</button>
+      <button data-v="ad">廣告投放文案</button>
+    </div>
+
+    <label>標題</label>
+    <input type="text" id="fTitle" placeholder="例如：9 月中秋檔期貼文">
+
+    <label>客戶（選填）</label>
+    <input type="text" id="fClient" placeholder="例如：漁三">
+
+    <label>需求簡述</label>
+    <textarea id="fBrief" placeholder="這篇要達成什麼目標、有什麼重點、素材類型等等，寫得越清楚小幫手判斷越準"></textarea>
+
+    <div class="foot">
+      <button class="cancel" id="cancelBtn">取消</button>
+      <button class="submit" id="submitBtn">送出，開始跑</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+const OWNER_EMAIL = 'zhuer0323@gmail.com';
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAWOXPFBmb-lU90dpBOq2B8Gn7LsR2p-jM",
+  authDomain: "busan-trip-2026-201f8.firebaseapp.com",
+  databaseURL: "https://busan-trip-2026-201f8-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "busan-trip-2026-201f8",
+  storageBucket: "busan-trip-2026-201f8.firebasestorage.app",
+  messagingSenderId: "300878890409",
+  appId: "1:300878890409:web:c80543dc5c43f6d81bb0b8"
+};
+const ROOM = 'ah_4j2ppkn8rq';     // 改名要同步改 Firebase 規則
+const WS_ROOM = 'ws_k7m2q9xr4t';  // 工作台節點，唯讀，拿既有任務給新任務表單挑
+
+const $ = s => document.querySelector(s);
+const esc = s => (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+let db, dbRef, dbSet, dbUpdate, dbPush, dbOnValue, dbGet;
+let tasks = {}, messages = {}, selected = null, wsTasks = {}, wsClients = {};
+
+const ROLE_META = {
+  planner:{label:'📋 規劃', cls:'r-planner'},
+  maker:{label:'✍️ 製作', cls:'r-maker'},
+  reviewer:{label:'🔍 審閱', cls:'r-reviewer'},
+  human:{label:'🙋 你', cls:'r-human'},
+  system:{label:'⚙️ 系統', cls:'r-system'},
+};
+const STAGE_LABEL = {
+  planning:'規劃中', making:'製作中', reviewing:'審閱中',
+  waiting_human:'待你確認', done:'已完成'
+};
+
+function setSync(state, msg){
+  const dot = $('#dot'), txt = $('#syncTxt');
+  dot.className = 'dot ' + (state==='ok'?'ok':state==='err'?'err':'wait');
+  txt.textContent = state==='ok' ? '雲端已同步' : state==='err' ? (msg||'連線失敗') : '連線中…';
+}
+
+function timeAgo(ms){
+  if(!ms) return '';
+  const s = (Date.now()-ms)/1000;
+  if(s < 60) return '剛剛';
+  if(s < 3600) return Math.floor(s/60)+' 分鐘前';
+  if(s < 86400) return Math.floor(s/3600)+' 小時前';
+  return Math.floor(s/86400)+' 天前';
+}
+
+function renderTaskList(){
+  const box = $('#taskList');
+  const rows = Object.entries(tasks).map(([id,t])=>({id,...t}))
+    .sort((a,b)=>(b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0));
+  if(!rows.length){ box.innerHTML = '<div class="empty">還沒有任務</div>'; return; }
+  box.innerHTML = rows.map(t => `
+    <div class="taskitem ${t.id===selected?'on':''}" data-id="${t.id}">
+      <div class="tt">${esc(t.title)}</div>
+      <div class="meta">
+        <span class="badge b-${t.stage}">${STAGE_LABEL[t.stage]||t.stage}</span>
+        ${t.client?`<span class="cl">${esc(t.client)}</span>`:''}
+        <span class="cl">${timeAgo(t.updatedAt||t.createdAt)}</span>
+      </div>
+    </div>`).join('');
+  box.querySelectorAll('.taskitem').forEach(el=>{
+    el.onclick = () => { selected = el.dataset.id; renderTaskList(); renderChat(); };
+  });
+}
+
+function renderChat(){
+  const panel = $('#chatPanel');
+  if(!selected || !tasks[selected]){
+    panel.innerHTML = '<div class="empty">從左邊選一個任務，或按「＋ 新任務」開始一輪</div>';
+    return;
+  }
+  const t = tasks[selected];
+  const msgs = Object.values(messages[selected]||{}).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+
+  let html = `<div class="chatHead">
+    <div><h2>${esc(t.title)}</h2><div class="brief">${esc(t.brief||'')}</div></div>
+    <span class="badge b-${t.stage}">${STAGE_LABEL[t.stage]||t.stage}</span>
+  </div>`;
+
+  html += '<div class="msglist">' + msgs.map(m=>{
+    const meta = ROLE_META[m.role] || {label:m.role, cls:'r-system'};
+    return `<div class="msg ${meta.cls}"><div class="who">${meta.label}</div>${esc(m.text)}</div>`;
+  }).join('') + '</div>';
+
+  if(t.stage==='planning'||t.stage==='making'||t.stage==='reviewing'){
+    html += `<div class="working"><span class="sp"></span>小幫手處理中，每分鐘會檢查一次，跑完自動出現在上面</div>`;
+  }
+
+  if(t.stage==='waiting_human'){
+    html += `<div class="waitbox">
+      <div class="wt">🙋 需要你確認</div>
+      <div class="wr">${esc(t.waitingReason||'')}</div>
+      <textarea id="replyText" placeholder="想給的方向或意見（選填）"></textarea>
+      <div class="btns">`;
+    if(t.waitingKind==='maxRound'){
+      html += `<button class="wbtn p" id="btnFinalize">採用目前版本，定稿</button>
+                <button class="wbtn g" id="btnContinue">繼續修改（帶我的意見）</button>`;
+    } else {
+      html += `<button class="wbtn p" id="btnContinue">確認，繼續</button>`;
+    }
+    html += `</div></div>`;
+  }
+
+  panel.innerHTML = html;
+
+  const replyEl = $('#replyText');
+  const getReply = () => (replyEl && replyEl.value.trim()) || '';
+
+  if($('#btnContinue')){
+    $('#btnContinue').onclick = async () => {
+      const text = getReply();
+      const patch = { stage: t.resumeStage || 'making', updatedAt: Date.now() };
+      if(t.waitingKind==='maxRound') patch.round = 0;
+      await dbUpdate(dbRef(db, `${ROOM}/tasks/${selected}`), patch);
+      if(text) await dbPush(dbRef(db, `${ROOM}/messages/${selected}`), {role:'human', text, createdAt: Date.now()});
+    };
+  }
+  if($('#btnFinalize')){
+    $('#btnFinalize').onclick = async () => {
+      await dbUpdate(dbRef(db, `${ROOM}/tasks/${selected}`), {stage:'done', updatedAt: Date.now()});
+      await dbPush(dbRef(db, `${ROOM}/messages/${selected}`), {role:'system', text:'你選擇採用目前版本，定稿。', createdAt: Date.now()});
+    };
+  }
+}
+
+/* ---------- 新任務表單 ---------- */
+let newType = 'social';
+$('#typeSeg').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  newType = b.dataset.v;
+  $('#typeSeg').querySelectorAll('button').forEach(x=>x.classList.toggle('on', x===b));
+});
+$('#newBtn').onclick = () => { $('#modalBg').style.display='flex'; populateWsPick(); };
+$('#cancelBtn').onclick = () => { $('#modalBg').style.display='none'; resetForm(); };
+$('#modalBg').addEventListener('click', e=>{ if(e.target.id==='modalBg'){ $('#modalBg').style.display='none'; resetForm(); }});
+
+function resetForm(){
+  $('#fTitle').value=''; $('#fClient').value=''; $('#fBrief').value=''; $('#wsPick').value='';
+}
+function clientName(id){ return (wsClients[id]||{}).name || (wsClients[id]||{}).short || ''; }
+function populateWsPick(){
+  const sel = $('#wsPick');
+  const rows = Object.entries(wsTasks).filter(([,t])=>t && !t.done && t.type!=='內部' && t.type!=='禾言')
+    .sort((a,b)=>(a[1].due||'').localeCompare(b[1].due||''))
+    .slice(0,50);
+  sel.innerHTML = '<option value="">— 不挑，自己打 —</option>' +
+    rows.map(([id,t])=>`<option value="${id}">${esc(t.name||'')}${t.client?'（'+esc(clientName(t.client))+'）':''}</option>`).join('');
+}
+$('#wsPick').addEventListener('change', e=>{
+  const t = wsTasks[e.target.value];
+  if(!t) return;
+  $('#fTitle').value = t.name || '';
+  if(t.client) $('#fClient').value = clientName(t.client);
+  if(t.note) $('#fBrief').value = t.note;
+});
+
+$('#submitBtn').onclick = async () => {
+  const title = $('#fTitle').value.trim();
+  const brief = $('#fBrief').value.trim();
+  if(!title){ $('#fTitle').focus(); return; }
+  const now = Date.now();
+  const id = dbPush(dbRef(db, `${ROOM}/tasks`)).key;
+  await dbSet(dbRef(db, `${ROOM}/tasks/${id}`), {
+    title, client: $('#fClient').value.trim(), brief, type: newType,
+    stage: 'planning', round: 0, createdAt: now, updatedAt: now,
+  });
+  await dbPush(dbRef(db, `${ROOM}/messages/${id}`), {role:'human', text: brief || title, createdAt: now});
+  $('#modalBg').style.display='none'; resetForm();
+  selected = id; renderTaskList(); renderChat();
+};
+
+/* ---------- Firebase ---------- */
+async function initFirebase(interactive){
+  setSync('wait');
+  const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+  const { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } =
+    await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+  const { getDatabase, ref, set, update, push, onValue, get } =
+    await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+
+  const app = initializeApp(FIREBASE_CONFIG);
+  const auth = getAuth(app);
+
+  let user = await new Promise(res => { const un = onAuthStateChanged(auth, u => { un(); res(u); }); });
+  if(!user){
+    if(!interactive) return false;
+    user = (await signInWithPopup(auth, new GoogleAuthProvider())).user;
+  }
+  if(user.email !== OWNER_EMAIL){
+    await signOut(auth);
+    throw new Error(`這個帳號（${user.email}）沒有權限，請用 ${OWNER_EMAIL} 登入`);
+  }
+
+  db = getDatabase(app); dbRef = ref; dbSet = set; dbUpdate = update; dbPush = push; dbOnValue = onValue; dbGet = get;
+  setSync('ok');
+
+  onValue(ref(db, `${ROOM}/tasks`), s => { tasks = s.exists()? s.val() : {}; renderTaskList(); renderChat(); });
+  onValue(ref(db, `${ROOM}/messages`), s => { messages = s.exists()? s.val() : {}; renderChat(); });
+
+  // 工作台既有任務，唯讀，讓新任務表單可以挑——讀不到就算了，不擋主流程
+  get(ref(db, `${WS_ROOM}/tasks`)).then(s=>{ wsTasks = s.exists()? s.val() : {}; }).catch(()=>{});
+  get(ref(db, `${WS_ROOM}/clients`)).then(s=>{ wsClients = s.exists()? s.val() : {}; }).catch(()=>{});
+
+  return true;
+}
+
+$('#gateBtn').onclick = async () => {
+  $('#gateErr').textContent = '';
+  try{
+    await initFirebase(true);
+    $('#gate').style.display = 'none';
+  }catch(e){
+    $('#gateErr').textContent = e.message || '登入失敗，再試一次';
+    setSync('err', e.message);
+  }
+};
+
+(async () => {
+  try{
+    const ok = await initFirebase(false);
+    if(ok) $('#gate').style.display = 'none';
+    else setSync('wait');
+  }catch(e){ setSync('err', e.message); }
+})();
+</script>
+</body>
+</html>
