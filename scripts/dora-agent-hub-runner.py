@@ -12,6 +12,9 @@
   最多來回 2 輪，超過就停下來標記「需要你決定」（不會自己一直打轉）
 - 任何一個角色覺得資訊不夠、判斷不出來，會在回覆開頭寫 NEED_HUMAN，
   這支腳本看到就整件標記「需要你決定」並推播 LINE（其他時候不推播，不然天天洗版）
+
+網頁上還有「私聊」——朱兒可以不透過任務、直接跟某個角色聊天。
+每輪一樣只挑「最舊的一件待處理事」動手，任務推進跟私聊回覆一起排隊，不會搶額度。
 """
 import base64, json, os, re, subprocess, sys, tempfile, time
 from urllib.parse import urlencode
@@ -31,6 +34,13 @@ SKILL_NAME = {'social': '社群文案撰寫', 'ad': '廣告文案撰寫'}
 TYPE_LABEL = {'social': '社群文案', 'ad': '廣告投放文案'}
 
 ROLE_LABEL = {'planner': '規劃', 'maker': '製作', 'reviewer': '審閱', 'human': '你', 'system': '系統'}
+
+# 私聊用的人設。跟 100_Todo/projects/agent-hub/index.html 的 PERSONA 要對齊，改一邊要記得改另一邊
+PERSONA = {
+    'planner':  {'name': '小梟', 'desc': '規劃方向'},
+    'maker':    {'name': '小兔', 'desc': '製作初稿'},
+    'reviewer': {'name': '小狐', 'desc': '審閱把關'},
+}
 
 ALLOWED = ','.join(['Read', 'Glob', 'Grep'])
 
@@ -85,6 +95,15 @@ REVIEWER_PROMPT = """你是「審閱」小幫手，負責幫這篇{type_label}�
 決定：需要修改
 
 只輸出審閱意見本身，不要加開場白。"""
+
+DM_PROMPT = """你是「{name}」，在朱兒的 AI 協作平台裡負責{desc}，這次不是特定任務裡的討論，
+是朱兒直接傳私訊給你——她可能在問狀況、問想法，或只是聊聊。
+
+目前為止的對話：
+{transcript}
+
+用你這個角色的口吻自然回覆就好，不用太正式，也不用一直強調自己是規劃/製作/審閱小幫手。
+只輸出你要回的話本身，不要加開場白。"""
 
 
 def load_env():
@@ -301,6 +320,27 @@ def process_task(cfg, tok, task):
     return True
 
 
+def process_dm(cfg, tok, role, dm_msgs):
+    p = PERSONA[role]
+    rows = sorted(dm_msgs.values(), key=lambda m: m.get('createdAt', 0))
+    lines = []
+    for m in rows:
+        who = '你' if m.get('from') == 'human' else p['name']
+        lines.append(f"[{who}] {m.get('text', '')}")
+    transcript = '\n'.join(lines)
+    prompt = DM_PROMPT.format(name=p['name'], desc=p['desc'], transcript=transcript)
+
+    print(f"{time.strftime('%F %T')} 開始跑私聊 / {role}")
+    now_ms = int(time.time() * 1000)
+    try:
+        out = run_claude(prompt)
+    except Exception as e:
+        db_post(cfg, tok, ROOM, f'dms/{role}', {
+            'from': role, 'text': f'（這輪跑失敗了：{str(e)[:150]}，再傳一次看看）', 'createdAt': now_ms})
+        return
+    db_post(cfg, tok, ROOM, f'dms/{role}', {'from': role, 'text': out, 'createdAt': now_ms})
+
+
 def main():
     if os.path.exists(LOCK) and time.time() - os.path.getmtime(LOCK) < TIMEOUT:
         return
@@ -310,16 +350,35 @@ def main():
         if not all(cfg.get(k) for k in ('WS_SA_KEY', 'WS_DB_URL')):
             print('設定不全，跳過'); return
         tok = ws_token(cfg['WS_SA_KEY'])
+
+        jobs = []  # (時間戳, 種類, 資料)
+
         tasks = db_get(cfg, tok, ROOM, 'tasks') or {}
-        actionable = []
         for tid, t in tasks.items():
             if isinstance(t, dict) and t.get('stage') in ('planning', 'making', 'reviewing'):
                 t = dict(t); t['id'] = tid
-                actionable.append(t)
-        if not actionable:
+                jobs.append((t.get('updatedAt', t.get('createdAt', 0)), 'task', t))
+
+        all_dms = db_get(cfg, tok, ROOM, 'dms') or {}
+        for role in PERSONA:
+            dm_msgs = all_dms.get(role) or {}
+            if not dm_msgs:
+                continue
+            rows = sorted(dm_msgs.values(), key=lambda m: m.get('createdAt', 0))
+            last = rows[-1]
+            if last.get('from') == 'human':
+                jobs.append((last.get('createdAt', 0), 'dm', (role, dm_msgs)))
+
+        if not jobs:
             return
-        actionable.sort(key=lambda t: t.get('updatedAt', t.get('createdAt', 0)))
-        process_task(cfg, ws_token(cfg['WS_SA_KEY']), actionable[0])
+        jobs.sort(key=lambda j: j[0])
+        kind, payload = jobs[0][1], jobs[0][2]
+        tok2 = ws_token(cfg['WS_SA_KEY'])
+        if kind == 'task':
+            process_task(cfg, tok2, payload)
+        else:
+            role, dm_msgs = payload
+            process_dm(cfg, tok2, role, dm_msgs)
     finally:
         if os.path.exists(LOCK):
             os.unlink(LOCK)

@@ -4,100 +4,183 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>AI 協作平台</title>
-<meta name="theme-color" content="#F4F5FB">
+<meta name="theme-color" content="#F48FB1">
 <style>
 :root{
-  --bg:#F4F5FB; --card:#FFFFFF;
-  --accent:#6366F1; --accent-d:#4F46E5; --accent-l:#E7E7FC;
-  --ink:#2B2D42; --ink2:#6B7280; --ink3:#9CA3AF;
-  --line:#E7E8F3;
-  --plan:#60A5FA; --make:#A78BFA; --review:#34D399; --wait:#F59E0B; --done:#10B981;
-  --shadow:0 2px 10px rgba(99,102,241,.10);
-  --shadow-l:0 6px 22px rgba(99,102,241,.18);
+  --bg:#FFF5F7; --card:#FFFFFF;
+  --pink:#F48FB1; --pink-d:#E57399; --pink-l:#FFD9E3; --pink-xl:#FFF0F4;
+  --ink:#5B3C46; --ink2:#8C6B76; --ink3:#B79AA4;
+  --line:#F6DCE4;
+  --s-plan:#7FB6E0; --s-make:#F4A6C6; --s-review:#6FC79A; --s-wait:#F5A623; --s-done:#B98CD1;
+  --shadow:0 2px 10px rgba(232,150,178,.13);
+  --shadow-l:0 6px 22px rgba(232,150,178,.20);
   --r:16px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 button,input,textarea,select{font:inherit;color:inherit;border:none;background:none;outline:none}
 button{cursor:pointer}
 body{
-  font-family:"PingFang TC","Noto Sans TC","Helvetica Neue",sans-serif;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Helvetica Neue",sans-serif;
   background:var(--bg); color:var(--ink); font-size:15px; line-height:1.6;
   padding:14px 14px 40px; max-width:1180px; margin:0 auto;
   -webkit-text-size-adjust:100%;
 }
 
 /* ---------- 登入閘門 ---------- */
-#gate{position:fixed;inset:0;background:var(--bg);z-index:99;
+#gate{position:fixed;inset:0;background:linear-gradient(160deg,#FFF5F7,#FFE4EC);z-index:99;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center}
 #gate h1{font-size:19px}
 #gate p{margin:0;font-size:13px;color:var(--ink2);max-width:320px;line-height:1.8}
-#gate button{padding:13px 26px;border-radius:14px;background:var(--accent);color:#fff;font-weight:700;
+#gate button{padding:13px 26px;border-radius:14px;background:var(--pink);color:#fff;font-weight:700;
   box-shadow:var(--shadow-l)}
 #gate .err{color:#E05263;font-size:12.5px}
 
 /* ---------- 頁首 ---------- */
-header.top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
 header.top h1{font-size:19px;letter-spacing:.5px}
-header.top .sub{font-size:12px;color:var(--ink3);margin-left:2px;font-weight:400}
 .syncbox{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink3);
   background:#fff;padding:6px 11px;border-radius:99px;box-shadow:var(--shadow)}
 .dot{width:7px;height:7px;border-radius:99px;background:var(--ink3)}
-.dot.ok{background:var(--done)}.dot.err{background:#E05263}.dot.wait{background:var(--wait)}
+.dot.ok{background:#6FC79A}.dot.err{background:#E05263}.dot.wait{background:var(--s-wait)}
 
-/* ---------- 版面：左任務列表 / 右對話 ---------- */
-.layout{display:flex;gap:14px;align-items:flex-start}
-.col-tasks{flex:none;width:100%}
-.col-chat{flex:1;min-width:0}
-@media(min-width:860px){
-  .layout{flex-direction:row}
-  .col-tasks{width:300px}
-}
+/* ---------- 分頁 ---------- */
+nav.tabs{display:flex;gap:6px;margin-bottom:14px}
+nav.tabs .tb{display:flex;align-items:center;gap:6px;padding:9px 16px;border-radius:99px;
+  background:#fff;color:var(--ink2);font-size:14px;font-weight:700;white-space:nowrap;
+  box-shadow:var(--shadow);cursor:pointer}
+nav.tabs .tb.on{background:var(--pink);color:#fff;box-shadow:var(--shadow-l)}
+nav.tabs .tb .cnt{background:rgba(0,0,0,.12);border-radius:99px;font-size:10.5px;padding:1px 6px}
+nav.tabs .tb.on .cnt{background:rgba(255,255,255,.3)}
+
+/* ---------- 工位列 ---------- */
+.workbar{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+@media(max-width:640px){.workbar{grid-template-columns:1fr}}
+.wscard{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:12px;
+  display:flex;flex-direction:column;gap:8px;border:2px solid transparent}
+.wscard.busy{border-color:var(--pink)}
+.wshead{display:flex;align-items:center;gap:10px}
+.wsavatar{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+  font-size:19px;flex:none}
+.ws-planner .wsavatar{background:#E3F0FB}
+.ws-maker .wsavatar{background:var(--pink-xl)}
+.ws-reviewer .wsavatar{background:#FFF3E3}
+.wsinfo{min-width:0}
+.wsinfo .wn{font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px}
+.wsinfo .wr{font-size:11.5px;color:var(--ink3)}
+.wsstate{font-size:11.5px;border-radius:10px;padding:6px 9px;display:flex;align-items:center;gap:6px}
+.wsstate.idle{background:var(--bg);color:var(--ink3)}
+.wsstate.busy{background:var(--pink-xl);color:var(--pink-d);font-weight:700}
+.wsstate .sp{width:6px;height:6px;border-radius:99px;background:var(--pink-d);animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{opacity:.25}50%{opacity:1}}
+
 .panel{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:14px}
+.empty{color:var(--ink3);font-size:13px;text-align:center;padding:30px 0}
 
-.addbtn{width:100%;padding:10px;border-radius:12px;background:var(--accent);color:#fff;
-  font-size:13.5px;font-weight:700;box-shadow:var(--shadow);margin-bottom:12px}
+/* ---------- 工作群 feed ---------- */
+.feedlist{display:flex;flex-direction:column;gap:8px}
+.feeditem{display:flex;gap:10px;padding:10px;border-radius:12px;cursor:pointer;background:var(--bg)}
+.feeditem:hover{background:var(--pink-xl)}
+.feeditem .av{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+  font-size:15px;flex:none}
+.feeditem .body{min-width:0;flex:1}
+.feeditem .top{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;color:var(--ink3)}
+.feeditem .who{font-weight:700;color:var(--ink)}
+.feeditem .tag{background:#fff;border-radius:8px;padding:1px 7px;font-size:11px}
+.feeditem .snip{font-size:13px;color:var(--ink2);margin-top:3px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-.tasklist{display:flex;flex-direction:column;gap:8px}
-.taskitem{background:var(--bg);border-radius:12px;padding:10px 12px;cursor:pointer;
-  border:2px solid transparent;display:flex;flex-direction:column;gap:5px}
-.taskitem.on{border-color:var(--accent);background:var(--accent-l)}
-.taskitem .tt{font-size:14px;font-weight:700;line-height:1.4}
-.taskitem .meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.taskitem .cl{font-size:11.5px;color:var(--ink3)}
-.badge{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap}
-.b-planning{background:var(--plan)} .b-making{background:var(--make)}
-.b-reviewing{background:var(--review)} .b-waiting_human{background:var(--wait)}
-.b-done{background:var(--done)}
-.empty{color:var(--ink3);font-size:13px;text-align:center;padding:24px 0}
+/* ---------- 任務看板 ---------- */
+.boardhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap}
+.addbtn{padding:9px 16px;border-radius:12px;background:var(--pink);color:#fff;
+  font-size:13.5px;font-weight:700;box-shadow:var(--shadow)}
+.board{display:grid;grid-template-columns:repeat(5,minmax(200px,1fr));gap:10px;overflow-x:auto;padding-bottom:6px}
+@media(max-width:900px){.board{grid-template-columns:repeat(5,80vw)}}
+.col{background:var(--pink-xl);border-radius:14px;padding:10px;min-height:100px}
+.col h3{font-size:12.5px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;color:var(--ink2)}
+.col h3 .cdot{width:8px;height:8px;border-radius:99px}
+.cd-planning{background:var(--s-plan)} .cd-making{background:var(--s-make)}
+.cd-reviewing{background:var(--s-review)} .cd-waiting_human{background:var(--s-wait)}
+.cd-done{background:var(--s-done)}
+.col .cnt{margin-left:auto;color:var(--ink3);font-weight:400}
+.card{background:#fff;border-radius:12px;padding:10px;margin-bottom:8px;cursor:pointer;box-shadow:var(--shadow)}
+.card:hover{box-shadow:var(--shadow-l)}
+.card .tt{font-size:13px;font-weight:700;line-height:1.4;margin-bottom:5px}
+.card .meta{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink3)}
+.card .av{width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px}
 
-/* ---------- 對話串 ---------- */
-.chatHead{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:10px;flex-wrap:wrap}
-.chatHead h2{font-size:16px}
-.chatHead .brief{font-size:12.5px;color:var(--ink2);margin-top:3px;white-space:pre-wrap}
-.msglist{display:flex;flex-direction:column;gap:10px;margin-bottom:12px;max-height:60vh;overflow-y:auto;padding-right:2px}
-.msg{border-radius:12px;padding:10px 12px;font-size:13.5px;line-height:1.7;white-space:pre-wrap}
-.msg .who{font-size:11.5px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:6px}
-.msg.r-planner{background:#EFF6FF;border-left:3px solid var(--plan)}
-.msg.r-maker{background:#F5F3FF;border-left:3px solid var(--make)}
-.msg.r-reviewer{background:#ECFDF5;border-left:3px solid var(--review)}
-.msg.r-human{background:var(--accent-l);border-left:3px solid var(--accent)}
-.msg.r-system{background:var(--bg);border-left:3px solid var(--ink3);color:var(--ink2);font-size:12.5px}
+/* ---------- 任務詳情 ---------- */
+.backbtn{font-size:12.5px;color:var(--ink3);margin-bottom:10px;display:inline-flex;align-items:center;gap:4px}
+.dhead{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.dhead h2{font-size:17px}
+.dhead .brief{font-size:12.5px;color:var(--ink2);margin-top:4px;white-space:pre-wrap}
+.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap}
+.b-planning{background:var(--s-plan)} .b-making{background:var(--s-make)}
+.b-reviewing{background:var(--s-review)} .b-waiting_human{background:var(--s-wait)}
+.b-done{background:var(--s-done)}
 
-.working{font-size:12.5px;color:var(--ink3);display:flex;align-items:center;gap:6px;padding:4px 2px}
-.working .sp{width:7px;height:7px;border-radius:99px;background:var(--accent);animation:pulse 1.2s infinite}
-@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
+.steps{display:flex;align-items:center;margin-bottom:16px;overflow-x:auto}
+.step{display:flex;flex-direction:column;align-items:center;gap:5px;flex:none;width:74px}
+.step .circ{width:30px;height:30px;border-radius:99px;background:var(--bg);color:var(--ink3);
+  display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;border:2px solid var(--line)}
+.step.done .circ{background:var(--s-done);color:#fff;border-color:var(--s-done)}
+.step.now .circ{background:var(--pink);color:#fff;border-color:var(--pink)}
+.step .sl{font-size:10.5px;color:var(--ink3);text-align:center}
+.step.now .sl{color:var(--pink-d);font-weight:700}
+.stepline{flex:1;height:2px;background:var(--line);min-width:16px}
 
-.waitbox{background:#FFFBEB;border:1px solid #FDE68A;border-radius:12px;padding:12px;margin-bottom:12px}
+.waitbox{background:#FFFBEB;border:1px solid #FDE68A;border-radius:12px;padding:12px;margin-bottom:14px}
 .waitbox .wt{font-size:13px;font-weight:700;color:#92400E;margin-bottom:4px}
 .waitbox .wr{font-size:13px;color:#78350F;white-space:pre-wrap;margin-bottom:8px}
 .waitbox textarea{width:100%;border-radius:10px;background:#fff;border:1px solid #FDE68A;padding:8px;font-size:13px;min-height:56px;margin-bottom:8px}
 .waitbox .btns{display:flex;gap:8px;flex-wrap:wrap}
 .wbtn{padding:8px 14px;border-radius:10px;font-size:12.5px;font-weight:700}
-.wbtn.p{background:var(--accent);color:#fff}
+.wbtn.p{background:var(--pink);color:#fff}
 .wbtn.g{background:#fff;color:var(--ink2);border:1px solid var(--line)}
 
+.working{font-size:12.5px;color:var(--ink3);display:flex;align-items:center;gap:6px;padding:4px 2px;margin-bottom:8px}
+.working .sp{width:7px;height:7px;border-radius:99px;background:var(--pink);animation:pulse 1.2s infinite}
+
+.feedtitle{font-size:12.5px;font-weight:700;color:var(--ink2);margin-bottom:8px}
+.msglist{display:flex;flex-direction:column;gap:10px;margin-bottom:6px;max-height:52vh;overflow-y:auto;padding-right:2px}
+.msg{display:flex;gap:8px}
+.msg .av{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex:none}
+.msg .body{background:var(--bg);border-radius:12px;padding:9px 11px;font-size:13.5px;line-height:1.7;white-space:pre-wrap;flex:1}
+.msg .who{font-size:11.5px;font-weight:700;margin-bottom:3px;color:var(--ink2)}
+.msg.r-planner .body{background:#EFF6FF}
+.msg.r-maker .body{background:var(--pink-xl)}
+.msg.r-reviewer .body{background:#ECFDF5}
+.msg.r-human .body{background:#FFF3E3}
+.msg.r-system .body{background:var(--bg);color:var(--ink2);font-size:12.5px}
+
+.propgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-top:14px;
+  border-top:1px solid var(--line);padding-top:12px}
+.propgrid .pk{font-size:10.5px;color:var(--ink3)}
+.propgrid .pv{font-size:13px;font-weight:700;margin-top:2px}
+
+/* ---------- 私聊 ---------- */
+.dmlayout{display:flex;gap:14px;align-items:flex-start}
+.dmside{flex:none;width:100%;display:flex;flex-direction:column;gap:8px}
+@media(min-width:720px){.dmlayout{flex-direction:row}.dmside{width:220px}}
+.dmitem{display:flex;align-items:center;gap:9px;padding:9px;border-radius:12px;cursor:pointer;background:var(--bg)}
+.dmitem.on{background:var(--pink-l)}
+.dmitem .av{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex:none}
+.dmitem .nm{font-size:13.5px;font-weight:700}
+.dmitem .prev{font-size:11px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px}
+.dmmain{flex:1;min-width:0;display:flex;flex-direction:column}
+.dmhead{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.dmhead .av{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px}
+.dmthread{display:flex;flex-direction:column;gap:8px;max-height:50vh;overflow-y:auto;margin-bottom:10px;padding-right:2px}
+.dmbub{max-width:78%;padding:9px 12px;border-radius:14px;font-size:13.5px;line-height:1.6;white-space:pre-wrap}
+.dmrow{display:flex}
+.dmrow.me{justify-content:flex-end}
+.dmrow.me .dmbub{background:var(--pink);color:#fff;border-bottom-right-radius:4px}
+.dmrow.them .dmbub{background:var(--bg);border-bottom-left-radius:4px}
+.dminput{display:flex;gap:8px}
+.dminput textarea{flex:1;background:var(--bg);border-radius:12px;padding:10px 12px;font-size:13.5px;min-height:44px;max-height:120px}
+.dminput button{background:var(--pink);color:#fff;border-radius:12px;padding:0 18px;font-weight:700;font-size:13px}
+
 /* ---------- 新任務表單 ---------- */
-.modal-bg{position:fixed;inset:0;background:rgba(43,45,66,.35);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.modal-bg{position:fixed;inset:0;background:rgba(91,60,70,.35);z-index:50;display:flex;align-items:flex-end;justify-content:center}
 @media(min-width:640px){.modal-bg{align-items:center}}
 .modal{background:#fff;border-radius:20px 20px 0 0;padding:18px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto}
 @media(min-width:640px){.modal{border-radius:20px}}
@@ -107,13 +190,11 @@ header.top .sub{font-size:12px;color:var(--ink3);margin-left:2px;font-weight:400
 .modal textarea{min-height:80px}
 .seg2{display:flex;background:var(--bg);border-radius:99px;padding:3px;margin-top:4px}
 .seg2 button{flex:1;padding:7px;border-radius:99px;font-size:12.5px;font-weight:700;color:var(--ink3)}
-.seg2 button.on{background:var(--accent);color:#fff}
+.seg2 button.on{background:var(--pink);color:#fff}
 .modal .foot{display:flex;gap:8px;margin-top:16px}
 .modal .foot button{flex:1;padding:11px;border-radius:12px;font-size:13.5px;font-weight:700}
 .modal .foot .cancel{background:var(--bg);color:var(--ink2)}
-.modal .foot .submit{background:var(--accent);color:#fff;box-shadow:var(--shadow)}
-.pickrow{display:flex;gap:6px;margin-top:4px}
-.pickrow select{flex:1}
+.modal .foot .submit{background:var(--pink);color:#fff;box-shadow:var(--shadow)}
 .hint{font-size:11.5px;color:var(--ink3);margin-top:4px}
 </style>
 </head>
@@ -121,28 +202,46 @@ header.top .sub{font-size:12px;color:var(--ink3);margin-left:2px;font-weight:400
 
 <div id="gate">
   <h1>🤝 AI 協作平台</h1>
-  <p>規劃、製作、審閱三個 AI 小幫手接力處理你的文案任務。資料只有你看得到，需要用 zhuer0323@gmail.com 登入。</p>
+  <p>小梟、小兔、小狐三個 AI 小幫手接力處理你的文案任務。資料只有你看得到，需要用 zhuer0323@gmail.com 登入。</p>
   <button id="gateBtn">用 Google 登入</button>
   <div class="err" id="gateErr"></div>
 </div>
 
 <header class="top">
-  <div><h1>🤝 AI 協作平台<span class="sub">規劃 → 製作 → 審閱</span></h1></div>
+  <h1>🤝 AI 協作平台</h1>
   <div class="syncbox"><span class="dot" id="dot"></span><span id="syncTxt">連線中…</span></div>
 </header>
 
-<div class="layout">
-  <div class="col-tasks">
-    <div class="panel">
-      <button class="addbtn" id="newBtn">＋ 新任務</button>
-      <div class="tasklist" id="taskList"><div class="empty">還沒有任務</div></div>
+<div class="workbar" id="workbar"></div>
+
+<nav class="tabs" id="navTabs">
+  <div class="tb" data-tab="feed">👥 工作群</div>
+  <div class="tb" data-tab="dm">💬 私聊</div>
+  <div class="tb on" data-tab="tasks">✅ 任務<span class="cnt" id="taskCnt">0</span></div>
+</nav>
+
+<div id="tab-feed" style="display:none">
+  <div class="panel"><div class="feedlist" id="feedList"><div class="empty">還沒有動態</div></div></div>
+</div>
+
+<div id="tab-dm" style="display:none">
+  <div class="panel">
+    <div class="dmlayout">
+      <div class="dmside" id="dmSide"></div>
+      <div class="dmmain">
+        <div class="dmhead" id="dmHead"></div>
+        <div class="dmthread" id="dmThread"></div>
+        <div class="dminput">
+          <textarea id="dmInput" placeholder="傳訊息…"></textarea>
+          <button id="dmSend">送出</button>
+        </div>
+      </div>
     </div>
   </div>
-  <div class="col-chat">
-    <div class="panel" id="chatPanel">
-      <div class="empty">從左邊選一個任務，或按「＋ 新任務」開始一輪</div>
-    </div>
-  </div>
+</div>
+
+<div id="tab-tasks">
+  <div class="panel" id="tasksPanel"></div>
 </div>
 
 <div class="modal-bg" id="modalBg" style="display:none">
@@ -150,9 +249,7 @@ header.top .sub{font-size:12px;color:var(--ink3);margin-left:2px;font-weight:400
     <h3>新任務</h3>
 
     <label>從工作台既有任務挑一個（選填）</label>
-    <div class="pickrow">
-      <select id="wsPick"><option value="">— 不挑，自己打 —</option></select>
-    </div>
+    <select id="wsPick"><option value="">— 不挑，自己打 —</option></select>
     <div class="hint">挑了會自動帶入標題與客戶，需求簡述你再補一下</div>
 
     <label>類型</label>
@@ -195,18 +292,23 @@ const $ = s => document.querySelector(s);
 const esc = s => (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 let db, dbRef, dbSet, dbUpdate, dbPush, dbOnValue, dbGet;
-let tasks = {}, messages = {}, selected = null, wsTasks = {}, wsClients = {};
+let tasks = {}, messages = {}, dms = {}, wsTasks = {}, wsClients = {};
+let activeTab = 'tasks', selectedTask = null, selectedDM = 'planner';
 
-const ROLE_META = {
-  planner:{label:'📋 規劃', cls:'r-planner'},
-  maker:{label:'✍️ 製作', cls:'r-maker'},
-  reviewer:{label:'🔍 審閱', cls:'r-reviewer'},
-  human:{label:'🙋 你', cls:'r-human'},
-  system:{label:'⚙️ 系統', cls:'r-system'},
+/* 三個小幫手的「人設」——固定的規劃→製作→審閱流程，各自配一個角色 */
+const PERSONA = {
+  planner:  {name:'小梟', avatar:'🦉', desc:'規劃方向', cls:'ws-planner'},
+  maker:    {name:'小兔', avatar:'🐰', desc:'製作初稿', cls:'ws-maker'},
+  reviewer: {name:'小狐', avatar:'🦊', desc:'審閱把關', cls:'ws-reviewer'},
 };
-const STAGE_LABEL = {
-  planning:'規劃中', making:'製作中', reviewing:'審閱中',
-  waiting_human:'待你確認', done:'已完成'
+const ROLE_ORDER = ['planner','maker','reviewer'];
+const STAGE_OF_ROLE = {planner:'planning', maker:'making', reviewer:'reviewing'};
+const STAGE_ORDER = ['planning','making','reviewing','waiting_human','done'];
+const STAGE_LABEL = {planning:'規劃中', making:'製作中', reviewing:'審閱中', waiting_human:'待你確認', done:'已完成'};
+const ROLE_META = {
+  planner:{label:'🦉 小梟', cls:'r-planner'}, maker:{label:'🐰 小兔', cls:'r-maker'},
+  reviewer:{label:'🦊 小狐', cls:'r-reviewer'}, human:{label:'🙋 你', cls:'r-human'},
+  system:{label:'⚙️ 系統', cls:'r-system'},
 };
 
 function setSync(state, msg){
@@ -214,7 +316,6 @@ function setSync(state, msg){
   dot.className = 'dot ' + (state==='ok'?'ok':state==='err'?'err':'wait');
   txt.textContent = state==='ok' ? '雲端已同步' : state==='err' ? (msg||'連線失敗') : '連線中…';
 }
-
 function timeAgo(ms){
   if(!ms) return '';
   const s = (Date.now()-ms)/1000;
@@ -224,46 +325,149 @@ function timeAgo(ms){
   return Math.floor(s/86400)+' 天前';
 }
 
-function renderTaskList(){
-  const box = $('#taskList');
-  const rows = Object.entries(tasks).map(([id,t])=>({id,...t}))
-    .sort((a,b)=>(b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0));
-  if(!rows.length){ box.innerHTML = '<div class="empty">還沒有任務</div>'; return; }
-  box.innerHTML = rows.map(t => `
-    <div class="taskitem ${t.id===selected?'on':''}" data-id="${t.id}">
-      <div class="tt">${esc(t.title)}</div>
-      <div class="meta">
-        <span class="badge b-${t.stage}">${STAGE_LABEL[t.stage]||t.stage}</span>
-        ${t.client?`<span class="cl">${esc(t.client)}</span>`:''}
-        <span class="cl">${timeAgo(t.updatedAt||t.createdAt)}</span>
+/* ---------- 分頁切換 ---------- */
+$('#navTabs').addEventListener('click', e=>{
+  const tb = e.target.closest('.tb'); if(!tb) return;
+  activeTab = tb.dataset.tab;
+  $('#navTabs').querySelectorAll('.tb').forEach(x=>x.classList.toggle('on', x===tb));
+  $('#tab-feed').style.display = activeTab==='feed' ? '' : 'none';
+  $('#tab-dm').style.display = activeTab==='dm' ? '' : 'none';
+  $('#tab-tasks').style.display = activeTab==='tasks' ? '' : 'none';
+  renderAll();
+});
+
+/* ---------- 工位列 ---------- */
+function busyTaskFor(role){
+  const stage = STAGE_OF_ROLE[role];
+  return Object.entries(tasks).find(([,t]) => t && t.stage===stage);
+}
+function lastActiveFor(role){
+  let max = 0;
+  Object.values(messages).forEach(ms => Object.values(ms||{}).forEach(m=>{
+    if(m.role===role && m.createdAt>max) max = m.createdAt;
+  }));
+  Object.values(dms[role]||{}).forEach(m=>{ if(m.from===role && m.createdAt>max) max = m.createdAt; });
+  return max;
+}
+function renderWorkbar(){
+  const box = $('#workbar');
+  box.innerHTML = ROLE_ORDER.map(role=>{
+    const p = PERSONA[role];
+    const busy = busyTaskFor(role);
+    const last = lastActiveFor(role);
+    return `<div class="wscard ${p.cls} ${busy?'busy':''}">
+      <div class="wshead">
+        <div class="wsavatar">${p.avatar}</div>
+        <div class="wsinfo">
+          <div class="wn">${p.name}</div>
+          <div class="wr">${p.desc} · Claude Code</div>
+        </div>
       </div>
-    </div>`).join('');
-  box.querySelectorAll('.taskitem').forEach(el=>{
-    el.onclick = () => { selected = el.dataset.id; renderTaskList(); renderChat(); };
+      <div class="wsstate ${busy?'busy':'idle'}">
+        ${busy ? `<span class="sp"></span>處理中：${esc(busy[1].title)}` : `待命中 · ${last?timeAgo(last)+'活躍過':'還沒開始過'}`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ---------- 工作群 feed：把所有任務的訊息合成一條時間軸 ---------- */
+function renderFeed(){
+  if(activeTab!=='feed') return;
+  const rows = [];
+  Object.entries(messages).forEach(([tid, ms])=>{
+    const t = tasks[tid]; if(!t) return;
+    Object.values(ms||{}).forEach(m=> rows.push({...m, tid, title:t.title}));
+  });
+  rows.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  const box = $('#feedList');
+  if(!rows.length){ box.innerHTML = '<div class="empty">還沒有動態</div>'; return; }
+  box.innerHTML = rows.slice(0,50).map(m=>{
+    const meta = ROLE_META[m.role] || {label:m.role};
+    const p = PERSONA[m.role];
+    return `<div class="feeditem" data-tid="${m.tid}">
+      <div class="av" style="background:${p?'var(--pink-xl)':'var(--bg)'}">${p?p.avatar:'⚙️'}</div>
+      <div class="body">
+        <div class="top"><span class="who">${esc(meta.label)}</span><span class="tag">${esc(m.title)}</span><span>${timeAgo(m.createdAt)}</span></div>
+        <div class="snip">${esc(m.text)}</div>
+      </div>
+    </div>`;
+  }).join('');
+  box.querySelectorAll('.feeditem').forEach(el=>{
+    el.onclick = () => {
+      selectedTask = el.dataset.tid;
+      $('#navTabs').querySelectorAll('.tb').forEach(x=>x.classList.toggle('on', x.dataset.tab==='tasks'));
+      activeTab='tasks';
+      $('#tab-feed').style.display='none'; $('#tab-dm').style.display='none'; $('#tab-tasks').style.display='';
+      renderTasksTab();
+    };
   });
 }
 
-function renderChat(){
-  const panel = $('#chatPanel');
-  if(!selected || !tasks[selected]){
-    panel.innerHTML = '<div class="empty">從左邊選一個任務，或按「＋ 新任務」開始一輪</div>';
-    return;
-  }
-  const t = tasks[selected];
-  const msgs = Object.values(messages[selected]||{}).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+/* ---------- 任務看板 / 詳情 ---------- */
+function renderTasksTab(){
+  $('#taskCnt').textContent = Object.values(tasks).filter(t=>t && t.stage!=='done').length;
+  if(activeTab!=='tasks') return;
+  if(selectedTask && tasks[selectedTask]) renderTaskDetail(); else renderBoard();
+}
+function renderBoard(){
+  const rows = Object.entries(tasks).map(([id,t])=>({id,...t}));
+  let html = `<div class="boardhead"><h2 style="font-size:16px">任務看板</h2><button class="addbtn" id="newBtn2">＋ 新任務</button></div>`;
+  html += '<div class="board">' + STAGE_ORDER.map(stage=>{
+    const items = rows.filter(t=>t.stage===stage).sort((a,b)=>(b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0));
+    const respRole = Object.keys(STAGE_OF_ROLE).find(r=>STAGE_OF_ROLE[r]===stage);
+    return `<div class="col">
+      <h3><span class="cdot cd-${stage}"></span>${STAGE_LABEL[stage]}<span class="cnt">${items.length}</span></h3>
+      ${items.map(t=>{
+        const p = respRole ? PERSONA[respRole] : null;
+        return `<div class="card" data-id="${t.id}">
+          <div class="tt">${esc(t.title)}</div>
+          <div class="meta">${p?`<span class="av" style="background:var(--pink-xl)">${p.avatar}</span>`:''}
+            ${t.client?esc(t.client)+' · ':''}${timeAgo(t.updatedAt||t.createdAt)}</div>
+        </div>`;
+      }).join('') || '<div class="empty" style="padding:14px 0;font-size:12px">空的</div>'}
+    </div>`;
+  }).join('') + '</div>';
 
-  let html = `<div class="chatHead">
+  $('#tasksPanel').innerHTML = html;
+  $('#newBtn2').onclick = openModal;
+  $('#tasksPanel').querySelectorAll('.card').forEach(el=>{
+    el.onclick = () => { selectedTask = el.dataset.id; renderTaskDetail(); };
+  });
+}
+
+function renderTaskDetail(){
+  const t = tasks[selectedTask];
+  if(!t){ selectedTask=null; renderBoard(); return; }
+  const msgs = Object.values(messages[selectedTask]||{}).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+
+  const stepsDef = [
+    {key:'planning', label:'規劃', role:'planner'},
+    {key:'making', label:'製作', role:'maker'},
+    {key:'reviewing', label:'審閱', role:'reviewer'},
+    {key:'done', label:'完成', role:null},
+  ];
+  const curIdx = t.stage==='waiting_human'
+    ? stepsDef.findIndex(s=>s.key===(t.resumeStage||'planning'))
+    : stepsDef.findIndex(s=>s.key===t.stage);
+
+  let html = `<div class="backbtn" id="backBtn">← 返回任務看板</div>`;
+  html += `<div class="dhead">
     <div><h2>${esc(t.title)}</h2><div class="brief">${esc(t.brief||'')}</div></div>
-    <span class="badge b-${t.stage}">${STAGE_LABEL[t.stage]||t.stage}</span>
+    <span class="badge b-${t.stage}">${STAGE_LABEL[t.stage]||t.stage}${t.round?`（第 ${t.round+1} 輪）`:''}</span>
   </div>`;
 
-  html += '<div class="msglist">' + msgs.map(m=>{
-    const meta = ROLE_META[m.role] || {label:m.role, cls:'r-system'};
-    return `<div class="msg ${meta.cls}"><div class="who">${meta.label}</div>${esc(m.text)}</div>`;
+  html += '<div class="steps">' + stepsDef.map((s,i)=>{
+    const p = s.role ? PERSONA[s.role] : null;
+    const cls = i<curIdx ? 'done' : i===curIdx ? 'now' : '';
+    const line = i < stepsDef.length-1 ? '<div class="stepline"></div>' : '';
+    return `<div class="step ${cls}">
+      <div class="circ">${i<curIdx ? '✓' : (p?p.avatar:'🏁')}</div>
+      <div class="sl">${s.label}</div>
+    </div>${line}`;
   }).join('') + '</div>';
 
   if(t.stage==='planning'||t.stage==='making'||t.stage==='reviewing'){
-    html += `<div class="working"><span class="sp"></span>小幫手處理中，每分鐘會檢查一次，跑完自動出現在上面</div>`;
+    html += `<div class="working"><span class="sp"></span>${PERSONA[Object.keys(STAGE_OF_ROLE).find(r=>STAGE_OF_ROLE[r]===t.stage)].name}處理中，每分鐘會檢查一次，跑完自動出現在下面</div>`;
   }
 
   if(t.stage==='waiting_human'){
@@ -281,36 +485,104 @@ function renderChat(){
     html += `</div></div>`;
   }
 
-  panel.innerHTML = html;
+  html += '<div class="feedtitle">活動流</div>';
+  html += '<div class="msglist">' + msgs.map(m=>{
+    const meta = ROLE_META[m.role] || {label:m.role, cls:'r-system'};
+    const p = PERSONA[m.role];
+    return `<div class="msg ${meta.cls}">
+      <div class="av" style="background:${p?'var(--pink-xl)':'var(--bg)'}">${p?p.avatar:'⚙️'}</div>
+      <div class="body"><div class="who">${meta.label} · ${timeAgo(m.createdAt)}</div>${esc(m.text)}</div>
+    </div>`;
+  }).join('') + '</div>';
+
+  html += `<div class="propgrid">
+    <div><div class="pk">類型</div><div class="pv">${t.type==='ad'?'廣告投放文案':'社群文案'}</div></div>
+    <div><div class="pk">客戶</div><div class="pv">${esc(t.client)||'—'}</div></div>
+    <div><div class="pk">建立時間</div><div class="pv">${new Date(t.createdAt).toLocaleString('zh-TW',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div></div>
+  </div>`;
+
+  $('#tasksPanel').innerHTML = html;
+  $('#backBtn').onclick = () => { selectedTask=null; renderBoard(); };
 
   const replyEl = $('#replyText');
   const getReply = () => (replyEl && replyEl.value.trim()) || '';
-
   if($('#btnContinue')){
     $('#btnContinue').onclick = async () => {
       const text = getReply();
       const patch = { stage: t.resumeStage || 'making', updatedAt: Date.now() };
       if(t.waitingKind==='maxRound') patch.round = 0;
-      await dbUpdate(dbRef(db, `${ROOM}/tasks/${selected}`), patch);
-      if(text) await dbPush(dbRef(db, `${ROOM}/messages/${selected}`), {role:'human', text, createdAt: Date.now()});
+      await dbUpdate(dbRef(db, `${ROOM}/tasks/${selectedTask}`), patch);
+      if(text) await dbPush(dbRef(db, `${ROOM}/messages/${selectedTask}`), {role:'human', text, createdAt: Date.now()});
     };
   }
   if($('#btnFinalize')){
     $('#btnFinalize').onclick = async () => {
-      await dbUpdate(dbRef(db, `${ROOM}/tasks/${selected}`), {stage:'done', updatedAt: Date.now()});
-      await dbPush(dbRef(db, `${ROOM}/messages/${selected}`), {role:'system', text:'你選擇採用目前版本，定稿。', createdAt: Date.now()});
+      await dbUpdate(dbRef(db, `${ROOM}/tasks/${selectedTask}`), {stage:'done', updatedAt: Date.now()});
+      await dbPush(dbRef(db, `${ROOM}/messages/${selectedTask}`), {role:'system', text:'你選擇採用目前版本，定稿。', createdAt: Date.now()});
     };
   }
 }
 
+/* ---------- 私聊 ---------- */
+function lastDMPreview(role){
+  const rows = Object.values(dms[role]||{}).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+  return rows.length ? rows[rows.length-1] : null;
+}
+function renderDM(){
+  if(activeTab!=='dm') return;
+  const side = $('#dmSide');
+  side.innerHTML = ROLE_ORDER.map(role=>{
+    const p = PERSONA[role];
+    const last = lastDMPreview(role);
+    return `<div class="dmitem ${role===selectedDM?'on':''}" data-role="${role}">
+      <div class="av" style="background:var(--pink-xl)">${p.avatar}</div>
+      <div>
+        <div class="nm">${p.name}</div>
+        <div class="prev">${last?esc(last.text):p.desc}</div>
+      </div>
+    </div>`;
+  }).join('');
+  side.querySelectorAll('.dmitem').forEach(el=>{
+    el.onclick = () => { selectedDM = el.dataset.role; renderDM(); };
+  });
+
+  const p = PERSONA[selectedDM];
+  $('#dmHead').innerHTML = `<div class="av" style="background:var(--pink-xl)">${p.avatar}</div>
+    <div><div style="font-weight:700;font-size:14px">${p.name}</div><div style="font-size:11px;color:var(--ink3)">${p.desc}</div></div>`;
+
+  const rows = Object.values(dms[selectedDM]||{}).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+  const thread = $('#dmThread');
+  thread.innerHTML = rows.length ? rows.map(m=>`
+    <div class="dmrow ${m.from==='human'?'me':'them'}"><div class="dmbub">${esc(m.text)}</div></div>
+  `).join('') : `<div class="empty">傳個訊息給${p.name}打招呼吧</div>`;
+  thread.scrollTop = thread.scrollHeight;
+}
+$('#dmSend').onclick = async () => {
+  const el = $('#dmInput');
+  const text = el.value.trim();
+  if(!text) return;
+  await dbPush(dbRef(db, `${ROOM}/dms/${selectedDM}`), {from:'human', text, createdAt: Date.now()});
+  el.value = '';
+};
+$('#dmInput').addEventListener('keydown', e=>{
+  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); $('#dmSend').click(); }
+});
+
+function renderAll(){
+  renderWorkbar();
+  renderFeed();
+  renderTasksTab();
+  renderDM();
+}
+
 /* ---------- 新任務表單 ---------- */
 let newType = 'social';
+function openModal(){ $('#modalBg').style.display='flex'; populateWsPick(); }
 $('#typeSeg').addEventListener('click', e=>{
   const b = e.target.closest('button'); if(!b) return;
   newType = b.dataset.v;
   $('#typeSeg').querySelectorAll('button').forEach(x=>x.classList.toggle('on', x===b));
 });
-$('#newBtn').onclick = () => { $('#modalBg').style.display='flex'; populateWsPick(); };
 $('#cancelBtn').onclick = () => { $('#modalBg').style.display='none'; resetForm(); };
 $('#modalBg').addEventListener('click', e=>{ if(e.target.id==='modalBg'){ $('#modalBg').style.display='none'; resetForm(); }});
 
@@ -346,7 +618,10 @@ $('#submitBtn').onclick = async () => {
   });
   await dbPush(dbRef(db, `${ROOM}/messages/${id}`), {role:'human', text: brief || title, createdAt: now});
   $('#modalBg').style.display='none'; resetForm();
-  selected = id; renderTaskList(); renderChat();
+  selectedTask = id; activeTab='tasks';
+  $('#navTabs').querySelectorAll('.tb').forEach(x=>x.classList.toggle('on', x.dataset.tab==='tasks'));
+  $('#tab-feed').style.display='none'; $('#tab-dm').style.display='none'; $('#tab-tasks').style.display='';
+  renderTaskDetail();
 };
 
 /* ---------- Firebase ---------- */
@@ -374,8 +649,9 @@ async function initFirebase(interactive){
   db = getDatabase(app); dbRef = ref; dbSet = set; dbUpdate = update; dbPush = push; dbOnValue = onValue; dbGet = get;
   setSync('ok');
 
-  onValue(ref(db, `${ROOM}/tasks`), s => { tasks = s.exists()? s.val() : {}; renderTaskList(); renderChat(); });
-  onValue(ref(db, `${ROOM}/messages`), s => { messages = s.exists()? s.val() : {}; renderChat(); });
+  onValue(ref(db, `${ROOM}/tasks`), s => { tasks = s.exists()? s.val() : {}; renderAll(); });
+  onValue(ref(db, `${ROOM}/messages`), s => { messages = s.exists()? s.val() : {}; renderAll(); });
+  onValue(ref(db, `${ROOM}/dms`), s => { dms = s.exists()? s.val() : {}; renderAll(); });
 
   // 工作台既有任務，唯讀，讓新任務表單可以挑——讀不到就算了，不擋主流程
   get(ref(db, `${WS_ROOM}/tasks`)).then(s=>{ wsTasks = s.exists()? s.val() : {}; }).catch(()=>{});
