@@ -102,8 +102,8 @@ nav.tabs .tb.on .cnt{background:rgba(255,255,255,.3)}
 .boardhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap}
 .addbtn{padding:9px 16px;border-radius:12px;background:var(--pink);color:#fff;
   font-size:13.5px;font-weight:700;box-shadow:var(--shadow)}
-.board{display:grid;grid-template-columns:repeat(7,minmax(200px,1fr));gap:10px;overflow-x:auto;padding-bottom:6px}
-@media(max-width:900px){.board{grid-template-columns:repeat(7,80vw)}}
+.board{display:grid;grid-template-columns:repeat(6,minmax(200px,1fr));gap:10px;overflow-x:auto;padding-bottom:6px}
+@media(max-width:900px){.board{grid-template-columns:repeat(6,80vw)}}
 .col{background:var(--pink-xl);border-radius:14px;padding:10px;min-height:100px}
 .col h3{font-size:12.5px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;color:var(--ink2)}
 .col h3 .cdot{width:8px;height:8px;border-radius:99px}
@@ -114,6 +114,12 @@ nav.tabs .tb.on .cnt{background:rgba(255,255,255,.3)}
 .col .cnt{margin-left:auto;color:var(--ink3);font-weight:400}
 .card{background:#fff;border-radius:12px;padding:10px;margin-bottom:8px;cursor:pointer;box-shadow:var(--shadow)}
 .card:hover{box-shadow:var(--shadow-l)}
+.card .cardtop{display:flex;align-items:center;gap:5px;margin-bottom:5px;flex-wrap:wrap}
+.card .cdate{font-size:10.5px;font-weight:700;color:var(--pink-d);background:var(--pink-xl);
+  border-radius:6px;padding:1px 6px}
+.card .ccode{font-size:10px;font-weight:700;color:var(--ink3);background:var(--bg);
+  border-radius:6px;padding:1px 6px}
+.card .ccode.wait{color:#B4770B;background:#FFF7E0}
 .card .tt{font-size:13px;font-weight:700;line-height:1.4;margin-bottom:5px}
 .card .meta{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink3)}
 .card .av{width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px}
@@ -313,7 +319,26 @@ const $ = s => document.querySelector(s);
 const esc = s => (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 let db, dbRef, dbSet, dbUpdate, dbPush, dbOnValue, dbGet;
-let tasks = {}, messages = {}, dms = {}, proposals = {};
+let tasks = {}, messages = {}, dms = {}, proposals = {}, hySocialPosts = {};
+const HY_ROOM = 'hy_social_r7n3k8'; // 禾言社群規劃網頁的節點，這裡只讀，算素材編號用
+
+// 素材編號算法要跟 heyen-social/index.html 的 autoCode() 保持一致，改一邊要記得改另一邊
+const MONTH_CODE = ['JA','F','MA','AP','MY','JU','JL','A','S','O','N','D'];
+function autoCode(hySocialId){
+  const p = hySocialPosts[hySocialId];
+  if(!p || !p.date) return '';
+  const m = p.date.slice(0,7);
+  const same = Object.entries(hySocialPosts)
+    .filter(([,x])=>(x.date||'').slice(0,7)===m)
+    .sort((a,b)=>(a[1].date||'').localeCompare(b[1].date||'') || (a[1].ord??999)-(b[1].ord??999));
+  const i = same.findIndex(([k])=>k===hySocialId);
+  if(i<0) return '';
+  return 'H'+MONTH_CODE[+m.slice(5,7)-1]+String(i+1).padStart(2,'0');
+}
+function dateShort(d){
+  const parts = (d||'').split('-');
+  return parts.length===3 ? `${+parts[1]}/${+parts[2]}` : (d||'');
+}
 let activeTab = 'tasks', selectedTask = null, selectedDM = 'planner';
 // 從禾言社群規劃的徽章點過來時帶 ?task=xxx，開頁直接跳到那筆任務的詳情
 { const p = new URLSearchParams(location.search).get('task'); if(p) selectedTask = p; }
@@ -328,7 +353,8 @@ const PERSONA = {
 const ROLE_ORDER = ['planner','maker','reviewer','designer'];
 const STAGE_OF_ROLE = {planner:'planning', maker:'making', reviewer:'reviewing', designer:'designing'};
 const DESIGN_WINDOW_DAYS = 3; // 跟 dora-agent-hub-runner.py 的 DESIGN_WINDOW_DAYS 對齊，純顯示用
-const STAGE_ORDER = ['planning','making','reviewing','awaiting_window','designing','waiting_human','done'];
+const STAGE_ORDER = ['planning','making','reviewing','designing','waiting_human','done'];
+// awaiting_window（待製圖窗口）不獨立開一欄，併進「製圖中」欄，卡片上用小標籤區分
 const STAGE_LABEL = {planning:'規劃中', making:'製作中', reviewing:'審閱中', awaiting_window:'待製圖窗口',
   designing:'製圖中', waiting_human:'待你確認', done:'已完成'};
 const ROLE_META = {
@@ -484,16 +510,23 @@ function renderBoard(){
   let html = renderProposalBanner();
   html += `<div class="boardhead"><h2 style="font-size:16px">任務看板</h2><button class="addbtn" id="newBtn2">＋ 新任務</button></div>`;
   html += '<div class="board">' + STAGE_ORDER.map(stage=>{
-    const items = rows.filter(t=>t.stage===stage).sort((a,b)=>(b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0));
+    const items = rows.filter(t=> stage==='designing' ? (t.stage==='designing'||t.stage==='awaiting_window') : t.stage===stage)
+      .sort((a,b)=>(a.postDate||'').localeCompare(b.postDate||'') || (b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0));
     const respRole = Object.keys(STAGE_OF_ROLE).find(r=>STAGE_OF_ROLE[r]===stage);
     return `<div class="col">
       <h3><span class="cdot cd-${stage}"></span>${STAGE_LABEL[stage]}<span class="cnt">${items.length}</span></h3>
       ${items.map(t=>{
         const p = respRole ? PERSONA[respRole] : null;
+        const code = t.hySocialId ? autoCode(t.hySocialId) : '';
         return `<div class="card" data-id="${t.id}">
-          <div class="tt">${esc(t.title)}</div>
+          <div class="cardtop">
+            ${t.postDate?`<span class="cdate">${esc(dateShort(t.postDate))}</span>`:'<span class="cdate">未定日</span>'}
+            ${code?`<span class="ccode">${esc(code)}</span>`:''}
+            ${t.stage==='awaiting_window'?'<span class="ccode wait">⏳待窗口</span>':''}
+          </div>
+          <div class="tt">${esc(t.title)||'（規劃中，還沒有標題）'}</div>
           <div class="meta">${p?`<span class="av" style="background:var(--pink-xl)">${p.avatar}</span>`:''}
-            ${t.type?esc(t.type)+' · ':''}${timeAgo(t.updatedAt||t.createdAt)}</div>
+            ${t.type?esc(t.type):''}</div>
         </div>`;
       }).join('') || '<div class="empty" style="padding:14px 0;font-size:12px">空的</div>'}
     </div>`;
@@ -749,6 +782,7 @@ async function initFirebase(interactive){
   onValue(ref(db, `${ROOM}/messages`), s => { messages = s.exists()? s.val() : {}; renderAll(); });
   onValue(ref(db, `${ROOM}/dms`), s => { dms = s.exists()? s.val() : {}; renderAll(); });
   onValue(ref(db, `${ROOM}/proposals`), s => { proposals = s.exists()? s.val() : {}; renderAll(); });
+  onValue(ref(db, `${HY_ROOM}/posts`), s => { hySocialPosts = s.exists()? s.val() : {}; renderAll(); });
 
   return true;
 }
