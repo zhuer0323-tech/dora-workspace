@@ -115,7 +115,7 @@ nav.tabs .tb.on .cnt{background:rgba(255,255,255,.3)}
 .cd-waiting_human{background:var(--s-wait)} .cd-done{background:var(--s-done)}
 .col .cnt{margin-left:auto;color:var(--ink3);font-weight:400}
 .card{background:#fff;border-radius:12px;padding:10px;margin-bottom:8px;cursor:pointer;box-shadow:var(--shadow)}
-.card[draggable]{cursor:grab}
+.card[data-draggable]{cursor:grab;touch-action:none}
 .card.dragging{opacity:.4}
 .col.dropok{outline:2px dashed var(--pink);outline-offset:-2px;background:var(--pink-l)}
 .card:hover{box-shadow:var(--shadow-l)}
@@ -551,7 +551,7 @@ function renderBoard(){
         const p = respRole ? PERSONA[respRole] : null;
         const code = t.hySocialId ? autoCode(t.hySocialId) : '';
         const draggable = t.stage!=='waiting_human';
-        return `<div class="card" data-id="${t.id}" ${draggable?'draggable="true"':''}>
+        return `<div class="card" data-id="${t.id}" ${draggable?'data-draggable="true"':''}>
           <div class="cardtop">
             ${t.postDate?`<span class="cdate">${esc(dateShort(t.postDate))}</span>`:'<span class="cdate">未定日</span>'}
             ${code?`<span class="ccode">${esc(code)}</span>`:''}
@@ -574,24 +574,58 @@ function renderBoard(){
   wireDragDrop();
 }
 
-/* ---------- 拖放：手動把卡片搬到別欄，代表「這個我要調整」 ---------- */
-let dragTaskId = null, dragMoved = false;
+/* ---------- 拖放：手動把卡片搬到別欄，代表「這個我要調整」 ----------
+   用 pointerdown/pointermove/pointerup 自己實作（跟工作台 makeCardSortable() 同一套做法），
+   不用原生 HTML5 draggable/dragstart——那組事件在觸控裝置上不可靠，自動化測試也常常觸發不了。 */
+let dragMoved = false;
 function wireDragDrop(){
-  $('#tasksPanel').querySelectorAll('.card[draggable]').forEach(el=>{
-    el.addEventListener('dragstart', ()=>{ dragTaskId = el.dataset.id; dragMoved = false; el.classList.add('dragging'); });
-    el.addEventListener('dragend', ()=>{ el.classList.remove('dragging'); setTimeout(()=>{dragMoved=false;}, 50); });
-  });
-  $('#tasksPanel').querySelectorAll('.col[data-dropok="true"]').forEach(col=>{
-    col.addEventListener('dragover', e=>{ e.preventDefault(); col.classList.add('dropok'); });
-    col.addEventListener('dragleave', ()=> col.classList.remove('dropok'));
-    col.addEventListener('drop', async e=>{
-      e.preventDefault(); col.classList.remove('dropok'); dragMoved = true;
-      const targetStage = col.dataset.stage;
-      const tid = dragTaskId; dragTaskId = null;
-      if(!tid || !targetStage) return;
-      await handleManualMove(tid, targetStage);
-    });
-  });
+  const panel = $('#tasksPanel');
+  let st = null; // {el, tid, startX, startY, offX, offY, w, moved, pid}
+
+  const colAt = (x,y) => {
+    for(const c of panel.querySelectorAll('.col[data-dropok="true"]')){
+      const r = c.getBoundingClientRect();
+      if(x>=r.left && x<=r.right && y>=r.top && y<=r.bottom) return c;
+    }
+    return null;
+  };
+  const mark = col => panel.querySelectorAll('.col').forEach(c=>c.classList.toggle('dropok', c===col));
+
+  panel.onpointerdown = e=>{
+    const card = e.target.closest('.card[data-draggable]');
+    if(!card) return;
+    const r = card.getBoundingClientRect();
+    st = { el:card, tid:card.dataset.id, startX:e.clientX, startY:e.clientY,
+           offX:e.clientX-r.left, offY:e.clientY-r.top, w:r.width, moved:false, pid:e.pointerId };
+  };
+  panel.onpointermove = e=>{
+    if(!st || e.pointerId!==st.pid) return;
+    if(!st.moved){
+      if(Math.hypot(e.clientX-st.startX, e.clientY-st.startY) < 6) return;
+      st.moved = true; dragMoved = true;
+      st.el.setPointerCapture(st.pid);
+      Object.assign(st.el.style, {position:'fixed', width:st.w+'px', zIndex:60, pointerEvents:'none'});
+      st.el.classList.add('dragging');
+    }
+    st.el.style.left = (e.clientX-st.offX)+'px';
+    st.el.style.top = (e.clientY-st.offY)+'px';
+    mark(colAt(e.clientX, e.clientY));
+  };
+  const end = async e=>{
+    if(!st || (st.pid!==null && e.pointerId!==st.pid)) return;
+    const { el, tid, moved } = st;
+    const col = moved ? colAt(e.clientX, e.clientY) : null;
+    el.classList.remove('dragging');
+    el.style.cssText = '';
+    mark(null);
+    st = null;
+    if(moved){
+      setTimeout(()=>{dragMoved=false;}, 50);
+      if(col && col.dataset.stage) await handleManualMove(tid, col.dataset.stage);
+    }
+  };
+  panel.onpointerup = end;
+  panel.onpointercancel = end;
 }
 
 async function handleManualMove(tid, targetStage){
