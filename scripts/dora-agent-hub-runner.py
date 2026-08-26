@@ -302,6 +302,11 @@ def run_claude(prompt, allowed=BASE_ALLOWED, timeout=TIMEOUT):
     out = (p.stdout or '').strip()
     if p.returncode != 0 and not out:
         raise RuntimeError((p.stderr or '').strip()[:300] or f'claude 回傳 {p.returncode}')
+    # 2026-08-27 踩過的坑：額度用完時 claude -p 仍會回傳 0 且印出這句提示，不是丟例外，
+    # 結果被當成正常回覆寫進任務訊息裡，規劃/製作/審閱三個角色被污染了一輪都沒人發現。
+    # 這句訊息很固定，直接抓字串當成失敗處理。
+    if "hit your session limit" in out or "hit your weekly limit" in out or "usage limit" in out.lower():
+        raise RuntimeError(f'Claude 額度用完了：{out[:200]}')
     return out
 
 
