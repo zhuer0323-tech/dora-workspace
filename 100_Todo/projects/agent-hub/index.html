@@ -80,7 +80,8 @@ nav.tabs .tb.on .cnt{background:rgba(255,255,255,.3)}
 .empty{color:var(--ink3);font-size:13px;text-align:center;padding:30px 0}
 
 /* ---------- 工作群 feed ---------- */
-.feedlist{display:flex;flex-direction:column;gap:8px}
+.feedhint{font-size:11.5px;color:var(--ink3);margin-bottom:10px}
+.feedlist{display:flex;flex-direction:column;gap:8px;max-height:60vh;overflow-y:auto;padding-right:2px;margin-bottom:10px}
 .feeditem{display:flex;gap:10px;padding:10px;border-radius:12px;cursor:pointer;background:var(--bg)}
 .feeditem:hover{background:var(--pink-xl)}
 .feeditem .av{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;
@@ -102,8 +103,9 @@ nav.tabs .tb.on .cnt{background:rgba(255,255,255,.3)}
 .boardhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap}
 .addbtn{padding:9px 16px;border-radius:12px;background:var(--pink);color:#fff;
   font-size:13.5px;font-weight:700;box-shadow:var(--shadow)}
-.board{display:grid;grid-template-columns:repeat(6,minmax(200px,1fr));gap:10px;overflow-x:auto;padding-bottom:6px}
-@media(max-width:900px){.board{grid-template-columns:repeat(6,80vw)}}
+.board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:760px){.board{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.board{grid-template-columns:1fr}}
 .col{background:var(--pink-xl);border-radius:14px;padding:10px;min-height:100px}
 .col h3{font-size:12.5px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;color:var(--ink2)}
 .col h3 .cdot{width:8px;height:8px;border-radius:99px}
@@ -249,7 +251,14 @@ nav.tabs .tb.on .cnt{background:rgba(255,255,255,.3)}
 </nav>
 
 <div id="tab-feed" style="display:none">
-  <div class="panel"><div class="feedlist" id="feedList"><div class="empty">還沒有動態</div></div></div>
+  <div class="panel">
+    <div class="feedhint">全隊共用的頻道，看得到每篇任務的動態；直接打字是跟小梟說，牠會記住影響之後的規劃／稽核判斷</div>
+    <div class="feedlist" id="feedList"><div class="empty">還沒有動態</div></div>
+    <div class="dminput">
+      <textarea id="feedInput" placeholder="跟小梟說句話，例如提醒、建議、催促…"></textarea>
+      <button id="feedSend">送出</button>
+    </div>
+  </div>
 </div>
 
 <div id="tab-dm" style="display:none">
@@ -319,7 +328,7 @@ const $ = s => document.querySelector(s);
 const esc = s => (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 let db, dbRef, dbSet, dbUpdate, dbPush, dbOnValue, dbGet;
-let tasks = {}, messages = {}, dms = {}, proposals = {}, hySocialPosts = {};
+let tasks = {}, messages = {}, dms = {}, proposals = {}, hySocialPosts = {}, groupChat = {};
 const HY_ROOM = 'hy_social_r7n3k8'; // 禾言社群規劃網頁的節點，這裡只讀，算素材編號用
 
 // 素材編號算法要跟 heyen-social/index.html 的 autoCode() 保持一致，改一邊要記得改另一邊
@@ -428,12 +437,20 @@ function renderFeed(){
   const rows = [];
   Object.entries(messages).forEach(([tid, ms])=>{
     const t = tasks[tid]; if(!t) return;
-    Object.values(ms||{}).forEach(m=> rows.push({...m, tid, title:t.title}));
+    Object.values(ms||{}).forEach(m=> rows.push({...m, kind:'task', tid, title:t.title}));
   });
-  rows.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  Object.values(groupChat).forEach(m=> rows.push({...m, kind:'group', role: m.from==='human' ? 'human' : 'planner'}));
+  rows.sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
   const box = $('#feedList');
   if(!rows.length){ box.innerHTML = '<div class="empty">還沒有動態</div>'; return; }
-  box.innerHTML = rows.slice(0,50).map(m=>{
+  box.innerHTML = rows.slice(-80).map(m=>{
+    if(m.kind==='group'){
+      if(m.role==='human') return `<div class="dmrow me"><div class="dmbub">${esc(m.text)}</div></div>`;
+      const p = PERSONA[m.role];
+      return `<div class="dmrow them"><div class="av" style="background:var(--pink-xl);width:26px;height:26px;
+        border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;margin-right:6px;flex:none">
+        ${p?p.avatar:'🦉'}</div><div class="dmbub">${esc(m.text)}</div></div>`;
+    }
     const meta = ROLE_META[m.role] || {label:m.role};
     const p = PERSONA[m.role];
     return `<div class="feeditem" data-tid="${m.tid}">
@@ -444,6 +461,7 @@ function renderFeed(){
       </div>
     </div>`;
   }).join('');
+  box.scrollTop = box.scrollHeight;
   box.querySelectorAll('.feeditem').forEach(el=>{
     el.onclick = () => {
       selectedTask = el.dataset.tid;
@@ -454,6 +472,16 @@ function renderFeed(){
     };
   });
 }
+$('#feedSend').onclick = async () => {
+  const el = $('#feedInput');
+  const text = el.value.trim();
+  if(!text) return;
+  await dbPush(dbRef(db, `${ROOM}/groupChat`), {from:'human', text, createdAt: Date.now()});
+  el.value = '';
+};
+$('#feedInput').addEventListener('keydown', e=>{
+  if(e.key==='Enter' && !e.shiftKey && !e.isComposing){ e.preventDefault(); $('#feedSend').click(); }
+});
 
 /* ---------- 任務看板 / 詳情 ---------- */
 function renderTasksTab(){
@@ -783,6 +811,7 @@ async function initFirebase(interactive){
   onValue(ref(db, `${ROOM}/dms`), s => { dms = s.exists()? s.val() : {}; renderAll(); });
   onValue(ref(db, `${ROOM}/proposals`), s => { proposals = s.exists()? s.val() : {}; renderAll(); });
   onValue(ref(db, `${HY_ROOM}/posts`), s => { hySocialPosts = s.exists()? s.val() : {}; renderAll(); });
+  onValue(ref(db, `${ROOM}/groupChat`), s => { groupChat = s.exists()? s.val() : {}; renderAll(); });
 
   return true;
 }

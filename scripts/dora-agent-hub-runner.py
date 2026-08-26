@@ -72,7 +72,7 @@ PLANNER_PROMPT = """你是「小梟」，禾言數位行銷社群規劃團隊的
 
 禾言規劃表這個月＋上個月已經排的貼文（**先看這個，不要跟這些話題或切角撞在一起**）：
 {existing_posts}
-{transcript_block}
+{group_notes}{transcript_block}
 請做三件事再下判斷：
 1. 先看上面「已經排的貼文」，確認這次要寫的方向沒有跟其中任何一篇的話題或切角重複
 2. 上網搜尋 Meta／Google／LINE 廣告平台最近的更新消息、新功能或政策變化，
@@ -183,6 +183,18 @@ DM_PROMPT = """你是「{name}」，禾言社群規劃團隊裡負責{desc}，�
 
 用你這個角色的口吻自然回覆就好，不用太正式，也不用一直強調自己是規劃/製作/審閱/製圖小幫手。
 只輸出你要回的話本身，不要加開場白。"""
+
+GROUP_CHAT_PROMPT = """你是「小梟」，禾言數位行銷社群規劃團隊的規劃小幫手，也是團隊工作群裡
+朱兒找得到的窗口——小兔、小狐、小蝶也在同一個群裡，但由你代表團隊回覆她。
+
+朱兒在這裡說的話你要記住，之後規劃方向、排下個月內容、定期稽核時都要納入判斷，
+不是回覆完就忘了。
+
+目前為止的對話：
+{transcript}
+
+用你的角色口吻自然回覆，讓她知道你聽到了、記住了；如果她是在催進度，簡短說明目前狀況，
+不確定的事不要不懂裝懂掰數字。只輸出你要回的話本身，不要加開場白。"""
 
 
 def load_env():
@@ -346,6 +358,21 @@ def existing_hy_posts_summary(cfg, tok, post_date):
     return '\n'.join(f'- {d}｜{t}｜{ti}' for d, t, ti in rows)
 
 
+def recent_group_chat_summary(cfg, tok, limit=10):
+    """朱兒在「工作群」交代過的事，小梟規劃/排月建議時要記得納入判斷，不是回覆完就忘了。"""
+    try:
+        msgs = db_get(cfg, tok, ROOM, 'groupChat') or {}
+    except Exception:
+        return ''
+    human_msgs = [m for m in msgs.values() if isinstance(m, dict) and m.get('from') == 'human']
+    if not human_msgs:
+        return ''
+    human_msgs.sort(key=lambda m: m.get('createdAt', 0))
+    recent = human_msgs[-limit:]
+    lines = [f"- {m.get('text', '')}" for m in recent]
+    return '朱兒在工作群交代過的事（要記住，納入判斷）：\n' + '\n'.join(lines) + '\n\n'
+
+
 def ensure_hy_social(cfg, tok, task):
     """任務一進「規劃」就在禾言社群規劃那邊開一張對應的卡（內容先空著），
     這樣她從一開始就能在熟悉的規劃表上看到這篇、看到進度徽章，不用等審閱通過才看得到。
@@ -396,6 +423,7 @@ def process_task(cfg, tok, task):
             type_label=type_label, post_date=task.get('postDate') or '（沒填）',
             brief=task.get('brief', ''), transcript_block=transcript_block,
             existing_posts=existing_hy_posts_summary(cfg, tok, task.get('postDate')),
+            group_notes=recent_group_chat_summary(cfg, tok),
             title_note='' if task.get('title') else TITLE_NOTE)
     elif stage == 'making':
         role, allowed, timeout = 'maker', MAKER_ALLOWED, TIMEOUT
@@ -511,6 +539,28 @@ def process_dm(cfg, tok, role, dm_msgs):
     db_post(cfg, tok, ROOM, f'dms/{role}', {'from': role, 'text': out, 'createdAt': now_ms})
 
 
+def process_group_chat(cfg, tok, msgs):
+    """工作群：小梟代表團隊回覆，跟私聊不同的是這裡的話要記住、影響之後的規劃判斷
+    （靠 recent_group_chat_summary() 在下次規劃/月建議時撈回來用，不是這支自己記）。"""
+    rows = sorted(msgs.values(), key=lambda m: m.get('createdAt', 0))
+    lines = []
+    for m in rows:
+        who = '你' if m.get('from') == 'human' else '小梟'
+        lines.append(f"[{who}] {m.get('text', '')}")
+    transcript = '\n'.join(lines)
+    prompt = GROUP_CHAT_PROMPT.format(transcript=transcript)
+
+    print(f"{time.strftime('%F %T')} 開始跑工作群回覆")
+    now_ms = int(time.time() * 1000)
+    try:
+        out = run_claude(prompt)
+    except Exception as e:
+        db_post(cfg, tok, ROOM, 'groupChat', {
+            'from': 'planner', 'text': f'（這輪跑失敗了：{str(e)[:150]}，再說一次看看）', 'createdAt': now_ms})
+        return
+    db_post(cfg, tok, ROOM, 'groupChat', {'from': 'planner', 'text': out, 'createdAt': now_ms})
+
+
 def check_design_window(cfg, tok):
     """awaiting_window 的任務，離發布日剩不到 DESIGN_WINDOW_DAYS 天（或已經過期）就推進到「製圖」。
     純資料庫操作、沒有 claude -p 呼叫，每輪都可以做，不佔「一次只跑一件」的名額。"""
@@ -543,7 +593,7 @@ PROPOSAL_PROMPT = """你是「小梟」，禾言數位行銷社群規劃團隊�
 這個月＋上個月已經在禾言規劃表裡的內容（**這個月要規劃的內容不要跟這些話題重複**）：
 {existing_posts}
 
-請規劃 {target_month} 這個月的貼文，抓 4-6 篇，{target_month}的週二日期你自己算出來。
+{group_notes}請規劃 {target_month} 這個月的貼文，抓 4-6 篇，{target_month}的週二日期你自己算出來。
 每篇輸出一行，格式固定（用全形｜分隔，不要換別的符號）：
 N. 日期=YYYY-MM-DD｜類型=XXX｜標題=XXX｜方向=一句話說明這篇要寫什麼
 
@@ -599,7 +649,8 @@ def run_monthly_proposal(cfg, tok, target_key):
     ty, tm = (int(x) for x in target_key.split('-'))
     target_month_label = f'{ty} 年 {tm} 月'
     existing = existing_hy_posts_summary(cfg, tok, f'{target_key}-01')
-    prompt = PROPOSAL_PROMPT.format(target_month=target_month_label, existing_posts=existing)
+    prompt = PROPOSAL_PROMPT.format(target_month=target_month_label, existing_posts=existing,
+                                     group_notes=recent_group_chat_summary(cfg, tok))
     print(f"{time.strftime('%F %T')} 開始跑月規劃建議 / {target_key}")
     now_ms = int(time.time() * 1000)
     try:
@@ -701,18 +752,26 @@ def main():
             if last.get('from') == 'human':
                 jobs.append((last.get('createdAt', 0), 'dm', (role, dm_msgs)))
 
+        group_msgs = db_get(cfg, tok, ROOM, 'groupChat') or {}
+        if group_msgs:
+            rows = sorted(group_msgs.values(), key=lambda m: m.get('createdAt', 0))
+            if rows[-1].get('from') == 'human':
+                jobs.append((rows[-1].get('createdAt', 0), 'group', group_msgs))
+
         tok2 = ws_token(cfg['WS_SA_KEY'])
 
         if jobs:
-            # 私聊優先於任務推進：她在等聊天回覆比任務多花一輪才推進更有感，
-            # 只有兩者都是私聊或都是任務時才照時間排序（2026-08-26 她實測發現私聊被任務卡住太久）
-            jobs.sort(key=lambda j: (0 if j[1] == 'dm' else 1, j[0]))
+            # 私聊／工作群優先於任務推進：她在等聊天回覆比任務多花一輪才推進更有感，
+            # 同一層級才照時間排序（2026-08-26 她實測發現私聊被任務卡住太久）
+            jobs.sort(key=lambda j: (0 if j[1] in ('dm', 'group') else 1, j[0]))
             kind, payload = jobs[0][1], jobs[0][2]
             if kind == 'task':
                 process_task(cfg, tok2, payload)
-            else:
+            elif kind == 'dm':
                 role, dm_msgs = payload
                 process_dm(cfg, tok2, role, dm_msgs)
+            else:
+                process_group_chat(cfg, tok2, payload)
             return
 
         # 沒有任務/私聊要處理，這輪換去做背景維護：月規劃建議或定期稽核，一樣一次只做一件
