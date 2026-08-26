@@ -115,6 +115,9 @@ nav.tabs .tb.on .cnt{background:rgba(255,255,255,.3)}
 .cd-waiting_human{background:var(--s-wait)} .cd-done{background:var(--s-done)}
 .col .cnt{margin-left:auto;color:var(--ink3);font-weight:400}
 .card{background:#fff;border-radius:12px;padding:10px;margin-bottom:8px;cursor:pointer;box-shadow:var(--shadow)}
+.card[draggable]{cursor:grab}
+.card.dragging{opacity:.4}
+.col.dropok{outline:2px dashed var(--pink);outline-offset:-2px;background:var(--pink-l)}
 .card:hover{box-shadow:var(--shadow-l)}
 .card .cardtop{display:flex;align-items:center;gap:5px;margin-bottom:5px;flex-wrap:wrap}
 .card .cdate{font-size:10.5px;font-weight:700;color:var(--pink-d);background:var(--pink-xl);
@@ -439,7 +442,7 @@ function renderFeed(){
     const t = tasks[tid]; if(!t) return;
     Object.values(ms||{}).forEach(m=> rows.push({...m, kind:'task', tid, title:t.title}));
   });
-  Object.values(groupChat).forEach(m=> rows.push({...m, kind:'group', role: m.from==='human' ? 'human' : 'planner'}));
+  Object.values(groupChat).forEach(m=> rows.push({...m, kind:'group', role: m.from==='human' ? 'human' : (m.from || 'planner')}));
   rows.sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
   const box = $('#feedList');
   if(!rows.length){ box.innerHTML = '<div class="empty">還沒有動態</div>'; return; }
@@ -541,12 +544,14 @@ function renderBoard(){
     const items = rows.filter(t=> stage==='designing' ? (t.stage==='designing'||t.stage==='awaiting_window') : t.stage===stage)
       .sort((a,b)=>(a.postDate||'').localeCompare(b.postDate||'') || (b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0));
     const respRole = Object.keys(STAGE_OF_ROLE).find(r=>STAGE_OF_ROLE[r]===stage);
-    return `<div class="col">
+    const dropOk = stage!=='waiting_human'; // 待你確認欄有自己的確認/定稿按鈕，不開放拖放進出
+    return `<div class="col" data-stage="${stage}" data-dropok="${dropOk}">
       <h3><span class="cdot cd-${stage}"></span>${STAGE_LABEL[stage]}<span class="cnt">${items.length}</span></h3>
       ${items.map(t=>{
         const p = respRole ? PERSONA[respRole] : null;
         const code = t.hySocialId ? autoCode(t.hySocialId) : '';
-        return `<div class="card" data-id="${t.id}">
+        const draggable = t.stage!=='waiting_human';
+        return `<div class="card" data-id="${t.id}" ${draggable?'draggable="true"':''}>
           <div class="cardtop">
             ${t.postDate?`<span class="cdate">${esc(dateShort(t.postDate))}</span>`:'<span class="cdate">未定日</span>'}
             ${code?`<span class="ccode">${esc(code)}</span>`:''}
@@ -563,9 +568,53 @@ function renderBoard(){
   $('#tasksPanel').innerHTML = html;
   $('#newBtn2').onclick = openModal;
   $('#tasksPanel').querySelectorAll('.card').forEach(el=>{
-    el.onclick = () => { selectedTask = el.dataset.id; renderTaskDetail(); };
+    el.onclick = () => { if(!dragMoved) { selectedTask = el.dataset.id; renderTaskDetail(); } };
   });
   wireProposalBanner();
+  wireDragDrop();
+}
+
+/* ---------- 拖放：手動把卡片搬到別欄，代表「這個我要調整」 ---------- */
+let dragTaskId = null, dragMoved = false;
+function wireDragDrop(){
+  $('#tasksPanel').querySelectorAll('.card[draggable]').forEach(el=>{
+    el.addEventListener('dragstart', ()=>{ dragTaskId = el.dataset.id; dragMoved = false; el.classList.add('dragging'); });
+    el.addEventListener('dragend', ()=>{ el.classList.remove('dragging'); setTimeout(()=>{dragMoved=false;}, 50); });
+  });
+  $('#tasksPanel').querySelectorAll('.col[data-dropok="true"]').forEach(col=>{
+    col.addEventListener('dragover', e=>{ e.preventDefault(); col.classList.add('dropok'); });
+    col.addEventListener('dragleave', ()=> col.classList.remove('dropok'));
+    col.addEventListener('drop', async e=>{
+      e.preventDefault(); col.classList.remove('dropok'); dragMoved = true;
+      const targetStage = col.dataset.stage;
+      const tid = dragTaskId; dragTaskId = null;
+      if(!tid || !targetStage) return;
+      await handleManualMove(tid, targetStage);
+    });
+  });
+}
+
+async function handleManualMove(tid, targetStage){
+  const t = tasks[tid];
+  if(!t || t.stage===targetStage || t.stage==='waiting_human') return;
+  const now = Date.now();
+  const fromLabel = STAGE_LABEL[t.stage] || t.stage;
+  const toLabel = STAGE_LABEL[targetStage] || targetStage;
+  const titleTxt = t.title || '這篇';
+  const reason = `你把「${titleTxt}」從「${fromLabel}」拖到「${toLabel}」了，要說一下想調整哪裡嗎？在這篇底下打字說明後按「確認，繼續」就會照你的方向繼續。`;
+  await dbUpdate(dbRef(db, `${ROOM}/tasks/${tid}`), {
+    stage: 'waiting_human', waitingKind: 'manualMove', waitingReason: reason,
+    resumeStage: targetStage, updatedAt: now,
+  });
+  await dbPush(dbRef(db, `${ROOM}/messages/${tid}`), {role:'system', text: reason, createdAt: now});
+  const respRole = Object.keys(STAGE_OF_ROLE).find(r=>STAGE_OF_ROLE[r]===targetStage) || 'planner';
+  const p = PERSONA[respRole];
+  await dbPush(dbRef(db, `${ROOM}/groupChat`), {
+    from: respRole,
+    text: `${p.avatar} 看到你把「${titleTxt}」拖到「${toLabel}」了，要跟我說一下想調整什麼嗎？去那篇的任務詳情打字告訴我，我就能接手繼續。`,
+    createdAt: now + 1,
+  });
+  if(t.hySocialId) await dbUpdate(dbRef(db, `${HY_ROOM}/posts/${t.hySocialId}`), {agentStage: 'waiting_human'});
 }
 
 function renderTaskDetail(){
