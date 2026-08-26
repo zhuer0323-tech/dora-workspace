@@ -669,7 +669,9 @@ $('#dmSend').onclick = async () => {
   el.value = '';
 };
 $('#dmInput').addEventListener('keydown', e=>{
-  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); $('#dmSend').click(); }
+  // e.isComposing：中文注音/拼音選字時按 Enter 是在確認選字，不是要送出，
+  // 沒有這個判斷會變成要按兩次 Enter（第一次被輸入法吃掉，第二次才真的送出）
+  if(e.key==='Enter' && !e.shiftKey && !e.isComposing){ e.preventDefault(); $('#dmSend').click(); }
 });
 
 function renderAll(){
