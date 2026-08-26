@@ -722,6 +722,59 @@ HTML 覆蓋到 `100_Todo/projects/heyen-cards/index.html` → push → 等 Pages
 
 ---
 
+## 禾言社群規劃團隊 / agent-hub（2026-08-25 上線）
+
+**AI 小幫手接力做禾言每月社群貼文**，跟上面「禾言社群規劃網頁」是資料互通的兩個系統：
+規劃網頁存內容（給人看、給人改），agent-hub 是做內容的自動化團隊（給 AI 做事）。
+
+- **網址**：<https://zhuer0323-tech.github.io/dora-workspace/agent-hub/>（工作台寶藏工具 🤝 也有入口）
+- **原始檔**：`100_Todo/projects/agent-hub/index.html`；**背景引擎**：`scripts/dora-agent-hub-runner.py`
+  （repo 備份，正本部署在 `~/Library/Scripts/dora-agent-hub-runner.py`，改完程式碼**兩邊都要同步**）
+- **資料**：Firebase 同專案 `busan-trip-2026-201f8` → 節點 `ah_4j2ppkn8rq`；
+  跟禾言規劃網頁的 `hy_social_r7n3k8` 節點互相讀寫（同一個 Firebase 專案，規則都綁她的 email）
+- **排程**：launchd `com.dora.agent-hub-runner`，**每分鐘跑一次**，一次只處理一件事（任務推進／
+  私聊／工作群回覆，三者共用一個佇列，避免同時燒多個 `claude -p` 搶額度）
+
+### 四個角色
+| 角色 | 頭像 | 職責 |
+|:--|:--|:--|
+| 小梟 planner | 🦉 | 規劃方向：讀規劃表既有內容避免撞題、上網查平台更新、讀客戶檔案 |
+| 小兔 maker | 🐰 | 寫文案：讀取 `社群文案撰寫` skill＋改寫範例，寫完真的呼叫 `speak-human-tw` skill 去 AI 味 |
+| 小狐 reviewer | 🦊 | 審閱：查「大眾想不想看／夠不夠吸引人／新手看不看得懂」，AI味/標點是次要 |
+| 小蝶 designer | 🦋 | 製圖：文案定稿、接近發布日才做，照 `禾言圖文` skill 流程真的 git push＋建 Canva 檔 |
+
+**任務生命週期**：規劃→製作→審閱（來回最多 2 輪）→待製圖窗口（發布日前 3 天內才推進）→
+製圖→完成；任何一步卡住或她手動把看板卡片拖去別欄，都會變成「待你確認」等她回應。
+
+### 關鍵行為
+- **審閱通過的定稿直接寫進禾言規劃表**（`hy_social_r7n3k8/posts`），不用手動搬；小兔每次交稿
+  也即時同步（含審閱退回重寫的每一版），規劃表上會看到即時進度小徽章，點了跳到 agent-hub 詳情頁
+- **小梟每月 15–21 號會排下個月的內容建議**（4–6 篇，遵守一週一篇固定週二／陪跑至少一篇／
+  教學不超過一半／類型交錯的節奏規則），先給她在網頁上確認、按「全部採用」才會真的建任務
+- **小梟每週會回頭稽核已排程但還沒發布的貼文**，內容還適合就安靜不打擾，需要調整才開新任務叫小兔改
+- **工作群是真的聊天室**：她打字給團隊，小梟代表回覆，而且會記住交代的事、影響之後的規劃/稽核判斷
+- **看板卡片可以拖曳搬到別欄**：代表「這篇要調整」，對應角色會在工作群問她要改什麼，她在任務詳情
+  打字說明＋按「確認，繼續」才會真的照方向繼續（拖曳做過就卡住那次是 bug，已修：`waitingKind==='manualMove'`
+  時才允許已經是「待你確認」的卡再被拖走改方向）
+- **工位卡／任務詳情頁會顯示真實處理進度**（`processingRole`／`processingStartedAt`，跟「階段是否
+  符合角色」是兩件事，一次只處理一件、同階段可能只是排隊）
+
+### 踩過的坑（別重踩）
+- **測試不能靠「刪 Firebase 任務」中止**：launchd 還在跑時刪任務，中止不了進行中的 `claude -p`
+  子行程，跑完的結果會 PATCH 回一個殘缺復活的任務繼續被排程處理——2026-08-25 因此真的誤觸發過
+  一次 git push＋建 Canva 檔的事故。**測試前一定要先 `launchctl unload` 停排程**，測完手動清資料，
+  確定沒問題才 `launchctl load` 重新上線
+- **小蝶製圖要讀禾言規劃表「當下」的 `ig` 欄位**，不是 ah 任務自己訊息串裡小兔的舊訊息——
+  她常常直接在規劃表網頁上手改文案，那個才是最新版
+- **Claude 額度用完時 `claude -p` 仍會 returncode=0 並印出「You've hit your session limit」**，
+  不會自動變成例外——`run_claude()` 要主動偵測這句字串當成失敗處理，不然這句話會被當成
+  三個角色的正常回覆寫進任務訊息，污染整條對話還誤導審閱判斷
+- **拖放功能不要用原生 HTML5 `draggable`**：測不出來（`left_click_drag` 觸發不了原生拖放事件）、
+  觸控裝置支援也差，一律用 `pointerdown`/`pointermove`/`pointerup` 手刻（工作台
+  `makeCardSortable()` 已經是現成範例）
+
+---
+
 <!-- AI 分身起始助手紀錄:START -->
 <!-- AI 分身起始助手 by 雷小蒙 v1.0 · 2026-05-13 · by 雷蒙（Raymond Hou）· https://github.com/Raymondhou0917/claude-code-resources · CC BY-NC-SA 4.0 -->
 
