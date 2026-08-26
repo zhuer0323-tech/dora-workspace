@@ -691,7 +691,9 @@ def main():
         tok2 = ws_token(cfg['WS_SA_KEY'])
 
         if jobs:
-            jobs.sort(key=lambda j: j[0])
+            # 私聊優先於任務推進：她在等聊天回覆比任務多花一輪才推進更有感，
+            # 只有兩者都是私聊或都是任務時才照時間排序（2026-08-26 她實測發現私聊被任務卡住太久）
+            jobs.sort(key=lambda j: (0 if j[1] == 'dm' else 1, j[0]))
             kind, payload = jobs[0][1], jobs[0][2]
             if kind == 'task':
                 process_task(cfg, tok2, payload)
