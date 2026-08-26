@@ -133,6 +133,13 @@ header.top .sub{font-size:12px;color:var(--ink3);margin-left:2px;font-weight:400
 .flag{font-size:11px;color:#6FC79A;font-weight:700}
 .empty{color:var(--ink3);font-size:13px;text-align:center;padding:34px 0;line-height:1.9}
 
+/* 協作團隊處理中的小徽章：連到 agent-hub 看那篇的規劃/製作/審閱/製圖過程 */
+.agentbadge{display:inline-flex;align-items:center;gap:3px;font-size:10.5px;font-weight:700;
+  padding:2px 8px;border-radius:99px;background:var(--pink-xl);color:var(--pink-d);
+  text-decoration:none;white-space:nowrap;border:1px solid var(--pink-l)}
+.agentbadge.wait{background:#FFF7E0;color:#B4770B;border-color:#FCE3A0}
+.agentbadge:hover{background:var(--pink-l)}
+
 /* ---------- 圖文表（照她 Google 試算表的形式：一篇一欄，左邊固定欄位名） ---------- */
 .sheetwrap{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);
   padding:0;overflow:auto;max-height:78vh;
@@ -1052,6 +1059,22 @@ function renderCalStats(){
     </div>`;
 }
 
+/* 協作團隊（agent-hub）處理進度的小徽章。只有 agentTaskId 串起來、
+   還沒完稿（agentStage !== 'done'）的貼文才顯示，完稿後就不佔版面了。
+   點下去開 agent-hub 那篇任務的詳情頁看完整過程。 */
+const AGENT_STAGE_LABEL = {
+  planning:'🦉規劃中', making:'🐰製作中', reviewing:'🦊審閱中',
+  designing:'🦋製圖中', waiting_human:'🙋待你確認',
+};
+function agentBadge(p){
+  if(!p.agentTaskId || !p.agentStage || p.agentStage==='done') return '';
+  const label = AGENT_STAGE_LABEL[p.agentStage] || p.agentStage;
+  const cls = p.agentStage==='waiting_human' ? 'agentbadge wait' : 'agentbadge';
+  // 用 span 不用 a：.pc 卡片本身是 <button>，裡面不能合法再塞一個連結，改由委派的 click handler 處理跳轉
+  return `<span class="${cls}" data-agentlink="../agent-hub/index.html?task=${encodeURIComponent(p.agentTaskId)}"
+             title="開 AI 協作平台看規劃/製作/審閱過程">${label}</span>`;
+}
+
 function renderCal(){
   renderCalStats();
   const box = $('#cal');
@@ -1074,6 +1097,7 @@ function renderCal(){
            </div>
            <span class="t" data-caltitle="${id}" title="點一下可以直接改標題">${esc(p.title||'（未命名）')}</span>
            ${p.headline ? `<div class="evhead">${esc(p.headline)}</div>` : ''}
+           ${agentBadge(p)}
          </div>
          <button class="evopen" data-open="${id}" title="開啟完整編輯">⋯</button>
        </div>`).join('');
@@ -1096,6 +1120,7 @@ function renderList(){
         <span class="dt">${+p.date.slice(5,7)}/${+p.date.slice(8,10)}（${wd}）</span>
         <span class="chip t-${slugOf(p.type)}">${esc(p.type||'其他')}</span>
         ${p.done?'<span class="flag">✓ 已發布</span>':''}
+        ${agentBadge(p)}
       </div>
       <h3>${esc(p.title||'（未命名）')}</h3>
       ${p.goal?`<div class="goal">目的：${esc(p.goal)}</div>`:''}
@@ -1447,6 +1472,10 @@ document.addEventListener('click', async e => {
     setTimeout(() => { c.textContent = '複製文案'; c.classList.remove('ok'); }, 1400);
     return;
   }
+  // 協作團隊處理進度的徽章：跳去 agent-hub 看那篇的過程，不要順便打開這頁的編輯視窗
+  const al = e.target.closest('[data-agentlink]');
+  if(al){ window.open(al.dataset.agentlink, '_blank'); return; }
+
   const t = e.target.closest('[data-open]');
   if(t){ openEdit(t.dataset.open); return; }
 

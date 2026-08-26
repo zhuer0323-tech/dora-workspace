@@ -306,6 +306,8 @@ const esc = s => (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&
 let db, dbRef, dbSet, dbUpdate, dbPush, dbOnValue, dbGet;
 let tasks = {}, messages = {}, dms = {};
 let activeTab = 'tasks', selectedTask = null, selectedDM = 'planner';
+// 從禾言社群規劃的徽章點過來時帶 ?task=xxx，開頁直接跳到那筆任務的詳情
+{ const p = new URLSearchParams(location.search).get('task'); if(p) selectedTask = p; }
 
 /* 禾言社群規劃團隊的四個角色，固定流程：規劃→製作→審閱→製圖 */
 const PERSONA = {
@@ -525,12 +527,19 @@ function renderTaskDetail(){
 
   const replyEl = $('#replyText');
   const getReply = () => (replyEl && replyEl.value.trim()) || '';
+  // 徽章狀態同步：這兩顆按鈕是她在網頁上直接點的，繞過背景引擎，所以要自己把
+  // 禾言社群規劃那張卡的 agentStage 一起更新，徽章才會馬上換，不用等下一輪引擎才補上
+  const syncHyStage = async (stageVal) => {
+    if(t.hySocialId) await dbUpdate(dbRef(db, `hy_social_r7n3k8/posts/${t.hySocialId}`), {agentStage: stageVal});
+  };
   if($('#btnContinue')){
     $('#btnContinue').onclick = async () => {
       const text = getReply();
-      const patch = { stage: t.resumeStage || 'making', updatedAt: Date.now() };
+      const nextStage = t.resumeStage || 'making';
+      const patch = { stage: nextStage, updatedAt: Date.now() };
       if(t.waitingKind==='maxRound') patch.round = 0;
       await dbUpdate(dbRef(db, `${ROOM}/tasks/${selectedTask}`), patch);
+      await syncHyStage(nextStage);
       if(text) await dbPush(dbRef(db, `${ROOM}/messages/${selectedTask}`), {role:'human', text, createdAt: Date.now()});
     };
   }
@@ -539,12 +548,19 @@ function renderTaskDetail(){
       const rows = Object.values(messages[selectedTask]||{}).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
       const lastMaker = [...rows].reverse().find(m=>m.role==='maker');
       const finalCopy = lastMaker ? lastMaker.text : '';
-      const postRef = await dbPush(dbRef(db, 'hy_social_r7n3k8/posts'), {
-        date: t.postDate||'', type: t.type||'其他', title: t.title||'', goal: t.goal||'',
-        ig: finalCopy, fb: '', done: false,
-      });
-      await dbUpdate(dbRef(db, `${ROOM}/tasks/${selectedTask}`), {
-        stage:'designing', hySocialId: postRef.key, round: 0, updatedAt: Date.now()});
+      if(t.hySocialId){
+        // 正常情況規劃階段就已經在禾言那邊開好卡了，這裡只是把定稿內容補上去
+        await dbUpdate(dbRef(db, `hy_social_r7n3k8/posts/${t.hySocialId}`), {
+          ig: finalCopy, agentStage: 'designing'});
+      } else {
+        // 防呆：萬一還沒串過（理論上不會發生，規劃一開始引擎就會開卡）才在這裡補開一張
+        const postRef = await dbPush(dbRef(db, 'hy_social_r7n3k8/posts'), {
+          date: t.postDate||'', type: t.type||'其他', title: t.title||'', goal: t.goal||'',
+          ig: finalCopy, fb: '', done: false, agentTaskId: selectedTask, agentStage: 'designing',
+        });
+        await dbUpdate(dbRef(db, `${ROOM}/tasks/${selectedTask}`), {hySocialId: postRef.key});
+      }
+      await dbUpdate(dbRef(db, `${ROOM}/tasks/${selectedTask}`), {stage:'designing', round: 0, updatedAt: Date.now()});
       await dbPush(dbRef(db, `${ROOM}/messages/${selectedTask}`), {
         role:'system', text:'你選擇採用目前版本，定稿，已經寫進禾言社群規劃，接下來換小蝶做圖卡。', createdAt: Date.now()});
     };

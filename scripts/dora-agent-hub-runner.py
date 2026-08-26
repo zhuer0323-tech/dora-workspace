@@ -64,15 +64,20 @@ PLANNER_PROMPT = """你是「小梟」，禾言數位行銷社群規劃團隊的
 
 這個月客戶最想了解的內容／重點方向（朱兒提供）：
 {brief}
+
+禾言規劃表這個月＋上個月已經排的貼文（**先看這個，不要跟這些話題或切角撞在一起**）：
+{existing_posts}
 {transcript_block}
-請做兩件事再下判斷：
-1. 上網搜尋 Meta／Google／LINE 廣告平台最近的更新消息、新功能或政策變化，
+請做三件事再下判斷：
+1. 先看上面「已經排的貼文」，確認這次要寫的方向沒有跟其中任何一篇的話題或切角重複
+2. 上網搜尋 Meta／Google／LINE 廣告平台最近的更新消息、新功能或政策變化，
    找出跟「{type_label}」這個類型相關、值得跟客戶分享的重點
-2. 讀 `200_Reference/clients/` 底下幾個客戶檔，看有沒有記到廣告投放中實際遇到的問題；
+3. 讀 `200_Reference/clients/` 底下幾個客戶檔，看有沒有記到廣告投放中實際遇到的問題；
    也可以搜尋一下這個產業常見的廣告投放痛點文章，交叉比對哪個話題最值得寫
 
 綜合以上，直接寫出：
-1. 這篇的核心方向與切角（要具體，不要只寫「跟廣告更新有關」這種空泛的話）
+1. 這篇的核心方向與切角（要具體，不要只寫「跟廣告更新有關」這種空泛的話；
+   如果發現跟既有貼文重疊，換一個角度或换一個更具體的子題目，不要硬寫一樣的）
 2. 為什麼這個時間點適合寫這個話題（呼應了什麼平台更新／客戶痛點）
 3. 給小兔的重點提醒（語氣、要不要提到具體案例情境等）
 {title_note}
@@ -294,19 +299,69 @@ def last_message_text(cfg, tok, tid, role):
     return ''
 
 
-def write_to_heyen_social(cfg, tok, task):
-    """審閱通過的定稿直接寫進「禾言社群規劃」網頁的資料，回傳新建 post 的 id。"""
-    final_copy = last_message_text(cfg, tok, task['id'], 'maker')
+def existing_hy_posts_summary(cfg, tok, post_date):
+    """小梟規劃前先看禾言規劃表當月＋上個月已經排了什麼，避免撞題。
+    2026-08-25 加的：出過一次事故，小梟在完全不知道規劃表內容的情況下，
+    生出一篇當天已經做過的重複主題，一路跑到真的 git push＋建 Canva 檔才被發現。"""
+    try:
+        posts = db_get(cfg, tok, HY_ROOM, 'posts') or {}
+    except Exception:
+        return '（讀不到禾言規劃表，跳過比對，下筆時自己留意別跟明顯常見的主題撞題）'
+
+    prefixes = set()
+    if post_date and len(post_date) >= 7:
+        y, m = int(post_date[:4]), int(post_date[5:7])
+        prefixes.add(f'{y:04d}-{m:02d}')
+        pm, py = (m - 1, y) if m > 1 else (12, y - 1)
+        prefixes.add(f'{py:04d}-{pm:02d}')
+
+    rows = []
+    for p in posts.values():
+        if not isinstance(p, dict):
+            continue
+        d = p.get('date') or ''
+        if prefixes and d[:7] not in prefixes:
+            continue
+        rows.append((d, p.get('type') or '（沒類型）', p.get('title') or '（未命名）'))
+    if not rows:
+        return '（這個月跟上個月規劃表裡還沒有其他貼文，不用擔心撞題）'
+    rows.sort()
+    return '\n'.join(f'- {d}｜{t}｜{ti}' for d, t, ti in rows)
+
+
+def ensure_hy_social(cfg, tok, task):
+    """任務一進「規劃」就在禾言社群規劃那邊開一張對應的卡（內容先空著），
+    這樣她從一開始就能在熟悉的規劃表上看到這篇、看到進度徽章，不用等審閱通過才看得到。
+    已經開過的話就只補一次目前階段（防呆用，正常都是靠 set_stage 保持最新）。
+    回傳（可能更新過的）task dict。
+    """
+    tid = task['id']
+    if task.get('hySocialId'):
+        db_patch(cfg, tok, HY_ROOM, f'posts/{task["hySocialId"]}', {'agentStage': task.get('stage')})
+        return task
     post = {
-        'date': task.get('postDate') or '',
-        'type': task.get('type') or '其他',
-        'title': task.get('title') or '',
-        'goal': task.get('goal') or '',
-        'ig': final_copy,
-        'fb': '',
-        'done': False,
+        'date': task.get('postDate') or '', 'type': task.get('type') or '其他',
+        'title': task.get('title') or '', 'goal': task.get('goal') or '',
+        'ig': '', 'fb': '', 'done': False,
+        'agentTaskId': tid, 'agentStage': task.get('stage'),
     }
-    return db_post(cfg, tok, HY_ROOM, 'posts', post), final_copy
+    hy_id = db_post(cfg, tok, HY_ROOM, 'posts', post)
+    db_patch(cfg, tok, ROOM, f'tasks/{tid}', {'hySocialId': hy_id})
+    task = dict(task); task['hySocialId'] = hy_id
+    return task
+
+
+def set_stage(cfg, tok, task, fields):
+    """更新 ah 任務的階段／欄位，同時把狀態同步到禾言社群規劃那張卡（如果已經串接）——
+    這樣禾言規劃表上的徽章才會跟著換，不用等她自己回 agent-hub 看。"""
+    tid = task['id']
+    db_patch(cfg, tok, ROOM, f'tasks/{tid}', fields)
+    hy_id = task.get('hySocialId')
+    if hy_id and 'stage' in fields:
+        hy_fields = {'agentStage': fields['stage']}
+        if 'title' in fields:
+            hy_fields['title'] = fields['title']
+        db_patch(cfg, tok, HY_ROOM, f'posts/{hy_id}', hy_fields)
 
 
 def process_task(cfg, tok, task):
@@ -316,11 +371,14 @@ def process_task(cfg, tok, task):
     transcript_block = build_transcript(messages)
     now_ms = int(time.time() * 1000)
 
+    task = ensure_hy_social(cfg, tok, task)  # 一進來就確保禾言那邊有對應的卡、狀態是最新的
+
     if stage == 'planning':
         role, allowed, timeout = 'planner', PLANNER_ALLOWED, TIMEOUT
         prompt = PLANNER_PROMPT.format(
             type_label=type_label, post_date=task.get('postDate') or '（沒填）',
             brief=task.get('brief', ''), transcript_block=transcript_block,
+            existing_posts=existing_hy_posts_summary(cfg, tok, task.get('postDate')),
             title_note='' if task.get('title') else TITLE_NOTE)
     elif stage == 'making':
         role, allowed, timeout = 'maker', BASE_ALLOWED, TIMEOUT
@@ -347,7 +405,7 @@ def process_task(cfg, tok, task):
     try:
         out = run_claude(prompt, allowed=allowed, timeout=timeout)
     except Exception as e:
-        db_patch(cfg, tok, ROOM, f'tasks/{tid}', {
+        set_stage(cfg, tok, task, {
             'stage': 'waiting_human', 'waitingKind': 'error',
             'waitingReason': f'{ROLE_LABEL[role]}小幫手這輪跑失敗了：{str(e)[:200]}',
             'resumeStage': stage, 'updatedAt': now_ms})
@@ -358,7 +416,7 @@ def process_task(cfg, tok, task):
     if need_human:
         db_post(cfg, tok, ROOM, f'messages/{tid}', {
             'role': role, 'text': f'我不確定：{need_human}', 'createdAt': now_ms})
-        db_patch(cfg, tok, ROOM, f'tasks/{tid}', {
+        set_stage(cfg, tok, task, {
             'stage': 'waiting_human', 'waitingKind': 'needHuman',
             'waitingReason': need_human, 'resumeStage': stage, 'updatedAt': now_ms})
         line_push(cfg, f'🙋「{task.get("title","")}」的{ROLE_LABEL[role]}小幫手卡住了：\n{need_human}\n\n到協作平台回覆一下就能繼續')
@@ -371,44 +429,42 @@ def process_task(cfg, tok, task):
         title = parse_title(out)
         if title and not task.get('title'):
             patch['title'] = title
-        db_patch(cfg, tok, ROOM, f'tasks/{tid}', patch)
+        set_stage(cfg, tok, task, patch)
     elif role == 'maker':
-        db_patch(cfg, tok, ROOM, f'tasks/{tid}', {'stage': 'reviewing', 'updatedAt': now_ms})
+        set_stage(cfg, tok, task, {'stage': 'reviewing', 'updatedAt': now_ms})
+        if task.get('hySocialId'):
+            db_patch(cfg, tok, HY_ROOM, f'posts/{task["hySocialId"]}', {'ig': out})
     elif role == 'reviewer':
         verdict = parse_verdict(out)
         if verdict == '通過':
-            task_for_write = dict(task); task_for_write['id'] = tid
-            post_id, _ = write_to_heyen_social(cfg, tok, task_for_write)
-            db_patch(cfg, tok, ROOM, f'tasks/{tid}', {
-                'stage': 'designing', 'hySocialId': post_id, 'updatedAt': now_ms})
+            set_stage(cfg, tok, task, {'stage': 'designing', 'updatedAt': now_ms})
             line_push(cfg, f'✅「{task.get("title","")}」文案定稿了，已經寫進禾言社群規劃，接下來小蝶要開始做圖卡')
         else:
             round_no = task.get('round', 0) + 1
             if verdict is None:
-                db_patch(cfg, tok, ROOM, f'tasks/{tid}', {
+                set_stage(cfg, tok, task, {
                     'stage': 'waiting_human', 'waitingKind': 'needHuman',
                     'waitingReason': '審閱小幫手的回覆看不出通過還是要改，麻煩你看一下',
                     'resumeStage': 'reviewing', 'updatedAt': now_ms})
                 line_push(cfg, f'🙋「{task.get("title","")}」的審閱結果我判斷不出來，到協作平台看一下')
             elif round_no > MAX_ROUNDS:
-                db_patch(cfg, tok, ROOM, f'tasks/{tid}', {
+                set_stage(cfg, tok, task, {
                     'stage': 'waiting_human', 'waitingKind': 'maxRound',
                     'waitingReason': f'製作跟審閱已經來回改了 {MAX_ROUNDS} 輪，我先停下來，你要用目前這版定稿，還是再給個方向？',
                     'resumeStage': 'making', 'round': round_no, 'updatedAt': now_ms})
                 line_push(cfg, f'🙋「{task.get("title","")}」來回改了 {MAX_ROUNDS} 輪還沒過，到協作平台看要不要直接定稿')
             else:
-                db_patch(cfg, tok, ROOM, f'tasks/{tid}', {'stage': 'making', 'round': round_no, 'updatedAt': now_ms})
+                set_stage(cfg, tok, task, {'stage': 'making', 'round': round_no, 'updatedAt': now_ms})
     elif role == 'designer':
         canva_url = parse_canva_url(out)
         if not canva_url:
-            db_patch(cfg, tok, ROOM, f'tasks/{tid}', {
+            set_stage(cfg, tok, task, {
                 'stage': 'waiting_human', 'waitingKind': 'needHuman',
                 'waitingReason': '小蝶跑完了但沒抓到 Canva 連結，麻煩到協作平台看一下發生什麼事',
                 'resumeStage': 'designing', 'updatedAt': now_ms})
             line_push(cfg, f'🙋「{task.get("title","")}」的圖卡沒拿到 Canva 連結，到協作平台看一下')
             return True
-        db_patch(cfg, tok, ROOM, f'tasks/{tid}', {
-            'stage': 'done', 'canvaUrl': canva_url, 'updatedAt': now_ms})
+        set_stage(cfg, tok, task, {'stage': 'done', 'canvaUrl': canva_url, 'updatedAt': now_ms})
         if task.get('hySocialId'):
             db_patch(cfg, tok, HY_ROOM, f'posts/{task["hySocialId"]}', {'link': canva_url})
         line_push(cfg, f'🎨「{task.get("title","")}」的圖卡也做完了，全部四關都跑完啦\n\nCanva 編輯：{canva_url}')
