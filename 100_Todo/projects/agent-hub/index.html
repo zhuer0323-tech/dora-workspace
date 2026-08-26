@@ -550,7 +550,10 @@ function renderBoard(){
       ${items.map(t=>{
         const p = respRole ? PERSONA[respRole] : null;
         const code = t.hySocialId ? autoCode(t.hySocialId) : '';
-        const draggable = t.stage!=='waiting_human';
+        // 「待你確認」的卡多數不給拖（那個狀態需要特定欄位），
+        // 但如果是她自己手動拖過去的（manualMove），還是讓她能再拖去別欄改主意，
+        // 不然拖錯一次就卡住只能走完整套確認流程才能重選
+        const draggable = t.stage!=='waiting_human' || t.waitingKind==='manualMove';
         return `<div class="card" data-id="${t.id}" ${draggable?'data-draggable="true"':''}>
           <div class="cardtop">
             ${t.postDate?`<span class="cdate">${esc(dateShort(t.postDate))}</span>`:'<span class="cdate">未定日</span>'}
@@ -630,9 +633,15 @@ function wireDragDrop(){
 
 async function handleManualMove(tid, targetStage){
   const t = tasks[tid];
-  if(!t || t.stage===targetStage || t.stage==='waiting_human') return;
+  if(!t) return;
+  // 已經在「待你確認」的卡，只有「她自己手動拖過去的」(manualMove) 才給再拖一次改方向；
+  // 其他原因（小幫手判斷不出來、來回改太多輪）造成的待確認不能被拖曳蓋掉，要走原本的確認流程。
+  const isManualWait = t.stage==='waiting_human' && t.waitingKind==='manualMove';
+  if(t.stage==='waiting_human' && !isManualWait) return;
+  const effectiveCurrent = isManualWait ? (t.resumeStage || t.stage) : t.stage;
+  if(effectiveCurrent===targetStage) return;
   const now = Date.now();
-  const fromLabel = STAGE_LABEL[t.stage] || t.stage;
+  const fromLabel = STAGE_LABEL[effectiveCurrent] || effectiveCurrent;
   const toLabel = STAGE_LABEL[targetStage] || targetStage;
   const titleTxt = t.title || '這篇';
   const reason = `你把「${titleTxt}」從「${fromLabel}」拖到「${toLabel}」了，要說一下想調整哪裡嗎？在這篇底下打字說明後按「確認，繼續」就會照你的方向繼續。`;
