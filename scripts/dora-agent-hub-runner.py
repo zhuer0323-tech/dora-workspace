@@ -397,8 +397,14 @@ def ensure_hy_social(cfg, tok, task):
 
 def set_stage(cfg, tok, task, fields):
     """更新 ah 任務的階段／欄位，同時把狀態同步到禾言社群規劃那張卡（如果已經串接）——
-    這樣禾言規劃表上的徽章才會跟著換，不用等她自己回 agent-hub 看。"""
+    這樣禾言規劃表上的徽章才會跟著換，不用等她自己回 agent-hub 看。
+    每一條退出 process_task() 的路徑都會經過這裡，所以順便把 processingRole/
+    processingStartedAt 清掉（2026-08-26 她反饋「看不出現在到底在做什麼」，
+    這兩個欄位是給前端顯示「正在做 X，已經進行 N 分鐘」用的，做完就要清乾淨）。"""
     tid = task['id']
+    fields = dict(fields)
+    fields.setdefault('processingRole', None)
+    fields.setdefault('processingStartedAt', None)
     db_patch(cfg, tok, ROOM, f'tasks/{tid}', fields)
     hy_id = task.get('hySocialId')
     if hy_id and 'stage' in fields:
@@ -456,6 +462,7 @@ def process_task(cfg, tok, task):
         return False
 
     print(f"{time.strftime('%F %T')} 開始跑 {tid} / {role}")
+    db_patch(cfg, tok, ROOM, f'tasks/{tid}', {'processingRole': role, 'processingStartedAt': now_ms})
     try:
         out = run_claude(prompt, allowed=allowed, timeout=timeout)
     except Exception as e:

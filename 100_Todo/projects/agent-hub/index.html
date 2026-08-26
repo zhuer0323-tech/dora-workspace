@@ -401,9 +401,19 @@ $('#navTabs').addEventListener('click', e=>{
 });
 
 /* ---------- 工位列 ---------- */
-function busyTaskFor(role){
+function elapsedText(startedAt){
+  if(!startedAt) return '';
+  const s = Math.max(0, Math.floor((Date.now()-startedAt)/1000));
+  return s < 60 ? `${s} 秒` : `${Math.floor(s/60)} 分 ${s%60} 秒`;
+}
+// 真的在跑：processingRole 是引擎開始跑那個角色時才會寫的即時標記（不是猜的），
+// 做完/跑失敗/等她確認都會清掉，跟階段是否符合是兩件事（2026-08-26 她反饋「看不出現在在做什麼」加的）
+function activeTaskFor(role){
+  return Object.values(tasks).find(t=>t && t.processingRole===role);
+}
+function queuedTaskFor(role){
   const stage = STAGE_OF_ROLE[role];
-  return Object.entries(tasks).find(([,t]) => t && t.stage===stage);
+  return Object.values(tasks).find(t=>t && t.stage===stage && t.processingRole!==role);
 }
 function lastActiveFor(role){
   let max = 0;
@@ -417,9 +427,14 @@ function renderWorkbar(){
   const box = $('#workbar');
   box.innerHTML = ROLE_ORDER.map(role=>{
     const p = PERSONA[role];
-    const busy = busyTaskFor(role);
+    const active = activeTaskFor(role);
+    const queued = !active && queuedTaskFor(role);
     const last = lastActiveFor(role);
-    return `<div class="wscard ${p.cls} ${busy?'busy':''}">
+    let stateHtml;
+    if(active) stateHtml = `<span class="sp"></span>處理中：${esc(active.title||'（未命名）')}（已進行 ${elapsedText(active.processingStartedAt)}）`;
+    else if(queued) stateHtml = `⏳排隊中：${esc(queued.title||'（未命名）')}`;
+    else stateHtml = `待命中 · ${last?timeAgo(last)+'活躍過':'還沒開始過'}`;
+    return `<div class="wscard ${p.cls} ${active?'busy':''}">
       <div class="wshead">
         <div class="wsavatar">${p.avatar}</div>
         <div class="wsinfo">
@@ -427,9 +442,7 @@ function renderWorkbar(){
           <div class="wr">${p.desc} · Claude Code</div>
         </div>
       </div>
-      <div class="wsstate ${busy?'busy':'idle'}">
-        ${busy ? `<span class="sp"></span>處理中：${esc(busy[1].title)}` : `待命中 · ${last?timeAgo(last)+'活躍過':'還沒開始過'}`}
-      </div>
+      <div class="wsstate ${active?'busy':'idle'}">${stateHtml}</div>
     </div>`;
   }).join('');
 }
@@ -694,7 +707,10 @@ function renderTaskDetail(){
   }).join('') + '</div>';
 
   if(t.stage==='planning'||t.stage==='making'||t.stage==='reviewing'||t.stage==='designing'){
-    html += `<div class="working"><span class="sp"></span>${PERSONA[Object.keys(STAGE_OF_ROLE).find(r=>STAGE_OF_ROLE[r]===t.stage)].name}處理中，每分鐘會檢查一次，跑完自動出現在下面</div>`;
+    const roleName = PERSONA[Object.keys(STAGE_OF_ROLE).find(r=>STAGE_OF_ROLE[r]===t.stage)].name;
+    const workingTxt = t.processingRole ? `${roleName}正在處理，已經進行 ${elapsedText(t.processingStartedAt)}`
+      : `排隊中，等${roleName}輪到這篇（每分鐘檢查一次，一次只處理一件）`;
+    html += `<div class="working"><span class="sp"></span>${workingTxt}</div>`;
   } else if(t.stage==='awaiting_window'){
     html += `<div class="working"><span class="sp"></span>文案已定稿，等接近發布日（${DESIGN_WINDOW_DAYS} 天內）小蝶會自動開始做圖，不用你操作</div>`;
   }
@@ -926,6 +942,10 @@ $('#gateBtn').onclick = async () => {
     else setSync('wait');
   }catch(e){ setSync('err', e.message); }
 })();
+
+// 「已進行 N 分鐘」要自己跳動，不能只靠 Firebase 有新資料才刷新——
+// 不然畫面會卡在同一個數字不動，看起來像沒在動（2026-08-26 她反饋「看不出現在在做什麼」）
+setInterval(()=>{ if(document.visibilityState==='visible') renderWorkbar(); }, 4000);
 </script>
 </body>
 </html>
