@@ -26,6 +26,7 @@
 每輪一樣只挑「最舊的一件待處理事」動手，任務推進跟私聊回覆一起排隊，不會搶額度。
 """
 import base64, json, os, re, subprocess, sys, tempfile, time
+from datetime import date
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
@@ -39,6 +40,9 @@ CLIENTS = os.path.join(WORKDIR, '200_Reference', 'clients')
 ROOM    = 'ah_4j2ppkn8rq'     # 改名要同步改 Firebase 規則
 HY_ROOM = 'hy_social_r7n3k8'  # 禾言社群規劃網頁的節點，定稿後直接寫進這裡
 MAX_ROUNDS = 2                 # 製作/審閱最多來回幾輪
+DESIGN_WINDOW_DAYS = 3          # 審閱通過後不馬上做圖，等到離發布日剩這幾天才交給小蝶（2026-08-26 她要求）
+PROPOSAL_DAY_START, PROPOSAL_DAY_END = 15, 21   # 每月第三週（大致），小梟排下個月建議
+AUDIT_INTERVAL_SEC = 7 * 86400  # 小梟定期掃描已排程內容，一週一次就好，不用每天掃
 
 ROLE_LABEL = {'planner': '規劃', 'maker': '製作', 'reviewer': '審閱', 'designer': '製圖',
               'human': '你', 'system': '系統'}
@@ -437,8 +441,10 @@ def process_task(cfg, tok, task):
     elif role == 'reviewer':
         verdict = parse_verdict(out)
         if verdict == '通過':
-            set_stage(cfg, tok, task, {'stage': 'designing', 'updatedAt': now_ms})
-            line_push(cfg, f'✅「{task.get("title","")}」文案定稿了，已經寫進禾言社群規劃，接下來小蝶要開始做圖卡')
+            # 2026-08-26 改：文案定稿不馬上做圖，等離發布日剩 DESIGN_WINDOW_DAYS 天才交給小蝶
+            # （她的原話：不要文案一過就馬上做圖，拖到接近發布日才做，圖不用整月一次做完）
+            set_stage(cfg, tok, task, {'stage': 'awaiting_window', 'updatedAt': now_ms})
+            line_push(cfg, f'✅「{task.get("title","")}」文案定稿了，已經寫進禾言社群規劃。離發布日還有一段時間，小蝶會在接近發布日前 {DESIGN_WINDOW_DAYS} 天開始做圖')
         else:
             round_no = task.get('round', 0) + 1
             if verdict is None:
@@ -492,6 +498,166 @@ def process_dm(cfg, tok, role, dm_msgs):
     db_post(cfg, tok, ROOM, f'dms/{role}', {'from': role, 'text': out, 'createdAt': now_ms})
 
 
+def check_design_window(cfg, tok):
+    """awaiting_window 的任務，離發布日剩不到 DESIGN_WINDOW_DAYS 天（或已經過期）就推進到「製圖」。
+    純資料庫操作、沒有 claude -p 呼叫，每輪都可以做，不佔「一次只跑一件」的名額。"""
+    tasks = db_get(cfg, tok, ROOM, 'tasks') or {}
+    today = date.today()
+    for tid, t in tasks.items():
+        if not isinstance(t, dict) or t.get('stage') != 'awaiting_window':
+            continue
+        try:
+            pd = date.fromisoformat(t.get('postDate') or '')
+        except ValueError:
+            continue  # 沒填發布日就先不推，留給她自己在網頁上處理
+        if (pd - today).days <= DESIGN_WINDOW_DAYS:
+            t = dict(t); t['id'] = tid
+            set_stage(cfg, tok, t, {'stage': 'designing', 'updatedAt': int(time.time() * 1000)})
+            print(f"{time.strftime('%F %T')} {tid} 進入製圖窗口，推進到 designing")
+
+
+PROPOSAL_PROMPT = """你是「小梟」，禾言數位行銷社群規劃團隊的規劃小幫手。現在要規劃 {target_month} \
+整個月的社群貼文主題建議（不是單篇，是一整個月的清單），先給朱兒確認過，她點頭才會正式建立任務。
+
+禾言的社群節奏規則：
+- 一週一篇，固定週二發布；當月如果有重要節慶，可以在節慶當天加開一篇
+- 每個月至少一篇「廣告顧問陪跑」類型（這條線最直接帶詢價）
+- 「教學/新手」類型不要超過整月篇數的一半
+- 不同類型要交錯排，不要同一類型連續兩篇；有時效性的節慶/檔期主題要排在對的日期附近，
+  不要為了交錯硬搬
+- 上網查一下 {target_month} 有沒有重要的行銷相關節慶或檔期，有的話排進去
+
+這個月＋上個月已經在禾言規劃表裡的內容（**這個月要規劃的內容不要跟這些話題重複**）：
+{existing_posts}
+
+請規劃 {target_month} 這個月的貼文，抓 4-6 篇，{target_month}的週二日期你自己算出來。
+每篇輸出一行，格式固定（用全形｜分隔，不要換別的符號）：
+N. 日期=YYYY-MM-DD｜類型=XXX｜標題=XXX｜方向=一句話說明這篇要寫什麼
+
+只輸出這個清單，不要加開場白或其他說明文字，不要用 markdown。"""
+
+AUDIT_PROMPT = """你是「小梟」，禾言數位行銷社群規劃團隊的規劃小幫手。定期回頭檢查已經排定、
+但還沒發布的貼文，看內容是不是還適合現在發、需不需要調整。
+
+這篇的資訊：
+- 發布日：{post_date}
+- 類型：{post_type}
+- 標題：{title}
+- 目前文案：
+{ig}
+
+請判斷這篇還適不適合照原樣發布——有沒有事實過期（提到的平台功能／數字／時事已經變了）、
+方向是不是還符合現在的狀況。沒有明顯問題就不用雞蛋裡挑骨頭。
+
+如果沒問題，最後一行單獨寫：
+決定：不用調整
+
+如果需要調整，具體寫出要改哪裡、怎麼改，最後一行單獨寫：
+決定：需要調整
+
+只輸出判斷內容本身，不要加開場白。"""
+
+
+def parse_proposal_items(out):
+    items = []
+    for line in out.splitlines():
+        m = re.match(r'^\d+\.\s*日期=([\d-]+)｜類型=([^｜]+)｜標題=([^｜]+)｜方向=(.+)$', line.strip())
+        if m:
+            items.append({'date': m.group(1), 'type': m.group(2).strip(),
+                          'title': m.group(3).strip(), 'angle': m.group(4).strip()})
+    return items
+
+
+def check_monthly_proposal(cfg, tok):
+    """每月第三週左右，小梟該主動排下個月的內容建議了嗎？回傳目標月份（YYYY-MM）或 None。
+    用 proposals/{yyyy-mm} 存不存在判斷這個月做過沒有，一個月只會生一次。"""
+    today = date.today()
+    if not (PROPOSAL_DAY_START <= today.day <= PROPOSAL_DAY_END):
+        return None
+    y, m = today.year, today.month
+    ty, tm = (y + 1, 1) if m == 12 else (y, m + 1)
+    target_key = f'{ty:04d}-{tm:02d}'
+    if db_get(cfg, tok, ROOM, f'proposals/{target_key}'):
+        return None
+    return target_key
+
+
+def run_monthly_proposal(cfg, tok, target_key):
+    ty, tm = (int(x) for x in target_key.split('-'))
+    target_month_label = f'{ty} 年 {tm} 月'
+    existing = existing_hy_posts_summary(cfg, tok, f'{target_key}-01')
+    prompt = PROPOSAL_PROMPT.format(target_month=target_month_label, existing_posts=existing)
+    print(f"{time.strftime('%F %T')} 開始跑月規劃建議 / {target_key}")
+    now_ms = int(time.time() * 1000)
+    try:
+        out = run_claude(prompt, allowed=PLANNER_ALLOWED, timeout=TIMEOUT)
+    except Exception as e:
+        print('月規劃建議失敗：', e)
+        return
+    items = parse_proposal_items(out)
+    db_patch(cfg, tok, ROOM, f'proposals/{target_key}', {
+        'status': 'pending', 'items': items, 'rawText': out, 'createdAt': now_ms})
+    if items:
+        line_push(cfg, f'📅 小梟排好 {target_month_label} 的內容建議了（{len(items)} 篇），到 agent-hub 看要不要用')
+    else:
+        line_push(cfg, f'⚠️ 小梟想排 {target_month_label} 的內容建議，但輸出格式解析不出來，到 agent-hub 看一下原始內容')
+
+
+def parse_audit_verdict(out):
+    m = re.search(r'決定[：:]\s*(不用調整|需要調整)\s*$', out.strip())
+    return m.group(1) if m else None
+
+
+def check_audit_scan(cfg, tok):
+    """挑一篇該定期稽核的已排程貼文（還沒發布、沒有正在被 agent-hub 處理、
+    上次稽核是一週以前）。一次只挑最早發布日那篇，回傳 (post_id, post) 或 None。"""
+    posts = db_get(cfg, tok, HY_ROOM, 'posts') or {}
+    today_str = date.today().isoformat()
+    now_ms = int(time.time() * 1000)
+    candidates = []
+    for pid, p in posts.items():
+        if not isinstance(p, dict) or p.get('done'):
+            continue
+        d = p.get('date') or ''
+        if d < today_str:
+            continue  # 已經過期沒發的不在稽核範圍內，那是另一個問題
+        if p.get('agentStage') and p.get('agentStage') != 'done':
+            continue  # 正在被處理中的不要打斷
+        if now_ms - (p.get('lastAuditAt') or 0) < AUDIT_INTERVAL_SEC * 1000:
+            continue  # 這週已經稽核過了
+        candidates.append((pid, p))
+    if not candidates:
+        return None
+    candidates.sort(key=lambda x: x[1].get('date', ''))
+    return candidates[0]
+
+
+def run_audit_one(cfg, tok, post_id, p):
+    prompt = AUDIT_PROMPT.format(
+        post_date=p.get('date', ''), post_type=p.get('type', ''),
+        title=p.get('title', ''), ig=p.get('ig', ''))
+    print(f"{time.strftime('%F %T')} 開始跑內容稽核 / {post_id}")
+    now_ms = int(time.time() * 1000)
+    try:
+        out = run_claude(prompt, allowed=PLANNER_ALLOWED, timeout=TIMEOUT)
+    except Exception as e:
+        print('稽核失敗：', e)
+        return
+    db_patch(cfg, tok, HY_ROOM, f'posts/{post_id}', {'lastAuditAt': now_ms})
+    if parse_audit_verdict(out) != '需要調整':
+        return  # 沒問題，不用打擾她
+    task_id = db_post(cfg, tok, ROOM, 'tasks', {
+        'title': p.get('title', ''), 'type': p.get('type', ''), 'postDate': p.get('date', ''),
+        'goal': p.get('goal', ''), 'brief': f'小梟定期稽核發現這篇需要調整：{out}',
+        'stage': 'making', 'round': 0, 'hySocialId': post_id,
+        'createdAt': now_ms, 'updatedAt': now_ms,
+    })
+    db_post(cfg, tok, ROOM, f'messages/{task_id}', {
+        'role': 'planner', 'text': f'定期稽核發現這篇需要調整：\n{out}', 'createdAt': now_ms})
+    db_patch(cfg, tok, HY_ROOM, f'posts/{post_id}', {'agentStage': 'making', 'agentTaskId': task_id})
+    line_push(cfg, f'🦉 小梟稽核發現「{p.get("title","")}」需要調整，已經交給小兔改文案')
+
+
 def main():
     if os.path.exists(LOCK) and time.time() - os.path.getmtime(LOCK) < TIMEOUT:
         return
@@ -501,6 +667,8 @@ def main():
         if not all(cfg.get(k) for k in ('WS_SA_KEY', 'WS_DB_URL')):
             print('設定不全，跳過'); return
         tok = ws_token(cfg['WS_SA_KEY'])
+
+        check_design_window(cfg, tok)  # 純資料庫操作，不吃額度，每輪都做
 
         jobs = []  # (時間戳, 種類, 資料)
 
@@ -520,16 +688,26 @@ def main():
             if last.get('from') == 'human':
                 jobs.append((last.get('createdAt', 0), 'dm', (role, dm_msgs)))
 
-        if not jobs:
-            return
-        jobs.sort(key=lambda j: j[0])
-        kind, payload = jobs[0][1], jobs[0][2]
         tok2 = ws_token(cfg['WS_SA_KEY'])
-        if kind == 'task':
-            process_task(cfg, tok2, payload)
-        else:
-            role, dm_msgs = payload
-            process_dm(cfg, tok2, role, dm_msgs)
+
+        if jobs:
+            jobs.sort(key=lambda j: j[0])
+            kind, payload = jobs[0][1], jobs[0][2]
+            if kind == 'task':
+                process_task(cfg, tok2, payload)
+            else:
+                role, dm_msgs = payload
+                process_dm(cfg, tok2, role, dm_msgs)
+            return
+
+        # 沒有任務/私聊要處理，這輪換去做背景維護：月規劃建議或定期稽核，一樣一次只做一件
+        target = check_monthly_proposal(cfg, tok)
+        if target:
+            run_monthly_proposal(cfg, tok2, target)
+            return
+        audit_candidate = check_audit_scan(cfg, tok)
+        if audit_candidate:
+            run_audit_one(cfg, tok2, *audit_candidate)
     finally:
         if os.path.exists(LOCK):
             os.unlink(LOCK)

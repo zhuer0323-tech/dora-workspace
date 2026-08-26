@@ -11,7 +11,8 @@
   --pink:#F48FB1; --pink-d:#E57399; --pink-l:#FFD9E3; --pink-xl:#FFF0F4;
   --ink:#5B3C46; --ink2:#8C6B76; --ink3:#B79AA4;
   --line:#F6DCE4;
-  --s-plan:#7FB6E0; --s-make:#F4A6C6; --s-review:#6FC79A; --s-design:#C79AE0; --s-wait:#F5A623; --s-done:#8FCB7A;
+  --s-plan:#7FB6E0; --s-make:#F4A6C6; --s-review:#6FC79A; --s-window:#B79AA4;
+  --s-design:#C79AE0; --s-wait:#F5A623; --s-done:#8FCB7A;
   --shadow:0 2px 10px rgba(232,150,178,.13);
   --shadow-l:0 6px 22px rgba(232,150,178,.20);
   --r:16px;
@@ -92,16 +93,23 @@ nav.tabs .tb.on .cnt{background:rgba(255,255,255,.3)}
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* ---------- 任務看板 ---------- */
+.proposalbox{background:#EFF6FF;border:1px solid #C7DEF5;border-radius:14px;padding:14px;margin-bottom:14px}
+.proposalbox .pt{font-size:13.5px;font-weight:700;color:#2C5A8A;margin-bottom:10px}
+.proposalbox .plist{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.proposalbox .pitem{background:#fff;border-radius:10px;padding:9px 11px;font-size:12.5px}
+.proposalbox .pdate{font-size:11px;color:var(--ink3);font-weight:700;margin-right:6px}
+.proposalbox .pangle{font-size:12px;color:var(--ink2);margin-top:3px}
 .boardhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap}
 .addbtn{padding:9px 16px;border-radius:12px;background:var(--pink);color:#fff;
   font-size:13.5px;font-weight:700;box-shadow:var(--shadow)}
-.board{display:grid;grid-template-columns:repeat(6,minmax(200px,1fr));gap:10px;overflow-x:auto;padding-bottom:6px}
-@media(max-width:900px){.board{grid-template-columns:repeat(6,80vw)}}
+.board{display:grid;grid-template-columns:repeat(7,minmax(200px,1fr));gap:10px;overflow-x:auto;padding-bottom:6px}
+@media(max-width:900px){.board{grid-template-columns:repeat(7,80vw)}}
 .col{background:var(--pink-xl);border-radius:14px;padding:10px;min-height:100px}
 .col h3{font-size:12.5px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;color:var(--ink2)}
 .col h3 .cdot{width:8px;height:8px;border-radius:99px}
 .cd-planning{background:var(--s-plan)} .cd-making{background:var(--s-make)}
-.cd-reviewing{background:var(--s-review)} .cd-designing{background:var(--s-design)}
+.cd-reviewing{background:var(--s-review)} .cd-awaiting_window{background:var(--s-window)}
+.cd-designing{background:var(--s-design)}
 .cd-waiting_human{background:var(--s-wait)} .cd-done{background:var(--s-done)}
 .col .cnt{margin-left:auto;color:var(--ink3);font-weight:400}
 .card{background:#fff;border-radius:12px;padding:10px;margin-bottom:8px;cursor:pointer;box-shadow:var(--shadow)}
@@ -117,7 +125,8 @@ nav.tabs .tb.on .cnt{background:rgba(255,255,255,.3)}
 .dhead .brief{font-size:12.5px;color:var(--ink2);margin-top:4px;white-space:pre-wrap}
 .badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap}
 .b-planning{background:var(--s-plan)} .b-making{background:var(--s-make)}
-.b-reviewing{background:var(--s-review)} .b-designing{background:var(--s-design)}
+.b-reviewing{background:var(--s-review)} .b-awaiting_window{background:var(--s-window)}
+.b-designing{background:var(--s-design)}
 .b-waiting_human{background:var(--s-wait)} .b-done{background:var(--s-done)}
 
 .canvabox{background:#F3E9FB;border:1px solid #E0C9F5;border-radius:12px;padding:12px;margin-bottom:14px;
@@ -304,7 +313,7 @@ const $ = s => document.querySelector(s);
 const esc = s => (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 let db, dbRef, dbSet, dbUpdate, dbPush, dbOnValue, dbGet;
-let tasks = {}, messages = {}, dms = {};
+let tasks = {}, messages = {}, dms = {}, proposals = {};
 let activeTab = 'tasks', selectedTask = null, selectedDM = 'planner';
 // 從禾言社群規劃的徽章點過來時帶 ?task=xxx，開頁直接跳到那筆任務的詳情
 { const p = new URLSearchParams(location.search).get('task'); if(p) selectedTask = p; }
@@ -318,8 +327,10 @@ const PERSONA = {
 };
 const ROLE_ORDER = ['planner','maker','reviewer','designer'];
 const STAGE_OF_ROLE = {planner:'planning', maker:'making', reviewer:'reviewing', designer:'designing'};
-const STAGE_ORDER = ['planning','making','reviewing','designing','waiting_human','done'];
-const STAGE_LABEL = {planning:'規劃中', making:'製作中', reviewing:'審閱中', designing:'製圖中', waiting_human:'待你確認', done:'已完成'};
+const DESIGN_WINDOW_DAYS = 3; // 跟 dora-agent-hub-runner.py 的 DESIGN_WINDOW_DAYS 對齊，純顯示用
+const STAGE_ORDER = ['planning','making','reviewing','awaiting_window','designing','waiting_human','done'];
+const STAGE_LABEL = {planning:'規劃中', making:'製作中', reviewing:'審閱中', awaiting_window:'待製圖窗口',
+  designing:'製圖中', waiting_human:'待你確認', done:'已完成'};
 const ROLE_META = {
   planner:{label:'🦉 小梟', cls:'r-planner'}, maker:{label:'🐰 小兔', cls:'r-maker'},
   reviewer:{label:'🦊 小狐', cls:'r-reviewer'}, designer:{label:'🦋 小蝶', cls:'r-designer'},
@@ -424,9 +435,54 @@ function renderTasksTab(){
   if(activeTab!=='tasks') return;
   if(selectedTask && tasks[selectedTask]) renderTaskDetail(); else renderBoard();
 }
+function renderProposalBanner(){
+  const pending = Object.entries(proposals).find(([,p])=>p && p.status==='pending');
+  if(!pending) return '';
+  const [key, p] = pending;
+  const items = p.items || [];
+  return `<div class="proposalbox" data-key="${key}">
+    <div class="pt">📅 小梟排好了 ${esc(key)} 的內容建議（${items.length} 篇），要採用嗎？</div>
+    <div class="plist">${items.map(it=>`<div class="pitem">
+        <span class="pdate">${esc(it.date)}</span><span class="chip">${esc(it.type)}</span>
+        <b>${esc(it.title)}</b><div class="pangle">${esc(it.angle)}</div>
+      </div>`).join('') || '<div class="pangle">（解析不出清單，到下面看原始內容）</div>'}
+    </div>
+    ${!items.length ? `<div class="pangle" style="white-space:pre-wrap;margin-bottom:8px">${esc(p.rawText||'')}</div>` : ''}
+    <div class="btns">
+      <button class="wbtn p" id="proposalAccept">全部採用，建立任務</button>
+      <button class="wbtn g" id="proposalReject">這個月先不用</button>
+    </div>
+  </div>`;
+}
+
+function wireProposalBanner(){
+  const box = $('.proposalbox');
+  if(!box) return;
+  const key = box.dataset.key;
+  const p = proposals[key];
+  const accept = $('#proposalAccept');
+  if(accept) accept.onclick = async () => {
+    for(const it of (p.items||[])){
+      const now = Date.now();
+      const id = dbPush(dbRef(db, `${ROOM}/tasks`)).key;
+      await dbSet(dbRef(db, `${ROOM}/tasks/${id}`), {
+        title: it.title||'', type: it.type||'', postDate: it.date||'', goal: '',
+        brief: it.angle||'', stage: 'planning', round: 0, createdAt: now, updatedAt: now,
+      });
+      await dbPush(dbRef(db, `${ROOM}/messages/${id}`), {role:'human', text: it.angle||it.title||'', createdAt: now});
+    }
+    await dbUpdate(dbRef(db, `${ROOM}/proposals/${key}`), {status:'approved'});
+  };
+  const reject = $('#proposalReject');
+  if(reject) reject.onclick = async () => {
+    await dbUpdate(dbRef(db, `${ROOM}/proposals/${key}`), {status:'rejected'});
+  };
+}
+
 function renderBoard(){
   const rows = Object.entries(tasks).map(([id,t])=>({id,...t}));
-  let html = `<div class="boardhead"><h2 style="font-size:16px">任務看板</h2><button class="addbtn" id="newBtn2">＋ 新任務</button></div>`;
+  let html = renderProposalBanner();
+  html += `<div class="boardhead"><h2 style="font-size:16px">任務看板</h2><button class="addbtn" id="newBtn2">＋ 新任務</button></div>`;
   html += '<div class="board">' + STAGE_ORDER.map(stage=>{
     const items = rows.filter(t=>t.stage===stage).sort((a,b)=>(b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0));
     const respRole = Object.keys(STAGE_OF_ROLE).find(r=>STAGE_OF_ROLE[r]===stage);
@@ -448,6 +504,7 @@ function renderBoard(){
   $('#tasksPanel').querySelectorAll('.card').forEach(el=>{
     el.onclick = () => { selectedTask = el.dataset.id; renderTaskDetail(); };
   });
+  wireProposalBanner();
 }
 
 function renderTaskDetail(){
@@ -462,9 +519,10 @@ function renderTaskDetail(){
     {key:'designing', label:'製圖', role:'designer'},
     {key:'done', label:'完成', role:null},
   ];
+  const stepKeyOf = stage => stage==='awaiting_window' ? 'designing' : stage;
   const curIdx = t.stage==='waiting_human'
-    ? stepsDef.findIndex(s=>s.key===(t.resumeStage||'planning'))
-    : stepsDef.findIndex(s=>s.key===t.stage);
+    ? stepsDef.findIndex(s=>s.key===stepKeyOf(t.resumeStage||'planning'))
+    : stepsDef.findIndex(s=>s.key===stepKeyOf(t.stage));
 
   let html = `<div class="backbtn" id="backBtn">← 返回任務看板</div>`;
   html += `<div class="dhead">
@@ -484,6 +542,8 @@ function renderTaskDetail(){
 
   if(t.stage==='planning'||t.stage==='making'||t.stage==='reviewing'||t.stage==='designing'){
     html += `<div class="working"><span class="sp"></span>${PERSONA[Object.keys(STAGE_OF_ROLE).find(r=>STAGE_OF_ROLE[r]===t.stage)].name}處理中，每分鐘會檢查一次，跑完自動出現在下面</div>`;
+  } else if(t.stage==='awaiting_window'){
+    html += `<div class="working"><span class="sp"></span>文案已定稿，等接近發布日（${DESIGN_WINDOW_DAYS} 天內）小蝶會自動開始做圖，不用你操作</div>`;
   }
 
   if(t.stage==='waiting_human'){
@@ -686,6 +746,7 @@ async function initFirebase(interactive){
   onValue(ref(db, `${ROOM}/tasks`), s => { tasks = s.exists()? s.val() : {}; renderAll(); });
   onValue(ref(db, `${ROOM}/messages`), s => { messages = s.exists()? s.val() : {}; renderAll(); });
   onValue(ref(db, `${ROOM}/dms`), s => { dms = s.exists()? s.val() : {}; renderAll(); });
+  onValue(ref(db, `${ROOM}/proposals`), s => { proposals = s.exists()? s.val() : {}; renderAll(); });
 
   return true;
 }
