@@ -57,6 +57,7 @@ PERSONA = {
 
 BASE_ALLOWED = 'Read,Glob,Grep'
 PLANNER_ALLOWED = BASE_ALLOWED + ',WebSearch'
+MAKER_ALLOWED = BASE_ALLOWED + ',Skill'   # 要真的呼叫 speak-human-tw，不是只憑印象模仿
 DESIGNER_ALLOWED = 'Read,Write,Edit,Glob,Grep,Bash,Skill,' \
     'mcp__claude_ai_Canva__import-design-from-url,mcp__claude_ai_Canva__read-design'
 
@@ -117,18 +118,17 @@ MAKER_PROMPT = """你是「小兔」，禾言數位行銷社群規劃團隊的�
 - 案例先不寫（禾言案例庫還沒串進來）
 - 不用加「— 禾言數位行銷」署名行，hashtag 裡已經有 #禾言數位行銷
 
-寫完第一版之後，**照 `000_Agent/skills/speak-human-tw/SKILL.md` 的判斷邏輯自己改一輪**，
-去 AI 味，重點對照上面那份改寫範例的原則：
-- 有沒有整句在重講前一句已經講過的意思——是的話整段刪，不要只改字
-- 有沒有「先講規則再舉例」的鋪陳開場白（例如「比較刺的地方是：」）——直接刪，讓內容自己開口
-- 長句拆成短行，順著語氣停頓斷行，不要用破折號（——）硬撐一整句
-- 對比/清單改用 → 或條列符號做視覺節奏，不要寫成一句夾雜對比的長句
-- 模糊描述換成具體詞（例如「改寫成能直接回答客人問題的樣子」該寫成「改寫成問答Q&A」）
-- 段落收尾多用「！」，拿掉不影響理解的修飾詞，整體要比你的直覺草稿更短
+寫完第一版之後，**用 Skill 工具實際執行一次 `speak-human-tw`**，把剛寫好的初稿交給它去 AI 味
+（這是非互動環境，沒有人能回答確認清單，那個 skill 自己的規則會偵測到、自動跳過確認直接套用，
+不會卡住等回覆；跑完會給你一份修改摘要）。用它處理完的最終版本當作你的正式定稿，
+不要用你自己的印象模仿它的邏輯，要真的呼叫這個 skill。
+重點對照 `200_Reference/writing-samples/禾言社群文案-朱兒改寫範例.md` 那份的原則
+（整段重複的意思整段刪、拿掉鋪陳開場白、長句拆短行、少用破折號、對比改用→做視覺節奏、
+模糊描述換具體詞），這些跟 speak-human-tw 抓的問題本來就高度重疊，兩邊會互相加強。
 
-直接產出「一則」完整定案、已經自己改過一輪的文案（不要給我 A/B 兩個版本選項，
-你自己選一個最好的直接寫），你的輸出會直接被存成正式文案，所以只寫文案本身，
-不要加「以下是初稿」「版本A」這種標籤或說明。
+直接產出「一則」完整定案、已經跑過 speak-human-tw 的文案（不要給我 A/B 兩個版本選項，
+你自己選一個最好的直接寫），你的輸出會直接被存成正式文案，**只留最終文案本身**——
+speak-human-tw 跑完給你的清單/摘要文字不要留在輸出裡，不要加「以下是初稿」這種標籤或說明。
 
 如果判斷不出怎麼下筆，在回覆最開頭寫一行：NEED_HUMAN: <原因>，然後結束。"""
 
@@ -398,7 +398,7 @@ def process_task(cfg, tok, task):
             existing_posts=existing_hy_posts_summary(cfg, tok, task.get('postDate')),
             title_note='' if task.get('title') else TITLE_NOTE)
     elif stage == 'making':
-        role, allowed, timeout = 'maker', BASE_ALLOWED, TIMEOUT
+        role, allowed, timeout = 'maker', MAKER_ALLOWED, TIMEOUT
         round_no = task.get('round', 0)
         revision_note = ''
         if round_no > 0:
