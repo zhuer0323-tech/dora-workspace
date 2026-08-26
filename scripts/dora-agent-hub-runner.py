@@ -440,7 +440,16 @@ def process_task(cfg, tok, task):
         prompt = REVIEWER_PROMPT.format(type_label=type_label, transcript_block=transcript_block)
     elif stage == 'designing':
         role, allowed, timeout = 'designer', DESIGNER_ALLOWED, DESIGN_TIMEOUT
-        final_copy = last_message_text(cfg, tok, tid, 'maker')
+        # 文案以禾言規劃表「現在」的內容為準，不要用 ah 任務裡小兔那則舊訊息——
+        # 她可能直接在禾言規劃表網頁上手改過文案，那個才是最新版（2026-08-26 踩過這個坑）
+        final_copy = ''
+        if task.get('hySocialId'):
+            try:
+                final_copy = (db_get(cfg, tok, HY_ROOM, f'posts/{task["hySocialId"]}') or {}).get('ig', '') or ''
+            except Exception:
+                final_copy = ''
+        if not final_copy:
+            final_copy = last_message_text(cfg, tok, tid, 'maker')
         prompt = DESIGNER_PROMPT.format(
             title=task.get('title') or '', type_label=type_label, final_copy=final_copy)
     else:
