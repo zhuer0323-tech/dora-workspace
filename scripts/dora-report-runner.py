@@ -176,8 +176,20 @@ def main():
                 print(f'{jid} 太舊（{age/3600:.1f} 小時）跳過')
                 continue
 
+            # has_spec 要讀 Downloads 底下的客戶檔，macOS 權限被擋時會噴例外
+            # （2026-08-27 踩過：整支程式當機、完全不通知她，卡住的待辦還會每分鐘重跑）。
+            # 包起來當成一般錯誤處理，至少會推 LINE 告訴她「壞了」
+            try:
+                spec_ok = has_spec(client)
+            except Exception as e:
+                line_push(cfg, f'⚠️「{client}」的廣告回報系統出錯，沒辦法跑：{str(e)[:200]}')
+                db_patch(cfg, tok, f'reportJobs/{jid}',
+                         {'status': 'error', 'error': str(e)[:300], 'doneAt': int(time.time() * 1000)})
+                print(f"{time.strftime('%F %T')} {client} has_spec 出錯：{e}")
+                continue
+
             # 沒規格就直說，不要叫 AI 硬做（省 1-2 分鐘、也省 Claude 額度）
-            if not has_spec(client):
+            if not spec_ok:
                 line_push(cfg, f'「{client}」還沒寫過廣告回報規格，所以做不出回報。\n\n'
                                f'要先定一份格式（回報要放哪些數字、素材怎麼列、期間怎麼算），'
                                f'跟 Claude 說「幫{client}定回報規格」就會帶你走一次。定好之後再叫一次回報就行。')

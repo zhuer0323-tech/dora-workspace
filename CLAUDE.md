@@ -344,6 +344,14 @@ Graph API Explorer 與 App 後台都進不去，所以 `dora-meta-token-setup.sh
   **新客戶要能在 LINE 叫回報，就是先建客戶檔＋寫規格＋跑 sync-report-spec.py**，
   三步缺一就會被擋（目前 TOTO、李享家直播集團 有客戶檔但沒寫規格，一樣會被擋）。
   **帶日期的句子一律當任務**，不會誤觸發
+  ⚠️ **2026-08-27 撞過：macOS 權限擋住這個檢查，整支 `dora-report-runner.py` 當機**
+  （不是單一客戶的問題，是共用背景程式全部壞掉，LINE 打任何客戶的回報都沒反應）。
+  原因是 `has_spec()` 讀 `200_Reference/clients` 這個在 Downloads 底下的資料夾時被 TCC 擋，
+  例外沒包 try/except 直接讓 `main()` 崩潰，不會推 LINE 通知、卡住的待辦每分鐘重試一樣崩潰。
+  **修法**：① 系統設定 → 隱私權與安全性 → 完整磁碟取用權 → 加 `/usr/bin/python3`；
+  ② 程式碼把 `has_spec()` 呼叫包進 try/except，失敗改推 LINE「系統出錯」＋標記 `error`，
+  不會再靜默當機。**這類權限問題可能因為 macOS 更新又跳出來**，出現「LINE 打回報完全沒反應」
+  時，先查 `/tmp/dora-report-runner-err.log` 有沒有 `PermissionError`，比較快定位
 - **Worker 跑在 UTC**：`date.js` 一律先加 8 小時算台灣時間
 - **本機測 webhook 要帶 User-Agent**：不帶會被 Cloudflare 擋成 403，不是程式壞掉
 
