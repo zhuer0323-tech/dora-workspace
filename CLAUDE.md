@@ -252,6 +252,9 @@ Graph API Explorer 與 App 後台都進不去，所以 `dora-meta-token-setup.sh
 - `dora-campaign-end-checker.sh` 的**帳戶清單改成動態問 `me/adaccounts`**（2026-08-25），
   原本寫死 10 個，換 token 後那 4 個空帳戶每次噴 403 雜訊；問不到時退回寫死的 6 個。
   舊版在 `.bak-20260825`
+- **網路等待邏輯 2026-08-28 補齊**：原本只等 30 秒、只探測 `api.line.me`（LINE 通不代表
+  Facebook 也通），跟廣告日報改之前的舊寫法一樣。比照 `dora-ads-anomaly.sh` 改成
+  同時等 `graph.facebook.com`（它真正要打的）與 `api.line.me` 都通、最多等 3 分鐘
 - **保底那條是 claude.ai 的 Meta Ads 連接器**：它走 **Anthropic 註冊的 App，
   跟她的開發人員停權無關**，所以停權期間照樣能用，只是要在 claude.ai 重新授權。
   ⚠️ **2026-08-25 當下是斷的**（訊息寫「連線需要重新授權」），還沒接回來——
@@ -352,6 +355,24 @@ Graph API Explorer 與 App 後台都進不去，所以 `dora-meta-token-setup.sh
   ② 程式碼把 `has_spec()` 呼叫包進 try/except，失敗改推 LINE「系統出錯」＋標記 `error`，
   不會再靜默當機。**這類權限問題可能因為 macOS 更新又跳出來**，出現「LINE 打回報完全沒反應」
   時，先查 `/tmp/dora-report-runner-err.log` 有沒有 `PermissionError`，比較快定位
+
+  ⚠️ **2026-08-28 又撞到一次，但這次分成兩層**（早上 Mac 剛醒）：
+  1. 09:53 網路還沒接上，`ws_token()` 打 `oauth2.googleapis.com` DNS 解析失敗（同一台 Mac 上
+     `dora-ads-anomaly.sh` 已經修過的那種「LINE 通不代表其他服務也通」）。這支**原本完全沒有
+     網路等待或重試**，直接噴例外堆疊到 err log，靠 launchd 每分鐘重跑硬撐，等網路自己恢復。
+  2. 10:31 網路好了，但漁三那筆回報在 `has_spec()` 又撞到 TCC「Operation not permitted」——
+     這次 08-27 那道 try/except 有接住、有推 LINE 通知，**但没有重試**，那筆待辦直接標成
+     `error` 不會再自動跑，等於卡住要她自己重新在 LINE 打一次。手動測試發現幾秒後這個資料夾
+     又讀得到了，證實是睡醒瞬間的短暫卡頓，不是權限被收回。
+  **這次的修法**（`dora-report-runner.py`）：① 開頭讀工作台那段包進 3 次重試（間隔 20 秒），
+  3 次都失敗才安靜結束、不噴堆疊，等下一分鐘 launchd 再試；② `has_spec()` 也包 3 次重試
+  （間隔 3 秒），3 次都失敗才真的推 LINE 標 `error`。同時把 `dora-weekly-reminder.sh` 的網路
+  等待從「只等 30 秒、只探測 api.line.me」改成「同時等 `oauth2.googleapis.com` 與
+  `api.line.me`、最多等 3 分鐘」，跟廣告日報那支的寫法一致。
+  ⚠️ **順便發現**：`scripts/launchagents/` 底下 5 份 plist 備份、`dora-weekly-reminder.sh` 的
+  repo 備份都還寫著換機前的 `/Users/angela/...` 路徑（不影響 live 運作，但哪天照 repo 重裝
+  launchd 就會整個指錯路徑）——已比對 live 版本全部同步更新，另外把少存的
+  `com.dora.morning-briefing`、`com.dora.agent-hub-runner` 兩份 plist 也一併補進 repo 備份
 - **Worker 跑在 UTC**：`date.js` 一律先加 8 小時算台灣時間
 - **本機測 webhook 要帶 User-Agent**：不帶會被 Cloudflare 擋成 403，不是程式壞掉
 

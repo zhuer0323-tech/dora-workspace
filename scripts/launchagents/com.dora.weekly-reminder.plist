@@ -7,7 +7,7 @@
     <key>ProgramArguments</key>
     <array>
         <string>/bin/bash</string>
-        <string>/Users/angela/Library/Scripts/dora-weekly-reminder.sh</string>
+        <string>/Users/zhuer/Library/Scripts/dora-weekly-reminder.sh</string>
     </array>
     <key>StartCalendarInterval</key>
     <array>

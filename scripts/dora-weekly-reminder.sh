@@ -5,12 +5,17 @@
 
 set -euo pipefail
 
-for i in $(seq 1 6); do
-    if curl -s --max-time 3 https://api.line.me > /dev/null 2>&1; then break; fi
-    sleep 5
+# 這支要打兩個外部服務（工作台的 oauth2.googleapis.com、推播的 api.line.me），
+# 剛開機／睡醒時網路可能還沒好，兩個都等到通（或最多等 3 分鐘）再往下走
+# （2026-08-28 對照廣告日報那支的教訓：只等 LINE 通不代表 Google 也通）
+for i in $(seq 1 18); do
+    curl -s --max-time 5 https://oauth2.googleapis.com > /dev/null 2>&1 \
+      && curl -s --max-time 5 https://api.line.me > /dev/null 2>&1 \
+      && break
+    sleep 10
 done
 
-source /Users/angela/Library/Scripts/dora.env
+source /Users/zhuer/Library/Scripts/dora.env
 
 MSG=$(WS_SA_KEY="${WS_SA_KEY:-}" WS_DB_URL="${WS_DB_URL:-}" WS_ROOM="${WS_ROOM:-}" python3 << 'PYEOF'
 import base64, json, os, subprocess, sys, tempfile, time

@@ -4,15 +4,17 @@
 
 set -euo pipefail
 
-# 等網路就緒（最多 30 秒）
-for i in $(seq 1 6); do
-    if curl -s --max-time 3 https://api.line.me > /dev/null 2>&1; then
-        break
-    fi
-    sleep 5
+# 等網路就緒。這支要打 graph.facebook.com（抓活動）跟 api.line.me（推播），
+# 剛開機／睡醒時網路可能還沒好，兩個都等到通再往下走，最多等 3 分鐘
+# （2026-08-28 比照廣告日報／廣告回報提醒那兩支的教訓：只等 LINE 通不代表 Facebook 也通）
+for i in $(seq 1 18); do
+    curl -s --max-time 5 https://graph.facebook.com/v25.0/ > /dev/null 2>&1 \
+      && curl -s --max-time 5 https://api.line.me > /dev/null 2>&1 \
+      && break
+    sleep 10
 done
 
-source /Users/angela/Library/Scripts/dora.env
+source /Users/zhuer/Library/Scripts/dora.env
 
 # 確認 META_TOKEN 存在
 if [ -z "${META_TOKEN:-}" ]; then

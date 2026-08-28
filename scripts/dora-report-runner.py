@@ -152,8 +152,20 @@ def main():
         cfg = load_env()
         if not all(cfg.get(k) for k in ('WS_SA_KEY', 'WS_DB_URL', 'WS_ROOM', 'LINE_PUSH_TOKEN')):
             print('設定不全，跳過'); return
-        tok = ws_token(cfg['WS_SA_KEY'])
-        jobs = db_get(cfg, tok, 'reportJobs') or {}
+        # 剛開機／睡醒時網路可能還沒好（2026-08-28 踩過：DNS 解析不到 oauth2.googleapis.com，
+        # 整支直接噴例外堆疊，且完全沒通知她）。這裡先重試 3 次（間隔 20 秒），
+        # 3 次都不行就安靜結束，下一分鐘 launchd 自然會再叫一次，不用她管
+        tok = jobs = None
+        for attempt in range(3):
+            try:
+                tok = ws_token(cfg['WS_SA_KEY'])
+                jobs = db_get(cfg, tok, 'reportJobs') or {}
+                break
+            except Exception as e:
+                if attempt == 2:
+                    print(f"{time.strftime('%F %T')} 讀工作台失敗（重試3次，可能網路還沒好）：{e}")
+                    return
+                time.sleep(20)
 
         # 跑完的待辦留一週就清掉，不然會一直長
         cutoff = int((time.time() - 7 * 86400) * 1000)
@@ -176,16 +188,25 @@ def main():
                 print(f'{jid} 太舊（{age/3600:.1f} 小時）跳過')
                 continue
 
-            # has_spec 要讀 Downloads 底下的客戶檔，macOS 權限被擋時會噴例外
-            # （2026-08-27 踩過：整支程式當機、完全不通知她，卡住的待辦還會每分鐘重跑）。
-            # 包起來當成一般錯誤處理，至少會推 LINE 告訴她「壞了」
-            try:
-                spec_ok = has_spec(client)
-            except Exception as e:
-                line_push(cfg, f'⚠️「{client}」的廣告回報系統出錯，沒辦法跑：{str(e)[:200]}')
+            # has_spec 要讀 Downloads 底下的客戶檔，睡醒瞬間 TCC／磁碟還沒就緒時會噴例外
+            # （2026-08-27、2026-08-28 都踩過，08-28 那次幾秒後手動重跑就正常了——是暫時的卡頓，
+            # 不是權限真的被收回）。先重試幾次，通常幾秒內就過；3 次都不行才當真的壞了，
+            # 推 LINE 告訴她並標記 error（這筆才不會卡在 pending 每分鐘重跑）
+            spec_ok, spec_err = None, None
+            for attempt in range(3):
+                try:
+                    spec_ok = has_spec(client)
+                    spec_err = None
+                    break
+                except Exception as e:
+                    spec_err = e
+                    if attempt < 2:
+                        time.sleep(3)
+            if spec_err is not None:
+                line_push(cfg, f'⚠️「{client}」的廣告回報系統出錯，沒辦法跑：{str(spec_err)[:200]}')
                 db_patch(cfg, tok, f'reportJobs/{jid}',
-                         {'status': 'error', 'error': str(e)[:300], 'doneAt': int(time.time() * 1000)})
-                print(f"{time.strftime('%F %T')} {client} has_spec 出錯：{e}")
+                         {'status': 'error', 'error': str(spec_err)[:300], 'doneAt': int(time.time() * 1000)})
+                print(f"{time.strftime('%F %T')} {client} has_spec 出錯（重試3次）：{spec_err}")
                 continue
 
             # 沒規格就直說，不要叫 AI 硬做（省 1-2 分鐘、也省 Claude 額度）

@@ -3,18 +3,18 @@
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.dora.report-runner</string>
+    <string>com.dora.agent-hub-runner</string>
     <key>ProgramArguments</key>
     <array>
         <string>/usr/bin/python3</string>
-        <string>/Users/zhuer/Library/Scripts/dora-report-runner.py</string>
+        <string>/Users/zhuer/Library/Scripts/dora-agent-hub-runner.py</string>
     </array>
     <key>StartInterval</key>
     <integer>60</integer>
     <key>StandardOutPath</key>
-    <string>/tmp/dora-report-runner.log</string>
+    <string>/tmp/dora-agent-hub-runner.log</string>
     <key>StandardErrorPath</key>
-    <string>/tmp/dora-report-runner-err.log</string>
+    <string>/tmp/dora-agent-hub-runner-err.log</string>
     <key>EnvironmentVariables</key>
     <dict>
         <key>PATH</key>
