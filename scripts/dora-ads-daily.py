@@ -20,10 +20,18 @@ from urllib.parse import urlencode
 from urllib.request import urlopen, Request
 
 ENV     = os.path.expanduser('~/Library/Scripts/dora.env')
-CLAUDE  = '/Users/angela/.local/bin/claude'
-WORKDIR = '/Users/angela/Downloads/Dora專屬'
+CLAUDE  = '/Users/zhuer/.local/bin/claude'
+WORKDIR = '/Users/zhuer/Downloads/Dora專屬'
 FETCH_TIMEOUT = 600          # 抓數字最多跑 10 分鐘
 NTD = "NT$"
+
+# 2026-08-31：Mac 早上常常只用 Power Nap 那種 2~13 秒的短暫喚醒在撐，
+# 一次長時間等待（原本的 3 分鐘網路等待＋一路做到底）根本撐不過一次短暫喚醒。
+# 改法：plist 在 9:00–9:35／17:00–17:35 每 5 分鐘各排一次輕量嘗試，
+# 靠很多次短暫喚醒去撞，撞到夠長的那次就會成功；用標記檔避免撞成功後還重複推播。
+STATE_DIR = os.path.expanduser('~/Library/Scripts/.dora-ads-state')
+LOCK_FILE = '/tmp/dora-ads-daily.lock'
+LOCK_STALE = 300   # 5 分鐘沒動代表鎖是死的（快速嘗試本身跑不了那麼久）
 
 DRY = '--dry' in sys.argv
 RAW = '--raw' in sys.argv
@@ -78,6 +86,48 @@ if tw_now.hour < 12 and '--as-evening' not in sys.argv:
 else:
     report_date, report_label = tw_now.strftime("%Y-%m-%d"), "今日截至目前"
 today_str = tw_now.strftime("%Y-%m-%d")
+
+# 這一輪是不是這個時段（9:00-9:35 或 17:00-17:35）的最後一次嘗試。
+# 前面幾次求快：只試 token、不叫慢的 Claude 備援，失敗就安靜結束等下一次。
+# 最後一次才動用完整版（含 Claude 備援），這時還失敗才真的推失敗通知。
+SLOT = 'morning' if tw_now.hour < 12 else 'evening'
+IS_LAST_TRY = tw_now.minute >= 35 or '--as-last-try' in sys.argv
+
+
+def _state_path(kind):
+    os.makedirs(STATE_DIR, exist_ok=True)
+    return os.path.join(STATE_DIR, f'{today_str}-{SLOT}.{kind}')
+
+
+def already_sent():
+    return os.path.exists(_state_path('sent'))
+
+
+def mark_sent():
+    open(_state_path('sent'), 'w').close()
+    # 順手清掉 3 天前的舊標記檔，不用另外排程清
+    try:
+        cutoff = time.time() - 3 * 86400
+        for f in os.listdir(STATE_DIR):
+            p = os.path.join(STATE_DIR, f)
+            if os.path.getmtime(p) < cutoff:
+                os.unlink(p)
+    except Exception:
+        pass
+
+
+def acquire_lock():
+    if os.path.exists(LOCK_FILE) and time.time() - os.path.getmtime(LOCK_FILE) < LOCK_STALE:
+        return False
+    open(LOCK_FILE, 'w').close()
+    return True
+
+
+def release_lock():
+    try:
+        os.unlink(LOCK_FILE)
+    except FileNotFoundError:
+        pass
 
 
 # ---------- 工作台（唯讀）----------
@@ -454,6 +504,22 @@ def line_push(messages):
 
 
 def main():
+    # 已經送過這個時段了（前面某次快速嘗試撞成功），這次直接跳過，不重複推播
+    if not DRY and already_sent():
+        print(f"SKIP: {SLOT} 這一則今天已經送過了")
+        return
+    # 上一次嘗試還在跑（例如撞到 last-try 正在等 Claude 備援），這次先讓路
+    if not DRY and not acquire_lock():
+        print("SKIP: 上一次嘗試還在跑，這次先跳過")
+        return
+    try:
+        _main()
+    finally:
+        if not DRY:
+            release_lock()
+
+
+def _main():
     clients = fetch_clients()
     keys, skipped = build_matcher(clients)
 
@@ -462,14 +528,19 @@ def main():
     floor = (datetime.fromisoformat(report_date) - timedelta(days=120)).strftime("%Y-%m-%d")
     since = max(min(starts), floor) if starts else report_date
 
-    # 先用她自己的 token（快、不吃 Claude 額度），失敗才叫 Claude 抓（慢、吃額度）
+    # 先用她自己的 token（快、不吃 Claude 額度），失敗才叫 Claude 抓（慢、吃額度）。
+    # 2026-08-31 改：這個時段（9:00-9:35／17:00-17:35）會被排程叫很多次，
+    # 前面幾次求快——只試 token、間隔縮短，不叫慢的 Claude 備援，失敗就安靜結束等下一次
+    # （反正 Power Nap 給的清醒時間本來就短，硬等 60 秒、再叫 10 分鐘的 Claude 只會被系統打斷）。
+    # 只有最後一次（IS_LAST_TRY）才動用完整版：token 3 次＋Claude 備援，這時還失敗才真的推失敗通知。
+    if IS_LAST_TRY:
+        plan = (('token', fetch_via_graph, 3, 60), ('Claude', fetch_via_claude, 1, 0))
+    else:
+        plan = (('token', fetch_via_graph, 2, 10),)
+
     day_rows = range_rows = None
     errs = []
-    # token 那條重試 3 次（間隔 60 秒）才放棄。2026-08-25 早上整則掛掉的原因是
-    # 9:00 網路還沒起來、Graph API 整批 DNS 失敗，一次失敗就跳去叫 Claude，
-    # 而 Claude 那條的 Meta Ads 連線剛好要重新授權 —— 兩條同時斷。
-    # 網路抖一下不該讓整則日報消失，token 沒壞就等它回來。
-    for how, fn, tries in (('token', fetch_via_graph, 3), ('Claude', fetch_via_claude, 1)):
+    for how, fn, tries, backoff in plan:
         for t in range(tries):
             try:
                 day_rows, range_rows = fn(since)
@@ -480,15 +551,19 @@ def main():
                 last = f"{how}：{str(e)[:150]}"
                 print(f"Warning: fetch via {how} failed ({t+1}/{tries}): {e}", file=sys.stderr)
                 if t + 1 < tries:
-                    time.sleep(60)
+                    time.sleep(backoff)
         if day_rows is not None:
             break
         errs.append(last)
     if day_rows is None:
+        if not IS_LAST_TRY:
+            print(f"SKIP: 這次抓不到數字（{errs[-1] if errs else ''}），等下一次重試")
+            return
         msg = f"⚠️ 廣告日報抓不到數字（{report_date} {report_label}）\n" + "\n".join(errs)
         print(msg)
         if not DRY:
             line_push([{"type": "text", "text": msg}])
+            mark_sent()
         return
 
     if RAW:
@@ -584,6 +659,8 @@ def main():
 
     if not boxes:
         print("NO_DATA")
+        if not DRY:
+            mark_sent()
         return
 
     # 17:00 那則平常不推，只有出事才響。
@@ -594,6 +671,8 @@ def main():
     quiet = EVENING_QUIET and is_evening and not alerts and not FULL
     if quiet:
         print("QUIET: 今日截至目前沒有異常，不推播（要看完整版加 --full）")
+        if not DRY:
+            mark_sent()
         return
 
     rd = datetime.fromisoformat(report_date)
@@ -621,6 +700,7 @@ def main():
         print(line_push(messages))
         kind = "ALERT" if alert_mode else "daily"
         print(f"LINE sent: ads {kind} report ({len(boxes)} clients, {len(chunks)} msg)")
+        mark_sent()
 
 
 if __name__ == '__main__':

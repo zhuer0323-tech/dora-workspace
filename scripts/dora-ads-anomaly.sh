@@ -11,13 +11,15 @@
 
 set -euo pipefail
 
-# 開機／睡醒後 launchd 可能比網路早醒。2026-08-25 早上就是這樣整則掛掉：
-# 原本只等 30 秒、而且探測的是 api.line.me —— LINE 通不代表 Facebook 通，
-# 結果 graph.facebook.com 整批 DNS 解析失敗（Errno 8）。
-# 改成等真正要打的那台，最多等 3 分鐘。
-for i in $(seq 1 18); do
+# 2026-08-31 改：不再靠這裡單次長時間等待（原本最多等 3 分鐘）。
+# Mac 常常是靠 Power Nap 那種 2~13 秒的短暫喚醒在撐，卡在這裡等 3 分鐘
+# 反而更容易還沒等完就被系統打斷、整支腳本連 python 都沒機會執行到。
+# 現在改成 plist 排 9:00-9:35／17:00-17:35 每 5 分鐘一次的多次輕量嘗試
+# （見 dora-ads-daily.py 的 STATE_DIR／IS_LAST_TRY），這裡只做很短的網路檢查，
+# 抓不到就直接進 python，讓它自己判斷要不要安靜跳過等下一次。
+for i in 1 2; do
     curl -s --max-time 5 https://graph.facebook.com/v25.0/ > /dev/null 2>&1 && break
-    sleep 10
+    sleep 5
 done
 
 exec /usr/bin/python3 "$HOME/Library/Scripts/dora-ads-daily.py" "$@"

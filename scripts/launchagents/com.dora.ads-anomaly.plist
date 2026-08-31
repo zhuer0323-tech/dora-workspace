@@ -11,7 +11,10 @@
     </array>
     <key>StartCalendarInterval</key>
     <array>
-        <!-- 早上 9:00 週一到週日（回報昨日） -->
+        <!-- 早上 9:00-9:35 每 5 分鐘一次，週一到週日（回報昨日）。
+             多次輕量嘗試撞 Power Nap 短暫喚醒視窗，撞到夠長的那次就成功，
+             成功後靠 dora-ads-daily.py 的標記檔擋掉後面重複的嘗試。9:35 那次是最後一次，
+             才會動用完整版（含 Claude 備援），失敗才推失敗通知。 -->
         <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>0</integer><key>Weekday</key><integer>1</integer></dict>
         <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>0</integer><key>Weekday</key><integer>2</integer></dict>
         <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>0</integer><key>Weekday</key><integer>3</integer></dict>
@@ -19,7 +22,56 @@
         <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>0</integer><key>Weekday</key><integer>5</integer></dict>
         <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>0</integer><key>Weekday</key><integer>6</integer></dict>
         <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>0</integer><key>Weekday</key><integer>0</integer></dict>
-        <!-- 下午 17:00 週一到週日（回報今日） -->
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>5</integer><key>Weekday</key><integer>1</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>5</integer><key>Weekday</key><integer>2</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>5</integer><key>Weekday</key><integer>3</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>5</integer><key>Weekday</key><integer>4</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>5</integer><key>Weekday</key><integer>5</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>5</integer><key>Weekday</key><integer>6</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>5</integer><key>Weekday</key><integer>0</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>10</integer><key>Weekday</key><integer>1</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>10</integer><key>Weekday</key><integer>2</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>10</integer><key>Weekday</key><integer>3</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>10</integer><key>Weekday</key><integer>4</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>10</integer><key>Weekday</key><integer>5</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>10</integer><key>Weekday</key><integer>6</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>10</integer><key>Weekday</key><integer>0</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>15</integer><key>Weekday</key><integer>1</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>15</integer><key>Weekday</key><integer>2</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>15</integer><key>Weekday</key><integer>3</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>15</integer><key>Weekday</key><integer>4</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>15</integer><key>Weekday</key><integer>5</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>15</integer><key>Weekday</key><integer>6</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>15</integer><key>Weekday</key><integer>0</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>20</integer><key>Weekday</key><integer>1</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>20</integer><key>Weekday</key><integer>2</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>20</integer><key>Weekday</key><integer>3</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>20</integer><key>Weekday</key><integer>4</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>20</integer><key>Weekday</key><integer>5</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>20</integer><key>Weekday</key><integer>6</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>20</integer><key>Weekday</key><integer>0</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>25</integer><key>Weekday</key><integer>1</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>25</integer><key>Weekday</key><integer>2</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>25</integer><key>Weekday</key><integer>3</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>25</integer><key>Weekday</key><integer>4</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>25</integer><key>Weekday</key><integer>5</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>25</integer><key>Weekday</key><integer>6</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>25</integer><key>Weekday</key><integer>0</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>30</integer><key>Weekday</key><integer>1</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>30</integer><key>Weekday</key><integer>2</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>30</integer><key>Weekday</key><integer>3</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>30</integer><key>Weekday</key><integer>4</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>30</integer><key>Weekday</key><integer>5</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>30</integer><key>Weekday</key><integer>6</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>30</integer><key>Weekday</key><integer>0</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>35</integer><key>Weekday</key><integer>1</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>35</integer><key>Weekday</key><integer>2</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>35</integer><key>Weekday</key><integer>3</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>35</integer><key>Weekday</key><integer>4</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>35</integer><key>Weekday</key><integer>5</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>35</integer><key>Weekday</key><integer>6</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>35</integer><key>Weekday</key><integer>0</integer></dict>
+        <!-- 下午 17:00-17:35 每 5 分鐘一次，週一到週日（回報今日截至目前），邏輯同上 -->
         <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>0</integer><key>Weekday</key><integer>1</integer></dict>
         <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>0</integer><key>Weekday</key><integer>2</integer></dict>
         <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>0</integer><key>Weekday</key><integer>3</integer></dict>
@@ -27,6 +79,55 @@
         <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>0</integer><key>Weekday</key><integer>5</integer></dict>
         <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>0</integer><key>Weekday</key><integer>6</integer></dict>
         <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>0</integer><key>Weekday</key><integer>0</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>5</integer><key>Weekday</key><integer>1</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>5</integer><key>Weekday</key><integer>2</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>5</integer><key>Weekday</key><integer>3</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>5</integer><key>Weekday</key><integer>4</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>5</integer><key>Weekday</key><integer>5</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>5</integer><key>Weekday</key><integer>6</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>5</integer><key>Weekday</key><integer>0</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>10</integer><key>Weekday</key><integer>1</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>10</integer><key>Weekday</key><integer>2</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>10</integer><key>Weekday</key><integer>3</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>10</integer><key>Weekday</key><integer>4</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>10</integer><key>Weekday</key><integer>5</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>10</integer><key>Weekday</key><integer>6</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>10</integer><key>Weekday</key><integer>0</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>15</integer><key>Weekday</key><integer>1</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>15</integer><key>Weekday</key><integer>2</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>15</integer><key>Weekday</key><integer>3</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>15</integer><key>Weekday</key><integer>4</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>15</integer><key>Weekday</key><integer>5</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>15</integer><key>Weekday</key><integer>6</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>15</integer><key>Weekday</key><integer>0</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>20</integer><key>Weekday</key><integer>1</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>20</integer><key>Weekday</key><integer>2</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>20</integer><key>Weekday</key><integer>3</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>20</integer><key>Weekday</key><integer>4</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>20</integer><key>Weekday</key><integer>5</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>20</integer><key>Weekday</key><integer>6</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>20</integer><key>Weekday</key><integer>0</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>25</integer><key>Weekday</key><integer>1</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>25</integer><key>Weekday</key><integer>2</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>25</integer><key>Weekday</key><integer>3</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>25</integer><key>Weekday</key><integer>4</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>25</integer><key>Weekday</key><integer>5</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>25</integer><key>Weekday</key><integer>6</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>25</integer><key>Weekday</key><integer>0</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>30</integer><key>Weekday</key><integer>1</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>30</integer><key>Weekday</key><integer>2</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>30</integer><key>Weekday</key><integer>3</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>30</integer><key>Weekday</key><integer>4</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>30</integer><key>Weekday</key><integer>5</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>30</integer><key>Weekday</key><integer>6</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>30</integer><key>Weekday</key><integer>0</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>35</integer><key>Weekday</key><integer>1</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>35</integer><key>Weekday</key><integer>2</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>35</integer><key>Weekday</key><integer>3</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>35</integer><key>Weekday</key><integer>4</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>35</integer><key>Weekday</key><integer>5</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>35</integer><key>Weekday</key><integer>6</integer></dict>
+        <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>35</integer><key>Weekday</key><integer>0</integer></dict>
     </array>
     <key>StandardOutPath</key>
     <string>/tmp/dora-ads-anomaly.log</string>
