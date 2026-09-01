@@ -224,6 +224,9 @@ nav.tabs .tb.dragging{position:fixed;z-index:60;pointer-events:none;opacity:.95;
 .filters{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
 .filters select,.filters input[type=search]{padding:8px 11px;border:1.5px solid var(--line);
   border-radius:12px;background:#fff;outline:none;font-size:13px}
+.fbadge{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;
+  padding:0 4px;margin-left:5px;border-radius:99px;background:var(--pink);color:#fff;
+  font-size:10.5px;font-weight:700;line-height:1}
 .btn{padding:9px 16px;border-radius:13px;background:var(--pink);color:#fff;font-weight:700;font-size:14px}
 .btn.ghost{background:#fff;color:var(--pink-d);border:1.5px solid var(--pink-l)}
 .btn.sm{padding:6px 12px;font-size:13px}
@@ -842,8 +845,6 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
 
       <div class="filters">
         <select id="fClient"><option value="">所有客戶</option></select>
-        <select id="fType"><option value="">所有類型</option></select>
-        <select id="fPrio"><option value="">所有優先級</option></select>
         <select id="fStatus">
           <option value="open">未完成</option>
           <option value="">全部狀態</option>
@@ -851,6 +852,13 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
           <option value="doing">進行中</option>
           <option value="done">已完成</option>
         </select>
+        <input type="search" id="fSearch" placeholder="搜尋任務…" style="min-width:130px">
+        <button class="btn ghost sm" id="fMoreBtn">更多篩選 ▾<span class="fbadge hide" id="fMoreBadge">0</span></button>
+        <button class="btn ghost sm" id="fReset">清除篩選</button>
+      </div>
+      <div class="filters filters-more hide" id="filtersMore">
+        <select id="fType"><option value="">所有類型</option></select>
+        <select id="fPrio"><option value="">所有優先級</option></select>
         <select id="fRange">
           <option value="">不限日期</option>
           <option value="today">今天到期</option>
@@ -864,8 +872,6 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
           <option value="only">只看重複任務</option>
           <option value="hide">不看重複任務</option>
         </select>
-        <input type="search" id="fSearch" placeholder="搜尋任務…" style="min-width:130px">
-        <button class="btn ghost sm" id="fReset">清除篩選</button>
       </div>
       <div id="taskList"></div>
       <div style="text-align:center;margin-top:14px">
@@ -2560,7 +2566,7 @@ function renderAll(){
   renderSelects(); renderGreetNote(); renderFocus(); renderRoutine();
   renderDayPlan(); renderRings(); renderAlerts(); renderScore();
   renderStats(); renderBoard(); renderClients(); renderReview(); renderStorageInfo();
-  renderTypeList(); renderLearnList();
+  renderTypeList(); renderLearnList(); renderMoreBadge();
 }
 
 /* ---------- 任務操作 ---------- */
@@ -2996,6 +3002,7 @@ function switchTab(name){
   $$('.page').forEach(p=>p.classList.remove('on'));
   $(`#p-${name}`).classList.add('on');
   $('#fab').style.display = (name==='today' || name==='tasks') ? 'flex' : 'none';
+  $('#filtersMore')?.classList.add('hide');   // 更多篩選離開這頁就收起來，不記狀態
   window.scrollTo({top:0, behavior:'smooth'});
 }
 $('#tabNav').addEventListener('click', e => {
@@ -3044,8 +3051,16 @@ $('#goToday').onclick = () => {
 $('#addRoutine').onclick = () => openTask(null, { repeat:'daily', prio:'daily' });
 
 /* ---------- 篩選 ---------- */
+/* 類型／優先級／日期範圍／重複任務收在「更多篩選」裡，收起來也要看得出有沒有選過東西，
+   所以按鈕上帶一個數字徽章。展開狀態故意不記住（每次進頁面都收起），跟卡片摺疊不同 */
+function renderMoreBadge(){
+  const n = ['type','prio','range','repeat'].filter(k => filter[k]).length;
+  $('#fMoreBadge').textContent = n; $('#fMoreBadge').classList.toggle('hide', !n);
+}
+$('#fMoreBtn').onclick = () => $('#filtersMore').classList.toggle('hide');
+
 const bindF = (sel, key) => $(sel).onchange = e => {
-  filter[key] = e.target.value; shownCount = PAGE_SIZE; renderStats(); renderBoard();
+  filter[key] = e.target.value; shownCount = PAGE_SIZE; renderStats(); renderBoard(); renderMoreBadge();
 };
 ['#fClient|client','#fType|type','#fPrio|prio','#fStatus|status','#fRange|range','#fRepeat|repeat']
   .forEach(s => { const [sel,key] = s.split('|'); bindF(sel,key); });
@@ -3059,7 +3074,7 @@ $('#fReset').onclick = () => {
   shownCount = PAGE_SIZE;
   ['#fClient','#fType','#fPrio','#fRange','#fRepeat'].forEach(s=>$(s).value='');
   $('#fStatus').value = 'open'; $('#fSearch').value = '';
-  renderStats(); renderBoard();
+  renderStats(); renderBoard(); renderMoreBadge();
 };
 $('#showMore').onclick = () => { shownCount += PAGE_SIZE; renderTasks(); };
 
@@ -3069,7 +3084,7 @@ function applyFilter(key, val){
   shownCount = PAGE_SIZE;
   const sel = { status:'#fStatus', range:'#fRange', client:'#fClient', type:'#fType' }[key];
   if (sel) $(sel).value = filter[key];
-  renderStats(); renderBoard();
+  renderStats(); renderBoard(); renderMoreBadge();
 }
 $('#taskDash').addEventListener('click', e => {
   const st = e.target.closest('[data-fstatus]');
