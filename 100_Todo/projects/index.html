@@ -534,6 +534,36 @@ nav.tabs .tb.dragging{position:fixed;z-index:60;pointer-events:none;opacity:.95;
   font-size:12px;text-decoration:none}
 .client-card .ico.off{background:#F4EEF0;color:var(--ink3);font-size:11px}
 .cli-ph{border:1.5px dashed var(--pink-l);border-radius:14px;background:var(--pink-xl)}
+
+/* ---------- 回覆模板 ---------- */
+.rc-cats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.rc-cats button{padding:8px 13px;border-radius:99px;background:#fff;border:1.5px solid var(--line);
+  font-size:12.5px;font-weight:700;color:var(--ink2)}
+.rc-cats button.on{background:var(--pink);border-color:var(--pink);color:#fff}
+.rc-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.rc-toolbar input[type=search]{flex:1;min-width:130px;padding:8px 11px;border:1.5px solid var(--line);
+  border-radius:12px;background:#fff;outline:none;font-size:13px}
+.rc-grid{display:grid;gap:12px;grid-template-columns:1fr}
+@media(min-width:700px){.rc-grid{grid-template-columns:1fr 1fr}}
+.rc-card{background:#fff;border-radius:var(--r);box-shadow:var(--shadow);padding:14px 16px;
+  display:flex;flex-direction:column;gap:8px}
+.rc-card .rc-cat{font-size:10.5px;font-weight:700;color:var(--pink-d);background:var(--pink-xl);
+  padding:2px 9px;border-radius:99px;align-self:flex-start}
+.rc-card .rc-title{font-size:14.5px;font-weight:700;line-height:1.3;cursor:pointer}
+.rc-card .rc-body{font-size:12.5px;color:var(--ink3);line-height:1.6;white-space:pre-line;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.rc-card .rc-foot{display:flex;align-items:center;gap:6px;margin-top:2px}
+.rc-card .rc-use{flex:1;padding:9px 10px;border-radius:11px;background:var(--pink);color:#fff;
+  font-weight:700;font-size:13px}
+.rc-card .rc-edit{width:32px;height:32px;border-radius:9px;color:var(--ink3);font-size:14px;flex:none}
+.rc-card .rc-edit:hover{background:var(--pink-xl)}
+#rcCatList .tn{width:auto;flex:1}   /* 沒有工作類型的「關鍵字」欄位，名稱欄直接吃滿寬度 */
+.rc-var-row{margin-bottom:10px}
+.rc-var-row label{display:block;font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:5px}
+.rc-var-row input{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;
+  background:#fff;outline:none;font-size:13.5px}
+.rc-var-row input:focus{border-color:var(--pink-l)}
+
 /* 客戶編輯視窗裡的 logo 預覽 */
 .logo-box{display:flex;align-items:center;gap:10px}
 .logo-prev{width:52px;height:52px;border-radius:13px;flex:none;background:var(--pink-xl);
@@ -735,6 +765,7 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
       <div class="tb" data-tab="tasks" role="button" tabindex="0"><span class="tname rn" data-rename="tab.tasks" title="連點兩下可以改名字">工作規劃</span><span class="tgrip" data-tabdrag title="按住可以換順序">⠿</span></div>
       <div class="tb" data-tab="tools" role="button" tabindex="0"><span class="tname rn" data-rename="tab.tools" title="連點兩下可以改名字">寶藏工具</span><span class="tgrip" data-tabdrag title="按住可以換順序">⠿</span></div>
       <div class="tb" data-tab="clients" role="button" tabindex="0"><span class="tname rn" data-rename="tab.clients" title="連點兩下可以改名字">專案客戶</span><span class="tgrip" data-tabdrag title="按住可以換順序">⠿</span></div>
+      <div class="tb" data-tab="replies" role="button" tabindex="0"><span class="tname rn" data-rename="tab.replies" title="連點兩下可以改名字">回覆模板</span><span class="tgrip" data-tabdrag title="按住可以換順序">⠿</span></div>
       <div class="tb" data-tab="review" role="button" tabindex="0"><span class="tname rn" data-rename="tab.review" title="連點兩下可以改名字">復盤</span><span class="tgrip" data-tabdrag title="按住可以換順序">⠿</span></div>
       <div class="tb" data-tab="settings" role="button" tabindex="0"><span class="tname rn" data-rename="tab.settings" title="連點兩下可以改名字">設定</span><span class="tgrip" data-tabdrag title="按住可以換順序">⠿</span></div>
     </nav>
@@ -928,6 +959,16 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
       <div id="clientList"></div>
     </section>
 
+    <!-- 回覆模板：常用留言/回覆內容整理，依用途分類，內文可帶 [變數] -->
+    <section class="page" id="p-replies">
+      <div class="rc-cats" id="rcCatTabs"></div>
+      <div class="rc-toolbar">
+        <input type="search" id="rcSearch" placeholder="搜尋模板…">
+        <button class="btn sm" id="addRcTpl">＋ 新增模板</button>
+      </div>
+      <div id="rcList"></div>
+    </section>
+
     <!-- 復盤：一週一次回頭看，純讀取不寫入（唯一例外是點逾期任務去編輯） -->
     <section class="page" id="p-review">
       <div class="rvnav">
@@ -961,6 +1002,16 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
         <div id="typeList"></div>
         <div class="set-row" style="margin-top:10px">
           <button class="btn ghost sm" id="addType">＋ 新增工作類型</button>
+        </div>
+      </div>
+
+      <div class="set-card">
+        <h3>🗂 回覆模板分類</h3>
+        <p>「回覆模板」頁籤裡模板用的分類，可以自己新增、改名、排順序。改名會一併更新已經用到
+           這個分類的模板。「其他」是最後的預設值，不能刪。刪除分類前要先把用到的模板改掉。</p>
+        <div id="rcCatList"></div>
+        <div class="set-row" style="margin-top:10px">
+          <button class="btn ghost sm" id="addRcCat">＋ 新增分類</button>
         </div>
       </div>
 
@@ -1125,6 +1176,35 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
   </div>
 </div>
 
+<!-- 回覆模板：新增/編輯 -->
+<div class="modal" id="rcEditModal">
+  <div class="sheet">
+    <h3 id="rcEditTitle">新增模板</h3>
+    <div class="f"><label>標題</label><input id="rcTitle" placeholder="例：詢價回覆"></div>
+    <div class="f"><label>分類</label><select id="rcCat"></select></div>
+    <div class="f"><label>內文</label>
+      <textarea id="rcBody" rows="6" placeholder="可以用 [變數名] 這種方括號當可換字的地方，例如：您好，[客戶名]，這是我們的報價 [金額] 元"></textarea>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn del hide" id="rcDelBtn">刪除</button>
+      <button class="btn ghost" id="rcCancelBtn">取消</button>
+      <button class="btn" id="rcSaveBtn">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 回覆模板：使用（帶變數要先填字） -->
+<div class="modal" id="rcUseModal">
+  <div class="sheet">
+    <h3>填一下內容</h3>
+    <div id="rcVarFields"></div>
+    <div class="sheet-actions">
+      <button class="btn ghost" id="rcUseCancel">取消</button>
+      <button class="btn" id="rcUseCopy">複製</button>
+    </div>
+  </div>
+</div>
+
 <!-- 客戶編輯 -->
 <div class="modal" id="clientModal">
   <div class="sheet">
@@ -1190,7 +1270,7 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
 // 網頁版 Firebase 金鑰一定得寫在原始碼裡（藏不住），網頁上的通行碼也擋不住直接連資料庫的人，
 // 唯一真正有效的防線是「規則綁定登入帳號」。沒登入 = 讀不到任何一筆。
 const OWNER_EMAIL = 'zhuer0323@gmail.com';
-const LS = { tasks:'ws_tasks', clients:'ws_clients', ui:'ws_ui', mode:'ws_mode' };
+const LS = { tasks:'ws_tasks', clients:'ws_clients', ui:'ws_ui', mode:'ws_mode', rtpl:'ws_rtpl' };
 
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyAWOXPFBmb-lU90dpBOq2B8Gn7LsR2p-jM",
@@ -1313,17 +1393,20 @@ function toast(msg, undoFn){
 let tasks   = JSON.parse(localStorage.getItem(LS.tasks)   || '{}');
 let clients = JSON.parse(localStorage.getItem(LS.clients) || '{}');
 let ui      = JSON.parse(localStorage.getItem(LS.ui)      || '{}');
+let rtpl    = JSON.parse(localStorage.getItem(LS.rtpl)    || '{}');   // 回覆模板
 let scope   = 'work';
 let shownCount = PAGE_SIZE;
 let filter  = { client:'', type:'', prio:'', status:'open', range:'', repeat:'', q:'' };
 
 const DEFAULT_ORDER = ['clock','focus','quick','dayplan','routine','vitals','alerts'];
-const DEFAULT_TABS  = ['today','tasks','tools','clients','review','settings'];
+const DEFAULT_TABS  = ['today','tasks','tools','clients','replies','review','settings'];
+const DEFAULT_RC_CATS = ['詢價回覆','合作邀約','常見問題','感謝訊息','其他'];
 
 function saveLocal(){
   localStorage.setItem(LS.tasks, JSON.stringify(tasks));
   localStorage.setItem(LS.clients, JSON.stringify(clients));
   localStorage.setItem(LS.ui, JSON.stringify(ui));
+  localStorage.setItem(LS.rtpl, JSON.stringify(rtpl));
 }
 function seedClients(){
   if (Object.keys(clients).length) return false;
@@ -1525,6 +1608,7 @@ async function initFirebase(interactive){
     if (d.tasks)   tasks   = d.tasks;
     if (d.clients) clients = d.clients;
     if (d.ui)      ui      = d.ui;
+    if (d.rtpl)    rtpl    = d.rtpl;
     _ready = true; setSync('ok');
 
     if (!d.clients){ seedClients(); push('clients', clients); }
@@ -1546,6 +1630,11 @@ async function initFirebase(interactive){
       if (JSON.stringify(v) === JSON.stringify(ui)) return;
       // ui 現在也放工作類型與學過的對應，換裝置改過就要整頁重畫
       ui = v; saveLocal(); renderBoardOrder(); renderCardTitles(); renderCardCollapse(); renderTabOrder(); renderNames(); renderAll();
+    });
+    onValue(ref(_db, `${ROOM}/rtpl`), s => {
+      const v = s.exists() ? s.val() : {};
+      if (JSON.stringify(v) === JSON.stringify(rtpl)) return;
+      rtpl = v; saveLocal(); renderRC();
     });
     return true;
   }catch(e){
@@ -2614,6 +2703,7 @@ function renderAll(){
   renderDayPlan(); renderRings(); renderAlerts(); renderScore();
   renderStats(); renderBoard(); renderClients(); renderReview(); renderStorageInfo();
   renderTypeList(); renderLearnList(); renderMoreBadge();
+  renderRcCatList(); renderRC();
 }
 
 /* ---------- 任務操作 ---------- */
@@ -3185,6 +3275,192 @@ $('#qgClientBtn').onclick = () => openClientPicker('qgClient', {
   extraTop: [{ value:'', label:'👤 未指定客戶' }]
     .concat(qGuess.d?.newClient ? [{ value:'_new', label:`✨ 新客戶：${qGuess.d.newClient}` }] : [])
 });
+
+/* ---------- 回覆模板：分類（設定頁管理，跟工作類型同一套做法，但沒有關鍵字欄位） ---------- */
+function rcCats(){
+  const v = ui.rtplCats;
+  return (Array.isArray(v) && v.length) ? v : DEFAULT_RC_CATS.slice();
+}
+function saveRcCats(list){
+  ui.rtplCats = list; saveLocal(); push('ui', ui); renderRcCatList(); renderRC();
+}
+function renderRcCatList(){
+  const box = $('#rcCatList'); if (!box) return;
+  const cats = rcCats(), used = {};
+  Object.values(rtpl).forEach(t => { const k = t.cat || '其他'; used[k] = (used[k]||0) + 1; });
+  box.innerHTML = cats.map((c,i)=>`
+    <div class="ty-row" data-ci="${i}">
+      <input class="tn" data-cn value="${esc(c)}"${c==='其他'?' disabled':''}>
+      <span class="cnt">${used[c]||0} 則</span>
+      <button class="mv" data-cmv="-1" title="往上移">↑</button>
+      <button class="mv" data-cmv="1" title="往下移">↓</button>
+      ${c==='其他' ? '' : `<button class="rm" data-crm>刪除</button>`}
+    </div>`).join('');
+}
+$('#rcCatList').addEventListener('change', e => {
+  const row = e.target.closest('[data-ci]'); if (!row) return;
+  const i = +row.dataset.ci, cats = rcCats().slice();
+  if (!e.target.matches('[data-cn]')) return;
+  const old = cats[i], nw = e.target.value.trim();
+  if (!nw || nw === old){ renderRcCatList(); return; }
+  if (cats.some((c,j)=>j!==i && c===nw)){ toast('已經有同名的分類了'); renderRcCatList(); return; }
+  cats[i] = nw;
+  let n = 0;
+  Object.values(rtpl).forEach(t => { if ((t.cat||'其他') === old){ t.cat = nw; n++; } });
+  if (n){ saveLocal(); push('rtpl', rtpl); }
+  toast(n ? `已改名，${n} 則模板跟著更新` : '已改名');
+  saveRcCats(cats);
+});
+$('#rcCatList').addEventListener('click', e => {
+  const row = e.target.closest('[data-ci]'); if (!row) return;
+  const i = +row.dataset.ci, cats = rcCats().slice();
+  const mv = e.target.closest('[data-cmv]');
+  if (mv){
+    const j = i + (+mv.dataset.cmv);
+    if (j < 0 || j >= cats.length) return;
+    [cats[i], cats[j]] = [cats[j], cats[i]];
+    saveRcCats(cats); return;
+  }
+  if (e.target.closest('[data-crm]')){
+    const nm = cats[i];
+    const n = Object.values(rtpl).filter(t=>(t.cat||'其他')===nm).length;
+    if (n){ toast(`還有 ${n} 則模板是「${nm}」，先改掉才能刪`); return; }
+    if (!confirm(`確定刪除「${nm}」？`)) return;
+    cats.splice(i,1); saveRcCats(cats); toast('已刪除');
+  }
+});
+$('#addRcCat').onclick = () => {
+  const cats = rcCats().slice();
+  let nm = '新分類', k = 2;
+  while (cats.some(c=>c===nm)) nm = `新分類${k++}`;
+  const at = cats.findIndex(c=>c==='其他');
+  cats.splice(at >= 0 ? at : cats.length, 0, nm);
+  saveRcCats(cats); toast('已新增，直接改名字');
+};
+
+/* ---------- 回覆模板：清單、搜尋、使用 ---------- */
+let rcCatFilter = '', rcQuery = '';
+function rcList(){
+  const q = rcQuery.trim().toLowerCase();
+  return Object.values(rtpl)
+    .filter(t => !rcCatFilter || (t.cat||'其他') === rcCatFilter)
+    .filter(t => !q || t.title.toLowerCase().includes(q) || t.body.toLowerCase().includes(q))
+    .sort((a,b)=> (a.title||'').localeCompare((b.title||''),'zh-Hant'));
+}
+function renderRC(){
+  const catsEl = $('#rcCatTabs');
+  if (catsEl){
+    const cats = rcCats();
+    catsEl.innerHTML = `<button type="button" data-rccat="" class="${rcCatFilter===''?'on':''}">全部</button>` +
+      cats.map(c=>`<button type="button" data-rccat="${esc(c)}" class="${rcCatFilter===c?'on':''}">${esc(c)}</button>`).join('');
+  }
+  const listEl = $('#rcList'); if (!listEl) return;
+  const list = rcList();
+  listEl.innerHTML = list.length
+    ? `<div class="rc-grid">` + list.map(t => `
+      <div class="rc-card" data-rcid="${t.id}">
+        <span class="rc-cat">${esc(t.cat||'其他')}</span>
+        <div class="rc-title" data-rcedit>${esc(t.title)}</div>
+        <div class="rc-body">${esc(t.body)}</div>
+        <div class="rc-foot">
+          <button type="button" class="rc-use" data-rcuse>使用</button>
+          <button type="button" class="rc-edit" data-rcedit title="編輯">✏️</button>
+        </div>
+      </div>`).join('') + `</div>`
+    : `<div class="empty">${rcCatFilter || rcQuery ? '沒有符合的模板' : '還沒有模板，按右上角「＋ 新增模板」開始整理'}</div>`;
+}
+$('#rcCatTabs').addEventListener('click', e => {
+  const b = e.target.closest('[data-rccat]'); if (!b) return;
+  rcCatFilter = b.dataset.rccat; renderRC();
+});
+let rcSearchT;
+$('#rcSearch').oninput = e => {
+  clearTimeout(rcSearchT);
+  rcSearchT = setTimeout(()=>{ rcQuery = e.target.value; renderRC(); }, 200);
+};
+
+/* ---------- 回覆模板：新增／編輯／刪除 ---------- */
+let editingRC = null;   // 正在編輯的模板 id，null＝新增
+function openRcEdit(id){
+  const t = id ? rtpl[id] : null;
+  editingRC = id;
+  $('#rcEditTitle').textContent = t ? '編輯模板' : '新增模板';
+  $('#rcTitle').value = t?.title || '';
+  $('#rcCat').innerHTML = rcCats().map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  $('#rcCat').value = t?.cat || rcCats()[0] || '其他';
+  $('#rcBody').value = t?.body || '';
+  $('#rcDelBtn').classList.toggle('hide', !t);
+  $('#rcEditModal').classList.add('on');
+  setTimeout(()=>$('#rcTitle').focus(), 80);
+}
+const closeRcEdit = () => { $('#rcEditModal').classList.remove('on'); editingRC = null; };
+$('#addRcTpl').onclick = () => openRcEdit(null);
+$('#rcList').addEventListener('click', e => {
+  const use = e.target.closest('[data-rcuse]');
+  const card = e.target.closest('[data-rcid]'); if (!card) return;
+  if (use){ useTemplate(card.dataset.rcid); return; }
+  if (e.target.closest('[data-rcedit]')) openRcEdit(card.dataset.rcid);
+});
+$('#rcCancelBtn').onclick = closeRcEdit;
+$('#rcEditModal').onclick = e => { if (e.target.id === 'rcEditModal') closeRcEdit(); };
+$('#rcSaveBtn').onclick = () => {
+  const title = $('#rcTitle').value.trim(), body = $('#rcBody').value.trim();
+  if (!title || !body){ toast('標題跟內文都要填'); return; }
+  const id = editingRC || uid();
+  rtpl[id] = { id, cat: $('#rcCat').value, title, body, updatedAt: Date.now() };
+  saveLocal(); push(`rtpl/${id}`, rtpl[id]); renderRC(); renderRcCatList(); closeRcEdit();
+  toast('已儲存');
+};
+$('#rcDelBtn').onclick = () => {
+  if (!editingRC) return;
+  if (!confirm('確定刪除這則模板？')) return;
+  delete rtpl[editingRC]; saveLocal(); drop(`rtpl/${editingRC}`); renderRC(); renderRcCatList(); closeRcEdit();
+  toast('已刪除');
+};
+
+/* ---------- 回覆模板：使用（偵測 [變數]，有的話先跳表單填字再複製） ---------- */
+async function copyText(text){
+  try{ await navigator.clipboard.writeText(text); return true; }
+  catch(e){
+    // 舊瀏覽器或非 HTTPS 環境的保底做法
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    let ok = false;
+    try{ ok = document.execCommand('copy'); }catch(e2){}
+    ta.remove();
+    return ok;
+  }
+}
+let rcUsingId = null;
+function useTemplate(id){
+  const t = rtpl[id]; if (!t) return;
+  const vars = [...new Set([...t.body.matchAll(/\[([^\[\]]+)\]/g)].map(m=>m[1]))];
+  if (!vars.length){
+    copyText(t.body).then(ok => toast(ok ? '已複製到剪貼簿' : '複製失敗，手動選取內文複製'));
+    return;
+  }
+  rcUsingId = id;
+  $('#rcVarFields').innerHTML = vars.map(v => `
+    <div class="rc-var-row"><label>${esc(v)}</label>
+      <input data-rcvar="${esc(v)}" placeholder="輸入要替換「[${esc(v)}]」的內容"></div>`).join('');
+  $('#rcUseModal').classList.add('on');
+  setTimeout(()=>$('#rcVarFields input')?.focus(), 80);
+}
+const closeRcUse = () => { $('#rcUseModal').classList.remove('on'); rcUsingId = null; };
+$('#rcUseCancel').onclick = closeRcUse;
+$('#rcUseModal').onclick = e => { if (e.target.id === 'rcUseModal') closeRcUse(); };
+$('#rcUseCopy').onclick = async () => {
+  const t = rtpl[rcUsingId]; if (!t) { closeRcUse(); return; }
+  let text = t.body;
+  $$('#rcVarFields [data-rcvar]').forEach(inp => {
+    const v = inp.dataset.rcvar;
+    text = text.split(`[${v}]`).join(inp.value.trim() || `[${v}]`);
+  });
+  const ok = await copyText(text);
+  closeRcUse();
+  toast(ok ? '已複製到剪貼簿' : '複製失敗，手動選取內文複製');
+};
 
 /* ---------- 篩選 ---------- */
 /* 類型／優先級／日期範圍／重複任務收在「更多篩選」裡，收起來也要看得出有沒有選過東西，
@@ -3804,7 +4080,7 @@ $('#importFile').onchange = async e => {
 };
 
 $('#exportBtn').onclick = () => {
-  const blob = new Blob([JSON.stringify({ exportedAt:new Date().toISOString(), tasks, clients, ui }, null, 1)],
+  const blob = new Blob([JSON.stringify({ exportedAt:new Date().toISOString(), tasks, clients, ui, rtpl }, null, 1)],
     { type:'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -3821,8 +4097,9 @@ $('#restoreFile').onchange = async e => {
     if (d.tasks) tasks = d.tasks;
     if (d.clients) clients = d.clients;
     if (d.ui) ui = d.ui;
-    saveLocal(); push('tasks', tasks); push('clients', clients); push('ui', ui);
-    renderBoardOrder(); renderCardCollapse(); renderAll(); toast('已還原');
+    if (d.rtpl) rtpl = d.rtpl;
+    saveLocal(); push('tasks', tasks); push('clients', clients); push('ui', ui); push('rtpl', rtpl);
+    renderBoardOrder(); renderCardCollapse(); renderAll(); renderRC(); toast('已還原');
   }catch(err){ toast('還原失敗：' + err.message); }
   e.target.value = '';
 };
