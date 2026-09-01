@@ -222,7 +222,7 @@ nav.tabs .tb.dragging{position:fixed;z-index:60;pointer-events:none;opacity:.95;
 
 /* ---------- 任務 ---------- */
 .filters{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
-.filters select,.filters input[type=search]{padding:8px 11px;border:1.5px solid var(--line);
+.filters select,.filters input[type=search],.filters .cp-trigger{padding:8px 11px;border:1.5px solid var(--line);
   border-radius:12px;background:#fff;outline:none;font-size:13px}
 .fbadge{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;
   padding:0 4px;margin-left:5px;border-radius:99px;background:var(--pink);color:#fff;
@@ -614,6 +614,36 @@ nav.tabs .tb.dragging{position:fixed;z-index:60;pointer-events:none;opacity:.95;
 .sheet-actions .btn{flex:1;text-align:center;padding:13px}
 .btn.del{background:#fff;color:#E05263;border:1.5px solid #FFD6DC;flex:none;padding:13px 16px}
 
+/* ---------- 客戶挑選面板：先選分類再選客戶 ---------- */
+.cp-native{display:none}
+.cp-trigger{text-align:left;cursor:pointer}
+.cp-trigger::after{content:'▾';font-size:9px;margin-left:5px;opacity:.55}
+.gsel.cp-trigger{background-image:none}   /* .gsel 原本自帶下拉箭頭圖，這裡統一改用 ::after 那顆，不要疊兩顆 */
+.cp-sheet{max-width:420px}
+.cp-head{display:flex;align-items:center;gap:6px;margin-bottom:12px}
+.cp-head h3{margin:0;flex:1;font-size:15px;text-align:center}
+.cp-back{border:none;background:none;color:var(--pink-d);font-weight:700;font-size:12.5px;
+  padding:6px 4px;cursor:pointer;flex:none}
+.cp-top{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;padding-bottom:10px;
+  border-bottom:1px dashed var(--line)}
+.cp-top button{text-align:left;padding:10px 12px;border-radius:12px;background:var(--pink-xl);
+  border:1.5px solid transparent;font-size:13.5px;font-weight:600;color:var(--ink2)}
+.cp-top button.on{border-color:var(--pink);color:var(--pink-d)}
+.cp-search{width:100%;padding:9px 12px;border:1.5px solid var(--line);border-radius:12px;
+  background:#fff;outline:none;font-size:13px;margin-bottom:10px}
+.cp-groups{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cp-groups button{display:flex;align-items:center;gap:6px;padding:13px 12px;border-radius:14px;
+  background:#fff;border:1.5px solid var(--line);font-size:13.5px;font-weight:700;color:var(--ink2);
+  text-align:left}
+.cp-groups button:hover{background:var(--pink-xl);border-color:var(--pink-l)}
+.cp-groups .n{margin-left:auto;font-size:11px;font-weight:700;color:var(--ink3)}
+.cp-list{display:flex;flex-direction:column;gap:4px;max-height:44vh;overflow-y:auto}
+.cp-list button{text-align:left;padding:10px 12px;border-radius:12px;background:#fff;
+  border:1.5px solid var(--line);font-size:13.5px;font-weight:600;color:var(--ink2)}
+.cp-list button.on{background:var(--pink);border-color:var(--pink);color:#fff}
+.cp-list button:hover{background:var(--pink-xl)}
+.cp-empty{color:var(--ink3);font-size:12.5px;text-align:center;padding:16px 0}
+
 /* ---------- 任務頁（Notion 風格） ---------- */
 .sheet.doc{max-width:720px;background:#fff;padding:14px 20px 26px}
 @media(min-width:700px){.sheet.doc{max-height:88vh}}
@@ -745,7 +775,8 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
             </div>
             <div class="guess hide" id="quickGuess">
               <span class="gl">自動判斷</span>
-              <select id="qgClient" class="gsel c"></select>
+              <select id="qgClient" class="cp-native"></select>
+              <button type="button" class="gsel c cp-trigger" id="qgClientBtn" data-cptrigger="qgClient">👤 未指定客戶</button>
               <select id="qgType" class="gsel t"></select>
             </div>
             <!-- 送出前的確認區：按 Enter／加入 才展開，設定完再按「確定加入」 -->
@@ -844,7 +875,8 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
       </div>
 
       <div class="filters">
-        <select id="fClient"><option value="">所有客戶</option></select>
+        <select id="fClient" class="cp-native"><option value="">所有客戶</option></select>
+        <button type="button" class="cp-trigger" id="fClientBtn" data-cptrigger="fClient">所有客戶</button>
         <select id="fStatus">
           <option value="open">未完成</option>
           <option value="">全部狀態</option>
@@ -1016,7 +1048,7 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
         <div class="pv"><div class="seg" id="tmPrio"></div></div>
       </div>
       <div class="prop"><span class="pl">👤 客戶</span>
-        <div class="pv"><select id="tmClient" class="bare"></select></div>
+        <div class="pv"><select id="tmClient" class="cp-native"></select><button type="button" class="bare cp-trigger" id="tmClientBtn" data-cptrigger="tmClient">（未指定）</button></div>
       </div>
       <div class="prop"><span class="pl">📁 工作類型</span>
         <div class="pv"><select id="tmType" class="bare"></select></div>
@@ -1076,6 +1108,20 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
     <div class="tiny" id="rvmSub" style="margin:-8px 0 12px"></div>
     <div id="rvmList"></div>
     <div class="sheet-actions"><button class="btn ghost" id="rvmClose">關閉</button></div>
+  </div>
+</div>
+
+<!-- 客戶挑選面板：先選分類再選客戶，三個地方（篩選、任務、快速記一筆）共用同一份 -->
+<div class="modal" id="cpModal">
+  <div class="sheet cp-sheet">
+    <div class="cp-head">
+      <button class="cp-back hide" id="cpBack">← 換分類</button>
+      <h3>選客戶</h3>
+      <button class="doc-x" id="cpClose" title="關閉">✕</button>
+    </div>
+    <div class="cp-top" id="cpTop"></div>
+    <input class="cp-search hide" id="cpSearch" placeholder="搜尋客戶…" autocomplete="off">
+    <div id="cpBody"></div>
   </div>
 </div>
 
@@ -2559,6 +2605,7 @@ function renderSelects(){
   if (keep.client !== undefined) $('#tmClient').value = keep.client;
   if (keep.type) $('#tmType').value = keep.type;
   if (keep.prio) segSet('tmPrio', keep.prio);
+  syncClientTrigger('fClient'); syncClientTrigger('tmClient');
 }
 
 function renderAll(){
@@ -2637,6 +2684,7 @@ function openTask(id, preset){
   $('#tmProg').value = t?.progress || 0;
   $('#tmProgV').textContent = (t?.progress||0) + '%';
   $('#tmNote').value = t?.note || '';
+  syncClientTrigger('tmClient');
   syncRepeatFields();
   $('#taskModal').classList.add('on');
   requestAnimationFrame(()=>{ autoGrow($('#tmName')); autoGrow($('#tmNote')); });
@@ -2675,6 +2723,7 @@ function applyDetectToModal(){
     const want = d.client || (wantNew ? '_new' : '');
     $('#tmClient').value = want;
     if ($('#tmClient').selectedIndex < 0) $('#tmClient').value = '';
+    syncClientTrigger('tmClient');
   }
   if (canT) $('#tmType').value = d.type || FALLBACK_TYPE();
 }
@@ -3050,6 +3099,93 @@ $('#goToday').onclick = () => {
 };
 $('#addRoutine').onclick = () => openTask(null, { repeat:'daily', prio:'daily' });
 
+/* ---------- 客戶挑選面板：先選分類再選客戶 ----------
+   三個地方共用（篩選列的 #fClient、任務視窗的 #tmClient、快速記一筆的 #qgClient）。
+   面板本身只負責「跳出來、選一個值」，選完直接寫回對應的 <select>（本體還在，只是被 .cp-native 藏起來）
+   再補發 change 事件，該 select 原本掛的邏輯（篩選、學習對應、autosave）完全不用改。
+   trigger 按鈕上顯示的文字，一律照 select 目前選到的那個 <option> 的文字抄過來，
+   不用另外維護一份「客戶要顯示什麼字」的規則，永遠跟 select 本身一致。 */
+let cpCtx = null;   // { targetSelectId, extraTop:[{value,label}], includeClosed }
+
+function cpClientsInGroup(k){
+  return Object.values(clients)
+    .filter(c => k === 'closed' ? !c.active : (c.active && cgroupOf(c) === k))
+    .sort((a,b)=> (b.pending?1:0)-(a.pending?1:0) || (a.order??99)-(b.order??99)
+                || a.name.localeCompare(b.name,'zh-Hant'));
+}
+function syncClientTrigger(id){
+  const sel = $(`#${id}`), btn = $(`#${id}Btn`);
+  if (!sel || !btn) return;
+  const opt = sel.options[sel.selectedIndex] || sel.options[0];
+  btn.textContent = opt ? opt.textContent : '';
+  if (id === 'qgClient') btn.classList.toggle('blank', !sel.value);
+}
+function syncClientTriggers(){ ['fClient','tmClient','qgClient'].forEach(syncClientTrigger); }
+
+function openClientPicker(targetSelectId, { extraTop = [], includeClosed = false } = {}){
+  cpCtx = { targetSelectId, extraTop, includeClosed, group: null, q: '' };
+  $('#cpTop').innerHTML = extraTop.map(o =>
+    `<button type="button" data-cpval="${esc(o.value)}">${esc(o.label)}</button>`).join('');
+  renderCPBody();
+  $('#cpModal').classList.add('on');
+}
+function closeClientPicker(){ $('#cpModal').classList.remove('on'); cpCtx = null; }
+function renderCPBody(){
+  $('#cpBack').classList.toggle('hide', !cpCtx.group);
+  $('#cpSearch').classList.toggle('hide', !cpCtx.group);
+  if (!cpCtx.group){
+    const groups = CGROUPS.concat(cpCtx.includeClosed ? [{ k:'closed', t:'已結案', ic:'✅' }] : []);
+    $('#cpBody').innerHTML = `<div class="cp-groups">` + groups.map(g =>
+      `<button type="button" data-cpgroup="${g.k}">${g.ic} ${esc(g.t)}<span class="n">${cpClientsInGroup(g.k).length}</span></button>`
+    ).join('') + `</div>`;
+    return;
+  }
+  const cur = $(`#${cpCtx.targetSelectId}`).value;
+  const q = cpCtx.q.trim();
+  let list = cpClientsInGroup(cpCtx.group);
+  if (q) list = list.filter(c => (c.short||c.name).includes(q) || c.name.includes(q));
+  $('#cpBody').innerHTML = list.length
+    ? `<div class="cp-list">` + list.map(c =>
+        `<button type="button" data-cpval="${c.id}" class="${cur===c.id?'on':''}">${esc(c.short||c.name)}${c.active?'':'（已結案）'}</button>`
+      ).join('') + `</div>`
+    : `<div class="cp-empty">這區目前沒有符合的客戶</div>`;
+}
+function pickClientValue(val){
+  const sel = $(`#${cpCtx.targetSelectId}`);
+  sel.value = val;
+  if (sel.selectedIndex < 0) sel.value = '';
+  sel.dispatchEvent(new Event('change'));
+  syncClientTrigger(cpCtx.targetSelectId);
+  closeClientPicker();
+}
+$('#cpTop').addEventListener('click', e => {
+  const v = e.target.closest('[data-cpval]'); if (v) pickClientValue(v.dataset.cpval);
+});
+$('#cpBody').addEventListener('click', e => {
+  const g = e.target.closest('[data-cpgroup]');
+  if (g){ cpCtx.group = g.dataset.cpgroup; cpCtx.q = ''; $('#cpSearch').value = ''; renderCPBody(); return; }
+  const v = e.target.closest('[data-cpval]'); if (v) pickClientValue(v.dataset.cpval);
+});
+$('#cpBack').onclick = () => { cpCtx.group = null; cpCtx.q = ''; $('#cpSearch').value = ''; renderCPBody(); };
+$('#cpSearch').oninput = e => { cpCtx.q = e.target.value; renderCPBody(); };
+$('#cpClose').onclick = closeClientPicker;
+$('#cpModal').onclick = e => { if (e.target.id === 'cpModal') closeClientPicker(); };
+
+$('#fClientBtn').onclick = () => openClientPicker('fClient', {
+  includeClosed: true,
+  extraTop: [{ value:'', label:'📋 所有客戶' }, { value:'_none', label:'👤（未指定客戶）' }]
+});
+$('#tmClientBtn').onclick = () => openClientPicker('tmClient', {
+  includeClosed: false,
+  extraTop: [{ value:'', label:'（未指定）' }]
+    .concat(newClientGuess ? [{ value:'_new', label:`✨ 新客戶：${newClientGuess}` }] : [])
+});
+$('#qgClientBtn').onclick = () => openClientPicker('qgClient', {
+  includeClosed: false,
+  extraTop: [{ value:'', label:'👤 未指定客戶' }]
+    .concat(qGuess.d?.newClient ? [{ value:'_new', label:`✨ 新客戶：${qGuess.d.newClient}` }] : [])
+});
+
 /* ---------- 篩選 ---------- */
 /* 類型／優先級／日期範圍／重複任務收在「更多篩選」裡，收起來也要看得出有沒有選過東西，
    所以按鈕上帶一個數字徽章。展開狀態故意不記住（每次進頁面都收起），跟卡片摺疊不同 */
@@ -3074,7 +3210,7 @@ $('#fReset').onclick = () => {
   shownCount = PAGE_SIZE;
   ['#fClient','#fType','#fPrio','#fRange','#fRepeat'].forEach(s=>$(s).value='');
   $('#fStatus').value = 'open'; $('#fSearch').value = '';
-  renderStats(); renderBoard(); renderMoreBadge();
+  renderStats(); renderBoard(); renderMoreBadge(); syncClientTrigger('fClient');
 };
 $('#showMore').onclick = () => { shownCount += PAGE_SIZE; renderTasks(); };
 
@@ -3084,7 +3220,7 @@ function applyFilter(key, val){
   shownCount = PAGE_SIZE;
   const sel = { status:'#fStatus', range:'#fRange', client:'#fClient', type:'#fType' }[key];
   if (sel) $(sel).value = filter[key];
-  renderStats(); renderBoard(); renderMoreBadge();
+  renderStats(); renderBoard(); renderMoreBadge(); syncClientTrigger('fClient');
 }
 $('#taskDash').addEventListener('click', e => {
   const st = e.target.closest('[data-fstatus]');
@@ -3132,10 +3268,10 @@ function renderQuickGuess(){
   tSel.value = wantT;
   if (tSel.selectedIndex < 0) tSel.value = FALLBACK_TYPE();
 
-  cSel.classList.toggle('blank', !cSel.value);
+  syncClientTrigger('qgClient');
   box.classList.remove('hide');
 }
-$('#qgClient').onchange = () => { qGuess.client = true; $('#qgClient').classList.toggle('blank', !$('#qgClient').value); };
+$('#qgClient').onchange = () => { qGuess.client = true; };
 $('#qgType').onchange   = () => { qGuess.type = true; };
 
 /* 兩段式：第一次 Enter／按「加入」只展開確認區，設定完到期日、重要度、狀態、備註，
