@@ -859,6 +859,14 @@ HTML 覆蓋到 `100_Todo/projects/heyen-cards/index.html` → push → 等 Pages
 - **拖放功能不要用原生 HTML5 `draggable`**：測不出來（`left_click_drag` 觸發不了原生拖放事件）、
   觸控裝置支援也差，一律用 `pointerdown`/`pointermove`/`pointerup` 手刻（工作台
   `makeCardSortable()` 已經是現成範例）
+- **2026-08-30 踩到：鎖過期門檻沒蓋過最長的角色逾時，導致同一篇被兩個程式同時搶著做**。
+  `main()` 判斷「上一輪還在跑、這輪先跳過」原本直接拿 `TIMEOUT`（600 秒）當鎖過期門檻，
+  但製圖角色允許跑到 `DESIGN_TIMEOUT`（900 秒）。做圖跑到第 10～15 分鐘那段空窗，
+  下一輪 1 分鐘一次的排程會誤判「鎖是死的」，派新的一份去處理同一個還沒做完的任務——
+  兩邊同時對同一篇搶著跑 `claude -p` 做 Canva 圖，這就是「檔期廣告要提前幾週開始跑」那篇
+  卡在 designing 好幾天、偶爾還跳出 `HTTP 401 Unauthorized`（兩邊搶著寫資料庫）的根本原因。
+  **修法**：另立 `LOCK_STALE = DESIGN_TIMEOUT + 120`，鎖過期判斷改用這個常數，
+  不要直接沿用 `TIMEOUT`。以後角色逾時設定只要新增或調大，記得鎖過期門檻要跟著蓋過去。
 
 ---
 

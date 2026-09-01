@@ -36,6 +36,8 @@ WORKDIR = '/Users/zhuer/Downloads/Dora專屬'
 TIMEOUT = 600                 # 一般角色最多跑 10 分鐘
 DESIGN_TIMEOUT = 900          # 製圖要 git push＋等 Pages 更新＋Canva，給多一點
 LOCK    = '/tmp/dora-agent-hub-runner.lock'
+LOCK_STALE = DESIGN_TIMEOUT + 120   # 鎖過期門檻要蓋過最長的角色逾時（製圖900s），
+                                     # 不然做圖跑到10~15分鐘那段會被誤判成死鎖，讓下一輪同時搶同一個任務
 CLIENTS = os.path.join(WORKDIR, '200_Reference', 'clients')
 ROOM    = 'ah_4j2ppkn8rq'     # 改名要同步改 Firebase 規則
 HY_ROOM = 'hy_social_r7n3k8'  # 禾言社群規劃網頁的節點，定稿後直接寫進這裡
@@ -750,7 +752,7 @@ def run_audit_one(cfg, tok, post_id, p):
 
 
 def main():
-    if os.path.exists(LOCK) and time.time() - os.path.getmtime(LOCK) < TIMEOUT:
+    if os.path.exists(LOCK) and time.time() - os.path.getmtime(LOCK) < LOCK_STALE:
         return
     open(LOCK, 'w').write(str(os.getpid()))
     try:
