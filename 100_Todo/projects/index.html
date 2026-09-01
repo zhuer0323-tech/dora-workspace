@@ -118,6 +118,21 @@ nav.tabs .tb.dragging{position:fixed;z-index:60;pointer-events:none;opacity:.95;
 .tile-ph{border:2.5px dashed var(--pink-l);border-radius:var(--r);background:rgba(255,255,255,.4)}
 .board-hint{font-size:11.5px;color:var(--ink3);text-align:center;margin:14px 0 0}
 
+/* 卡片摺疊：預設收起的卡只留標題列一行，點箭頭展開 */
+.tile .toggle{position:absolute;top:10px;right:44px;width:26px;height:26px;border-radius:9px;
+  border:none;background:none;display:flex;align-items:center;justify-content:center;
+  color:var(--ink3);font-size:12px;cursor:pointer;opacity:.45;z-index:2;transition:transform .15s}
+.tile .toggle:hover{opacity:1;background:var(--pink-xl)}
+.hero .toggle{color:#fff;opacity:.55}
+.hero .toggle:hover{background:rgba(255,255,255,.2)}
+.tile.collapsed .toggle{transform:rotate(-90deg)}
+.tile.collapsed{align-self:start}         /* 折起的卡不用跟著同排最高的卡撐開 */
+.tile.collapsed .card{padding-bottom:16px}
+.tile.collapsed .card h2{margin-bottom:0}
+.tile.collapsed .card>*:not(h2):not(.drag):not(.toggle){display:none}
+.tile.collapsed .hero{padding-bottom:20px}
+.tile.collapsed .hero>*:not(.drag):not(.toggle):not(.hi){display:none}
+
 .hero{background:linear-gradient(150deg,#FCA5BC,#F48FB1 55%,#EE7FA8);color:#fff;
   border-radius:var(--r);padding:20px;box-shadow:var(--shadow-l);position:relative;overflow:hidden}
 .hero::after{content:"🌸";position:absolute;right:-8px;bottom:-14px;font-size:86px;opacity:.18}
@@ -697,6 +712,7 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
         <div class="tile" data-card="clock">
           <div class="hero">
             <button class="drag" data-drag title="拖曳調整位置">⠿</button>
+            <button class="toggle" data-toggle title="展開／折起">▾</button>
             <div class="hi" id="greet">你好，朱兒</div>
             <div class="note" id="greetNote"></div>
             <div class="clock" id="clock">--:--:--</div>
@@ -709,6 +725,7 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
         <div class="tile" data-card="focus">
           <div class="card">
             <button class="drag" data-drag title="拖曳調整位置">⠿</button>
+            <button class="toggle" data-toggle title="展開／折起">▾</button>
             <h2>⭐ <span class="cname" data-title="focus">今日聚焦</span> <span class="en">FOCUS</span><span class="spacer"></span><span class="tiny" id="focusCount"></span></h2>
             <div id="focusList"></div>
           </div>
@@ -717,6 +734,7 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
         <div class="tile" data-card="quick">
           <div class="card">
             <button class="drag" data-drag title="拖曳調整位置">⠿</button>
+            <button class="toggle" data-toggle title="展開／折起">▾</button>
             <h2>✏️ <span class="cname" data-title="quick">快速記一筆</span> <span class="en">QUICK ADD</span></h2>
             <div class="quick">
               <input id="quickInput" placeholder="打一行字，例：漁三結案報告" autocomplete="off">
@@ -765,6 +783,7 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
         <div class="tile wide" data-card="dayplan">
           <div class="card">
             <button class="drag" data-drag title="拖曳調整位置">⠿</button>
+            <button class="toggle" data-toggle title="展開／折起">▾</button>
             <h2>🗓 <span class="cname" data-title="dayplan">今日時間表</span> <span class="en">DAY PLAN</span><span class="spacer"></span><span class="tiny" id="dayPlanCount"></span></h2>
             <div id="dayPlan"></div>
           </div>
@@ -773,6 +792,7 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
         <div class="tile" data-card="routine">
           <div class="card">
             <button class="drag" data-drag title="拖曳調整位置">⠿</button>
+            <button class="toggle" data-toggle title="展開／折起">▾</button>
             <h2>🔁 <span class="cname" data-title="routine">每日例行</span> <span class="en">ROUTINE</span><span class="spacer"></span><span class="tiny" id="routineCount"></span></h2>
             <div id="routineList"></div>
             <button class="btn ghost sm" id="addRoutine" style="width:100%;margin-top:10px">＋ 新增每天都要做的事</button>
@@ -782,6 +802,7 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
         <div class="tile" data-card="vitals">
           <div class="card">
             <button class="drag" data-drag title="拖曳調整位置">⠿</button>
+            <button class="toggle" data-toggle title="展開／折起">▾</button>
             <h2>📊 <span class="cname" data-title="vitals">今日概覽</span> <span class="en">VITALS</span></h2>
             <div class="rings" id="rings"></div>
           </div>
@@ -790,13 +811,14 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
         <div class="tile" data-card="alerts">
           <div class="card">
             <button class="drag" data-drag title="拖曳調整位置">⠿</button>
+            <button class="toggle" data-toggle title="展開／折起">▾</button>
             <h2>🔔 <span class="cname" data-title="alerts">需要注意</span> <span class="en">ALERTS</span></h2>
             <div id="alertList"></div>
           </div>
         </div>
 
       </div>
-      <p class="board-hint">按住每張卡右上角的 ⠿ 可以拖曳換位置，順序會自動記住（手機也可以）</p>
+      <p class="board-hint">按住每張卡右上角的 ⠿ 可以拖曳換位置；旁邊的 ▾ 可以展開／折起，順序與展開狀態都會自動記住（手機也可以）</p>
     </section>
 
     <section class="page" id="p-tasks">
@@ -1471,7 +1493,7 @@ async function initFirebase(interactive){
       const v = s.exists() ? s.val() : {};
       if (JSON.stringify(v) === JSON.stringify(ui)) return;
       // ui 現在也放工作類型與學過的對應，換裝置改過就要整頁重畫
-      ui = v; saveLocal(); renderBoardOrder(); renderCardTitles(); renderTabOrder(); renderNames(); renderAll();
+      ui = v; saveLocal(); renderBoardOrder(); renderCardTitles(); renderCardCollapse(); renderTabOrder(); renderNames(); renderAll();
     });
     return true;
   }catch(e){
@@ -3193,6 +3215,26 @@ function saveBoardOrder(){
   saveLocal(); push('ui', ui);
 }
 
+/* 卡片摺疊：時鐘／快速記一筆／每日例行／今日概覽預設收起，其他三張預設展開。
+   沒被她手動點過的卡片一律套這組預設值；點過的卡片照她點的狀態存進 ui.cardCollapsed，永遠蓋過預設值 */
+const DEFAULT_COLLAPSED = { clock:true, quick:true, routine:true, vitals:true };
+function renderCardCollapse(){
+  const c = Object.assign({}, DEFAULT_COLLAPSED, ui.cardCollapsed || {});
+  $$('#board .tile').forEach(el => {
+    el.classList.toggle('collapsed', !!c[el.dataset.card]);
+  });
+}
+$('#board').addEventListener('click', e => {
+  const btn = e.target.closest('[data-toggle]'); if (!btn) return;
+  const tile = btn.closest('.tile'); if (!tile) return;
+  const id = tile.dataset.card;
+  const c = Object.assign({}, DEFAULT_COLLAPSED, ui.cardCollapsed || {});
+  ui.cardCollapsed = ui.cardCollapsed || {};
+  ui.cardCollapsed[id] = !c[id];
+  saveLocal(); push('ui', ui);
+  renderCardCollapse();
+});
+
 /* 卡片標題可改名：點一下變成可編輯，離開或按 Enter 就存起來 */
 function renderCardTitles(){
   const names = ui.cardTitles || {};
@@ -3358,8 +3400,9 @@ function makeSortable(board){
 $('#resetBoard').onclick = () => {
   ui.boardOrder = DEFAULT_ORDER.slice(); ui.cardTitles = {};
   ui.tabOrder   = DEFAULT_TABS.slice();  ui.names      = {};
+  ui.cardCollapsed = {};
   saveLocal(); push('ui', ui);
-  renderBoardOrder(); renderCardTitles(); renderTabOrder(); renderNames();
+  renderBoardOrder(); renderCardTitles(); renderCardCollapse(); renderTabOrder(); renderNames();
   toast('版面與名稱已復原');
 };
 
@@ -3628,7 +3671,7 @@ $('#restoreFile').onchange = async e => {
     if (d.clients) clients = d.clients;
     if (d.ui) ui = d.ui;
     saveLocal(); push('tasks', tasks); push('clients', clients); push('ui', ui);
-    renderBoardOrder(); renderAll(); toast('已還原');
+    renderBoardOrder(); renderCardCollapse(); renderAll(); toast('已還原');
   }catch(err){ toast('還原失敗：' + err.message); }
   e.target.value = '';
 };
@@ -3644,7 +3687,7 @@ function showApp(){
   migrateTypes();
   renderClock(); setInterval(renderClock, 1000);
   setInterval(()=>{ renderGreetNote(); renderAlerts(); }, 60000);
-  renderTools(); renderBoardOrder(); renderCardTitles();
+  renderTools(); renderBoardOrder(); renderCardTitles(); renderCardCollapse();
   renderTabOrder(); renderNames();
   makeSortable($('#board')); makeTabSortable($('#tabNav'));
   makeCardSortable($('#boardView')); makeCardSortable($('#dayPlan'));
