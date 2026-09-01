@@ -29,8 +29,8 @@ NTD = "NT$"
 # 一次長時間等待（原本的 3 分鐘網路等待＋一路做到底）根本撐不過一次短暫喚醒。
 # 改法：plist 在 9:00–9:35／17:00–17:35 每 5 分鐘各排一次輕量嘗試，
 # 靠很多次短暫喚醒去撞，撞到夠長的那次就會成功；用標記檔避免撞成功後還重複推播。
+# LOCK_FILE 要等 SLOT 算出來後才能定（見下面），這裡先留常數
 STATE_DIR = os.path.expanduser('~/Library/Scripts/.dora-ads-state')
-LOCK_FILE = '/tmp/dora-ads-daily.lock'
 LOCK_STALE = 300   # 5 分鐘沒動代表鎖是死的（快速嘗試本身跑不了那麼久）
 
 DRY = '--dry' in sys.argv
@@ -81,7 +81,10 @@ CFG = load_env()
 
 tw_now = datetime.now(timezone.utc) + timedelta(hours=8)
 # --as-evening：不管現在幾點都當成 17:00 那則來跑，用來測「沒異常就不推」那條路
-if tw_now.hour < 12 and '--as-evening' not in sys.argv:
+# --as-morning：反過來，不管現在幾點都當成 9:00 那則（昨日）——
+# 2026-09-01 加的，給晚上那個時段拿來「補送今天早上完全沒送出的那則」用（見 maybe_catchup_morning）
+AS_MORNING = '--as-morning' in sys.argv
+if (tw_now.hour < 12 or AS_MORNING) and '--as-evening' not in sys.argv:
     report_date, report_label = (tw_now - timedelta(days=1)).strftime("%Y-%m-%d"), "昨日"
 else:
     report_date, report_label = tw_now.strftime("%Y-%m-%d"), "今日截至目前"
@@ -90,8 +93,12 @@ today_str = tw_now.strftime("%Y-%m-%d")
 # 這一輪是不是這個時段（9:00-9:35 或 17:00-17:35）的最後一次嘗試。
 # 前面幾次求快：只試 token、不叫慢的 Claude 備援，失敗就安靜結束等下一次。
 # 最後一次才動用完整版（含 Claude 備援），這時還失敗才真的推失敗通知。
-SLOT = 'morning' if tw_now.hour < 12 else 'evening'
+# 直接跟 report_label 綁在一起算，不要重複判斷一次 hour<12——
+# 不然 --as-evening 在中午前測試時，SLOT 會跟 report_label 對不起來（2026-09-01 修）
+SLOT = 'morning' if report_label == '昨日' else 'evening'
 IS_LAST_TRY = tw_now.minute >= 35 or '--as-last-try' in sys.argv
+# 鎖檔按時段分開，晚上那個時段呼叫補送早上那則時（各自是獨立的子行程）才不會互相卡住
+LOCK_FILE = f'/tmp/dora-ads-daily-{SLOT}.lock'
 
 
 def _state_path(kind):
@@ -128,6 +135,31 @@ def release_lock():
         os.unlink(LOCK_FILE)
     except FileNotFoundError:
         pass
+
+
+def maybe_catchup_morning():
+    """2026-09-01 加的保底：早上 9:00-9:35 那 8 次重試，理論上任何一次撞到夠長的
+    喚醒視窗就會成功，但撞到 2026-09-01 那種「整個早上連一次真正完整醒著都沒有」
+    的極端狀況時，8 次全部落空，連最後一次該推的失敗通知都推不出來——因為 9:35
+    那個時間點本身也沒被喚醒。
+    保底做法：晚上這個時段第一次執行時，先檢查今天早上那則是不是真的完全沒送出，
+    沒送出就用完整版（含 Claude 備援）**開一個子行程**補送一次昨日的報告，跟晚上
+    自己要送的「今日截至目前」互不干擾（各自的 report_date/report_label/鎖檔都不同）。
+    只嘗試一次（不管成功或失敗都做記號），避免每 5 分鐘重試一次白白燒 Claude 額度。"""
+    if AS_MORNING or SLOT != 'evening' or DRY:
+        return
+    os.makedirs(STATE_DIR, exist_ok=True)
+    morning_sent = os.path.join(STATE_DIR, f'{today_str}-morning.sent')
+    attempted = os.path.join(STATE_DIR, f'{today_str}-morning-catchup-attempted')
+    if os.path.exists(morning_sent) or os.path.exists(attempted):
+        return
+    open(attempted, 'w').close()
+    print("CATCHUP: 今天早上那則好像完全沒送出，先補跑一次（用完整版）", file=sys.stderr)
+    try:
+        subprocess.run([sys.executable, os.path.abspath(__file__), '--as-morning', '--as-last-try'],
+                       timeout=FETCH_TIMEOUT + 120)
+    except Exception as e:
+        print(f"CATCHUP failed: {e}", file=sys.stderr)
 
 
 # ---------- 工作台（唯讀）----------
@@ -504,6 +536,8 @@ def line_push(messages):
 
 
 def main():
+    # 晚上這個時段先順手檢查早上那則有沒有完全沒送出，沒有就先補送（見函式說明）
+    maybe_catchup_morning()
     # 已經送過這個時段了（前面某次快速嘗試撞成功），這次直接跳過，不重複推播
     if not DRY and already_sent():
         print(f"SKIP: {SLOT} 這一則今天已經送過了")

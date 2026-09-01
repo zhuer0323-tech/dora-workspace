@@ -318,6 +318,34 @@ Graph API Explorer 與 App 後台都進不去，所以 `dora-meta-token-setup.sh
   - 這套改法完全不用 sudo，只動 `~/Library/LaunchAgents/` 跟 `~/Library/Scripts/`
     底下的檔案
 
+- ⚠️ **2026-09-01 隔天早上又槓龜，這次是極端案例：整個早上 Mac 連一次真正完整醒著
+  （FullWake）都沒有**，全靠 2~5 秒的 DarkWake 撐著，而且 **9:26 到 9:41 之間整整
+  15 分鐘沒有任何喚醒**，剛好把 9:30、9:35（最後一次、原本該推失敗通知的那次）
+  整個跳過——8 次重試的保底機制本身也失效了，因為它的保底（last-try 推失敗通知）
+  同樣得靠喚醒才能執行。手動補跑一次確認網路正常、抓數字沒問題，純粹是那段時間
+  窗口真的沒開。**結論：重試次數再多，還是可能整個窗口都撞不到機會，需要另一層
+  跨時段的保底**，修法：
+  - **新增 `--as-morning` 旗標**（對稱於既有的 `--as-evening`）：不管現在幾點，
+    都當成 9:00 那則（昨日）來跑
+  - **新增 `maybe_catchup_morning()`**：晚上這個時段（`SLOT == 'evening'`）
+    第一次執行時，先檢查 `{today}-morning.sent` 標記存不存在——如果早上那則
+    真的完全沒送出，就開一個子行程 `python3 dora-ads-daily.py --as-morning
+    --as-last-try` 補送一次（完整版，含 Claude 備援），跟晚上自己要送的
+    「今日截至目前」互不干擾。**只嘗試一次**（不管成功或失敗都寫
+    `{today}-morning-catchup-attempted` 標記），避免晚上 8 次重試各自都想
+    補一次、白白燒 Claude 額度
+  - **`LOCK_FILE` 改成按時段分開**（`/tmp/dora-ads-daily-{SLOT}.lock`）：
+    原本是單一路徑，早上／晚上共用會導致子行程（補送早上那則）跟父行程
+    （晚上自己的鎖）互相卡住，誤判成「上一次還在跑」而跳過
+  - 順便修掉一個潛在的小 bug：`SLOT` 原本是**自己重算一次 `hour < 12`**，
+    跟 `report_label` 的判斷（同樣算一次 `hour < 12`，但會被 `--as-evening`
+    覆蓋）各算各的，中午前用 `--as-evening` 測試時兩者會對不起來（`report_label`
+    說是晚上、`SLOT` 卻還是 `morning`）。改成 **`SLOT` 直接從 `report_label`
+    導出**（`'morning' if report_label == '昨日' else 'evening'`），不再重複判斷
+  - 已測試：mock 掉 `subprocess.run` 驗證五種情境（`AS_MORNING`/`SLOT`/`DRY`
+    各種組合下該不該觸發、觸發後不會重複觸發）都正確，用假日期測試不影響今天
+    真實的標記檔
+
 - **列誰的規則只有一條：今天在走期內 ＋ 當天有花費**。
   走期是朱兒自己在工作台填的，等於「這案子我在跑」的現成標記——
   沒填走期的（屬於花藝、卡威、MISO、一沐日是別人的案子）不會出現，
