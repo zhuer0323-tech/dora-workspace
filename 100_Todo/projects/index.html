@@ -602,6 +602,80 @@ nav.tabs .tb.dragging{position:fixed;z-index:60;pointer-events:none;opacity:.95;
 .placeholder h3{margin:12px 0 8px;font-size:17px}
 .placeholder p{margin:0 auto;max-width:420px;font-size:13px;color:var(--ink3);line-height:1.8}
 
+/* ---------- 個人區：溫暖像素風・個人日常紀錄手帳（扁平設計，不用漸層／陰影／插畫） ---------- */
+#personalArea{background:#F4E9D0;border:4px solid #8B5E34;border-radius:14px;padding:0;overflow:hidden}
+.pbook-topbar{display:none;align-items:center;gap:10px;padding:10px 14px;background:#8B5E34;
+  color:#FFF8EA;font-weight:800;font-size:14px;border-bottom:3px solid #6B4423}
+.pbook-menubtn{background:#FFF8EA;color:#6B4423;border:2px solid #6B4423;border-radius:8px;
+  padding:5px 10px;font-weight:800;font-size:12.5px}
+.pbook-layout{display:flex;align-items:stretch;min-height:480px}
+.pbook-nav{width:168px;flex:none;background:#EFE0B8;border-right:3px solid #8B5E34;
+  padding:12px 8px;display:flex;flex-direction:column;gap:6px}
+.pnav-btn{text-align:left;padding:9px 10px;border-radius:8px;font-size:13px;font-weight:700;
+  color:#6B4423;background:transparent;border:2px solid transparent}
+.pnav-btn:hover{background:#E4D19C}
+.pnav-btn.on{background:#8B5E34;color:#FFF8EA;border-color:#6B4423}
+.pbook-mask{display:none}
+.pbook-content{flex:1;min-width:0;padding:16px;display:flex;flex-direction:column;gap:14px}
+.ppage{display:none;flex-direction:column;gap:14px}
+.ppage.on{display:flex}
+
+.pcard{background:#FFFDF5;border:3px solid #8B5E34;border-radius:10px;padding:14px 16px}
+.pcard-h{display:flex;align-items:center;justify-content:space-between;font-size:14px;font-weight:800;
+  color:#4A3222;margin-bottom:10px;padding-bottom:8px;border-bottom:2px dashed #E4D19C}
+.pgreet{font-size:15px;font-weight:800;color:#4A3222}
+.pgreet .sub{display:block;font-size:11.5px;font-weight:600;color:#8B5E34;margin-top:3px}
+
+.pstat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px}
+.pstat{text-align:center}
+.pstat-label{font-size:11px;font-weight:800;color:#8B5E34;letter-spacing:.5px}
+.pstat-num{font-size:22px;font-weight:900;color:#4A3222;margin-top:4px}
+.pstat-sub{font-size:10.5px;color:#8B5E34;margin-top:3px;font-weight:700}
+
+.pbar{height:10px;border-radius:5px;background:#EFE0B8;border:2px solid #8B5E34;overflow:hidden;margin-top:6px}
+.pbar i{display:block;height:100%;background:#7CB342}
+
+.padd{background:#7CB342;color:#fff;border:2px solid #5C8A32;border-radius:8px;
+  padding:5px 12px;font-size:12px;font-weight:800}
+.padd:hover{background:#6FA344}
+
+.plist{display:flex;flex-direction:column;gap:8px}
+.prow{display:flex;align-items:center;gap:10px;padding:9px 10px;border:2px solid #E4D19C;border-radius:8px;
+  background:#FFF9EC}
+.prow-box{width:22px;height:22px;border-radius:6px;border:2px solid #8B5E34;background:#fff;flex:none;
+  display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;cursor:pointer}
+.prow-box.on{background:#7CB342;border-color:#5C8A32}
+.prow-name{flex:1;font-size:13.5px;font-weight:700;color:#4A3222;cursor:pointer}
+.prow-name.done{text-decoration:line-through;color:#B49A76}
+.ptag{font-size:10px;font-weight:800;color:#fff;padding:2px 8px;border-radius:99px;flex:none}
+.pstreak{font-size:12px;font-weight:800;color:#E0692E;flex:none}
+.prow-del{background:none;border:none;color:#B49A76;font-size:15px;flex:none;cursor:pointer;padding:2px 4px}
+.prow-del:hover{color:#C0392B}
+.pempty{font-size:12px;color:#B49A76;text-align:center;padding:14px 0}
+
+.pstub{text-align:center;color:#8B5E34;font-weight:800;font-size:14px}
+.pstub p{color:#B49A76;font-size:12px;font-weight:600;margin:8px 0 0}
+
+.pradar{position:relative;width:100%;max-width:260px;aspect-ratio:200/210;margin:2px auto 0}
+.pradar-svg{width:100%;height:100%;display:block}
+.pr-ring{fill:none;stroke:#E4D19C;stroke-width:1}
+.pr-axis{stroke:#E4D19C;stroke-width:1}
+.pr-fill{fill:rgba(124,179,66,.35);stroke:#7CB342;stroke-width:2}
+.pr-dot{fill:#5C8A32}
+.pr-label{position:absolute;transform:translate(-50%,-50%);font-size:10.5px;font-weight:800;
+  color:#4A3222;text-align:center;white-space:nowrap;line-height:1.3}
+.plegend{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-top:12px}
+.plegend-item{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:#4A3222}
+.plegend-dot{width:10px;height:10px;border-radius:3px;flex:none}
+
+@media(max-width:760px){
+  .pbook-topbar{display:flex}
+  .pbook-nav{position:fixed;top:0;left:0;bottom:0;z-index:200;transform:translateX(-100%);
+    transition:transform .2s;width:200px}
+  .pbook-nav.open{transform:translateX(0)}
+  .pbook-mask.show{display:block;position:fixed;inset:0;background:rgba(74,50,34,.35);z-index:190}
+}
+
 /* ---------- 彈窗 ---------- */
 .modal{position:fixed;inset:0;background:rgba(91,60,70,.42);z-index:900;display:none;
   align-items:flex-end;justify-content:center;backdrop-filter:blur(2px)}
@@ -1058,15 +1132,102 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
     </section>
   </div>
 
-  <!-- ===== 個人區（保留位置） ===== -->
+  <!-- ===== 個人區：溫暖像素風・個人日常紀錄手帳 ===== -->
   <div id="personalArea" class="hide">
-    <div class="placeholder">
-      <div class="emo">🏡</div>
-      <h3>個人區還在規劃中</h3>
-      <p>這一區之後會放家庭、學習、健康、副業的事情，跟工作完全分開，
-         不會混在客戶任務裡。<br><br>
-         等工作區這邊用順了、確定欄位不用再改，我們再回頭做這一塊。
-         位置已經留好了，資料結構也支援，之後接上就好。</p>
+    <div class="pbook">
+      <div class="pbook-topbar">
+        <button class="pbook-menubtn" id="pMenuBtn">☰ 目錄</button>
+        <div class="pbook-title">📔 個人日常紀錄手帳</div>
+      </div>
+      <div class="pbook-layout">
+        <nav class="pbook-nav" id="pNav">
+          <button class="pnav-btn on" data-ptab="home">🏠 首頁總覽</button>
+          <button class="pnav-btn" data-ptab="today">✅ 今日任務</button>
+          <button class="pnav-btn" data-ptab="habit">🔥 習慣打卡</button>
+          <button class="pnav-btn" data-ptab="money">💰 收支記帳</button>
+          <button class="pnav-btn" data-ptab="idea">💡 靈感選題庫</button>
+          <button class="pnav-btn" data-ptab="study">📚 閱讀學習</button>
+          <button class="pnav-btn" data-ptab="weight">⚖️ 體重紀錄</button>
+          <button class="pnav-btn" data-ptab="review">🌙 每日復盤</button>
+          <button class="pnav-btn" data-ptab="radar">🎯 雷達總覽</button>
+        </nav>
+        <div class="pbook-mask" id="pNavMask"></div>
+        <div class="pbook-content">
+
+          <section class="ppage on" data-ppage="home">
+            <div class="pcard"><div class="pgreet" id="pGreet"></div></div>
+            <div class="pstat-row">
+              <div class="pcard pstat">
+                <div class="pstat-label">今日任務</div>
+                <div class="pstat-num" id="pHomeToday">0/0</div>
+              </div>
+              <div class="pcard pstat">
+                <div class="pstat-label">等級</div>
+                <div class="pstat-num">Lv.<span id="pHomeLv">1</span></div>
+                <div class="pbar"><i id="pHomeBar" style="width:0%"></i></div>
+                <div class="pstat-sub" id="pHomeXp">0/100 XP</div>
+              </div>
+              <div class="pcard pstat">
+                <div class="pstat-label">連續打卡</div>
+                <div class="pstat-num">🔥<span id="pHomeStreak">0</span></div>
+              </div>
+            </div>
+            <div class="pcard">
+              <div class="pcard-h">🎯 六維雷達</div>
+              <div id="pHomeRadar"></div>
+            </div>
+            <div class="pstat-row">
+              <div class="pcard pstat">
+                <div class="pstat-label">本月營收</div>
+                <div class="pstat-num" id="pHomeMoney" style="font-size:14px">還沒有紀錄</div>
+              </div>
+              <div class="pcard pstat">
+                <div class="pstat-label">最新體重</div>
+                <div class="pstat-num" id="pHomeWeight" style="font-size:14px">還沒有紀錄</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="ppage" data-ppage="today">
+            <div class="pcard">
+              <div class="pcard-h">✅ 今日任務<button class="padd" id="pAddToday">＋ 新增</button></div>
+              <div class="plist" id="pTodayList"></div>
+            </div>
+          </section>
+
+          <section class="ppage" data-ppage="habit">
+            <div class="pcard">
+              <div class="pcard-h">🔥 習慣打卡<button class="padd" id="pAddHabit">＋ 新增</button></div>
+              <div class="plist" id="pHabitList"></div>
+            </div>
+          </section>
+
+          <section class="ppage" data-ppage="money">
+            <div class="pcard pstub">💰 收支記帳<p>還在規劃中，之後陸續補上</p></div>
+          </section>
+          <section class="ppage" data-ppage="idea">
+            <div class="pcard pstub">💡 靈感／選題庫<p>還在規劃中，之後陸續補上</p></div>
+          </section>
+          <section class="ppage" data-ppage="study">
+            <div class="pcard pstub">📚 閱讀／學習<p>還在規劃中，之後陸續補上</p></div>
+          </section>
+          <section class="ppage" data-ppage="weight">
+            <div class="pcard pstub">⚖️ 體重紀錄<p>還在規劃中，之後陸續補上</p></div>
+          </section>
+          <section class="ppage" data-ppage="review">
+            <div class="pcard pstub">🌙 每日復盤<p>還在規劃中，之後陸續補上</p></div>
+          </section>
+
+          <section class="ppage" data-ppage="radar">
+            <div class="pcard">
+              <div class="pcard-h">🎯 雷達總覽</div>
+              <div id="pRadarBig"></div>
+              <div class="plegend" id="pRadarLegend"></div>
+            </div>
+          </section>
+
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1098,10 +1259,10 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
       <div class="prop"><span class="pl">🔥 優先級</span>
         <div class="pv"><div class="seg" id="tmPrio"></div></div>
       </div>
-      <div class="prop"><span class="pl">👤 客戶</span>
+      <div class="prop" id="tmClientWrap"><span class="pl">👤 客戶</span>
         <div class="pv"><select id="tmClient" class="cp-native"></select><button type="button" class="bare cp-trigger" id="tmClientBtn" data-cptrigger="tmClient">（未指定）</button></div>
       </div>
-      <div class="prop"><span class="pl">📁 工作類型</span>
+      <div class="prop" id="tmTypeWrap"><span class="pl">📁 工作類型</span>
         <div class="pv"><select id="tmType" class="bare"></select></div>
       </div>
       <div class="prop"><span class="pl">🔁 重複</span>
@@ -1137,6 +1298,18 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
         <div class="pv pv-2">
           <input type="range" id="tmProg" min="0" max="100" step="5" value="0">
           <span id="tmProgV" class="tiny" style="min-width:38px">0%</span>
+        </div>
+      </div>
+      <div id="tmQuestWrap" class="hide">
+        <div class="prop"><span class="pl">🏷 生活領域</span>
+          <div class="pv"><select id="tmQArea" class="bare">
+            <option value="">（選一個領域）</option>
+            <option value="biz">💼 事業</option>
+            <option value="family">👨‍👩‍👧 家庭</option>
+            <option value="study">📚 學習</option>
+            <option value="health">💪 健康</option>
+            <option value="self">🌱 自己</option>
+          </select></div>
         </div>
       </div>
     </div>
@@ -1361,6 +1534,19 @@ const TOOLS = [
   {ic:'🎮', n:'數學冒險遊戲',    d:'國小二年級數學闖關，4 世界 12 關',  u:'./math-game/index.html'}
 ];
 
+/* ---------- 個人區：溫暖像素風・個人日常紀錄手帳 ----------
+   每筆任務可貼一個生活領域標籤，用來分類跟畫六維雷達圖（快樂另外算，見下方 pHappyScore）。
+   分類先固定這 5 種，不開放自訂，求好用優先。 */
+const PTAGS = {
+  biz:    { name:'事業', color:'#C97B4A' },
+  family: { name:'家庭', color:'#5DADE2' },
+  study:  { name:'學習', color:'#7CB342' },
+  health: { name:'健康', color:'#E0699F' },
+  self:   { name:'自己', color:'#E8A33D' }
+};
+const P_XP_TASK = 10;   // 完成一個今日任務給的 XP
+const P_XP_HABIT = 5;   // 習慣打卡一天給的 XP
+
 /* ---------- 小工具 ---------- */
 const $  = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
@@ -1380,13 +1566,13 @@ function monthRange(){
   return [ymd(new Date(d.getFullYear(),d.getMonth(),1)), ymd(new Date(d.getFullYear(),d.getMonth()+1,0))];
 }
 let toastT;
-function toast(msg, undoFn){
+function toast(msg, undoFn, ms){
   const el = $('#toast');
   el.innerHTML = esc(msg) + (undoFn ? ` <b class="undo">復原</b>` : '');
   el.classList.toggle('clickable', !!undoFn);
   el.onclick = undoFn ? () => { undoFn(); el.classList.remove('on'); } : null;
   el.classList.add('on');
-  clearTimeout(toastT); toastT = setTimeout(()=>el.classList.remove('on'), undoFn ? 4500 : 1900);
+  clearTimeout(toastT); toastT = setTimeout(()=>el.classList.remove('on'), ms || (undoFn ? 4500 : 1900));
 }
 
 /* ---------- 狀態 ---------- */
@@ -1557,6 +1743,50 @@ function repeatDueOn(t, dateStr){
 const repeatDone = (t, dateStr) => !!(t.doneDates && t.doneDates[dateStr]);
 // 一般任務看 status；重複任務看「今天有沒有打勾」
 const isDone = (t, dateStr) => isRepeat(t) ? repeatDone(t, dateStr || TODAY()) : t.status === 'done';
+
+/* ---------- 個人區：日常手帳計算 ---------- */
+const isPersonalTask = t => t.area === 'personal';
+// 連續天數：今天還沒打勾的話，從昨天往回算（給一天的緩衝，不然一早開網頁就顯示斷了）
+function pStreak(t){
+  if (!t.doneDates) return 0;
+  let n = 0, d = new Date();
+  if (!t.doneDates[ymd(d)]) d.setDate(d.getDate() - 1);
+  while (t.doneDates[ymd(d)]){ n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+const pTodayTasks = () => Object.values(tasks).filter(t => isPersonalTask(t) && !isRepeat(t));
+const pHabits = () => Object.values(tasks).filter(t => isPersonalTask(t) && isRepeat(t));
+function pExp(){
+  let exp = 0;
+  Object.values(tasks).forEach(t => {
+    if (!isPersonalTask(t)) return;
+    if (isRepeat(t)) exp += Object.keys(t.doneDates || {}).length * P_XP_HABIT;
+    else if (t.status === 'done') exp += P_XP_TASK;
+  });
+  return exp;
+}
+// 簡單好懂的等級：每 100 XP 一級，不用複雜的升級曲線，慢慢記、慢慢長
+function pLevelInfo(){
+  const exp = pExp(), need = 100;
+  return { level: Math.floor(exp/need) + 1, cur: exp % need, need, exp };
+}
+function pMaxStreak(){
+  let m = 0;
+  pHabits().forEach(t => m = Math.max(m, pStreak(t)));
+  return m;
+}
+// 每個領域算一個 0-100 分：一次性任務看有沒有完成，習慣類看連續天數（每天 10%，封頂 100%）
+function pDomainScore(tag){
+  const list = Object.values(tasks).filter(t => isPersonalTask(t) && t.qArea === tag);
+  if (!list.length) return 0;
+  const sum = list.reduce((s, t) => {
+    if (isRepeat(t)) return s + Math.min(100, pStreak(t) * 10);
+    return s + (t.status === 'done' ? 100 : 0);
+  }, 0);
+  return Math.round(sum / list.length);
+}
+// 快樂維度還沒有資料來源（每日復盤還在規劃中），先固定 0，等心情紀錄上線再接上
+function pHappyScore(){ return 0; }
 
 /* ---------- Firebase ---------- */
 let _db=null,_ref=null,_set=null,_remove=null,_ready=false,_signOut=null;
@@ -2703,8 +2933,121 @@ function renderAll(){
   renderDayPlan(); renderRings(); renderAlerts(); renderScore();
   renderStats(); renderBoard(); renderClients(); renderReview(); renderStorageInfo();
   renderTypeList(); renderLearnList(); renderMoreBadge();
-  renderRcCatList(); renderRC();
+  renderRcCatList(); renderRC(); renderPBook();
 }
+
+/* ---------- 個人區：溫暖像素風・個人日常紀錄手帳 ---------- */
+function pGreetText(){
+  const h = new Date().getHours();
+  const word = h < 11 ? '早安' : h < 14 ? '午安' : h < 18 ? '下午好' : '晚安';
+  return `${word}，朱兒`;
+}
+function renderPBook(){
+  if (!$('#personalArea')) return;
+  renderPHome();
+  renderPToday();
+  renderPHabit();
+  $('#pRadarBig').innerHTML = renderPRadar();
+  $('#pRadarLegend').innerHTML = Object.entries(PTAGS).map(([k,v]) =>
+    `<div class="plegend-item"><span class="plegend-dot" style="background:${v.color}"></span>${esc(v.name)}</div>`
+  ).join('') + `<div class="plegend-item"><span class="plegend-dot" style="background:#8B5E34"></span>快樂</div>`;
+}
+function renderPHome(){
+  const todayList = pTodayTasks();
+  const doneToday = todayList.filter(t => t.status === 'done').length;
+  const lv = pLevelInfo();
+  $('#pGreet').innerHTML = `${esc(pGreetText())}<span class="sub">${esc(TODAY())}</span>`;
+  $('#pHomeToday').textContent = `${doneToday}/${todayList.length}`;
+  $('#pHomeLv').textContent = lv.level;
+  $('#pHomeBar').style.width = Math.round(lv.cur / lv.need * 100) + '%';
+  $('#pHomeXp').textContent = `${lv.cur}/${lv.need} XP`;
+  $('#pHomeStreak').textContent = pMaxStreak();
+  $('#pHomeRadar').innerHTML = renderPRadar();
+  $('#pHomeMoney').textContent = '還沒有紀錄';
+  $('#pHomeWeight').textContent = '還沒有紀錄';
+}
+/* 六維雷達：事業/家庭/學習/健康/自己看任務貼的領域標籤累積，快樂等每日復盤上線後接上心情紀錄再算 */
+function renderPRadar(){
+  const order = ['biz','family','study','health','self','happy'];
+  const labels = { biz:'事業', family:'家庭', study:'學習', health:'健康', self:'自己', happy:'快樂' };
+  const scores = {}; order.forEach(k => scores[k] = k === 'happy' ? pHappyScore() : pDomainScore(k));
+  const W = 200, H = 210, cx = 100, cy = 96, maxR = 62;
+  const pt = (i, frac) => {
+    const ang = -Math.PI/2 + i * (2*Math.PI/order.length);
+    return [cx + Math.cos(ang)*maxR*frac, cy + Math.sin(ang)*maxR*frac];
+  };
+  const ringPts = f => order.map((_,i) => pt(i,f).join(',')).join(' ');
+  const dataPts = order.map((k,i) => pt(i, Math.max(.05, scores[k]/100)).join(',')).join(' ');
+  const axes = order.map((_,i) => { const [x,y] = pt(i,1); return `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" class="pr-axis"/>`; }).join('');
+  const dots = order.map((k,i) => { const [x,y] = pt(i, Math.max(.05, scores[k]/100)); return `<circle cx="${x}" cy="${y}" r="2.4" class="pr-dot"/>`; }).join('');
+  const svg = `<svg viewBox="0 0 ${W} ${H}" class="pradar-svg">
+    <polygon points="${ringPts(1)}" class="pr-ring"/>
+    <polygon points="${ringPts(.66)}" class="pr-ring"/>
+    <polygon points="${ringPts(.33)}" class="pr-ring"/>
+    ${axes}
+    <polygon points="${dataPts}" class="pr-fill"/>
+    ${dots}
+  </svg>`;
+  const pctLabels = order.map((k,i) => {
+    const [x,y] = pt(i, 1.3);
+    return `<div class="pr-label" style="left:${(x/W*100).toFixed(1)}%;top:${(y/H*100).toFixed(1)}%">${labels[k]}<br>${scores[k]}%</div>`;
+  }).join('');
+  return `<div class="pradar">${svg}${pctLabels}</div>`;
+}
+function pRenderRow(t){
+  const rep = isRepeat(t);
+  const done = rep ? isDone(t) : t.status === 'done';
+  const streak = rep ? pStreak(t) : 0;
+  const tag = PTAGS[t.qArea];
+  const box = rep
+    ? `<button class="prow-box${done?' on':''}" data-qroutine="${t.id}">${done?'✓':''}</button>`
+    : `<button class="prow-box${done?' on':''}" data-qdone="${t.id}">${done?'✓':''}</button>`;
+  return `<div class="prow" data-id="${t.id}">
+    ${box}
+    <span class="prow-name${done?' done':''}" data-openrow="${t.id}">${esc(t.name)}</span>
+    ${tag ? `<span class="ptag" style="background:${tag.color}">${esc(tag.name)}</span>` : ''}
+    ${rep && streak > 0 ? `<span class="pstreak">🔥${streak}</span>` : ''}
+    <button class="prow-del" data-delrow="${t.id}" title="刪除">🗑</button>
+  </div>`;
+}
+function renderPToday(){
+  const list = pTodayTasks().sort((a,b) => (a.status==='done')-(b.status==='done') || (a.createdAt||0)-(b.createdAt||0));
+  $('#pTodayList').innerHTML = list.length ? list.map(pRenderRow).join('')
+    : `<div class="pempty">還沒有任務，點右上角「＋新增」加一個</div>`;
+}
+function renderPHabit(){
+  const list = pHabits().sort((a,b) => (a.createdAt||0)-(b.createdAt||0));
+  $('#pHabitList').innerHTML = list.length ? list.map(pRenderRow).join('')
+    : `<div class="pempty">還沒有習慣，點右上角「＋新增」加一個</div>`;
+}
+function switchPTab(name){
+  $$('.pnav-btn').forEach(b => b.classList.toggle('on', b.dataset.ptab === name));
+  $$('.ppage').forEach(p => p.classList.toggle('on', p.dataset.ppage === name));
+  $('#pNav').classList.remove('open');
+  $('#pNavMask').classList.remove('show');
+}
+$('#pNav').addEventListener('click', e => {
+  const b = e.target.closest('.pnav-btn'); if (!b) return;
+  switchPTab(b.dataset.ptab);
+});
+$('#pMenuBtn').onclick = () => { $('#pNav').classList.add('open'); $('#pNavMask').classList.add('show'); };
+$('#pNavMask').onclick = () => { $('#pNav').classList.remove('open'); $('#pNavMask').classList.remove('show'); };
+$('#personalArea').addEventListener('click', e => {
+  if (e.target.closest('#pAddToday')){ openTask(null, {}); return; }
+  if (e.target.closest('#pAddHabit')){ openTask(null, { repeat:'daily' }); return; }
+  const rb = e.target.closest('[data-qroutine]');
+  if (rb){ toggleRoutine(rb.dataset.qroutine); return; }
+  const db = e.target.closest('[data-qdone]');
+  if (db){ const t = tasks[db.dataset.qdone]; if (t) setStatus(t.id, t.status==='done' ? 'todo' : 'done'); return; }
+  const del = e.target.closest('[data-delrow]');
+  if (del){
+    const t = tasks[del.dataset.delrow];
+    if (t && confirm(`確定刪除「${t.name}」？`)) delTask(t.id);
+    return;
+  }
+  const openr = e.target.closest('[data-openrow]');
+  if (openr){ openTask(openr.dataset.openrow); return; }
+});
 
 /* ---------- 任務操作 ---------- */
 function saveTask(t){
@@ -2774,8 +3117,10 @@ function openTask(id, preset){
   $('#tmProg').value = t?.progress || 0;
   $('#tmProgV').textContent = (t?.progress||0) + '%';
   $('#tmNote').value = t?.note || '';
+  $('#tmQArea').value = t?.qArea || preset?.qArea || '';
   syncClientTrigger('tmClient');
   syncRepeatFields();
+  syncQuestFields();
   $('#taskModal').classList.add('on');
   requestAnimationFrame(()=>{ autoGrow($('#tmName')); autoGrow($('#tmNote')); });
   if (!t) setTimeout(()=>$('#tmName').focus(), 120);
@@ -2785,8 +3130,21 @@ function syncRepeatFields(){
   $('#tmWdaysWrap').classList.toggle('hide', r !== 'weekly');
   // 重複任務沒有「這一次的截止日」與「整體進度」，改用每天打勾
   $('#tmOnceFields').classList.toggle('hide', rep);
-  $('#tmProgWrap').classList.toggle('hide', rep);
   $('#tmStatus').closest('.prop').classList.toggle('hide', rep);
+  syncProgVisibility();
+}
+/* 進度滑桿：重複任務用打勾取代進度，不用手動拉 */
+function syncProgVisibility(){
+  const rep = $('#tmRepeat').value !== 'none';
+  $('#tmProgWrap').classList.toggle('hide', rep);
+}
+/* 個人任務專屬欄位：只有切到「個人」才看得到生活領域；客戶／工作類型是工作那邊的概念，個人用不到 */
+function syncQuestFields(){
+  const personal = scope === 'personal';
+  $('#tmQuestWrap').classList.toggle('hide', !personal);
+  $('#tmClientWrap').classList.toggle('hide', personal);
+  $('#tmTypeWrap').classList.toggle('hide', personal);
+  syncProgVisibility();
 }
 const closeTask = () => {
   flushAutoSave();                                // 倒數中的存檔先結清：存完再關，
@@ -2798,6 +3156,7 @@ const closeTask = () => {
 /* 打標題的時候順手把客戶與類型填好。
    新任務：兩欄都自動帶；既有任務：只補原本空著的，不動朱兒已經填過的。 */
 function applyDetectToModal(){
+  if (scope === 'personal') return;   // 個人任務沒有客戶／工作類型欄位，不用猜、更不能偷偷建客戶
   const name = $('#tmName').value.trim();
   if (!name) return;
   // 跟快速記一筆一樣：標題改了就重新判斷，不然手動改過一次就再也不會跟著標題變
@@ -2840,7 +3199,7 @@ function resolveClientVal(v){
 function readTaskForm(){
   const repeat = $('#tmRepeat').value, rep = repeat !== 'none';
   const status = rep ? 'todo' : segGet('tmStatus');
-  return {
+  const t = {
     id: editingTask?.id || uid(),
     name: $('#tmName').value.trim(), area: scope,
     client: resolveClientVal($('#tmClient').value), type: $('#tmType').value,
@@ -2857,6 +3216,11 @@ function readTaskForm(){
     createdAt: editingTask?.createdAt || Date.now(),
     doneAt: (!rep && status==='done') ? (editingTask?.doneAt || Date.now()) : null
   };
+  // 個人任務多一件事：貼哪個生活領域標籤，用來分類跟畫雷達圖
+  if (scope === 'personal'){
+    t.qArea = $('#tmQArea').value || '';
+  }
+  return t;
 }
 
 /* 自動儲存：只對「已存在的任務」生效，打字停 500ms 後寫入 */
@@ -3180,7 +3544,7 @@ $('#scopeSw').onclick = e => {
   $('#workArea').classList.toggle('hide', personal);
   $('#personalArea').classList.toggle('hide', !personal);
   $('#fab').style.display = personal ? 'none' : 'flex';
-  if (!personal) renderAll();
+  if (!personal) renderAll(); else renderPBook();
 };
 $('#goToday').onclick = () => {
   filter.range = 'today'; filter.status = 'open'; shownCount = PAGE_SIZE;
@@ -3720,8 +4084,9 @@ document.addEventListener('blur', e => {
   const el = e.target.closest?.('[data-rename]'); if (!el || !el.isContentEditable) return;
   el.contentEditable = 'false';
   const k = el.dataset.rename;
-  // 左側選單只有 178px 寬，分頁名稱留 8 個字，再長會被握把擠掉
-  const name = el.textContent.trim().slice(0, k.startsWith('tab.') ? 8 : 12);
+  // 左側選單只有 178px 寬，分頁名稱留 8 個字，再長會被握把擠掉；
+  // 個人介紹卡（quest.）是一整句話，留寬一點，其餘維持原本的短標籤上限
+  const name = el.textContent.trim().slice(0, k.startsWith('tab.') ? 8 : k.startsWith('quest.') ? 60 : 12);
   if (!name){ renderNames(); return; }     // 清成空白就回到原本的名稱
   ui.names = ui.names || {};
   ui.names[k] = name;
