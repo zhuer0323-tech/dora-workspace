@@ -623,8 +623,7 @@ nav.tabs .tb.dragging{position:fixed;z-index:60;pointer-events:none;opacity:.95;
 .pcard{background:#FFFDF5;border:3px solid #8B5E34;border-radius:10px;padding:14px 16px}
 .pcard-h{display:flex;align-items:center;justify-content:space-between;font-size:14px;font-weight:800;
   color:#4A3222;margin-bottom:10px;padding-bottom:8px;border-bottom:2px dashed #E4D19C}
-.pgreet{font-size:15px;font-weight:800;color:#4A3222}
-.pgreet .sub{display:block;font-size:11.5px;font-weight:600;color:#8B5E34;margin-top:3px}
+.pabout-hi{font-size:11.5px;font-weight:700;color:#B49A76;margin-top:2px}
 
 .pstat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px}
 .pstat{text-align:center}
@@ -1289,7 +1288,6 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
         <div class="pbook-content">
 
           <section class="ppage on" data-ppage="home">
-            <div class="pcard"><div class="pgreet" id="pGreet"></div></div>
             <div class="pstat-row">
               <div class="pcard pstat">
                 <div class="pstat-label">今日任務</div>
@@ -1313,6 +1311,7 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
                   <button class="pavatar" id="pAvatar" title="點一下換照片"></button>
                   <div class="pabout-hd">
                     <input class="pabout-name" data-abt="name" maxlength="20" placeholder="你的名字">
+                    <div class="pabout-hi" id="pGreet"></div>
                     <input class="pabout-tag" data-abt="tagline" maxlength="40" placeholder="一句話介紹自己">
                   </div>
                 </div>
@@ -3292,10 +3291,11 @@ function renderAll(){
 }
 
 /* ---------- 個人區：溫暖像素風・個人日常紀錄手帳 ---------- */
-function pGreetText(){
-  const h = new Date().getHours();
+// 名字就顯示在這行的正上方，所以問候只留時段＋日期，不再重複唸一次名字
+function pGreetLine(){
+  const d = new Date(), h = d.getHours();
   const word = h < 11 ? '早安' : h < 14 ? '午安' : h < 18 ? '下午好' : '晚安';
-  return `${word}，${(ui.pAbout && ui.pAbout.name) || '朱兒'}`;
+  return `${word}・${pad(d.getMonth()+1)}/${pad(d.getDate())} 週${P_WD[d.getDay()]}`;
 }
 
 /* ---------- 關於我（存在既有的 ui 節點，不另開 key） ---------- */
@@ -3357,7 +3357,7 @@ function renderPHome(){
   const todayList = pTodayTasks();
   const doneToday = todayList.filter(t => t.status === 'done').length;
   const lv = pLevelInfo();
-  $('#pGreet').innerHTML = `${esc(pGreetText())}<span class="sub">${esc(TODAY())}</span>`;
+  $('#pGreet').textContent = pGreetLine();
   $('#pHomeToday').textContent = `${doneToday}/${todayList.length}`;
   $('#pHomeLv').textContent = lv.level;
   $('#pHomeBar').style.width = Math.round(lv.cur / lv.need * 100) + '%';
