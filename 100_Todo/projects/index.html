@@ -733,6 +733,40 @@ nav.tabs .tb.dragging{position:fixed;z-index:60;pointer-events:none;opacity:.95;
 .pwrow .fat{color:#8B5E34;font-weight:700}
 .pwrow .sp{flex:1}
 
+/* --- 靈感收件匣 --- */
+.pchips{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:10px}
+.pchips .lb{font-size:11px;font-weight:800;color:#8B5E34;margin-right:2px}
+.pchips .lb+.lb{margin-left:8px}
+.pchip{border:2px solid #E4D19C;background:#FFF9EC;color:#6B4423;border-radius:99px;
+  padding:3px 11px;font-size:11.5px;font-weight:800}
+.pchip:hover{background:#F7EDD5}
+.pchip.on{background:#8B5E34;color:#FFF8EA;border-color:#6B4423}
+.pidea{border:2px solid #E4D19C;border-radius:8px;background:#FFF9EC;padding:9px 10px;
+  display:flex;flex-direction:column;gap:5px}
+.pidea.done{opacity:.62}
+.pidea.done .pidea-tx{text-decoration:line-through}
+.pidea-r1{display:flex;align-items:center;gap:6px}
+.pidea-tx{flex:1;min-width:0;border:none;background:transparent;padding:2px 0;
+  font:inherit;font-size:13.5px;font-weight:700;color:#4A3222}
+.pidea-tx:focus{outline:none;background:#fff;border-radius:6px;padding:2px 6px}
+.pidea-note{border:none;border-bottom:1.5px dashed #E4D19C;border-radius:0;background:transparent;
+  padding:2px 0;font-size:12px}
+.pidea-note:focus{background:#fff;border-radius:6px 6px 0 0;padding:2px 6px}
+.pidea-r2{display:flex;align-items:center;gap:7px}
+.pselect{border:2px solid #E4D19C;border-radius:8px;background:#FFFDF5;padding:3px 6px;
+  font:inherit;font-size:11.5px;font-weight:800;color:#6B4423}
+.pidea-d{margin-left:auto;font-size:10.5px;font-weight:700;color:#B49A76;flex:none}
+
+/* --- 學習時數 --- */
+.pc-bar{fill:#5C8A32}
+.pc-avg{stroke:#8B5E34;stroke-width:1.5;stroke-dasharray:5 4}
+.pc-avg-t{font-size:9px;font-weight:800;fill:#6B4423}
+.pstrow{display:flex;align-items:center;gap:10px;padding:8px 10px;border:2px solid #E4D19C;
+  border-radius:8px;background:#FFF9EC;font-size:12.5px}
+.pstrow .d{font-weight:800;color:#8B5E34;flex:none;min-width:80px;white-space:nowrap}
+.pstrow .m{font-weight:900;color:#4A3222;flex:none}
+.pstrow .t{color:#6B4423;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
 .pradar{position:relative;width:100%;max-width:260px;aspect-ratio:200/210;margin:2px auto 0}
 .pradar-svg{width:100%;height:100%;display:block}
 .pr-ring{fill:none;stroke:#E4D19C;stroke-width:1}
@@ -1255,8 +1289,8 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
             </div>
             <div class="pstat-row">
               <div class="pcard pstat">
-                <div class="pstat-label">本月營收</div>
-                <div class="pstat-num" id="pHomeMoney" style="font-size:14px">還沒有紀錄</div>
+                <div class="pstat-label">本週學習</div>
+                <div class="pstat-num" id="pHomeStudy" style="font-size:14px">還沒有紀錄</div>
               </div>
               <div class="pcard pstat">
                 <div class="pstat-label">最新體重</div>
@@ -1292,10 +1326,42 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
             </div>
           </section>
           <section class="ppage" data-ppage="idea">
-            <div class="pcard pstub">💡 靈感／選題庫<p>還在規劃中，之後陸續補上</p></div>
+            <div class="pcard" id="pIdForm">
+              <div class="pcard-h">💡 丟一個靈感進來</div>
+              <input class="pinput" id="pIdNew" maxlength="140" placeholder="想到什麼就打一行，按 Enter 收進來">
+              <div class="pempty" style="text-align:left;padding:8px 0 0">
+                不用分類、不用寫完整。要用的時候再挑出來複製去禾言規劃表。
+              </div>
+            </div>
+            <div class="pcard">
+              <div class="pcard-h">📥 收件匣<span class="pdate-flag no" id="pIdCount"></span></div>
+              <div class="pchips" id="pIdFilter"></div>
+              <div class="plist" id="pIdList"></div>
+            </div>
           </section>
           <section class="ppage" data-ppage="study">
-            <div class="pcard pstub">📚 閱讀／學習<p>還在規劃中，之後陸續補上</p></div>
+            <div class="pcard" id="pStForm">
+              <div class="pcard-h">📚 記一段學習</div>
+              <div class="pinline">
+                <div class="pfield"><label>日期</label><input type="date" class="pinput" id="pStDate"></div>
+                <div class="pfield"><label>分鐘</label><input class="pinput" id="pStMins" inputmode="numeric" placeholder="50"></div>
+                <div class="pfield" style="flex:2"><label>學了什麼（可不填）</label>
+                  <input class="pinput" id="pStTopic" maxlength="80" placeholder="例：Meta 新版受眾設定"></div>
+              </div>
+              <div class="pbtn-row">
+                <button class="pbtn sub" data-stquick="25">25 分</button>
+                <button class="pbtn sub" data-stquick="50">50 分</button>
+                <button class="pbtn" id="pStSave">記一筆</button>
+              </div>
+            </div>
+            <div class="pcard">
+              <div class="pcard-h">📊 這週每天學了多久<span class="pdate-flag no" id="pStMonth"></span></div>
+              <div id="pStChart"></div>
+            </div>
+            <div class="pcard">
+              <div class="pcard-h">🗒 最近的紀錄</div>
+              <div class="plist" id="pStList"></div>
+            </div>
           </section>
           <section class="ppage" data-ppage="weight">
             <div class="pcard" id="pWtForm">
@@ -1992,6 +2058,29 @@ function savePWeight(date, kg, fat){
   saveLocal(); push(`pWeight/${date}`, pWeight[date]); renderPBook();
 }
 function delPWeight(date){ delete pWeight[date]; saveLocal(); drop(`pWeight/${date}`); renderPBook(); }
+
+/* ---------- 靈感收件匣／學習時數 的共用小工具 ---------- */
+const P_IDEA_TAGS = { heyen:'禾言', client:'客戶', video:'影片', other:'其他' };
+const P_IDEA_ST   = { new:'新點子', todo:'想做', done:'做過了' };
+let pIdFilter = { tag:'', status:'' };
+const pMinsText = m => m >= 60 ? `${Math.floor(m/60)} 小時${m % 60 ? ` ${m % 60} 分` : ''}` : `${m} 分`;
+
+function savePIdea(id, data){ pIdeas[id] = data; saveLocal(); push(`pIdeas/${id}`, data); renderPBook(); }
+function delPIdea(id){ delete pIdeas[id]; saveLocal(); drop(`pIdeas/${id}`); renderPBook(); }
+function savePStudy(id, data){ pStudy[id] = data; saveLocal(); push(`pStudy/${id}`, data); renderPBook(); }
+function delPStudy(id){ delete pStudy[id]; saveLocal(); drop(`pStudy/${id}`); renderPBook(); }
+
+function pStudyWeek(){
+  const mon = pMondayOf(TODAY()), days = pWeekDays(mon);
+  const per = days.map(d => Object.values(pStudy)
+    .filter(s => s.date === d).reduce((a,b) => a + (b.mins || 0), 0));
+  return { mon, days, per };
+}
+function pStudyMonth(){
+  const m = TODAY().slice(0,7);
+  return Object.values(pStudy).filter(s => (s.date || '').startsWith(m))
+    .reduce((a,b) => a + (b.mins || 0), 0);
+}
 
 /* ---------- Firebase ---------- */
 let _db=null,_ref=null,_set=null,_remove=null,_ready=false,_signOut=null;
@@ -3168,6 +3257,8 @@ function renderPBook(){
   renderPHabit();
   renderPReview();
   renderPWeight();
+  renderPIdea();
+  renderPStudy();
   $('#pRadarBig').innerHTML = renderPRadar();
   $('#pRadarLegend').innerHTML = Object.entries(PTAGS).map(([k,v]) =>
     `<div class="plegend-item"><span class="plegend-dot" style="background:${v.color}"></span>${esc(v.name)}</div>`
@@ -3184,7 +3275,7 @@ function renderPHome(){
   $('#pHomeXp').textContent = `${lv.cur}/${lv.need} XP`;
   $('#pHomeStreak').textContent = pMaxStreak();
   $('#pHomeRadar').innerHTML = renderPRadar();
-  $('#pHomeMoney').textContent = '還沒有紀錄';
+  $('#pHomeStudy').textContent = pStudyHome();
   $('#pHomeWeight').innerHTML = pWeightHome();
 }
 /* 六維雷達：事業/家庭/學習/健康/自己看任務貼的領域標籤累積，快樂等每日復盤上線後接上心情紀錄再算 */
@@ -3359,6 +3450,99 @@ function pWeightChart(){
     (list.length > 1 ? `<text x="${W-R}" y="${H-5}" class="pc-axis" text-anchor="end">${last.date.slice(5)}</text>` : '');
   return `<div class="pchart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="體重變化">${grid}${goalLine}${line}${dots}${lastLab}${xLab}</svg></div>`;
 }
+/* ---------- 靈感收件匣 ---------- */
+function renderPIdea(){
+  if (!$('#pIdList')) return;
+  const all = Object.values(pIdeas).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
+  const list = all.filter(x =>
+    (!pIdFilter.tag || x.tag === pIdFilter.tag) && (!pIdFilter.status || x.status === pIdFilter.status));
+  const filtering = !!(pIdFilter.tag || pIdFilter.status);
+  $('#pIdCount').textContent = filtering ? `${list.length} / ${all.length} 則` : `${all.length} 則`;
+  const chips = (key, label, map) => `<span class="lb">${label}</span>` +
+    `<button class="pchip${pIdFilter[key] === '' ? ' on' : ''}" data-idf="${key}" data-v="">全部</button>` +
+    Object.entries(map).map(([k,v]) =>
+      `<button class="pchip${pIdFilter[key] === k ? ' on' : ''}" data-idf="${key}" data-v="${k}">${v}</button>`).join('');
+  $('#pIdFilter').innerHTML = chips('tag', '標籤', P_IDEA_TAGS) + chips('status', '狀態', P_IDEA_ST);
+  if (pFormBusy('#pIdList')) return;   // 正在改某一則的文字或說明
+  const opts = (map, cur) => Object.entries(map)
+    .map(([k,v]) => `<option value="${k}"${cur === k ? ' selected' : ''}>${v}</option>`).join('');
+  $('#pIdList').innerHTML = list.length ? list.map(x => `
+    <div class="pidea${x.status === 'done' ? ' done' : ''}">
+      <div class="pidea-r1">
+        <input class="pidea-tx" data-idtext="${x.id}" maxlength="140" value="${esc(x.text || '')}">
+        <button class="prow-del" data-iddel="${x.id}" title="刪除">🗑</button>
+      </div>
+      <input class="pinput pidea-note" data-idnote="${x.id}" maxlength="200"
+             placeholder="補一句說明（選填）" value="${esc(x.note || '')}">
+      <div class="pidea-r2">
+        <select class="pselect" data-idtag="${x.id}">${opts(P_IDEA_TAGS, x.tag)}</select>
+        <select class="pselect" data-idstatus="${x.id}">${opts(P_IDEA_ST, x.status)}</select>
+        <span class="pidea-d">${esc((x.createdAt ? ymd(new Date(x.createdAt)) : '').slice(5))}</span>
+      </div>
+    </div>`).join('')
+    : `<div class="pempty">${filtering ? '這個條件下沒有東西' : '還沒有靈感，上面打一行丟進來'}</div>`;
+}
+
+/* ---------- 學習時數 ---------- */
+function renderPStudy(){
+  if (!$('#pStList')) return;
+  const month = pStudyMonth();
+  $('#pStMonth').textContent = month ? `這個月 ${pMinsText(month)}` : '這個月還沒有';
+  $('#pStChart').innerHTML = pStudyChart();
+  const list = Object.values(pStudy)
+    .sort((a,b) => (b.date || '').localeCompare(a.date || '') || (b.createdAt || 0) - (a.createdAt || 0))
+    .slice(0, 14);
+  $('#pStList').innerHTML = list.length ? list.map(s => {
+    const dt = new Date(s.date + 'T00:00:00');
+    return `<div class="pstrow">
+      <span class="d">${esc(s.date.slice(5))} 週${P_WD[dt.getDay()]}</span>
+      <span class="m">${pMinsText(s.mins)}</span>
+      <span class="t">${esc(s.topic || '')}</span>
+      <button class="prow-del" data-stdel="${s.id}" title="刪除">🗑</button>
+    </div>`;
+  }).join('') : `<div class="pempty">還沒有紀錄</div>`;
+  if (pFormBusy('#pStForm')) return;
+  if (!$('#pStDate').value) $('#pStDate').value = TODAY();
+}
+/* 這週每天的學習時間：單一組資料所以不放圖例，標題就說明它是什麼。
+   虛線是平均，只算有學的那幾天——一堆 0 會把平均壓到沒意義。 */
+function pStudyChart(){
+  const { per } = pStudyWeek();
+  const total = per.reduce((a,b) => a + b, 0);
+  if (!total) return `<div class="pempty">這週還沒有紀錄</div>`;
+  const active = per.filter(v => v > 0);
+  const avg = active.reduce((a,b) => a + b, 0) / active.length;
+  const max = Math.max(...per, 30);
+  const W = 320, H = 140, L = 34, R = 10, T = 20, B = 22;   // T 留寬一點，最高那根的數字才不會頂到邊
+  const step = (W - L - R) / 7, bw = step * .56;
+  const y = v => T + (1 - v / max) * (H - T - B);
+  const base = y(0);
+  const grid = [0, .5, 1].map(f => {
+    const v = max * f;
+    return `<line x1="${L}" y1="${y(v).toFixed(1)}" x2="${W-R}" y2="${y(v).toFixed(1)}" class="pc-grid"/>
+            <text x="4" y="${(y(v)+3.5).toFixed(1)}" class="pc-axis">${Math.round(v)}</text>`;
+  }).join('');
+  const bars = per.map((v,i) => {
+    if (!v) return '';
+    const cx = L + i * step + step / 2;
+    return `<rect x="${(cx - bw/2).toFixed(1)}" y="${y(v).toFixed(1)}" width="${bw.toFixed(1)}"
+              height="${(base - y(v)).toFixed(1)}" rx="2" class="pc-bar"/>
+            <text x="${cx.toFixed(1)}" y="${(y(v)-4).toFixed(1)}" class="pc-val" text-anchor="middle">${v}</text>`;
+  }).join('');
+  const avgLine = active.length > 1
+    ? `<line x1="${L}" y1="${y(avg).toFixed(1)}" x2="${W-R}" y2="${y(avg).toFixed(1)}" class="pc-avg"/>
+       <text x="${W-R}" y="${(y(avg)-4).toFixed(1)}" class="pc-avg-t" text-anchor="end">平均 ${Math.round(avg)} 分</text>`
+    : '';
+  const xLab = ['一','二','三','四','五','六','日'].map((n,i) =>
+    `<text x="${(L + i*step + step/2).toFixed(1)}" y="${H-5}" class="pc-axis" text-anchor="middle">${n}</text>`).join('');
+  return `<div class="pchart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="這週每天的學習時間">${grid}${avgLine}${bars}${xLab}</svg></div>`;
+}
+// 首頁那格：這週學了多久
+function pStudyHome(){
+  const total = pStudyWeek().per.reduce((a,b) => a + b, 0);
+  return total ? pMinsText(total) : '還沒有紀錄';
+}
+
 // 首頁那格：最新體重 ＋ 跟一週前比
 function pWeightHome(){
   const rows = pWeightRows();
@@ -3387,6 +3571,35 @@ $('#pNav').addEventListener('click', e => {
 });
 $('#pMenuBtn').onclick = () => { $('#pNav').classList.add('open'); $('#pNavMask').classList.add('show'); };
 $('#pNavMask').onclick = () => { $('#pNav').classList.remove('open'); $('#pNavMask').classList.remove('show'); };
+
+// 靈感收件匣：打一行按 Enter 就收進來，不用選任何東西（門檻高一點她就懶得記）
+$('#personalArea').addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (e.target.id === 'pIdNew'){
+    const text = e.target.value.trim();
+    if (!text) return;
+    const id = uid();
+    e.target.value = '';
+    savePIdea(id, { id, text, note:'', tag:'other', status:'new', createdAt: Date.now() });
+    toast('收進來了');
+    return;
+  }
+  if (e.target.matches('[data-idtext],[data-idnote],#pStTopic,#pStMins,#pWtKg,#pWtFat')) e.target.blur();
+});
+// 靈感的文字／說明／標籤／狀態改了就存（文字類的 change 是離開欄位時才觸發）
+$('#personalArea').addEventListener('change', e => {
+  const t = e.target;
+  const map = { idtext:'text', idnote:'note', idtag:'tag', idstatus:'status' };
+  const key = Object.keys(map).find(k => t.dataset && t.dataset[k]);
+  if (!key) return;
+  const x = pIdeas[t.dataset[key]];
+  if (!x) return;
+  const field = map[key], val = t.value.trim();
+  if (field === 'text' && !val){ toast('內容不能空白'); renderPIdea(); return; }
+  if (x[field] === val) return;
+  if (t.tagName === 'SELECT') pBlur();   // 不放掉焦點的話重繪會被 pFormBusy 擋掉
+  savePIdea(x.id, { ...x, [field]: val });
+});
 /* ---------- 每日復盤／體重 的互動 ---------- */
 $('#personalArea').addEventListener('click', e => {
   /* --- 每日復盤 --- */
@@ -3440,7 +3653,7 @@ $('#personalArea').addEventListener('click', e => {
     if (!(kg > 0)){ toast('先填體重'); $('#pWtKg').focus(); return; }
     if (fatRaw !== '' && !(fat > 0)){ toast('體脂填數字，不填就留空'); return; }
     const dup = !!pWeight[date];
-    $('#pWtKg').value = ''; $('#pWtFat').value = '';
+    $('#pWtKg').value = ''; $('#pWtFat').value = ''; $('#pWtDate').value = TODAY();
     pBlur(); savePWeight(date, +kg.toFixed(1), fat === null ? null : +fat.toFixed(1));
     toast(dup ? `${date} 已更新` : '記好了');
     return;
@@ -3467,6 +3680,37 @@ $('#personalArea').addEventListener('click', e => {
       $('#pWtFat').value = r.fat || '';
       $('#pWtKg').focus();
     }
+    return;
+  }
+
+  /* --- 靈感收件匣 --- */
+  const idf = e.target.closest('[data-idf]');
+  if (idf){ pIdFilter[idf.dataset.idf] = idf.dataset.v; pBlur(); renderPIdea(); return; }
+  const idDel = e.target.closest('[data-iddel]');
+  if (idDel){
+    const x = pIdeas[idDel.dataset.iddel];
+    if (x && confirm(`確定刪掉「${x.text}」？`)){ pBlur(); delPIdea(x.id); toast('已刪除'); }
+    return;
+  }
+  /* --- 學習時數 --- */
+  const stq = e.target.closest('[data-stquick]');
+  if (stq){ $('#pStMins').value = stq.dataset.stquick; $('#pStMins').focus(); return; }
+  if (e.target.closest('#pStSave')){
+    const date = $('#pStDate').value || TODAY();
+    const mins = parseInt($('#pStMins').value, 10);
+    if (!(mins > 0)){ toast('先填分鐘數'); $('#pStMins').focus(); return; }
+    const topic = $('#pStTopic').value.trim();
+    const id = uid();
+    $('#pStMins').value = ''; $('#pStTopic').value = ''; $('#pStDate').value = TODAY();
+    pBlur();
+    savePStudy(id, { id, date, mins, topic, createdAt: Date.now() });
+    toast(`記了 ${pMinsText(mins)}`);
+    return;
+  }
+  const stDel = e.target.closest('[data-stdel]');
+  if (stDel){
+    const s = pStudy[stDel.dataset.stdel];
+    if (s && confirm(`確定刪掉 ${s.date} 那筆 ${pMinsText(s.mins)}？`)){ pBlur(); delPStudy(s.id); toast('已刪除'); }
     return;
   }
 
