@@ -675,6 +675,11 @@ nav.tabs .tb.dragging{position:fixed;z-index:60;pointer-events:none;opacity:.95;
 .pabout-f>label{display:block;font-size:11.5px;font-weight:800;color:#8B5E34;margin-bottom:5px}
 .pabout-f textarea{resize:vertical;line-height:1.6}
 
+.tm-move{border:2px solid #8B5E34;background:#FFF9EC;color:#6B4423;border-radius:8px;
+  padding:6px 12px;font-size:12.5px;font-weight:800}
+.tm-move:hover{background:#E4D19C}
+.tm-move-hint{font-size:11px;font-weight:600;color:#B49A76;margin-top:5px;line-height:1.6}
+
 .pstub{text-align:center;color:#8B5E34;font-weight:800;font-size:14px}
 .pstub p{color:#B49A76;font-size:12px;font-weight:600;margin:8px 0 0}
 
@@ -1518,7 +1523,7 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
       <div class="prop" id="tmTypeWrap"><span class="pl">📁 工作類型</span>
         <div class="pv"><select id="tmType" class="bare"></select></div>
       </div>
-      <div class="prop"><span class="pl">🔁 重複</span>
+      <div class="prop" id="tmRepeatWrap"><span class="pl">🔁 重複</span>
         <div class="pv"><select id="tmRepeat" class="bare">
           <option value="none">不重複（一次性任務）</option>
           <option value="daily">每天</option>
@@ -1563,6 +1568,12 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
             <option value="health">💪 健康</option>
             <option value="self">🌱 自己</option>
           </select></div>
+        </div>
+        <div class="prop hide" id="tmMoveWrap"><span class="pl">🔀 換一頁</span>
+          <div class="pv">
+            <button class="tm-move" id="tmMoveKind"></button>
+            <div class="tm-move-hint" id="tmMoveHint"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -3935,7 +3946,45 @@ function syncQuestFields(){
   $('#tmQuestWrap').classList.toggle('hide', !personal);
   $('#tmClientWrap').classList.toggle('hide', personal);
   $('#tmTypeWrap').classList.toggle('hide', personal);
+  /* 個人手帳裡「今日任務」與「習慣打卡」已經是左邊兩個分頁，視窗裡再放一個「重複」下拉，
+     等於同一件事兩個入口——不小心點到「每天」，那筆就從今日任務消失、跑去習慣打卡，
+     而且完全沒有提示。所以個人模式把重複藏起來，改成下面那顆會講清楚要搬去哪的按鈕。 */
+  $('#tmRepeatWrap').classList.toggle('hide', personal);
+  if (personal) $('#tmWdaysWrap').classList.add('hide');
+  syncMoveKind();
   syncProgVisibility();
+}
+// 只有「已經建立的」個人任務才需要搬家鈕：新增中的那筆是從哪一頁按＋進來的就是哪一種
+function syncMoveKind(){
+  const show = scope === 'personal' && !!editingTask;
+  $('#tmMoveWrap').classList.toggle('hide', !show);
+  if (!show) return;
+  const rep = isRepeat(editingTask);
+  $('#tmMoveKind').textContent = rep ? '改回一次性任務' : '改成每天的習慣';
+  $('#tmMoveHint').textContent = rep
+    ? '現在在「習慣打卡」。改回去之後會出現在「今日任務」，每天打勾的紀錄會清掉。'
+    : '現在在「今日任務」。改成習慣之後會出現在「習慣打卡」，改成每天打勾。';
+}
+function moveTaskKind(){
+  if (!editingTask) return;
+  const id = editingTask.id;
+  const t = tasks[id]; if (!t) return;
+  const rep = isRepeat(t);
+  const msg = rep
+    ? `把「${t.name}」改回一次性任務？\n它會移到「今日任務」，每天打勾的紀錄會清掉。`
+    : `把「${t.name}」改成每天的習慣？\n它會移到「習慣打卡」，改成每天打勾。`;
+  if (!confirm(msg)) return;
+  closeTask();   // 先關掉：倒數中的自動存檔會在這裡結清，不然它醒來會把舊的重複設定寫回去
+  const cur = tasks[id]; if (!cur) return;
+  if (rep){
+    cur.repeat = 'none'; cur.wdays = []; cur.doneDates = {};
+    cur.due = cur.due || TODAY(); cur.status = cur.status || 'todo';
+  } else {
+    cur.repeat = 'daily'; cur.due = ''; cur.doneDates = cur.doneDates || {};
+  }
+  saveTask(cur);
+  switchPTab(rep ? 'today' : 'habit');
+  toast(rep ? '已移到「今日任務」' : '已移到「習慣打卡」');
 }
 const closeTask = () => {
   flushAutoSave();                                // 倒數中的存檔先結清：存完再關，
@@ -4073,6 +4122,7 @@ $('#tmSave').onclick = () => {
   toast(madeNew ? `已新增 · 順便建了新客戶「${madeNew}」` : '已新增');
 };
 $('#tmCancel2').onclick = () => closeTask();
+$('#tmMoveKind').onclick = moveTaskKind;
 $('#tmDel').onclick = () => {
   if (!editingTask) return;
   if (!confirm(`確定刪除「${editingTask.name}」？`)) return;
