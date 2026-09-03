@@ -653,6 +653,29 @@ nav.tabs .tb.dragging{position:fixed;z-index:60;pointer-events:none;opacity:.95;
 .prow-del:hover{color:#C0392B}
 .pempty{font-size:12px;color:#B49A76;text-align:center;padding:14px 0}
 
+/* --- 關於我：跟六維雷達並排，雷達自己也收小一點（原本獨佔一整排、圖只有 260 顯得很空） --- */
+.pabout-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:stretch}
+.pabout-grid>.pcard{height:100%;display:flex;flex-direction:column}
+@media(max-width:860px){.pabout-grid{grid-template-columns:1fr}}
+#pHomeRadar .pradar{max-width:228px}
+.pabout{display:flex;align-items:center;gap:12px}
+.pavatar{width:64px;height:64px;border-radius:50%;border:3px solid #8B5E34;background:#EFE0B8;
+  flex:none;display:flex;align-items:center;justify-content:center;font-size:26px;overflow:hidden;padding:0}
+.pavatar img{width:100%;height:100%;object-fit:cover;display:block}
+.pavatar:hover{border-color:#6B4423;background:#E4D19C}
+.pabout-hd{flex:1;min-width:0}
+.pabout-name{width:100%;border:none;background:transparent;padding:2px 0;font:inherit;
+  font-size:15px;font-weight:900;color:#4A3222}
+.pabout-tag{width:100%;border:none;border-bottom:1.5px dashed #E4D19C;background:transparent;
+  padding:2px 0;margin-top:2px;font:inherit;font-size:12px;font-weight:700;color:#8B5E34}
+.pabout-name:focus,.pabout-tag:focus{outline:none;background:#fff;border-radius:6px;padding:2px 6px}
+.pabout-del{align-self:flex-start;margin-top:8px;background:none;border:none;
+  font-size:11px;font-weight:800;color:#B49A76;text-decoration:underline;padding:0}
+.pabout-del:hover{color:#C0392B}
+.pabout-f{margin-top:12px}
+.pabout-f>label{display:block;font-size:11.5px;font-weight:800;color:#8B5E34;margin-bottom:5px}
+.pabout-f textarea{resize:vertical;line-height:1.6}
+
 .pstub{text-align:center;color:#8B5E34;font-weight:800;font-size:14px}
 .pstub p{color:#B49A76;font-size:12px;font-weight:600;margin:8px 0 0}
 
@@ -1283,9 +1306,33 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
                 <div class="pstat-num">🔥<span id="pHomeStreak">0</span></div>
               </div>
             </div>
-            <div class="pcard">
-              <div class="pcard-h">🎯 六維雷達</div>
-              <div id="pHomeRadar"></div>
+            <div class="pabout-grid">
+              <div class="pcard" id="pAboutCard">
+                <div class="pcard-h">👤 關於我</div>
+                <div class="pabout">
+                  <button class="pavatar" id="pAvatar" title="點一下換照片"></button>
+                  <div class="pabout-hd">
+                    <input class="pabout-name" data-abt="name" maxlength="20" placeholder="你的名字">
+                    <input class="pabout-tag" data-abt="tagline" maxlength="40" placeholder="一句話介紹自己">
+                  </div>
+                </div>
+                <button class="pabout-del" id="pAvatarDel" hidden>移除照片</button>
+                <div class="pabout-f">
+                  <label>現在的主線</label>
+                  <textarea class="pinput" data-abt="main" rows="2" maxlength="120"
+                            placeholder="這陣子最重要的一件事"></textarea>
+                </div>
+                <div class="pabout-f">
+                  <label>進行中的支線</label>
+                  <textarea class="pinput" data-abt="side" rows="2" maxlength="120"
+                            placeholder="同時在推進的其他事"></textarea>
+                </div>
+                <input type="file" id="pAvatarFile" accept="image/*" hidden>
+              </div>
+              <div class="pcard">
+                <div class="pcard-h">🎯 六維雷達</div>
+                <div id="pHomeRadar"></div>
+              </div>
             </div>
             <div class="pstat-row">
               <div class="pcard pstat">
@@ -3248,7 +3295,48 @@ function renderAll(){
 function pGreetText(){
   const h = new Date().getHours();
   const word = h < 11 ? '早安' : h < 14 ? '午安' : h < 18 ? '下午好' : '晚安';
-  return `${word}，朱兒`;
+  return `${word}，${(ui.pAbout && ui.pAbout.name) || '朱兒'}`;
+}
+
+/* ---------- 關於我（存在既有的 ui 節點，不另開 key） ---------- */
+const PHOTO_PX = 200;
+function savePAbout(patch){
+  ui.pAbout = { ...(ui.pAbout || {}), ...patch };
+  saveLocal(); push('ui', ui); renderPBook();
+}
+/* 人像用「填滿再裁中間」，不像客戶 logo 那樣整張縮進去——圓形頭像留白邊很醜 */
+function shrinkPhoto(file){
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onerror = () => reject(new Error('讀不到這個檔案'));
+    fr.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('這個檔案不是圖片'));
+      img.onload = () => {
+        const side = Math.min(img.width, img.height);
+        const sx = (img.width - side) / 2, sy = (img.height - side) / 2;
+        const cv = document.createElement('canvas');
+        cv.width = cv.height = PHOTO_PX;
+        const ctx = cv.getContext('2d');
+        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, PHOTO_PX, PHOTO_PX);
+        ctx.drawImage(img, sx, sy, side, side, 0, 0, PHOTO_PX, PHOTO_PX);
+        let out = cv.toDataURL('image/webp', .82);
+        if (!out.startsWith('data:image/webp')) out = cv.toDataURL('image/jpeg', .82);  // Safari 舊版沒有 webp
+        if (out.length > 60000) out = cv.toDataURL('image/jpeg', .6);
+        resolve(out);
+      };
+      img.src = fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+function renderPAbout(){
+  if (!$('#pAboutCard')) return;
+  const a = ui.pAbout || {};
+  $('#pAvatar').innerHTML = a.photo ? `<img src="${esc(a.photo)}" alt="">` : '👤';
+  $('#pAvatarDel').hidden = !a.photo;
+  if (pFormBusy('#pAboutCard')) return;   // 她正在打字
+  $$('#pAboutCard [data-abt]').forEach(el => { el.value = a[el.dataset.abt] || ''; });
 }
 function renderPBook(){
   if (!$('#personalArea')) return;
@@ -3259,6 +3347,7 @@ function renderPBook(){
   renderPWeight();
   renderPIdea();
   renderPStudy();
+  renderPAbout();
   $('#pRadarBig').innerHTML = renderPRadar();
   $('#pRadarLegend').innerHTML = Object.entries(PTAGS).map(([k,v]) =>
     `<div class="plegend-item"><span class="plegend-dot" style="background:${v.color}"></span>${esc(v.name)}</div>`
@@ -3572,6 +3661,14 @@ $('#pNav').addEventListener('click', e => {
 $('#pMenuBtn').onclick = () => { $('#pNav').classList.add('open'); $('#pNavMask').classList.add('show'); };
 $('#pNavMask').onclick = () => { $('#pNav').classList.remove('open'); $('#pNavMask').classList.remove('show'); };
 
+$('#pAvatarFile').onchange = async e => {
+  const f = e.target.files && e.target.files[0];
+  e.target.value = '';   // 選同一張還要能再觸發一次
+  if (!f) return;
+  try { savePAbout({ photo: await shrinkPhoto(f) }); toast('照片換好了'); }
+  catch(err){ toast(err.message || '這張圖讀不進來'); }
+};
+
 // 靈感收件匣：打一行按 Enter 就收進來，不用選任何東西（門檻高一點她就懶得記）
 $('#personalArea').addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
@@ -3589,6 +3686,12 @@ $('#personalArea').addEventListener('keydown', e => {
 // 靈感的文字／說明／標籤／狀態改了就存（文字類的 change 是離開欄位時才觸發）
 $('#personalArea').addEventListener('change', e => {
   const t = e.target;
+  const abt = t.dataset && t.dataset.abt;
+  if (abt){
+    const v = t.value.trim();
+    if (((ui.pAbout || {})[abt] || '') !== v) savePAbout({ [abt]: v });
+    return;
+  }
   const map = { idtext:'text', idnote:'note', idtag:'tag', idstatus:'status' };
   const key = Object.keys(map).find(k => t.dataset && t.dataset[k]);
   if (!key) return;
@@ -3680,6 +3783,13 @@ $('#personalArea').addEventListener('click', e => {
       $('#pWtFat').value = r.fat || '';
       $('#pWtKg').focus();
     }
+    return;
+  }
+
+  /* --- 關於我 --- */
+  if (e.target.closest('#pAvatar')){ $('#pAvatarFile').click(); return; }
+  if (e.target.closest('#pAvatarDel')){
+    if (confirm('確定移除照片？')){ pBlur(); savePAbout({ photo:'' }); toast('照片已移除'); }
     return;
   }
 
