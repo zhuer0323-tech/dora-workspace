@@ -648,6 +648,7 @@ nav.tabs .tb.dragging{position:fixed;z-index:60;pointer-events:none;opacity:.95;
 .prow-name.done{text-decoration:line-through;color:#B49A76}
 .ptag{font-size:10px;font-weight:800;color:#fff;padding:2px 8px;border-radius:99px;flex:none}
 .pstreak{font-size:12px;font-weight:800;color:#E0692E;flex:none}
+.poverdue{font-size:10px;font-weight:800;color:#fff;background:#B03A2E;padding:2px 8px;border-radius:99px;flex:none}
 .prow-del{background:none;border:none;color:#B49A76;font-size:15px;flex:none;cursor:pointer;padding:2px 4px}
 .prow-del:hover{color:#C0392B}
 .pempty{font-size:12px;color:#B49A76;text-align:center;padding:14px 0}
@@ -2032,7 +2033,13 @@ function pStreak(t){
   while (t.doneDates[ymd(d)]){ n++; d.setDate(d.getDate() - 1); }
   return n;
 }
-const pTodayTasks = () => Object.values(tasks).filter(t => isPersonalTask(t) && !isRepeat(t));
+/* 「今日任務」原本沒有篩日期，列的是所有個人一次性任務，名字對不上、首頁那格也不會歸零。
+   現在＝到期日是今天的 ＋ 逾期還沒完成的。沒填到期日的當成今天，不然那筆會人間蒸發。 */
+const pTaskDue = t => t.due || TODAY();
+const pIsOverdue = t => pTaskDue(t) < TODAY() && t.status !== 'done';
+const pOnceTasks = () => Object.values(tasks).filter(t => isPersonalTask(t) && !isRepeat(t));
+const pTodayTasks = () => pOnceTasks().filter(t => pTaskDue(t) === TODAY() || pIsOverdue(t));
+const pLaterTasks = () => pOnceTasks().filter(t => pTaskDue(t) > TODAY());
 const pHabits = () => Object.values(tasks).filter(t => isPersonalTask(t) && isRepeat(t));
 function pExp(){
   let exp = 0;
@@ -3418,14 +3425,23 @@ function pRenderRow(t){
     ${box}
     <span class="prow-name${done?' done':''}" data-openrow="${t.id}">${esc(t.name)}</span>
     ${tag ? `<span class="ptag" style="background:${tag.color}">${esc(tag.name)}</span>` : ''}
+    ${!rep && pIsOverdue(t) ? `<span class="poverdue">逾期 ${esc(pTaskDue(t).slice(5))}</span>` : ''}
     ${rep && streak > 0 ? `<span class="pstreak">🔥${streak}</span>` : ''}
     <button class="prow-del" data-delrow="${t.id}" title="刪除">🗑</button>
   </div>`;
 }
 function renderPToday(){
-  const list = pTodayTasks().sort((a,b) => (a.status==='done')-(b.status==='done') || (a.createdAt||0)-(b.createdAt||0));
-  $('#pTodayList').innerHTML = list.length ? list.map(pRenderRow).join('')
-    : `<div class="pempty">還沒有任務，點右上角「＋新增」加一個</div>`;
+  const list = pTodayTasks().sort((a,b) =>
+    (a.status === 'done') - (b.status === 'done') ||      // 沒做完的排前面
+    (pIsOverdue(b) - pIsOverdue(a)) ||                    // 逾期的再往前
+    (a.createdAt || 0) - (b.createdAt || 0));
+  const later = pLaterTasks();
+  // 排在之後的不列出來（會洗版），但要講一聲，不然會以為任務不見了
+  const laterLine = later.length
+    ? `<div class="pempty">還有 ${later.length} 件排在之後，最近一件是 ${esc(later.map(pTaskDue).sort()[0].slice(5))}</div>`
+    : '';
+  $('#pTodayList').innerHTML = (list.length ? list.map(pRenderRow).join('')
+    : `<div class="pempty">今天沒有任務，點右上角「＋新增」加一個</div>`) + laterLine;
 }
 function renderPHabit(){
   const list = pHabits().sort((a,b) => (a.createdAt||0)-(b.createdAt||0));
