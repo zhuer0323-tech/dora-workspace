@@ -24,6 +24,7 @@ function allocInfo(alloc){
   if (!alloc || typeof alloc !== 'object') return { used: 0, life: 0 };
   let life = 0, fix = 0;
   for (const r of list(alloc.cat)){ const v = Number(r.v)||0; if (r.k === FIXED_CAT) fix += v; else life += v; }
+  for (const r of list(alloc.fix)) fix += Number(r.v)||0;       // 固定支出的細項（房租、保險…）
   const save = list(alloc.save).reduce((s,r) => s + (Number(r.v)||0), 0);
   return { used: life + fix + save, life };
 }
@@ -152,7 +153,15 @@ export function parseMoney(text, settings){
   }
   if (!cat) cat = cats.includes('其他') ? '其他' : cats[0];
 
-  return { ok:true, amt, cat, kind, note: s.slice(0,40), date: dt.date || ymd(todayTW()) };
+  // 固定支出的細項：她在分配頁列的名字（房租、保險…）有出現在這句話裡就套上，最長的優先
+  let sub = '';
+  if (kind === 'out' && cat === FIXED_CAT && Array.isArray(settings?.fixItems)){
+    for (const f of settings.fixItems){
+      if (f && s.includes(f) && f.length > sub.length) sub = f;
+    }
+  }
+
+  return { ok:true, amt, cat, sub, kind, note: s.slice(0,40), date: dt.date || ymd(todayTW()) };
 }
 
 /** 寫進記帳的雲端節點，回一句確認。dry=true 只試算不寫入（測試用） */
@@ -165,7 +174,8 @@ export async function addMoney(text, env, db, dry = false){
     const id = Date.now().toString(36) + Math.random().toString(36).slice(2,7);
     await db.put(`items/${id}`, {
       d: p.date, amt: p.amt, cat: p.cat, note: p.note,
-      kind: p.kind, inv: '', ts: Date.now(), src: 'shortcut'
+      kind: p.kind, inv: '', ts: Date.now(), src: 'shortcut',
+      ...(p.sub ? { sub: p.sub } : {})
     });
   }
 
@@ -175,7 +185,7 @@ export async function addMoney(text, env, db, dry = false){
     ? `🧪 試算（沒有真的存）：${money(p.amt)}　${p.cat}`
     : p.kind==='in'
       ? `✅ 收入 +${money(p.amt)}　${p.cat}`
-      : `✅ 記好了 ${money(p.amt)}　${p.cat}`;
+      : `✅ 記好了 ${money(p.amt)}　${p.cat}${p.sub ? '・' + p.sub : ''}`;
   const lines = [head + (p.note ? `（${p.note}）` : ''), `日期：${md}`];
 
   // 順便回報這個月還剩多少。算不出來就跳過，帳已經寫進去了不受影響
