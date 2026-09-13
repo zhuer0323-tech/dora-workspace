@@ -119,7 +119,8 @@ svg.ic{width:18px;height:18px;flex:none}
 #app{min-height:100vh}
 #nav{background:var(--card);border-color:var(--line);z-index:30}
 #nav .brand{display:flex;align-items:center;gap:8px;font-weight:900;font-size:16px;padding:4px 6px 14px}
-#nav .brand svg{width:26px;height:26px;color:var(--gold)}
+/* 系統名稱旁的頭像（2026-09-13 她要求把金幣換成自己的像素插畫，brand.png 是從原圖裁臉部再縮成 160px） */
+#nav .brand img{width:42px;height:42px;flex:none;border:2px solid var(--line);border-radius:10px;box-shadow:2px 2px 0 var(--line);object-fit:cover;background:var(--soft)}
 #nav a{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;border:2px solid transparent;
   color:var(--ink);text-decoration:none;font-weight:700;white-space:nowrap;cursor:pointer}
 #nav a.on{background:var(--soft);border-color:var(--line);box-shadow:2px 2px 0 var(--line)}
@@ -295,7 +296,7 @@ body.night .remain .rbox b{color:var(--pri)}
 
 <div id="app" hidden>
   <nav id="nav">
-    <div class="brand"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M10 2h4v2h2v2h2v2h2v8h-2v2h-2v2h-2v2h-4v-2H8v-2H6v-2H4V8h2V6h2V4h2z"/><path fill="#fff" d="M11 7h2v3h3v2h-3v5h-2v-5H8v-2h3z"/></svg>朱兒的獨自升級</div>
+    <div class="brand"><img src="./brand.png" alt="">朱兒的獨自升級</div>
     <div id="navLinks" style="display:contents"></div>
     <div class="navfoot tiny" id="navFoot"></div>
   </nav>
