@@ -14,6 +14,19 @@ import { todayTW } from './date.js';
 
 const DEF_OUT = ['固定支出','飲食','交通','日用','娛樂','醫療','人情','治裝','學習','其他'];
 const DEF_IN  = ['薪水','獎金','接案','其他'];
+const FIXED_CAT = '固定支出';
+
+/* 理財導航的分配（2026-09-13 起，網頁 money/ 的「分配」頁）。
+   alloc/{YYYY-MM}.cat = [{k:分類, v:預算}]，save = [{k:帳戶, v:金額}]。
+   生活費 ＝ 固定支出以外每一類的預算加總。Firebase 會把陣列存成物件，兩種都要吃 */
+function allocInfo(alloc){
+  const list = x => Array.isArray(x) ? x.filter(Boolean) : Object.values(x || {}).filter(Boolean);
+  if (!alloc || typeof alloc !== 'object') return { used: 0, life: 0 };
+  let life = 0, fix = 0;
+  for (const r of list(alloc.cat)){ const v = Number(r.v)||0; if (r.k === FIXED_CAT) fix += v; else life += v; }
+  const save = list(alloc.save).reduce((s,r) => s + (Number(r.v)||0), 0);
+  return { used: life + fix + save, life };
+}
 
 /* 講法 → 分類。只有她的分類清單裡真的有那一類，才會套用；
    沒有就退回「其他」，不會自己長出新分類（跟 LINE 排任務同一個原則） */
@@ -166,17 +179,24 @@ export async function addMoney(text, env, db, dry = false){
   const lines = [head + (p.note ? `（${p.note}）` : ''), `日期：${md}`];
 
   // 順便回報這個月還剩多少。算不出來就跳過，帳已經寫進去了不受影響
+  // 口徑跟網頁一樣：有排分配 → 看生活費（固定支出另外算）；沒排 → 看舊的每月總預算
   try {
-    const budget = Number(settings?.budget) || 0;
+    const ym = p.date.slice(0,7);
+    const alloc = allocInfo(await db.get(`alloc/${ym}`).catch(() => null));
+    const useAlloc = alloc.used > 0;
+    const budget = useAlloc ? alloc.life : (Number(settings?.budget) || 0);
     if (budget){
       const items = await db.get('items') || {};
-      const ym = p.date.slice(0,7);
       let out = 0;
       for (const it of Object.values(items)){
-        if (it && it.kind !== 'in' && String(it.d||'').startsWith(ym)) out += Number(it.amt)||0;
+        if (!it || !String(it.d||'').startsWith(ym)) continue;
+        if (it.kind === 'in' || it.kind === 'tr' || it.kind === 'adj') continue;   // 只算真的花掉的
+        if (useAlloc && it.cat === FIXED_CAT) continue;
+        out += Number(it.amt)||0;
       }
+      const word = useAlloc ? '生活費' : '';
       const left = budget - out;
-      lines.push(left >= 0 ? `這個月還能花 ${money(left)}` : `這個月已經超支 ${money(-left)}`);
+      lines.push(left >= 0 ? `這個月${word}還能花 ${money(left)}` : `這個月${word}已經超支 ${money(-left)}`);
     }
   } catch (e) { console.log('算餘額失敗', e && e.message); }
 

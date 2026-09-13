@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<title>朱兒的記帳</title>
+<title>朱兒的理財導航</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👛</text></svg>">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
@@ -264,11 +264,80 @@ header.top h1 .sub{font-size:12px;color:var(--ink3);font-weight:400;margin-left:
   box-shadow:0 0 0 100vmax rgba(0,0,0,.28)}
 #scanMsg{font-size:12.5px;color:var(--ink2);text-align:center;margin-top:10px;line-height:1.7}
 
+/* ---------- 帳戶頁 ---------- */
+.netrow{display:flex;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.netrow>div{flex:1}
+.netrow .k{font-size:12px;color:var(--ink3);font-weight:600}
+.netrow b{font-size:17px;font-weight:800}
+.netrow b.ok{color:var(--ok)}.netrow b.bad{color:var(--bad)}
+.accact{display:flex;gap:8px;margin-bottom:11px}
+.accact button{flex:1;padding:11px 0;border-radius:14px;background:#fff;box-shadow:var(--shadow);
+  font-size:14px;font-weight:700;color:var(--ink2)}
+.accact button.go{background:var(--pink);color:#fff}
+.agrp h2 .sub{font-size:13px;font-weight:700;color:var(--ink2)}
+.arow{display:flex;align-items:center;gap:10px;padding:9px 2px;border-top:1px solid var(--line);cursor:pointer}
+.arow:first-of-type{border-top:0}
+.arow .ic{width:34px;height:34px;border-radius:99px;background:var(--pink-xl);display:flex;
+  align-items:center;justify-content:center;font-size:17px;flex:none}
+.arow .nm{flex:1;min-width:0;font-size:14.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.arow b{font-size:15px;font-weight:800}
+.arow b.debt{color:var(--bad)}
+.arow .chev{color:var(--ink3);font-size:14px}
+.agrp .hint{font-size:12.5px;color:var(--ink3);padding:4px 2px}
+
+/* ---------- 分配頁 ---------- */
+.steps{display:flex;background:#fff;border-radius:var(--r);box-shadow:var(--shadow);padding:11px 6px;margin-bottom:11px}
+.steps .st{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;min-width:0}
+.steps .st i{width:24px;height:24px;border-radius:99px;background:var(--pink-xl);color:var(--ink3);
+  font-style:normal;font-size:12.5px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.steps .st.done i{background:var(--ok);color:#fff}
+.steps .st.cur i{background:var(--pink);color:#fff}
+.steps .st b{font-size:12.5px}
+.steps .st span{font-size:10.5px;color:var(--ink3);white-space:nowrap}
+.albanner{background:var(--pink-l);border-radius:14px;padding:10px 13px;margin-bottom:11px;font-size:13.5px;
+  display:flex;align-items:center;gap:10px}
+.albanner span{flex:1}
+.albanner button{padding:7px 14px;border-radius:11px;background:var(--pink-d);color:#fff;font-weight:700;font-size:13px}
+.aline{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--line)}
+.aline:first-child{border-top:0}
+.aline .nm{flex:1;min-width:0}
+.aline .nm b{font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px}
+.aline .nm .n2{display:block;font-size:11px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aline .nm .n2.over{color:var(--bad)}
+.aline input[type=number]{width:104px;background:var(--pink-xl);border-radius:10px;padding:7px 10px;
+  font-size:14px;text-align:right;flex:none}
+.aline input[type=checkbox]{width:18px;height:18px;accent-color:var(--pink-d);flex:none}
+.aline select{background:var(--pink-xl);border-radius:10px;padding:7px 8px;font-size:13.5px;flex:1;min-width:0}
+.aline .mini{padding:6px 9px;border-radius:10px;background:var(--ok);color:#fff;font-size:12px;font-weight:700;flex:none}
+.aline .mini.gh{background:var(--pink-xl);color:var(--ink3)}
+.aline .mini.x{background:none;color:var(--ink3);padding:6px 4px}
+.agh{display:flex;justify-content:space-between;align-items:baseline;margin:12px 0 2px;font-size:13px;font-weight:800;color:var(--pink-d)}
+.agh:first-child{margin-top:0}
+.agh span{font-size:11.5px;color:var(--ink3);font-weight:600}
+.addline{margin-top:8px;padding:7px 12px;border-radius:11px;background:var(--pink-xl);color:var(--ink2);font-size:13px;font-weight:700}
+.tool{padding:6px 12px;border-radius:11px;background:var(--ink);color:#fff;font-size:12.5px;font-weight:700}
+.suggest{font-size:26px;font-weight:800;color:var(--ok)}
+/* 待分配：黏在分頁列上面，捲到哪都看得到 */
+.alfoot{position:sticky;bottom:calc(66px + env(safe-area-inset-bottom));z-index:15;
+  background:#fff;border-radius:16px;box-shadow:var(--shadow-l);padding:10px 13px;
+  display:flex;align-items:center;gap:10px;margin-top:4px}
+.alfoot .k{font-size:11.5px;color:var(--ink3);font-weight:600}
+.alfoot b{display:block;font-size:22px;font-weight:800;line-height:1.2;color:var(--warn)}
+.alfoot b.zero{color:var(--ok)}.alfoot b.neg{color:var(--bad)}
+.alfoot>div{flex:1}
+.alfoot button{padding:11px 16px;border-radius:14px;background:var(--pink);color:#fff;font-weight:800;font-size:14px}
+.alfoot button:disabled{background:var(--pink-l)}
+.alfoot button.done{background:var(--ok)}
+@media(min-width:860px){ .alfoot{bottom:12px} }
+
 /* ---------- toast ---------- */
 #toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%) translateY(14px);
   background:var(--ink);color:#fff;padding:10px 18px;border-radius:99px;font-size:13.5px;font-weight:600;
   opacity:0;pointer-events:none;transition:.25s;z-index:80;box-shadow:var(--shadow-l);white-space:nowrap}
 #toast.on{opacity:.94;transform:translateX(-50%) translateY(0)}
+/* 分配頁底部黏著「待分配」那條，提示要往上讓開，不然會蓋住完成按鈕 */
+body.on-alloc #toast{bottom:160px}
+@media(min-width:860px){ body.on-alloc #toast{bottom:110px} }
 </style>
 </head>
 <body>
@@ -284,7 +353,7 @@ header.top h1 .sub{font-size:12px;color:var(--ink3);font-weight:400;margin-left:
 <div id="app" style="display:none">
 
 <header class="top">
-  <h1>記帳<span class="sub" id="hdSub"></span></h1>
+  <h1>理財導航<span class="sub" id="hdSub"></span></h1>
   <div class="syncbox"><i class="dot" id="dot"></i><span id="syncTx">連線中</span></div>
   <button class="iconbtn" id="btnSet" title="設定">⚙</button>
 </header>
@@ -340,10 +409,10 @@ header.top h1 .sub{font-size:12px;color:var(--ink3);font-weight:400;margin-left:
 
 <!-- ======== 總覽 ======== -->
 <section id="pgSum" style="display:none">
-  <div class="card" id="cardNet">
-    <h2>目前有多少錢<span class="tiny" id="sNetSub"></span></h2>
+  <div class="card" id="cardNet" style="cursor:pointer">
+    <h2>淨資產<span class="tiny">看每個帳戶 ›</span></h2>
     <div class="big" id="sNet">—</div>
-    <div class="acclist" id="sAccList"></div>
+    <div class="subline" id="sNetSub"></div>
   </div>
 
   <div class="seg" id="rgSeg" style="margin-bottom:10px">
@@ -385,6 +454,56 @@ header.top h1 .sub{font-size:12px;color:var(--ink3);font-weight:400;margin-left:
   </div>
 </section>
 
+<!-- ======== 分配 ======== -->
+<section id="pgAlloc" style="display:none">
+  <div class="monthnav">
+    <button id="aPrev">‹</button><span id="aMon"></span><button id="aNext">›</button>
+  </div>
+  <div id="aBanner"></div>
+  <div class="steps" id="aSteps"></div>
+
+  <div class="card">
+    <h2>① 這個月的收入<span class="tiny" id="aIncTot"></span></h2>
+    <div id="aInc"></div>
+    <button class="addline" id="aAddInc">＋ 新增收入</button>
+    <div class="tiny" style="margin-top:6px">打勾的才算進這個月的預算。「記入帳本」會真的記一筆收入。</div>
+  </div>
+
+  <div class="card">
+    <h2>② 建議可以存多少</h2>
+    <div class="suggest" id="aSug">—</div>
+    <div class="tiny" id="aSugWhy"></div>
+  </div>
+
+  <div class="card">
+    <h2>③ 你想怎麼分<button class="tool" id="aCopy">沿用上個月</button></h2>
+    <div id="aLines"></div>
+  </div>
+
+  <div class="alfoot">
+    <div><span class="k" id="aLeftK">待分配</span><b id="aLeft">—</b></div>
+    <button id="aDone" disabled>完成本月預算</button>
+  </div>
+</section>
+
+<!-- ======== 帳戶 ======== -->
+<section id="pgAcc" style="display:none">
+  <div class="card">
+    <h2>淨資產</h2>
+    <div class="big" id="nNet">—</div>
+    <div class="netrow">
+      <div><div class="k">總資產</div><b class="ok" id="nAsset">—</b></div>
+      <div><div class="k">負債（信用卡未付）</div><b class="bad" id="nDebt">—</b></div>
+    </div>
+  </div>
+  <div class="accact">
+    <button class="go" id="nSave">＋ 存入</button>
+    <button id="nTr">⇄ 轉帳</button>
+    <button id="nNew">＋ 新帳戶</button>
+  </div>
+  <div id="nGroups"></div>
+</section>
+
 <!-- ======== 明細 ======== -->
 <section id="pgList" style="display:none">
   <div class="monthnav">
@@ -396,6 +515,8 @@ header.top h1 .sub{font-size:12px;color:var(--ink3);font-weight:400;margin-left:
 <nav class="tabbar"><div>
   <button data-tab="add" class="on"><span>✏️</span>記一筆</button>
   <button data-tab="sum"><span>📊</span>總覽</button>
+  <button data-tab="alloc"><span>🧮</span>分配</button>
+  <button data-tab="acc"><span>🏦</span>帳戶</button>
   <button data-tab="list"><span>📋</span>明細</button>
 </div></nav>
 
@@ -431,6 +552,25 @@ header.top h1 .sub{font-size:12px;color:var(--ink3);font-weight:400;margin-left:
   </div>
 </div>
 
+<!-- ======== 帳戶：新增／改名／校正餘額 ======== -->
+<div class="modal" id="mAcc">
+  <div class="bg" data-close></div>
+  <div class="sheet">
+    <h3><span id="acTitle">帳戶</span><button class="x" data-close>✕</button></h3>
+    <div class="fld"><label>名稱</label><input id="acName" maxlength="8" placeholder="例如 玉山、緊急預備金"></div>
+    <div class="fld"><label>類型</label><select id="acType"></select></div>
+    <div class="fld"><label id="acBalLab">目前實際餘額</label>
+      <input id="acBal" type="number" inputmode="numeric" placeholder="不改就留空"></div>
+    <div class="tiny" id="acBalTip"></div>
+    <div id="acRecent" style="margin-top:12px"></div>
+    <div class="btns">
+      <button class="del" id="acDel">🗑</button>
+      <button class="gh" data-close>取消</button>
+      <button class="go" id="acSave">儲存</button>
+    </div>
+  </div>
+</div>
+
 <!-- ======== 某一類的明細 ======== -->
 <div class="modal" id="mCat">
   <div class="bg" data-close></div>
@@ -445,26 +585,14 @@ header.top h1 .sub{font-size:12px;color:var(--ink3);font-weight:400;margin-left:
   <div class="bg" data-close></div>
   <div class="sheet">
     <h3>設定<button class="x" data-close>✕</button></h3>
-    <div class="fld"><label>每月預算（這個月最多想花多少）</label>
-      <input id="setBudget" type="number" inputmode="numeric" placeholder="例如 20000"></div>
-    <div class="fld"><label>存錢目標（每個月想存多少）</label>
-      <input id="setGoal" type="number" inputmode="numeric" placeholder="例如 10000"></div>
+    <div class="fld"><label>沒指定帳戶的帳算進哪裡（手機捷徑、LINE 記的帳）</label>
+      <select id="setDefAcc"></select></div>
 
-    <div class="fld" style="margin-top:16px">
-      <label>帳戶（填目前餘額，信用卡填目前未付金額）</label>
-      <div id="setAccs"></div>
-      <div class="addacc">
-        <input id="newAcc" placeholder="新增帳戶名稱（例如 玉山、街口）" maxlength="8">
-        <select id="newAccType">
-          <option value="cash">現金</option><option value="bank">銀行</option><option value="card">信用卡</option>
-        </select>
-        <button data-addacc>加進來</button>
-      </div>
-      <div class="tiny" style="margin-top:5px">
-        餘額填「今天當下」的數字就好，今天之前的帳不會再重複扣。
-        付信用卡帳單記成「轉帳」，不要記成支出（刷的當下已經算過一次了）。
-      </div>
-    </div>
+    <div class="fld" style="margin-top:16px"><label>還沒排分配的月份：每月預算</label>
+      <input id="setBudget" type="number" inputmode="numeric" placeholder="例如 20000"></div>
+    <div class="fld"><label>還沒排分配的月份：存錢目標</label>
+      <input id="setGoal" type="number" inputmode="numeric" placeholder="例如 10000"></div>
+    <div class="tiny">有排「分配」的月份，預算和存錢目標一律照分配算，這兩格只是備用。</div>
 
     <div class="fld" style="margin-top:16px">
       <label>支出分類</label>
@@ -532,7 +660,15 @@ const DEF_IN  = ['薪水','獎金','接案','其他'];
    刷卡 3000 → 卡的餘額 -3000（就是你欠的）
    月底從銀行轉 3000 過去 → 銀行 -3000、卡回到 0
    這樣總資產自動把卡債扣掉，不用另外算一套 */
-const ACC_TYPES = { cash:'現金', bank:'銀行', card:'信用卡' };
+const ACC_TYPES = { cash:'現金', bank:'銀行', save:'存款', stock:'股票', card:'信用卡' };
+const ACC_ICON  = { cash:'💵', bank:'🏦', save:'🐷', stock:'📈', card:'💳' };
+/* 帳戶頁的分組。日常＝平常進出的錢，存款＝專款專用、存起來不動的 */
+const ACC_GROUPS = [
+  { key:'daily', name:'日常', types:['cash','bank'] },
+  { key:'save',  name:'存款', types:['save'] },
+  { key:'stock', name:'股票', types:['stock'] },
+  { key:'card',  name:'信用卡', types:['card'] },
+];
 const DEF_ACCS = [
   { id:'cash', name:'現金',   type:'cash', open:0, openD:'' },
   { id:'bank', name:'銀行',   type:'bank', open:0, openD:'' },
@@ -541,8 +677,11 @@ const DEF_ACCS = [
 const defSettings = () => ({
   budget:0, goal:0, catsV:CATS_VERSION,
   cats:DEF_OUT.slice(), catsIn:DEF_IN.slice(),
-  accs:DEF_ACCS.map(a => ({...a}))
+  accs:DEF_ACCS.map(a => ({...a})), defAcc:'bank'
 });
+/* 分配頁把支出分類分成「固定」跟「生活費」兩組，固定就是這一類 */
+const FIXED_CAT = '固定支出';
+const SAVE_ANY  = '_';               // 存錢那組「不指定帳戶」那一行的 key
 /* 分類顏色。這十色是跑色盲模擬選出來的，兩兩之間在紅綠色弱與一般視覺下都分得開
    （全配對 CVD ΔE 8.4、一般視覺 ΔE 15.4，都在門檻之上）。
    原本那組有兩個綠、兩個紫、兩個橘，紅綠色弱的人看「醫療」跟「人情」幾乎一樣。
@@ -560,7 +699,10 @@ const BAR_COLOR_ON = '#B03A63';     // 點到的那一根
 
 /* ---------- 狀態 ---------- */
 let items = {};    // id -> {d,amt,cat,note,kind,inv,ts,acc}／轉帳是 {kind:'tr',from,to}
+                   // 校正餘額是 {kind:'adj',acc,amt}，amt 可正可負，不算收入也不算支出
 let settings = defSettings();
+let allocs = {};   // 'YYYY-MM' -> {inc:[{id,cat,amt,on,booked}], cat:[{k,v}], save:[{k,v}], done, ts}
+let alMon = ymNow();                 // 分配頁正在看哪個月
 let pending = [];
 let _db=null,_ref=null,_set=null,_remove=null,_ready=false;
 
@@ -598,6 +740,14 @@ function migrateCats(){
 function accList(){ return Array.isArray(settings.accs) ? settings.accs : []; }
 function accById(id){ return accList().find(a => a.id === id) || null; }
 function accName(id){ const a = accById(id); return a ? a.name : ''; }
+/* 手機捷徑與 LINE 記的帳沒有帳戶，算進設定裡指定的那個；
+   指定的被刪掉了就找第一個銀行或現金 */
+function defAccId(){
+  if(accById(settings.defAcc)) return settings.defAcc;
+  const a = accList().find(x => x.type==='bank') || accList().find(x => x.type==='cash') || accList()[0];
+  return a ? a.id : '';
+}
+function itemAcc(it){ return it.acc || defAccId(); }
 
 /* 每個帳戶現在有多少錢。
    起始餘額 = 建立帳戶那天當下的餘額，所以那天之前的帳不再重複扣 */
@@ -613,10 +763,21 @@ function accBalances(){
   Object.values(items).forEach(it => {
     const n = Number(it.amt) || 0, d = it.d || '';
     if(it.kind === 'tr'){ hit(it.from, -n, d); hit(it.to, n, d); }
-    else if(it.kind === 'in') hit(it.acc, n, d);
-    else hit(it.acc, -n, d);
+    else if(it.kind === 'adj') hit(it.acc, n, d);
+    else if(it.kind === 'in') hit(itemAcc(it), n, d);
+    else hit(itemAcc(it), -n, d);
   });
   return bal;
+}
+/* 淨資產＝全部加總；負債只算信用卡欠的，其他都算資產 */
+function netWorth(){
+  const bal = accBalances();
+  let asset = 0, debt = 0;
+  accList().forEach(a => {
+    const v = bal[a.id] || 0;
+    if(a.type === 'card' && v < 0) debt += -v; else asset += v;
+  });
+  return { bal, asset, debt, net: asset - debt };
 }
 
 function catColor(name){
@@ -641,7 +802,7 @@ function setSync(s,msg){
 /* ---------- 本機存檔 ---------- */
 function saveLocal(){
   try{
-    localStorage.setItem(LS_KEY, JSON.stringify({ items, settings }));
+    localStorage.setItem(LS_KEY, JSON.stringify({ items, settings, allocs }));
     localStorage.setItem(PQ_KEY, JSON.stringify(pending));
   }catch(e){ console.warn('存本機失敗', e); }
 }
@@ -650,6 +811,7 @@ function loadLocal(){
     const d = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
     if(d.items) items = d.items;
     if(d.settings) settings = Object.assign(settings, d.settings);
+    if(d.allocs) allocs = d.allocs;
     pending = JSON.parse(localStorage.getItem(PQ_KEY) || '[]');
   }catch(e){ console.warn('讀本機失敗', e); }
 }
@@ -669,6 +831,10 @@ function cloudSettings(){
   if(!_ready){ queue({op:'settings'}); return; }
   _set(_ref(_db, `${ROOM}/settings`), settings).catch(e=>{ console.warn(e); queue({op:'settings'}); });
 }
+function cloudAlloc(ym){
+  if(!_ready){ queue({op:'alloc',ym}); return; }
+  _set(_ref(_db, `${ROOM}/alloc/${ym}`), allocs[ym] || null).catch(e=>{ console.warn(e); queue({op:'alloc',ym}); });
+}
 async function flushPending(){
   if(!_ready || !pending.length) return;
   const q = pending.slice(); pending = [];
@@ -677,6 +843,7 @@ async function flushPending(){
       if(o.op==='set' && items[o.id])  await _set(_ref(_db, `${ROOM}/items/${o.id}`), items[o.id]);
       else if(o.op==='del')            await _remove(_ref(_db, `${ROOM}/items/${o.id}`));
       else if(o.op==='settings')       await _set(_ref(_db, `${ROOM}/settings`), settings);
+      else if(o.op==='alloc')          await _set(_ref(_db, `${ROOM}/alloc/${o.ym}`), allocs[o.ym] || null);
     }catch(e){ console.warn(e); pending.push(o); }
   }
   saveLocal(); setSync(pending.length ? 'wait' : 'ok');
@@ -694,13 +861,42 @@ function sumOf(list){
   let out=0, inc=0; const byCat = {};
   list.forEach(it => {
     const a = Number(it.amt)||0;
-    if(it.kind === 'tr') return;
+    if(it.kind === 'tr' || it.kind === 'adj') return;
     if(it.kind === 'in'){ inc += a; }
     else { out += a; byCat[it.cat||'其他'] = (byCat[it.cat||'其他']||0) + a; }
   });
   return { list, out, inc, byCat };
 }
 function monthSum(ym){ return sumOf(monthItems(ym)); }
+/* 真的花掉的錢：不是收入、不是轉帳、也不是校正餘額 */
+function isOut(it){ return it.kind !== 'in' && it.kind !== 'tr' && it.kind !== 'adj'; }
+
+/* ---------- 分配（每個月的預算） ---------- */
+function allocOf(ym){ const a = allocs[ym]; return a && typeof a === 'object' ? a : null; }
+// Firebase 會把陣列存成物件，讀回來兩種都要吃
+function arr(x){ return Array.isArray(x) ? x.filter(Boolean) : (x && typeof x === 'object' ? Object.values(x).filter(Boolean) : []); }
+function allocTotals(ym){ const a = allocOf(ym); return a ? totalsOf(a) : null; }
+function totalsOf(a){
+  const inc = arr(a.inc).filter(r => r.on !== false).reduce((s,r) => s + (Number(r.amt)||0), 0);
+  let fix = 0, life = 0; const byCat = {};
+  arr(a.cat).forEach(r => {
+    const v = Number(r.v)||0; byCat[r.k] = v;
+    if(r.k === FIXED_CAT) fix += v; else life += v;
+  });
+  const save = arr(a.save).reduce((s,r) => s + (Number(r.v)||0), 0);
+  const used = fix + life + save;
+  return { inc, fix, life, save, used, left: inc - used, byCat, done: !!a.done, has: used > 0 };
+}
+/* 這個月的預算口徑。
+   有排分配 → 看「生活費」（固定支出本來就一定要付，不放進還能花多少）
+   沒排分配 → 退回舊的每月總預算，不會突然整條消失 */
+function budgetOf(ym){
+  const t = allocTotals(ym);
+  if(t && t.has) return { src:'alloc', amt:t.life, fix:t.fix, save:t.save, byCat:t.byCat };
+  const b = Number(settings.budget)||0;
+  return { src: b ? 'old' : 'none', amt:b, fix:0, save:Number(settings.goal)||0, byCat:{} };
+}
+function spentFor(src, s){ return src === 'alloc' ? s.out - (s.byCat[FIXED_CAT]||0) : s.out; }
 
 /* 週一為一週的開始（台灣習慣） */
 function mondayOf(d){
@@ -717,20 +913,20 @@ function period(){
     const a = mondayOf(rgCur), b = ymdShift(a, 6);
     const md = x => `${Number(x.slice(5,7))}/${Number(x.slice(8,10))}`;
     return { a, b, label:`${md(a)}–${md(b)}`, word: a === mondayOf(t) ? '這週' : '那一週',
-             budget: (Number(settings.budget)||0) / lastDay(a.slice(0,7)) * 7,
+             budget: budgetOf(a.slice(0,7)).amt / lastDay(a.slice(0,7)) * 7, src: budgetOf(a.slice(0,7)).src,
              canNext: a < mondayOf(t), days: a === mondayOf(t) ? 7 - ((new Date(t+'T00:00:00').getDay()+6)%7) : 0 };
   }
   if(rg === 'y'){
     const y = rgCur.slice(0,4);
     return { a:`${y}-01-01`, b:`${y}-12-31`, label:`${y} 年`,
              word: y === t.slice(0,4) ? '今年' : `${y} 年`,
-             budget: (Number(settings.budget)||0) * 12,
+             budget: 0, src:'none',
              canNext: y < t.slice(0,4), days: 0 };
   }
   const ym = rgCur.slice(0,7);
   return { a:`${ym}-01`, b:`${ym}-${lastDay(ym)}`, label: ymLabel(ym),
            word: ym === t.slice(0,7) ? '這個月' : '那個月',
-           budget: Number(settings.budget)||0,
+           budget: budgetOf(ym).amt, src: budgetOf(ym).src,
            canNext: ym < t.slice(0,7),
            days: ym === t.slice(0,7) ? lastDay(ym) - new Date().getDate() + 1 : 0 };
 }
@@ -756,8 +952,8 @@ function renderCats(){
   renderAccs();
 }
 
-function accChips(sel, chosen, attr){
-  const accs = accList();
+function accChips(sel, chosen, attr, only){
+  const accs = accList().filter(a => !only || only(a));
   const box = $(sel); if(!box) return;
   if(!accs.length){ box.innerHTML = '<div class="none">還沒有帳戶，到設定頁加一個</div>'; return; }
   box.innerHTML = accs.map(a => {
@@ -769,15 +965,18 @@ function accChips(sel, chosen, attr){
 function renderAccs(){
   const accs = accList();
   const ids = accs.map(a => a.id);
-  if(!ids.includes(acc))    acc    = ids[0] || '';
+  // 花錢跟收錢不會從股票帳戶走，那邊只出現在轉帳
+  const canSpend = a => a.type !== 'stock';
+  const spendIds = accs.filter(canSpend).map(a => a.id);
+  if(!spendIds.includes(acc)) acc = spendIds.includes(defAccId()) ? defAccId() : (spendIds[0] || '');
   if(!ids.includes(trFrom)) trFrom = ids.find(i => (accById(i)||{}).type !== 'card') || ids[0] || '';
   if(!ids.includes(trTo) || trTo === trFrom) trTo = ids.find(i => i !== trFrom) || '';
   if(kind === 'tr'){
     accChips('#trFromBox', trFrom, 'data-from');
     accChips('#trToBox',   trTo,   'data-to');
   }else{
-    $('#accWrap').style.display = accs.length > 1 ? '' : 'none';   // 只有一個帳戶就不用選
-    accChips('#accBox', acc, 'data-acc');
+    $('#accWrap').style.display = spendIds.length > 1 ? '' : 'none';   // 只有一個帳戶就不用選
+    accChips('#accBox', acc, 'data-acc', canSpend);
   }
   $('.acclab').textContent = kind === 'in' ? '進到哪個帳戶' : '從哪個帳戶出';
 }
@@ -792,17 +991,21 @@ function renderAmt(){
   b.textContent = kind==='in' ? '記一筆收入' : kind==='tr' ? '轉過去' : '記一筆';
 }
 function renderBudget(){
-  const ym = ymNow(), s = monthSum(ym), bud = Number(settings.budget)||0;
+  const ym = ymNow(), s = monthSum(ym), b = budgetOf(ym);
   const el = $('#bbar'), fill = $('#bbFill');
-  if(!bud){
+  el.style.cursor = 'pointer';
+  el.onclick = () => gotoTab('alloc');
+  if(b.src === 'none'){
     $('#bbLeft').textContent = `這個月花了 ${money(s.out)}`;
-    $('#bbRight').textContent = '還沒設預算';
+    $('#bbRight').textContent = '這個月還沒分配 ›';
     fill.style.width = '0'; el.classList.remove('over');
     return;
   }
-  const left = bud - s.out, pct = Math.min(100, s.out / bud * 100);
-  $('#bbLeft').textContent = left >= 0 ? `還能花 ${money(left)}` : `超支 ${money(-left)}`;
-  $('#bbRight').textContent = `已花 ${money(s.out)} / ${plain(bud)}`;
+  const spent = spentFor(b.src, s);
+  const left = b.amt - spent, pct = b.amt ? Math.min(100, spent / b.amt * 100) : (spent ? 100 : 0);
+  const word = b.src === 'alloc' ? '生活費' : '';
+  $('#bbLeft').textContent = left >= 0 ? `${word}還能花 ${money(left)}` : `${word}超支 ${money(-left)}`;
+  $('#bbRight').textContent = `已花 ${money(spent)} / ${plain(b.amt)}`;
   fill.style.width = pct + '%';
   fill.className = left < 0 ? 'over' : pct >= 80 ? 'warn' : '';
   el.classList.toggle('over', left < 0);
@@ -814,26 +1017,29 @@ function renderSum(){
   const p = period(), s = sumOf(rangeItems(p.a, p.b));
   $('#sMon').textContent = p.label;
   $('#sNext').disabled = !p.canNext;
-  $('#sLeftTitle').textContent = rg==='y' ? `${p.word}花了多少` : `${p.word}還能花多少`;
+  const life = p.src === 'alloc' ? '生活費' : '';
+  $('#sLeftTitle').textContent = rg==='y' ? `${p.word}花了多少` : `${p.word}${life}還能花多少`;
   $('#sRankTitle').textContent = `${p.word}的錢花到哪去`;
   $('#sSaveTitle').textContent = `${p.word}存了多少`;
 
   // 1 還能花多少（年檢視改成看花了多少，年預算不是她設的東西）
   const bud = Math.round(p.budget);
-  if(rg === 'y' || !bud){
+  if(rg === 'y' || p.src === 'none'){
     $('#sLeft').textContent = money(s.out);
     $('#sLeft').className = 'big';
     const months = rg==='y' ? monthsCounted(p) : 0;
     $('#sLeftSub').textContent = rg==='y'
       ? (months ? `平均一個月 ${money(s.out/months)}（算了 ${months} 個月）` : '今年還沒有紀錄')
-      : `${p.word}的支出。設好每月預算後，這裡會變成「還能花多少」。`;
+      : `${p.word}的支出。到「分配」排好這個月的預算，這裡會變成「還能花多少」。`;
     $('#sLeftFill').style.width = '0';
   }else{
-    const left = bud - s.out, pct = Math.min(100, s.out/bud*100);
+    const spent = spentFor(p.src, s);
+    const left = bud - spent, pct = bud ? Math.min(100, spent/bud*100) : (spent ? 100 : 0);
     $('#sLeft').textContent = left>=0 ? money(left) : '超支 ' + money(-left);
     $('#sLeft').className = 'big' + (left<0 ? ' bad' : '');
     $('#sLeftSub').textContent =
-      `${rg==='w' ? '一週抓' : '預算'} ${money(bud)}，已花 ${money(s.out)}` +
+      `${rg==='w' ? '一週抓' : life ? '生活費預算' : '預算'} ${money(bud)}，已花 ${money(spent)}` +
+      (life ? '（固定支出另外算）' : '') +
       (left>=0 && p.days>0 ? `　·　剩 ${p.days} 天，一天可以花 ${money(left/p.days)}` : '');
     const f = $('#sLeftFill');
     f.style.width = pct + '%';
@@ -847,21 +1053,33 @@ function renderSum(){
   $('#sVsPrev').textContent = s.out ? prevCompare(p, s.out) : '';
   renderSplit(s);
   const rows = Object.entries(s.byCat).sort((a,b)=>b[1]-a[1]);
+  // 月檢視而且有排分配：每一類旁邊寫預算，超過就標紅
+  const catBud = rg==='m' && p.src==='alloc' ? budgetOf(p.a.slice(0,7)).byCat : {};
   $('#sRank').innerHTML = rows.length ? rows.map(([c,v])=>{
     const pct = s.out ? v/s.out*100 : 0;
+    const cb = catBud[c];
+    const budTx = cb === undefined ? '' :
+      ` <span class="pct" style="${v > cb ? 'color:var(--bad);font-weight:700' : ''}">/ 預算 ${plain(cb)}</span>`;
     return `<div class="rrow" data-cat="${esc(c)}">
-      <div class="l"><b>${esc(c)}</b><span>${money(v)} <span class="pct">${pct.toFixed(0)}%</span></span></div>
+      <div class="l"><b>${esc(c)}</b><span>${money(v)}${budTx} <span class="pct">${pct.toFixed(0)}%</span></span></div>
       <div class="rbar"><i style="width:${pct}%;background:${catColor(c)}"></i></div>
     </div>`;
   }).join('') : `<div class="empty">${p.word}還沒有支出</div>`;
 
   // 3 存了多少
   const net = s.inc - s.out;
-  const goal = (Number(settings.goal)||0) * (rg==='y' ? 12 : rg==='w' ? 7/lastDay(p.a.slice(0,7)) : 1);
+  // 存錢目標：有排分配的月份照分配的「存錢」那組，沒排的照設定裡的備用數字
+  let goal;
+  if(rg === 'y'){
+    const y = p.a.slice(0,4); goal = 0;
+    for(let m=1;m<=12;m++) goal += budgetOf(`${y}-${pad2(m)}`).save;
+  }else{
+    goal = budgetOf(p.a.slice(0,7)).save * (rg==='w' ? 7/lastDay(p.a.slice(0,7)) : 1);
+  }
   $('#sSave').textContent = money(net);
   $('#sSave').className = 'big' + (net<0 ? ' bad' : net>0 ? ' ok' : '');
   if(!goal){
-    $('#sSaveSub').textContent = `收入 ${money(s.inc)} － 支出 ${money(s.out)}。設好存錢目標後，這裡會顯示達成幾成。`;
+    $('#sSaveSub').textContent = `收入 ${money(s.inc)} － 支出 ${money(s.out)}。在「分配」排好存錢，這裡會顯示達成幾成。`;
     $('#sSaveFill').style.width = '0';
   }else{
     const pct = Math.max(0, Math.min(100, net/goal*100));
@@ -876,7 +1094,7 @@ function barBuckets(p){
   // 不算固定支出：房租在 1 號一筆一萬多，會把其他每天的幾百塊壓成一條線，
   // 整張圖只剩「1 號很高」這個每個月都一樣的廢資訊。固定那塊交給上面的分割條講
   const list = rangeItems(p.a, p.b)
-    .filter(it => it.kind !== 'in' && it.kind !== 'tr' && (it.cat||'') !== '固定支出');
+    .filter(it => isOut(it) && (it.cat||'') !== '固定支出');
   const sum = {};
   list.forEach(it => { const k = rg==='y' ? (it.d||'').slice(0,7) : it.d;
                        sum[k] = (sum[k]||0) + (Number(it.amt)||0); });
@@ -982,37 +1200,16 @@ function prevCompare(p, out){
 /* 年檢視算平均時，只算「有紀錄的月份」，一月就開始記跟十二月才開始記不能用同一個分母 */
 function monthsCounted(p){
   const set = new Set();
-  rangeItems(p.a, p.b).forEach(it => { if(it.kind !== 'tr') set.add((it.d||'').slice(0,7)); });
+  rangeItems(p.a, p.b).forEach(it => { if(it.kind !== 'tr' && it.kind !== 'adj') set.add((it.d||'').slice(0,7)); });
   return set.size;
 }
 
-/* 目前有多少錢：各帳戶餘額加總，信用卡的負數就是卡債，自動被扣掉 */
+/* 總覽最上面那張：只放淨資產，每個帳戶的細節在「帳戶」頁 */
 function renderNet(){
-  const accs = accList();
-  const card = $('#cardNet');
-  if(!accs.length){
-    card.style.display = '';
-    $('#sNet').textContent = '—';
-    $('#sNet').className = 'big';
-    $('#sNetSub').textContent = '';
-    $('#sAccList').innerHTML = '<div class="empty">還沒有帳戶。到設定頁加現金、銀行、信用卡，並填目前餘額。</div>';
-    return;
-  }
-  const bal = accBalances();
-  const total = accs.reduce((t,a) => t + (bal[a.id]||0), 0);
-  const debt  = accs.filter(a => a.type==='card')
-                    .reduce((t,a) => t + Math.min(0, bal[a.id]||0), 0);
-  $('#sNet').textContent = money(total);
-  $('#sNet').className = 'big' + (total<0 ? ' bad' : '');
-  $('#sNetSub').textContent = debt < 0 ? `（已扣掉卡費 ${money(-debt)}）` : '';
-  $('#sAccList').innerHTML = accs.map(a => {
-    const v = bal[a.id] || 0;
-    const isDebt = a.type==='card' && v < 0;
-    const ty = ACC_TYPES[a.type] || '';
-    return `<div class="ar"><span class="nm">${esc(a.name)}</span>` +
-      (ty && ty !== a.name ? `<span class="ty">${ty}</span>` : '') +
-      `<b class="${isDebt?'debt':''}">${isDebt ? '未付 ' + money(-v) : money(v)}</b></div>`;
-  }).join('');
+  const n = netWorth();
+  $('#sNet').textContent = money(n.net);
+  $('#sNet').className = 'big' + (n.net<0 ? ' bad' : '');
+  $('#sNetSub').textContent = `總資產 ${money(n.asset)}　·　負債 ${money(n.debt)}`;
 }
 
 function daysLeft(ym){
@@ -1034,7 +1231,7 @@ function renderList(){
   s.list.forEach(it => (byDay[it.d] = byDay[it.d] || []).push(it));
   box.innerHTML = Object.keys(byDay).sort().reverse().map(d => {
     const arr = byDay[d].sort((a,b)=>(b.ts||0)-(a.ts||0));
-    const dayOut = arr.filter(x=>x.kind!=='in' && x.kind!=='tr')
+    const dayOut = arr.filter(isOut)
                       .reduce((s,x)=>s+(Number(x.amt)||0),0);
     return `<div class="daygrp">
       <div class="dayhd"><span>${dayLabel(d)}</span><span>${dayOut ? '支出 '+money(dayOut) : ''}</span></div>
@@ -1053,6 +1250,15 @@ function ymdShift(d,n){
   return `${t.getFullYear()}-${pad2(t.getMonth()+1)}-${pad2(t.getDate())}`;
 }
 function itemRow(it){
+  if(it.kind === 'adj'){
+    const n = Number(it.amt)||0;
+    return `<div class="item" data-id="${it.id}">
+      <i class="cdot" style="background:var(--ink3)"></i>
+      <div class="nm"><b>校正餘額</b>
+        <span class="n2">${esc(accName(it.acc)||'?')}${it.note?'　'+esc(it.note):''}</span></div>
+      <div class="amt" style="color:var(--ink3)">${n>0?'+':''}${money(n)}</div>
+    </div>`;
+  }
   if(it.kind === 'tr'){
     return `<div class="item" data-id="${it.id}">
       <i class="cdot" style="background:var(--ink3)"></i>
@@ -1062,7 +1268,7 @@ function itemRow(it){
     </div>`;
   }
   const isIn = it.kind==='in';
-  const sub = [it.note || (it.inv ? '發票 '+it.inv : ''), accName(it.acc)].filter(Boolean).join('　·　');
+  const sub = [it.note || (it.inv ? '發票 '+it.inv : ''), accName(itemAcc(it))].filter(Boolean).join('　·　');
   return `<div class="item" data-id="${it.id}">
     <i class="cdot" style="background:${catColor(it.cat)}"></i>
     <div class="nm"><b>${esc(it.cat||'其他')}</b>
@@ -1072,7 +1278,10 @@ function itemRow(it){
 }
 function esc(s){ return String(s??'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
-function renderAll(){ renderCats(); renderAmt(); renderBudget(); renderSum(); renderList(); }
+function renderAll(){
+  renderCats(); renderAmt(); renderBudget(); renderSum(); renderList(); renderAccPage();
+  if(!allocBusy()) renderAlloc();      // 正在打分配金額時不重畫，免得雲端同步把打到一半的字洗掉
+}
 // renderCats 裡面就會叫 renderAccs，所以這裡不用另外再叫一次
 
 /* ---------- 新增一筆 ---------- */
@@ -1098,8 +1307,9 @@ function addItem(){
 let pendingInv = '';
 
 /* ---------- 事件：記帳頁 ---------- */
-$$('.seg button').forEach(b => b.onclick = () => {
-  $$('.seg button').forEach(x=>x.classList.remove('on'));
+// 只抓記一筆頁的那組，不然會連總覽的「這週／這個月／今年」一起取消選取
+$$('#pgAdd .seg button').forEach(b => b.onclick = () => {
+  $$('#pgAdd .seg button').forEach(x=>x.classList.remove('on'));
   b.classList.add('on'); kind = b.dataset.kind;
   renderCats(); renderAmt();
 });
@@ -1155,13 +1365,29 @@ function gotoTab(name){
 $$('.tabbar button').forEach(b => b.onclick = () => {
   tab = b.dataset.tab;
   $$('.tabbar button').forEach(x=>x.classList.toggle('on', x===b));
-  $('#pgAdd').style.display  = tab==='add'  ? '' : 'none';
-  $('#pgSum').style.display  = tab==='sum'  ? '' : 'none';
-  $('#pgList').style.display = tab==='list' ? '' : 'none';
+  $('#pgAdd').style.display   = tab==='add'   ? '' : 'none';
+  $('#pgSum').style.display   = tab==='sum'   ? '' : 'none';
+  $('#pgAlloc').style.display = tab==='alloc' ? '' : 'none';
+  document.body.classList.toggle('on-alloc', tab==='alloc');
+  $('#pgAcc').style.display   = tab==='acc'   ? '' : 'none';
+  $('#pgList').style.display  = tab==='list'  ? '' : 'none';
   if(tab==='sum') renderSum();
+  if(tab==='alloc') renderAlloc();
+  if(tab==='acc') renderAccPage();
   if(tab==='list') renderList();
   window.scrollTo(0,0);
 });
+/* 從帳戶頁按「存入／轉帳」：切到記一筆、先選好轉帳和帳戶，金額照樣用鍵盤打 */
+function startTransfer(to){
+  gotoTab('add');
+  kind = 'tr';
+  $$('#pgAdd .seg button').forEach(x => x.classList.toggle('on', x.dataset.kind==='tr'));
+  trFrom = defAccId();
+  if(to) trTo = to;
+  if(to) $('#fNote').value = '存錢';
+  renderCats(); renderAmt();
+}
+$('#cardNet').onclick = () => gotoTab('acc');
 $('#sPrev').onclick = ()=>{ shiftPeriod(-1); renderSum(); };
 $('#sNext').onclick = ()=>{ if(period().canNext){ shiftPeriod(1); renderSum(); } };
 $('#lPrev').onclick = ()=>{ listMon = ymShift(listMon,-1); renderList(); };
@@ -1185,18 +1411,20 @@ function openEdit(id){
   $('#eAmt').value = it.amt;
   $('#eDate').value = it.d;
   $('#eNote').value = it.note || '';
-  const isTr = it.kind === 'tr';
-  $('#eCatFld').style.display = isTr ? 'none' : '';
-  $('#eAccFld').style.display = (isTr || accList().length < 2) ? 'none' : '';
-  if(!isTr){
+  const isTr = it.kind === 'tr', isAdj = it.kind === 'adj';
+  $('#eCatFld').style.display = (isTr || isAdj) ? 'none' : '';
+  $('#eAccFld').style.display = (isTr || isAdj || accList().length < 2) ? 'none' : '';
+  if(!isTr && !isAdj){
     const list = it.kind==='in' ? settings.catsIn : settings.cats;
     const opts = list.includes(it.cat) ? list : list.concat(it.cat);
     $('#eCat').innerHTML = opts.map(c=>`<option ${c===it.cat?'selected':''}>${esc(c)}</option>`).join('');
+    const cur = itemAcc(it);
     $('#eAcc').innerHTML = accList().map(a =>
-      `<option value="${esc(a.id)}" ${a.id===it.acc?'selected':''}>${esc(a.name)}</option>`).join('');
+      `<option value="${esc(a.id)}" ${a.id===cur?'selected':''}>${esc(a.name)}</option>`).join('');
   }
   $('#eInv').textContent = isTr
     ? `轉帳：${accName(it.from)||'?'} → ${accName(it.to)||'?'}（帳戶要改請刪掉重記）`
+    : isAdj ? `校正 ${accName(it.acc)||'?'} 的餘額。金額可以是負的（帳面比實際多就是負的）`
     : it.inv ? `發票號碼 ${it.inv}` : '';
   openM('#mEdit');
 }
@@ -1206,7 +1434,7 @@ $('#eSave').onclick = () => {
   if(!n){ toast('金額不能是 0'); return; }
   it.amt = n; it.d = $('#eDate').value || it.d;
   it.note = $('#eNote').value.trim();
-  if(it.kind !== 'tr'){
+  if(it.kind !== 'tr' && it.kind !== 'adj'){
     it.cat = $('#eCat').value;
     if(accList().length) it.acc = $('#eAcc').value || it.acc;
   }
@@ -1238,13 +1466,13 @@ function openDay(r){
   const a = rg==='y' ? `${r.k}-01` : r.k;
   const b = rg==='y' ? `${r.k}-31` : r.k;
   const list = rangeItems(a, b)
-    .filter(it => it.kind!=='in' && it.kind!=='tr' && (it.cat||'') !== '固定支出')
+    .filter(it => isOut(it) && (it.cat||'') !== '固定支出')
     .sort((x,y) => (y.d===x.d ? (y.ts||0)-(x.ts||0) : (y.d>x.d?1:-1)));
   $('#cTitle').innerHTML = `${esc(r.full)}　<span class="tiny">共 ${money(r.v)}（不含固定支出）</span>
     <button class="x" data-close>✕</button>`;
   $('#cBox').innerHTML = list.map(it => {
     const sub = [rg==='y' ? `${Number(it.d.slice(5,7))}/${Number(it.d.slice(8,10))}` : '',
-                 it.note || '', accName(it.acc)].filter(Boolean).join('　·　');
+                 it.note || '', accName(itemAcc(it))].filter(Boolean).join('　·　');
     return `<div class="item" data-id="${it.id}">
        <i class="cdot" style="background:${catColor(it.cat)}"></i>
        <div class="nm"><b>${esc(it.cat||'其他')}</b>
@@ -1260,7 +1488,7 @@ $('#sRank').onclick = e => {
   catModalKey = r.dataset.cat;
   const p = period();
   const list = rangeItems(p.a, p.b)
-    .filter(it => it.kind!=='in' && it.kind!=='tr' && (it.cat||'其他')===catModalKey)
+    .filter(it => isOut(it) && (it.cat||'其他')===catModalKey)
     .sort((a,b)=> (b.d===a.d ? (b.ts||0)-(a.ts||0) : (b.d>a.d?1:-1)));
   const tot = list.reduce((s,x)=>s+(Number(x.amt)||0),0);
   $('#cTitle').innerHTML = `${esc(catModalKey)}　<span class="tiny">${p.label} 共 ${money(tot)}</span>
@@ -1284,28 +1512,18 @@ $('#cBox').onclick = e => {
 $('#btnSet').onclick = () => {
   $('#setBudget').value = settings.budget || '';
   $('#setGoal').value   = settings.goal || '';
-  renderSetCats(); renderSetAccs(); openM('#mSet');
+  renderSetDefAcc(); renderSetCats(); openM('#mSet');
 };
-function renderSetAccs(){
-  const accs = accList();
-  const bal = accBalances();
-  $('#setAccs').innerHTML = accs.length ? accs.map(a => {
-    const v = bal[a.id] || 0;
-    const now = (a.type==='card' && v < 0) ? '未付 ' + money(-v) : money(v);
-    return `<div class="accitem" data-id="${esc(a.id)}">
-      <div class="r1">
-        <span class="nm" title="點一下改名">${esc(a.name)}</span>
-        <button data-delacc title="刪掉">✕</button>
-      </div>
-      <div class="r2">
-        <select data-ty>${Object.entries(ACC_TYPES).map(([k,t]) =>
-          `<option value="${k}" ${k===a.type?'selected':''}>${t}</option>`).join('')}</select>
-        <input type="number" inputmode="numeric" data-open value="${Number(a.open)||0}" title="起始餘額">
-        <span class="cur">目前 ${now}</span>
-      </div>
-    </div>`;
-  }).join('') : '<div class="tiny">還沒有帳戶</div>';
+/* 帳戶的新增、改名、校正都搬到「帳戶」頁了，設定只留這一格 */
+function renderSetDefAcc(){
+  const cur = defAccId();
+  $('#setDefAcc').innerHTML = accList().filter(a => a.type !== 'stock').map(a =>
+    `<option value="${esc(a.id)}" ${a.id===cur?'selected':''}>${esc(a.name)}（${ACC_TYPES[a.type]||''}）</option>`).join('');
 }
+$('#setDefAcc').onchange = () => {
+  settings.defAcc = $('#setDefAcc').value;
+  saveLocal(); cloudSettings(); renderAll();
+};
 
 function accUsed(id){
   return Object.values(items).some(it => it.acc === id || it.from === id || it.to === id);
@@ -1320,40 +1538,10 @@ function renderSetCats(){
   $('#setCatsIn').innerHTML  = draw(settings.catsIn,'in');
 }
 function catUsed(name,k){
-  return Object.values(items).some(it => (it.kind==='in'?'in':'out')===k && (it.cat||'其他')===name);
+  return Object.values(items).some(it => it.kind!=='tr' && it.kind!=='adj' &&
+    (it.kind==='in'?'in':'out')===k && (it.cat||'其他')===name);
 }
 $('#mSet').addEventListener('click', e => {
-  // ---- 帳戶 ----
-  if(e.target.closest('button[data-addacc]')){
-    const nm = $('#newAcc').value.trim();
-    if(!nm) return;
-    const accs = accList();
-    if(accs.some(a => a.name === nm)){ toast('已經有同名的帳戶'); return; }
-    const id = 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2,5);
-    accs.push({ id, name:nm, type:$('#newAccType').value, open:0, openD: today() });
-    settings.accs = accs; $('#newAcc').value = '';
-    saveLocal(); cloudSettings(); renderSetAccs(); renderAll();
-    return;
-  }
-  const delA = e.target.closest('button[data-delacc]');
-  if(delA){
-    const id = delA.closest('.accitem').dataset.id;
-    if(accUsed(id)){ toast('這個帳戶還有帳在用，刪不掉'); return; }
-    settings.accs = accList().filter(a => a.id !== id);
-    saveLocal(); cloudSettings(); renderSetAccs(); renderAll();
-    return;
-  }
-  const accNm = e.target.closest('.accitem .nm');
-  if(accNm){
-    const id = accNm.closest('.accitem').dataset.id, a = accById(id);
-    const v = prompt('帳戶改叫什麼？', a ? a.name : '');
-    if(v === null) return;
-    const nv = v.trim(); if(!nv || !a || nv === a.name) return;
-    if(accList().some(x => x.name === nv)){ toast('已經有同名的帳戶'); return; }
-    a.name = nv; saveLocal(); cloudSettings(); renderSetAccs(); renderAll();
-    return;
-  }
-
   const add = e.target.closest('button[data-add]');
   if(add){
     const k = add.dataset.add;
@@ -1386,6 +1574,13 @@ $('#mSet').addEventListener('click', e => {
     const list = k==='out' ? settings.cats : settings.catsIn;
     if(list.includes(nv)){ toast('已經有這個分類了'); return; }
     list[list.indexOf(old)] = nv;
+    // 分配裡用到這個分類名的也要一起改，不然預算會對不上
+    Object.entries(allocs).forEach(([ym,a]) => {
+      let hit = false;
+      if(k==='out') arr(a.cat).forEach(r => { if(r.k===old){ r.k = nv; hit = true; } });
+      else arr(a.inc).forEach(r => { if(r.cat===old){ r.cat = nv; hit = true; } });
+      if(hit){ a.cat = arr(a.cat); a.inc = arr(a.inc); cloudAlloc(ym); }
+    });
     Object.entries(items).forEach(([id,it])=>{
       if((it.kind==='in'?'in':'out')===k && (it.cat||'其他')===old){ it.cat = nv; cloudSetItem(id); }
     });
@@ -1393,22 +1588,129 @@ $('#mSet').addEventListener('click', e => {
     saveLocal(); cloudSettings(); renderSetCats(); renderAll();
   }
 });
-$('#setAccs').addEventListener('change', e => {
-  const row = e.target.closest('.accitem'); if(!row) return;
-  const a = accById(row.dataset.id); if(!a) return;
-  if(e.target.hasAttribute('data-ty'))   a.type = e.target.value;
-  if(e.target.hasAttribute('data-open')){
-    a.open = Number(e.target.value) || 0;
-    if(!a.openD) a.openD = today();      // 第一次填餘額才決定起算日
-  }
-  saveLocal(); cloudSettings(); renderSetAccs(); renderAll();
-});
 
 ['setBudget','setGoal'].forEach(id => $('#'+id).onchange = () => {
   settings.budget = Number($('#setBudget').value) || 0;
   settings.goal   = Number($('#setGoal').value) || 0;
   saveLocal(); cloudSettings(); renderAll();
 });
+
+/* ---------- 帳戶頁 ---------- */
+function renderAccPage(){
+  const n = netWorth();
+  $('#nNet').textContent = money(n.net);
+  $('#nNet').className = 'big' + (n.net<0 ? ' bad' : '');
+  $('#nAsset').textContent = money(n.asset);
+  $('#nDebt').textContent = money(n.debt);
+  const EMPTY = {
+    daily:'還沒有現金或銀行帳戶。',
+    save:'還沒有存款帳戶。按「＋ 新帳戶」加一個（例如 緊急預備金），存錢時用「＋ 存入」把錢搬進去。',
+    stock:'還沒有股票帳戶。持股與自動抓股價是第二批的功能。',
+    card:'還沒有信用卡帳戶。',
+  };
+  $('#nGroups').innerHTML = ACC_GROUPS.map(g => {
+    const list = accList().filter(a => g.types.includes(a.type));
+    const sub = list.reduce((s,a) => s + (n.bal[a.id]||0), 0);
+    const hint = !list.length ? EMPTY[g.key]
+      : g.key==='stock' ? '現在先照轉進去的金額算，第二批改成照持股市值自動更新。' : '';
+    const subTx = !list.length ? '' : g.key==='card' && sub<0 ? '未付 ' + money(-sub) : money(sub);
+    return `<div class="card agrp">
+      <h2>${g.name}<span class="sub">${subTx}</span></h2>
+      ${list.map(a => {
+        const v = n.bal[a.id]||0, debt = a.type==='card' && v<0;
+        return `<div class="arow" data-acc="${esc(a.id)}">
+          <span class="ic">${ACC_ICON[a.type]||'💰'}</span>
+          <span class="nm">${esc(a.name)}</span>
+          <b class="${debt?'debt':''}">${debt ? '未付 ' + money(-v) : money(v)}</b><span class="chev">›</span>
+        </div>`;
+      }).join('')}
+      ${hint ? `<div class="hint">${hint}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+let editingAcc = null;     // null＝新增帳戶
+function openAcc(id){
+  const a = id ? accById(id) : null;
+  editingAcc = a ? a.id : null;
+  $('#acTitle').textContent = a ? '帳戶' : '新增帳戶';
+  $('#acName').value = a ? a.name : '';
+  $('#acType').innerHTML = Object.entries(ACC_TYPES).map(([k,t]) =>
+    `<option value="${k}" ${(a ? k===a.type : k==='save') ? 'selected' : ''}>${ACC_ICON[k]} ${t}</option>`).join('');
+  $('#acBal').value = '';
+  syncAccTip();
+  $('#acDel').style.display = a ? '' : 'none';
+  const list = a ? Object.entries(items).map(([iid,it]) => ({ id:iid, ...it }))
+      .filter(it => it.kind==='tr' ? (it.from===a.id || it.to===a.id) : itemAcc(it)===a.id)
+      .sort((x,y) => (y.d===x.d ? (y.ts||0)-(x.ts||0) : (y.d>x.d?1:-1))).slice(0,15) : [];
+  $('#acRecent').innerHTML = !a ? '' : list.length
+    ? '<div class="acclab" style="margin-top:0">最近的帳</div>' + list.map(itemRow).join('')
+    : '<div class="tiny">這個帳戶還沒有帳</div>';
+  openM('#mAcc');
+}
+function syncAccTip(){
+  const a = editingAcc ? accById(editingAcc) : null;
+  const isCard = $('#acType').value === 'card';
+  $('#acBalLab').textContent = (a ? '目前實際' : '目前') + (isCard ? '未付金額' : '餘額');
+  $('#acBal').placeholder = a ? '不改就留空' : '0';
+  if(a){
+    const v = accBalances()[a.id]||0;
+    const now = a.type==='card' && v<0 ? '未付 ' + money(-v) : money(v);
+    $('#acBalTip').textContent =
+      `帳面上是 ${now}。填了實際${isCard?'未付金額':'餘額'}，會記一筆「校正餘額」補差額，不算收入也不算支出。`;
+  }else{
+    $('#acBalTip').textContent = isCard
+      ? '信用卡填現在還沒繳的金額，例如 3000。'
+      : '填今天當下的餘額就好，今天之前的帳不會重複算。';
+  }
+}
+$('#acType').onchange = syncAccTip;
+$('#acRecent').onclick = e => {
+  const row = e.target.closest('.item[data-id]'); if(!row) return;
+  closeM('#mAcc');           // 先收起這一層，兩層視窗才不會疊在一起
+  openEdit(row.dataset.id);
+};
+$('#acSave').onclick = () => {
+  const nm = $('#acName').value.trim(), ty = $('#acType').value;
+  if(!nm){ toast('帳戶要有名字'); return; }
+  if(accList().some(x => x.name === nm && x.id !== editingAcc)){ toast('已經有同名的帳戶'); return; }
+  const raw = $('#acBal').value.trim();
+  let target = raw === '' ? null : Number(raw);
+  if(target !== null && isNaN(target)){ toast('餘額要填數字'); return; }
+  if(target !== null && ty === 'card') target = -Math.abs(target);   // 信用卡填的是未付金額，存成負數
+  if(!editingAcc){
+    const id = 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2,5);
+    settings.accs = accList().concat({ id, name:nm, type:ty, open: target || 0, openD: today() });
+    saveLocal(); cloudSettings(); closeM('#mAcc'); renderAll(); toast(`加好了　${nm}`);
+    return;
+  }
+  const a = accById(editingAcc); if(!a) return;
+  a.name = nm; a.type = ty;
+  if(target !== null){
+    const diff = Math.round(target - (accBalances()[a.id]||0));
+    if(diff){
+      const id = uid();
+      items[id] = { kind:'adj', acc:a.id, amt:diff, d:today(), note:'', ts:Date.now() };
+      cloudSetItem(id);
+    }
+  }
+  saveLocal(); cloudSettings(); closeM('#mAcc'); renderAll(); toast('改好了');
+};
+$('#acDel').onclick = () => {
+  const id = editingAcc; if(!id) return;
+  if(accUsed(id)){ toast('這個帳戶還有帳在用，刪不掉'); return; }
+  if(accList().length <= 1){ toast('至少要留一個帳戶'); return; }
+  settings.accs = accList().filter(a => a.id !== id);
+  saveLocal(); cloudSettings(); closeM('#mAcc'); renderAll(); toast('刪掉了');
+};
+$('#nGroups').onclick = e => { const r = e.target.closest('.arow[data-acc]'); if(r) openAcc(r.dataset.acc); };
+$('#nNew').onclick = () => openAcc(null);
+$('#nTr').onclick  = () => startTransfer('');
+$('#nSave').onclick = () => {
+  const s = accList().find(a => a.type === 'save');
+  if(!s){ toast('先按「＋ 新帳戶」加一個存款帳戶'); return; }
+  startTransfer(s.id);
+};
 
 /* ---------- 掃發票 ----------
    台灣電子發票左邊那個 QR，前面幾段是固定格式：
@@ -1462,7 +1764,7 @@ async function tick(){
       stopScan(); closeM('#mScan');
       gotoTab('add');            // 是從設定按進來的，掃完要回記帳頁
       kind = 'out';
-      $$('.seg button').forEach(x=>x.classList.toggle('on', x.dataset.kind==='out'));
+      $$('#pgAdd .seg button').forEach(x=>x.classList.toggle('on', x.dataset.kind==='out'));
       amt = String(r.total);
       $('#fDate').value = r.date;
       pendingInv = r.no;
@@ -1477,6 +1779,231 @@ function stopScan(){
   if(_stream){ _stream.getTracks().forEach(t=>t.stop()); _stream=null; }
   const v=$('#scanVid'); if(v) v.srcObject=null;
 }
+
+/* ---------- 分配頁 ----------
+   薪水進來那天照 88La 的四步驟把錢分完：收入 → 建議可存 → 分到固定／存錢／生活費 → 待分配歸零。
+   分配存的是「預算」，不是真的把錢搬走；真的搬進存款帳戶走帳戶頁的「存入」。 */
+let _draft = null;          // 還沒動過的月份先放這裡，動了才寫進雲端
+function round100(n){ return Math.max(0, Math.round(n/100)*100); }
+function allocBusy(){
+  const el = document.activeElement;
+  return !!(el && el.closest && el.closest('#pgAlloc') && (el.tagName==='INPUT' || el.tagName==='SELECT'));
+}
+/* 空白月份：先帶這個月已經記的收入，沒有就帶上個月分配過的收入來源 */
+function blankAlloc(ym){
+  const got = monthItems(ym).filter(it => it.kind === 'in');
+  const prev = allocOf(ymShift(ym,-1));
+  let inc;
+  if(got.length) inc = got.map(it => ({ id:uid(), cat:it.cat||'薪水', amt:Number(it.amt)||0, on:true, booked:it.id }));
+  else if(prev && arr(prev.inc).length)
+    inc = arr(prev.inc).map(r => ({ id:uid(), cat:r.cat, amt:Number(r.amt)||0, on:r.on!==false, booked:'' }));
+  else inc = [{ id:uid(), cat:settings.catsIn[0] || '薪水', amt:0, on:true, booked:'' }];
+  return { inc, cat:[], save:[], done:false, ts:Date.now() };
+}
+function curAlloc(){
+  if(allocOf(alMon)) return allocs[alMon];
+  if(!_draft || _draft.ym !== alMon) _draft = { ym:alMon, a:blankAlloc(alMon) };
+  return _draft.a;
+}
+function commitAlloc(){
+  const a = curAlloc();
+  a.inc = arr(a.inc); a.cat = arr(a.cat); a.save = arr(a.save);
+  a.ts = Date.now(); allocs[alMon] = a; _draft = null;
+  saveLocal(); cloudAlloc(alMon); renderBudget();
+}
+function getLine(a, f, k){ const r = arr(a[f]).find(x => x.k === k); return r ? Number(r.v)||0 : 0; }
+function setLine(a, f, k, v){
+  const list = arr(a[f]); const r = list.find(x => x.k === k);
+  if(r) r.v = v; else list.push({ k, v });
+  a[f] = list.filter(x => Number(x.v));
+}
+/* 某個月轉進某個存款帳戶多少 */
+function saveInto(accId, ym){
+  return monthItems(ym).filter(it => it.kind==='tr' && it.to===accId).reduce((s,it) => s + (Number(it.amt)||0), 0);
+}
+function saveRows(){
+  return accList().filter(a => a.type==='save').map(a => ({ k:a.id, name:a.name }))
+    .concat({ k:SAVE_ANY, name:'存起來（不指定帳戶）' });
+}
+
+function renderAlloc(){
+  const ym = alMon, a = curAlloc(), pm = ymShift(ym,-1);
+  const mNo = s => Number(s.slice(5,7));
+  $('#aMon').textContent = ymLabel(ym);
+  $('#aNext').disabled = ym >= ymShift(ymNow(), 1);      // 最多先排到下個月
+  $('#aBanner').innerHTML = (!allocOf(ym) && allocOf(pm))
+    ? `<div class="albanner"><span>${mNo(ym)} 月還沒分配，要沿用 ${mNo(pm)} 月的嗎？</span><button id="aUsePrev">沿用</button></div>`
+    : '';
+
+  // ① 收入
+  $('#aInc').innerHTML = arr(a.inc).map(r => {
+    const booked = r.booked && items[r.booked];
+    const opts = settings.catsIn.includes(r.cat) ? settings.catsIn : settings.catsIn.concat(r.cat);
+    return `<div class="aline" data-inc="${esc(r.id)}">
+      <input type="checkbox" data-f="on" ${r.on!==false?'checked':''} title="算進這個月的預算">
+      <select data-f="cat">${opts.map(c => `<option ${c===r.cat?'selected':''}>${esc(c)}</option>`).join('')}</select>
+      <input type="number" inputmode="numeric" data-f="amt" value="${Number(r.amt)||''}" placeholder="0" style="width:92px">
+      ${booked ? '<button class="mini gh" disabled>已記入</button>' : '<button class="mini" data-book>記入帳本</button>'}
+      <button class="mini x" data-delinc title="拿掉這一行">✕</button>
+    </div>`;
+  }).join('') || '<div class="tiny">還沒有收入，按下面新增</div>';
+
+  // ③ 分配
+  const prevA = allocOf(pm), ps = monthSum(pm), cs = monthSum(ym);
+  const prevHas = !!(prevA && totalsOf(prevA).has);
+  $('#aCopy').textContent = prevHas ? '沿用上個月' : '帶入上月實際';
+  $('#aCopy').style.display = prevHas || ps.out ? '' : 'none';
+  const catRow = c => {
+    const v = getLine(a,'cat',c);
+    return `<div class="aline"><div class="nm">
+        <b><i class="cdot" style="width:8px;height:8px;border-radius:99px;background:${catColor(c)}"></i>${esc(c)}</b>
+        <span class="n2" data-sp="${esc(c)}">上月 ${plain(ps.byCat[c]||0)}　·　本月已花 ${plain(cs.byCat[c]||0)}</span></div>
+      <input type="number" inputmode="numeric" data-g="cat" data-k="${esc(c)}" value="${v||''}" placeholder="0"></div>`;
+  };
+  const saveRow = r => {
+    const v = getLine(a,'save',r.k);
+    const sub = r.k === SAVE_ANY ? '還沒有專用帳戶也可以先排'
+      : `上月存入 ${plain(saveInto(r.k,pm))}　·　本月已存入 ${plain(saveInto(r.k,ym))}`;
+    return `<div class="aline"><div class="nm"><b>🐷 ${esc(r.name)}</b><span class="n2">${sub}</span></div>
+      <input type="number" inputmode="numeric" data-g="save" data-k="${esc(r.k)}" value="${v||''}" placeholder="0"></div>`;
+  };
+  const fixCats  = settings.cats.filter(c => c === FIXED_CAT);
+  const lifeCats = settings.cats.filter(c => c !== FIXED_CAT);
+  const noSaveAcc = !accList().some(x => x.type === 'save');
+  $('#aLines').innerHTML =
+    (fixCats.length ? `<div class="agh">固定<span>本月一定要付的　<b id="aSubFix"></b></span></div>` + fixCats.map(catRow).join('') : '') +
+    `<div class="agh">存錢<span>先把未來的自己顧好　<b id="aSubSave"></b></span></div>` + saveRows().map(saveRow).join('') +
+    (noSaveAcc ? '<div class="tiny" style="margin-top:4px">想分開存（例如 緊急預備金、旅遊基金），到「帳戶」加存款帳戶就會出現在這裡。</div>' : '') +
+    `<div class="agh">生活費<span>平常花的　<b id="aSubLife"></b></span></div>` + lifeCats.map(catRow).join('');
+  renderAllocSummary();
+}
+
+/* 不含輸入框的部分：打字時只重畫這些，游標才不會跳掉 */
+function renderAllocSummary(){
+  const ym = alMon, a = curAlloc(), t = totalsOf(a);
+  const ps = monthSum(ymShift(ym,-1)), cs = monthSum(ym);
+  $('#aIncTot').textContent = t.inc ? `算進預算 ${money(t.inc)}` : '';
+
+  // ② 建議可存
+  let sug = null, why;
+  if(!t.inc) why = '先在 ① 填這個月的收入，這裡才算得出來。';
+  else if(!ps.out){ sug = round100(t.inc * 0.2); why = '上個月還沒有支出紀錄，先建議收入的兩成。'; }
+  else{
+    const pf = ps.byCat[FIXED_CAT]||0, po = ps.out - pf;
+    sug = round100(t.inc - pf - po);
+    why = `收入 ${money(t.inc)} － 上個月固定支出 ${money(pf)} － 上個月其他支出 ${money(po)}，四捨五入到百位。` +
+          (sug ? '' : '照上個月的花法存不下來，可以先從生活費挪一點出來。');
+  }
+  $('#aSug').textContent = sug === null ? '—' : money(sug);
+  $('#aSugWhy').textContent = why + (t.inc ? `　你在 ③ 排的存錢：${money(t.save)}` : '');
+
+  const setTx = (id, v) => { const el = $(id); if(el) el.textContent = money(v); };
+  setTx('#aSubFix', t.fix); setTx('#aSubSave', t.save); setTx('#aSubLife', t.life);
+
+  // 四個步驟
+  const s1 = t.inc > 0, s3 = s1 && t.used > 0 && t.left === 0, s4 = s3 && t.done;
+  const st = [
+    { n:1, b:'收入',   s: money(t.inc), ok:s1 },
+    { n:2, b:'看建議', s: sug === null ? '—' : '可存 ' + money(sug), ok:s1 },
+    { n:3, b:'分配',   s: '已分 ' + money(t.used), ok:s3 },
+    { n:4, b:'完成',   s: s4 ? '完成了' : '待分配 ' + money(t.left), ok:s4 },
+  ];
+  const cur = st.findIndex(x => !x.ok);
+  $('#aSteps').innerHTML = st.map((x,i) =>
+    `<div class="st ${x.ok ? 'done' : i===cur ? 'cur' : ''}"><i>${x.ok ? '✓' : x.n}</i><b>${x.b}</b><span>${x.s}</span></div>`).join('');
+
+  // 底部待分配
+  const L = $('#aLeft');
+  L.textContent = money(Math.abs(t.left));
+  L.className = t.left < 0 ? 'neg' : (t.left === 0 && t.inc ? 'zero' : '');
+  $('#aLeftK').textContent = t.left < 0 ? '分超過了' : (t.done && t.left !== 0 ? '改過之後還沒分完' : '待分配');
+  const btn = $('#aDone');
+  btn.disabled = !(t.inc > 0 && t.used > 0 && t.left === 0);
+  btn.classList.toggle('done', s4);
+  btn.textContent = s4 ? '已完成 ✓' : '完成本月預算';
+
+  // 本月已花超過這一類預算的標紅
+  $$('#aLines [data-sp]').forEach(el => {
+    const v = getLine(a, 'cat', el.dataset.sp);
+    el.classList.toggle('over', !!v && (cs.byCat[el.dataset.sp]||0) > v);
+  });
+}
+
+/* 沿用上個月：排過就照抄分配；沒排過就用上個月實際花的金額（四捨五入到百位）。
+   這個月的收入有填就不動 */
+function copyPrevAlloc(){
+  const pm = ymShift(alMon,-1), pa = allocOf(pm), a = curAlloc();
+  if(pa && totalsOf(pa).has){
+    a.cat  = arr(pa.cat).map(r => ({ k:r.k, v:Number(r.v)||0 }));
+    a.save = arr(pa.save).map(r => ({ k:r.k, v:Number(r.v)||0 }));
+    if(!totalsOf(a).inc)
+      a.inc = arr(pa.inc).map(r => ({ id:uid(), cat:r.cat, amt:Number(r.amt)||0, on:r.on!==false, booked:'' }));
+  }else{
+    const ps = monthSum(pm);
+    if(!ps.out){ toast('上個月沒有分配也沒有支出，要自己填'); return; }
+    a.cat = Object.entries(ps.byCat).map(([k,v]) => ({ k, v:round100(v) })).filter(r => r.v);
+  }
+  a.done = false;
+  commitAlloc(); renderAlloc();
+  toast('帶入了，可以再改');
+}
+
+$('#aPrev').onclick = () => { alMon = ymShift(alMon,-1); renderAlloc(); };
+$('#aNext').onclick = () => { if(alMon < ymShift(ymNow(),1)){ alMon = ymShift(alMon,1); renderAlloc(); } };
+$('#pgAlloc').addEventListener('input', e => {
+  const el = e.target, a = curAlloc();
+  const n = Math.max(0, Math.round(Number(el.value)||0));
+  const incRow = el.closest('[data-inc]');
+  if(incRow && el.dataset.f === 'amt'){
+    const r = arr(a.inc).find(x => x.id === incRow.dataset.inc); if(r) r.amt = n;
+  }else if(el.dataset.g){
+    setLine(a, el.dataset.g, el.dataset.k, n);
+  }else return;
+  renderAllocSummary();
+});
+$('#pgAlloc').addEventListener('change', e => {
+  const el = e.target, a = curAlloc();
+  const incRow = el.closest('[data-inc]');
+  if(incRow){
+    a.inc = arr(a.inc);
+    const r = a.inc.find(x => x.id === incRow.dataset.inc); if(!r) return;
+    if(el.dataset.f === 'on')  r.on = el.checked;
+    if(el.dataset.f === 'cat') r.cat = el.value;
+  }else if(!el.dataset.g) return;
+  commitAlloc(); renderAllocSummary();
+});
+$('#pgAlloc').addEventListener('click', e => {
+  const t = e.target;
+  if(t.closest('#aUsePrev') || t.closest('#aCopy')){ copyPrevAlloc(); return; }
+  if(t.closest('#aAddInc')){
+    const a = curAlloc(); a.inc = arr(a.inc);
+    a.inc.push({ id:uid(), cat:settings.catsIn[0] || '薪水', amt:0, on:true, booked:'' });
+    commitAlloc(); renderAlloc(); return;
+  }
+  if(t.closest('#aDone')){
+    const a = curAlloc(); a.done = true; commitAlloc(); renderAllocSummary();
+    toast(`${Number(alMon.slice(5,7))} 月的預算排好了，月中隨時可以回來改`); return;
+  }
+  const row = t.closest('[data-inc]'); if(!row) return;
+  const a = curAlloc(); a.inc = arr(a.inc);
+  const r = a.inc.find(x => x.id === row.dataset.inc); if(!r) return;
+  if(t.closest('[data-delinc]')){
+    a.inc = a.inc.filter(x => x !== r);
+    commitAlloc(); renderAlloc();
+    if(r.booked && items[r.booked]) toast('帳本裡那筆收入還在，要刪請到明細');
+    return;
+  }
+  if(t.closest('[data-book]')){
+    if(!(Number(r.amt) > 0)){ toast('先填金額'); return; }
+    if(alMon > ymNow()){ toast('還沒到這個月，到時候再記入'); return; }
+    const id = uid();
+    items[id] = { kind:'in', cat:r.cat, amt:Number(r.amt), acc:defAccId(), inv:'', note:'分配時記入',
+                  d: alMon === ymNow() ? today() : `${alMon}-01`, ts:Date.now() };
+    cloudSetItem(id);
+    r.booked = id; commitAlloc(); renderAll();
+    toast(`記好了　+${money(r.amt)}　${r.cat} → ${accName(defAccId())}`);
+  }
+});
 
 /* ---------- Firebase ---------- */
 async function initFirebase(interactive){
@@ -1508,6 +2035,7 @@ async function initFirebase(interactive){
   const snap = await get(ref(_db, ROOM));
   const d = snap.exists() ? snap.val() : {};
   if(d.items) items = d.items;
+  allocs = d.alloc || {};
   if(d.settings){
     settings = Object.assign(defSettings(), d.settings);
     if(migrateCats()) cloudSettings();           // 舊的七類換成十類，只跑一次
@@ -1519,6 +2047,11 @@ async function initFirebase(interactive){
     const v = s.exists() ? s.val() : {};
     if(JSON.stringify(v) === JSON.stringify(items)) return;
     items = v; saveLocal(); renderAll();
+  });
+  onValue(ref(_db, `${ROOM}/alloc`), s => {
+    const v = s.exists() ? s.val() : {};
+    if(JSON.stringify(v) === JSON.stringify(allocs)) return;
+    allocs = v; saveLocal(); renderAll();
   });
   onValue(ref(_db, `${ROOM}/settings`), s => {
     if(!s.exists()) return;
