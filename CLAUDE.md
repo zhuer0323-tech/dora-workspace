@@ -687,10 +687,11 @@ Graph API Explorer 與 App 後台都進不去，所以 `dora-meta-token-setup.sh
 
 - **網址**：<https://zhuer0323-tech.github.io/dora-workspace/points/>（**獨立網頁**，工作台寶藏工具 🪙 有入口；
   2026-09-13 改名時網址刻意維持 `/points/`，她的書籤與桌面圖示才不會失效）
-- **原始檔**：`100_Todo/projects/points/index.html`（單一檔案）＋自己的 `manifest.webmanifest`／`sw.js`／圖示（深莓紫底金幣）
-- **系統名稱旁的頭像** `points/brand.png`（2026-09-13 她要求把金幣換成自己的像素插畫）：
-  從 `~/Downloads/ChatGPT Image 2026年9月3日 下午02_47_51.png` 用 `sips` 裁臉部 620×620（上 95、左 380）再縮 160px。
-  手機版側欄名稱本來就藏起來，所以只有電腦與平板看得到；瀏覽器分頁與桌面 App 圖示仍是金幣
+- **原始檔**：`100_Todo/projects/points/index.html`（單一檔案）＋自己的 `manifest.webmanifest`／`sw.js`／圖示
+- **頭像與圖示都是她的像素插畫**（2026-09-13 她要求把金幣換掉），原圖 `~/Downloads/ChatGPT Image 2026年9月3日 下午02_47_51.png`（1254×1254）：
+  - 系統名稱旁 `brand.png`：`sips` 裁臉部 620×620（上 95、左 380）縮 160px；手機版側欄名稱本來就藏起來，只有電腦與平板看得到
+  - 分頁／桌面 App 圖示 `icon-512`／`icon-192`／`apple-touch-icon`：裁 700×700（上 60、左 340，留邊給 maskable 裁切）再縮
+  - 換圖示要把 `sw.js` 的 `CACHE` 版本號加一；iPhone 已經加到主畫面的圖示不會自己換，要刪掉重加
 - **計劃書**：`100_Todo/plans/2026-09-13-積分自律系統.md`，**最後的附錄是原圖十頁規格逐條轉寫**，做後面兩批照附錄
 - **資料**：Firebase 同專案 `busan-trip-2026-201f8` → **`pt_v8k3n6wq`**，規則綁 `zhuer0323@gmail.com`
   （2026-09-13 Claude 用服務帳號金鑰加的，備份 `~/Library/Scripts/firebase-rules-backup-20260913-210152.json`）
