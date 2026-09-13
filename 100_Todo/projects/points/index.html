@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>積分自律系統</title>
+<meta name="theme-color" content="#E0508D">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="積分系統">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* 積分自律系統
+   版型照小紅書那份指令：格線底、粗框、純色偏移的硬陰影（不用模糊陰影）。
+   配色 2026-09-13 她要求改粉色系：原本淡藍格線＋深藍框，換成粉白格線＋深莓紫框，遊戲感靠粗框與硬陰影撐住。
+   加分綠、扣分紅、基金金三個意義色不動。
+   19:00 之後整站換夜間暖色，只換下面這組變數，元件本身不用各寫一套。 */
+:root{
+  --bg:#FFF4F8; --grid:#F8DCE8; --dot:#F0C2D5;
+  --card:#FFFFFF; --soft:#FFE9F2; --ink:#4A2338; --ink2:#7A4D64; --line:#5B2A45;
+  --pri:#E0508D; --pribg:#FFE1EE;
+  --gain:#2F8F47; --gainbg:#E4F3E7; --loss:#C8324B; --lossbg:#FDE4EA;
+  --gold:#C98A12; --goldbg:#FFF1CF; --goldbtn:#F2B233;
+  --life:#3F9A5A; --study:#4F6BD6; --work:#DC8424; --odd:#1F9A96; --limit:#8A56CC;
+  --lifebg:#E8F5EA; --studybg:#E9EDFC; --workbg:#FFF0DE; --oddbg:#DFF4F2; --limitbg:#F1E8FB;
+  --tile:#4A2338; --tileink:#FFF1F6;
+  --ttlfill:#FF9CC6; --ttlline:#5B2A45; --ttlsub:#C23A76;
+  --r:10px;
+  /* 數字一律用清楚的等寬字：像素字的 0 在粗體下會變成實心方塊，看不出是幾 */
+  --mono:"Space Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  font-family:"Noto Sans TC",-apple-system,"PingFang TC","Heiti TC",sans-serif;
+}
+body.night{
+  --bg:#2A1B24; --grid:#3B2833; --dot:#4C3443;
+  --card:#361F2C; --soft:#45293A; --ink:#FCE5EF; --ink2:#D5B0C2; --line:#F29BC4;
+  --pri:#F27DB0; --pribg:#4A2436;
+  --gain:#8FD39B; --gainbg:#2C3A2A; --loss:#FF8FA3; --lossbg:#4A2230;
+  --gold:#F2C45C; --goldbg:#4A3A1E; --goldbtn:#D9982A;
+  --lifebg:#2C3A2C; --studybg:#2C3148; --workbg:#46341F; --oddbg:#1F3B3A; --limitbg:#382B4A;
+  --tile:#1A0F16; --tileink:#FFC2DC;
+  --ttlfill:#FF9CC6; --ttlline:#1A0F16; --ttlsub:#FF9CC6;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  color:var(--ink); background-color:var(--bg);
+  background-image:
+    radial-gradient(var(--dot) 1.2px, transparent 1.3px),
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:24px 24px, 24px 24px, 24px 24px;
+  background-position:12px 12px, 0 0, 0 0;
+  font-size:15px; line-height:1.55; min-height:100vh; -webkit-font-smoothing:antialiased;
+  transition:background-color .6s;
+  -webkit-tap-highlight-color:transparent;
+}
+button{font:inherit;color:inherit;cursor:pointer}
+input{font:inherit;color:var(--ink)}
+[hidden]{display:none!important}
+svg.ic{width:18px;height:18px;flex:none}
+
+/* ---------- 共用元件 ---------- */
+.box{background:var(--card);border:2px solid var(--line);border-radius:var(--r);box-shadow:3px 3px 0 var(--line)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  background:var(--card);border:2px solid var(--line);border-radius:8px;
+  box-shadow:2px 2px 0 var(--line);padding:6px 12px;font-weight:700;font-size:13px}
+.btn:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--line)}
+.btn[disabled]{opacity:.45;cursor:not-allowed;transform:none;box-shadow:2px 2px 0 var(--line)}
+.btn.sm{padding:3px 8px;font-size:12px}
+.btn.blue{background:var(--pri);color:#fff}
+.btn.gold{background:var(--goldbtn);color:#2B1C00}
+.btn.red{background:var(--loss);color:#fff}
+.tiny{font-size:13px;color:var(--ink2)}
+.sq{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;
+  border:2px solid var(--line);border-radius:5px;background:var(--card);font-weight:900;padding:0;line-height:1}
+.sq:active{background:var(--soft)}
+.sq[disabled]{opacity:.35;cursor:not-allowed}
+.chk{width:22px;height:22px;border:2px solid var(--line);border-radius:4px;background:var(--card);
+  display:inline-flex;align-items:center;justify-content:center;padding:0}
+.chk.on{background:var(--gain);border-color:var(--gain)}
+.chk.on svg{display:block}
+.chk svg{display:none;width:14px;height:14px;color:#fff}
+.num{font-family:var(--mono);font-weight:700}
+
+/* 每頁的大標題：實心字＋外框＋純色偏移的硬陰影做立體感。
+   2026-09-13 她說字不清楚：原本是漸層填色＋粗描邊墊底，筆畫多的中文字（規、務、銀）會糊成一團。
+   外框改用 text-shadow 畫在字的後面，不會吃掉筆畫之間的空隙 */
+.ttl{text-align:center;margin:10px 0 18px}
+.ttl h1{display:inline-block;margin:0;font-size:clamp(32px,5.6vw,50px);font-weight:900;letter-spacing:3px;line-height:1.2;color:var(--ttlfill);
+  text-shadow:-1.5px -1.5px 0 var(--ttlline),1.5px -1.5px 0 var(--ttlline),-1.5px 1.5px 0 var(--ttlline),1.5px 1.5px 0 var(--ttlline),4px 4px 0 var(--ttlline)}
+.ttl p{display:block;margin:6px 0 0;font-family:var(--mono);font-weight:700;
+  font-size:clamp(12px,2vw,15px);letter-spacing:5px;line-height:1;color:var(--ttlsub)}
+
+.panel{padding:16px;margin-bottom:18px}
+.phead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.phead h2{margin:0;font-size:16px;font-weight:900;display:flex;align-items:center;gap:6px}
+.stats{display:flex;justify-content:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.stat{min-width:104px;text-align:center;padding:6px 12px;border:2px solid var(--line);border-radius:8px;background:var(--card);box-shadow:2px 2px 0 var(--line)}
+.stat span{display:block;font-size:11px;color:var(--ink2);font-weight:700}
+.stat b{display:block;font-family:var(--mono);font-size:20px;line-height:1.2}
+.stat.gain b{color:var(--gain)} .stat.loss b{color:var(--loss)} .stat.gold b{color:var(--gold)}
+.lock{display:flex;align-items:center;gap:8px;justify-content:center;margin:0 0 12px;padding:8px 12px;
+  border:2px dashed var(--loss);border-radius:8px;background:var(--lossbg);color:var(--loss);font-weight:700;font-size:13px;text-align:center}
+.empty{padding:14px;text-align:center;color:var(--ink2);font-size:13px}
+
+/* ---------- 登入閘門 ---------- */
+#gate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+#gate .box{max-width:380px;width:100%;padding:26px 22px;text-align:center}
+#gate .ttl{margin:0 0 14px}
+#gate .btn{width:100%;padding:10px;margin-top:10px;font-size:15px}
+#gateErr{color:var(--loss);font-size:13px;min-height:18px;margin-top:8px}
+
+/* ---------- 版面：電腦左側欄／平板頂部橫欄／手機底部分頁列 ---------- */
+#app{min-height:100vh}
+#nav{background:var(--card);border-color:var(--line);z-index:30}
+#nav .brand{display:flex;align-items:center;gap:8px;font-weight:900;font-size:16px;padding:4px 6px 14px}
+#nav .brand svg{width:26px;height:26px;color:var(--gold)}
+#nav a{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;border:2px solid transparent;
+  color:var(--ink);text-decoration:none;font-weight:700;white-space:nowrap;cursor:pointer}
+#nav a.on{background:var(--soft);border-color:var(--line);box-shadow:2px 2px 0 var(--line)}
+#nav .navfoot{margin-top:auto}
+#main{padding:0 20px 40px;max-width:1280px;margin:0 auto}
+@media (min-width:1100px){
+  #app{display:grid;grid-template-columns:200px 1fr}
+  #nav{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px;padding:16px 12px;border-right:2px solid var(--line)}
+  #main{width:100%}
+}
+@media (min-width:700px) and (max-width:1099px){
+  #nav{position:sticky;top:0;display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:2px solid var(--line);overflow-x:auto}
+  #nav .brand{padding:0 10px 0 0}
+  #nav .navfoot{margin-top:0;margin-left:auto}
+  #bar{top:58px!important}
+}
+@media (max-width:699px){
+  #nav{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:space-around;
+    padding:6px 4px calc(6px + env(safe-area-inset-bottom));border-top:2px solid var(--line)}
+  #nav .brand,#nav .navfoot{display:none}
+  #nav a{flex-direction:column;gap:2px;padding:4px 6px;font-size:11px;flex:1;align-items:center}
+  #nav a.on{box-shadow:none}
+  #main{padding:0 12px 96px}
+}
+
+/* ---------- 吸頂狀態列 ---------- */
+#bar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  background:var(--card);border-bottom:2px solid var(--line);margin:0 -20px 16px;padding:9px 20px;font-size:12px;font-weight:700}
+#bar .seg{display:flex;align-items:center;gap:6px;white-space:nowrap}
+#bar .lv{color:var(--pri)} body.night #bar .lv{color:var(--pri)}
+#bar .xpbar{width:120px;height:9px;border:2px solid var(--line);border-radius:3px;overflow:hidden;background:var(--soft)}
+#bar .xpbar i{display:block;height:100%;background:var(--pri)}
+#bar .cap{padding:1px 7px;border:2px solid;border-radius:5px;font-size:11px}
+#bar .cap.life{color:var(--life);border-color:var(--life);background:var(--lifebg)}
+#bar .cap.study{color:var(--study);border-color:var(--study);background:var(--studybg)}
+#bar .cap.work{color:var(--work);border-color:var(--work);background:var(--workbg)}
+#bar .sync{margin-left:auto;display:flex;align-items:center;gap:5px;background:none;border:0;padding:2px 4px;font-size:12px;font-weight:700;color:var(--ink2)}
+#bar .sync i{width:9px;height:9px;border-radius:50%;background:#B7B7B7;border:1.5px solid var(--line)}
+#bar .sync.ok i{background:#43B05C} #bar .sync.err i{background:var(--loss)} #bar .sync.local i{background:var(--goldbtn)}
+@media (max-width:699px){ #bar{margin:0 -12px 12px;padding:8px 12px;gap:8px} #bar .xpbar{width:56px} #bar .sync span{display:none} }
+
+/* ---------- 首頁 ---------- */
+.rules{list-style:none;margin:0 0 24px;padding:0;display:flex;flex-direction:column;gap:8px}
+.rules li{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;background:var(--card);border:2px solid var(--line);border-radius:8px}
+.rules .no{flex:none;width:22px;height:22px;border-radius:50%;color:#fff;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.rules b{flex:none;font-weight:900;min-width:64px}
+.rules .desc{color:var(--ink2)}
+@media (max-width:699px){ .rules li{flex-wrap:wrap} .rules .desc{flex-basis:100%;padding-left:32px;margin-top:-4px} }
+.clockwrap{display:flex;flex-direction:column;align-items:center;gap:8px;margin:6px 0 22px}
+.clock{display:flex;align-items:center;gap:10px;touch-action:none;user-select:none;cursor:grab;padding:10px;border-radius:14px}
+.clock.drag{cursor:grabbing;background:var(--soft)}
+.clock .tile{position:relative;width:clamp(70px,14vw,104px);height:clamp(76px,15vw,112px);border-radius:10px;background:var(--tile);
+  color:var(--tileink);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:700;
+  font-size:clamp(40px,8vw,62px);box-shadow:3px 4px 0 rgba(0,0,0,.35);overflow:hidden;perspective:300px}
+.clock .tile::after{content:"";position:absolute;left:0;right:0;top:50%;height:2px;background:rgba(255,255,255,.12)}
+.clock .tile span{display:block}
+.clock .tile span.flip{animation:flip .38s ease-out}
+@keyframes flip{0%{transform:rotateX(80deg);opacity:.2}100%{transform:rotateX(0);opacity:1}}
+.clock .colon{font-size:32px;font-weight:900;color:var(--ink2)}
+.clock-off{font-size:12px;font-weight:700;color:var(--loss)}
+.exec{display:flex;width:100%;align-items:center;justify-content:center;gap:8px;padding:13px;border:2px solid var(--line);border-radius:8px;
+  background:var(--pri);color:#fff;font-size:16px;font-weight:900;box-shadow:3px 3px 0 var(--line)}
+.exec:active{transform:translate(3px,3px);box-shadow:none}
+.exec[disabled]{background:#C4AAB7;cursor:default;transform:none;box-shadow:3px 3px 0 var(--line)}
+.execNote{text-align:center;font-weight:700;margin:10px 0 0;font-size:13px}
+
+/* 首頁上半：左邊人物卡、右邊規則（窄螢幕上下疊，人物卡在上） */
+.homegrid{display:grid;grid-template-columns:300px minmax(0,1fr);gap:18px;align-items:stretch;margin-bottom:24px}
+@media (max-width:860px){ .homegrid{grid-template-columns:1fr} }
+.homegrid .rules{margin:0}
+.homegrid .rules li{flex:1;align-items:center}   /* 跟人物卡等高時，是每一條變高，不是條與條之間空一大段 */
+.who{padding:16px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px}
+.who .ava{position:relative;width:108px;height:108px;border:3px solid var(--line);border-radius:12px;overflow:hidden;background:var(--soft);padding:0;box-shadow:3px 3px 0 var(--line);margin-bottom:4px}
+.who .ava img{width:100%;height:100%;object-fit:cover;display:block}
+.who .ava .ph{display:flex;width:100%;height:100%;align-items:center;justify-content:center;font-size:46px;font-weight:900;color:#fff;background:var(--pri)}
+.who .ava .cam{position:absolute;left:0;right:0;bottom:0;font-size:11px;font-weight:700;background:rgba(91,42,69,.8);color:#fff;padding:1px 0}
+.who .badges{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:2px 0 4px}
+.who .bdg{font-size:12px;font-weight:900;padding:1px 8px;border:2px solid var(--line);border-radius:6px;background:var(--card)}
+.who .bdg.lv{background:var(--pri);color:#fff}
+.who .bdg.fund{color:var(--gold)}
+.who .fld{width:100%;border:2px solid transparent;border-radius:6px;background:transparent;padding:3px 6px;color:var(--ink);font-family:inherit}
+.who .fld:hover{border-color:var(--grid)}
+.who .fld:focus{outline:none;border-color:var(--line);background:var(--card)}
+.who .fld::placeholder{color:var(--ink2);opacity:.7;font-weight:500}
+.who input.nm{font-size:22px;font-weight:900;text-align:center}
+.who input.ttlf{font-size:14px;font-weight:700;color:var(--ink2);text-align:center}
+.who .sect{width:100%;text-align:left;border-top:2px dashed var(--grid);padding-top:8px;margin-top:2px}
+.who .sect label{display:block;font-size:12px;font-weight:900;color:var(--ink2);padding-left:6px}
+.who textarea.fld{min-height:48px;resize:vertical;font-size:14px;font-weight:500;line-height:1.55}
+
+/* ---------- 每日任務 ---------- */
+.submit{display:block;width:100%;padding:10px;border:2px solid var(--line);border-radius:8px;background:#D9A8BF;color:#fff;font-weight:900;margin-bottom:14px;box-shadow:2px 2px 0 var(--line)}
+.submit.ready{background:var(--pri)}
+.submit[disabled]{cursor:default}
+.cols{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+@media (max-width:1280px){ .cols{grid-template-columns:repeat(3,minmax(0,1fr))} }
+@media (max-width:760px){ .cols{grid-template-columns:1fr} }
+.col{border:2px solid var(--line);border-radius:8px;overflow:hidden;background:var(--card);display:flex;flex-direction:column}
+.col>header{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-bottom:2px solid var(--line);font-weight:900}
+.col>header small{font-weight:700;color:var(--ink2);margin-left:4px}
+.col.life>header{background:var(--lifebg)} .col.study>header{background:var(--studybg)} .col.work>header{background:var(--workbg)}
+.col.odd>header{background:var(--oddbg)} .col.limit>header{background:var(--limitbg)}
+.trow{display:flex;align-items:center;gap:6px;padding:6px 8px;border-bottom:1px dashed var(--grid)}
+.trow:last-child{border-bottom:0}
+.trow .pts{flex:none;min-width:26px;height:22px;padding:0 4px;border-radius:11px;border:2px solid;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.col.life .pts{color:var(--life)} .col.study .pts{color:var(--study)} .col.work .pts{color:var(--work)} .col.odd .pts{color:var(--odd)} .col.limit .pts{color:var(--limit)}
+.trow .nm{flex:1;min-width:0;font-weight:700;font-size:14px;overflow-wrap:anywhere}
+.trow .nm small{display:block;font-weight:500;color:var(--gain);font-size:11px}
+.trow .cnt{min-width:16px;text-align:center;font-weight:900;font-size:13px}
+.trow .once{flex:none;font-size:10px;font-weight:900;color:#fff;background:var(--loss);border-radius:3px;padding:1px 4px}
+.trow input{min-width:0;border:2px solid var(--line);border-radius:5px;padding:3px 6px;background:var(--card)}
+.trow input.nmi{flex:1}
+.trow input.pti{width:54px;flex:none;text-align:center}
+.addrow{margin:6px 8px 8px;padding:5px;border:2px dashed var(--line);border-radius:6px;background:transparent;font-weight:900;color:var(--ink2)}
+.col .colbody{flex:1}
+.donelist{display:flex;flex-direction:column;gap:6px}
+.done{display:flex;align-items:center;gap:8px;padding:6px 10px;border:2px solid var(--line);border-radius:8px;background:var(--card);font-size:13px}
+.done .tag{font-size:11px;font-weight:900;padding:0 6px;border-radius:4px;color:#fff}
+.done .nm{flex:1;min-width:0;font-weight:700}
+.done .pv{font-weight:900;color:var(--gain)}
+/* 專注計時 */
+.focus .timer{font-family:var(--mono);font-weight:700;font-size:clamp(40px,9vw,64px);text-align:center;line-height:1.1;margin:4px 0 12px;letter-spacing:2px}
+.focus .timer.run{color:var(--gain)}
+.focus .fbtns{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.focus .rate{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;font-size:13px}
+.focus .rate input{width:56px;text-align:center;border:2px solid var(--line);border-radius:5px;padding:2px 4px;background:var(--card)}
+
+/* ---------- 商城／基金 ---------- */
+.shop{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-bottom:16px}
+.item{display:flex;align-items:center;gap:6px;padding:8px 10px;border:2px solid var(--line);border-radius:8px;background:var(--card)}
+.item .nm{flex:1;min-width:0;font-weight:900;font-size:13px}
+.item .pr{font-size:12px;font-weight:700;color:var(--gold);white-space:nowrap}
+.item .pr s{color:var(--ink2);font-weight:500;margin-right:3px}
+.item input{min-width:0;border:2px solid var(--line);border-radius:5px;padding:3px 6px;background:var(--card)}
+.item input.nmi{flex:1} .item input.pri{width:62px;text-align:center} .item input.uni{width:48px;text-align:center}
+.remain{display:flex;flex-direction:column;align-items:center;gap:10px}
+.remain .rbox{min-width:150px;text-align:center;padding:6px 16px 8px;border:2px solid var(--line);border-radius:10px;box-shadow:2px 2px 0 var(--line);background:var(--card)}
+.remain .rbox span{font-size:11px;font-weight:700;color:var(--ink2)}
+.remain .rbox b{display:block;font-family:var(--mono);font-size:24px;border:2px dashed var(--grid);border-radius:6px;margin-top:2px;color:var(--pri)}
+body.night .remain .rbox b{color:var(--pri)}
+.bank{text-align:center;padding:18px 10px 8px}
+.bank .big{display:inline-block;font-family:var(--mono);font-weight:700;font-size:clamp(56px,14vw,110px);line-height:1;color:var(--gold);
+  text-shadow:4px 4px 0 var(--line);cursor:text;user-select:none;letter-spacing:4px}
+.bank input.big{width:min(90%,420px);text-align:center;border:3px dashed var(--line);border-radius:10px;background:var(--goldbg);text-shadow:none;user-select:auto}
+.bank .tiny{margin-top:6px}
+
+/* ---------- 提示與視窗 ---------- */
+#toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;z-index:99;
+  background:var(--ink);color:var(--card);padding:9px 16px;border-radius:8px;font-weight:700;font-size:13px;max-width:90vw;text-align:center;
+  transition:opacity .2s,transform .2s;box-shadow:3px 3px 0 rgba(0,0,0,.25)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (max-width:699px){ #toast{bottom:92px} }
+.modal{position:fixed;inset:0;background:rgba(60,20,42,.45);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}
+.modal .box{width:100%;max-width:360px;padding:18px}
+.modal h3{margin:0 0 8px;font-size:16px}
+.modal .btns{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+</style>
+</head>
+<body>
+<div id="gate">
+  <div class="box">
+    <div class="ttl"><h1 data-t="積分系統">積分系統</h1><p>SELF DISCIPLINE</p></div>
+    <div class="tiny">做事賺積分、娛樂花積分，剩下的存進基金。<br>用 Google 登入，電腦手機看到同一份。</div>
+    <button class="btn blue" id="gateBtn">用 Google 登入</button>
+    <button class="btn" id="gateLocal">先不登入，只用這台裝置</button>
+    <div id="gateErr"></div>
+  </div>
+</div>
+
+<div id="app" hidden>
+  <nav id="nav">
+    <div class="brand"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M10 2h4v2h2v2h2v2h2v8h-2v2h-2v2h-2v2h-4v-2H8v-2H6v-2H4V8h2V6h2V4h2z"/><path fill="#fff" d="M11 7h2v3h3v2h-3v5h-2v-5H8v-2h3z"/></svg>積分系統</div>
+    <div id="navLinks" style="display:contents"></div>
+    <div class="navfoot tiny" id="navFoot"></div>
+  </nav>
+
+  <div id="main">
+    <header id="bar">
+      <div class="seg" id="barLv"></div>
+      <div class="seg" id="barDims"></div>
+      <button class="sync" id="syncBtn" title="雲端同步"><i></i><span id="syncTxt">連線中</span></button>
+    </header>
+
+    <!-- 首頁 -->
+    <section class="page" data-page="home">
+      <div class="ttl"><h1>系統規則</h1><p>SYSTEM RULE</p></div>
+      <div class="homegrid">
+        <div class="box who" id="who">
+          <button class="ava" id="whoAva" title="換頭像"></button>
+          <input type="file" id="whoFile" accept="image/*" hidden>
+          <input class="fld nm" data-pf="name" placeholder="你的名字" maxlength="20">
+          <input class="fld ttlf" data-pf="title" placeholder="一句話介紹自己" maxlength="40">
+          <div class="badges" id="whoBadges"></div>
+          <div class="sect"><label>自我介紹</label><textarea class="fld" data-pf="intro" placeholder="寫幾句你是誰、在做什麼" maxlength="300"></textarea></div>
+          <div class="sect"><label>現在的目標</label><textarea class="fld" data-pf="goal" placeholder="這陣子最想達成的一件事" maxlength="120"></textarea></div>
+        </div>
+        <ol class="rules" id="rules"></ol>
+      </div>
+      <div class="clockwrap">
+        <div class="clock" id="clock" title="按住轉圈可以調時間">
+          <div class="tile"><span id="ckH">00</span></div><div class="colon">:</div>
+          <div class="tile"><span id="ckM">00</span></div><div class="colon">:</div>
+          <div class="tile"><span id="ckS">00</span></div>
+        </div>
+        <div class="clock-off" id="clockOff" hidden></div>
+        <button class="btn sm" id="clockReset">回到現在</button>
+        <div class="tiny">按住時鐘轉一圈＝調一小時，只是看時間，不影響商城開放時段</div>
+      </div>
+      <button class="exec" id="execBtn"></button>
+      <p class="execNote" id="execNote"></p>
+    </section>
+
+    <!-- 每日任務 -->
+    <section class="page" data-page="task" hidden>
+      <div class="ttl"><h1 data-t="每日任務">每日任務</h1><p>DAILY TASK</p></div>
+      <div class="box panel">
+        <div class="stats">
+          <div class="stat gain"><span>今日賺分</span><b id="tEarn">0</b></div>
+          <div class="stat"><span>完成任務數</span><b id="tCount">0</b></div>
+        </div>
+        <button class="submit" id="tSubmit" disabled>提交任務</button>
+        <div class="cols" id="tCols"></div>
+      </div>
+      <div class="box panel focus">
+        <div class="phead"><h2>專注計時</h2><span class="tiny" id="fToday"></span></div>
+        <div class="timer" id="fTimer">00:00:00</div>
+        <div class="fbtns">
+          <button class="btn blue" id="fStart">開始</button>
+          <button class="btn" id="fSave">保存入帳</button>
+          <button class="btn" id="fReset">重置</button>
+        </div>
+        <div class="rate">每 <input type="number" min="1" id="fRateMin"> 分鐘換 <input type="number" min="0" step="0.5" id="fRatePts"> 分<span class="tiny">（不滿一段不計分）</span></div>
+      </div>
+      <div class="box panel">
+        <div class="phead"><h2>今天已提交</h2><span class="tiny">按錯了可以撤回</span></div>
+        <div class="donelist" id="tDone"></div>
+      </div>
+    </section>
+
+    <!-- 積分商城 -->
+    <section class="page" data-page="mall" hidden>
+      <div class="ttl"><h1 data-t="積分商城">積分商城</h1><p>POINT MALL</p></div>
+      <div class="box panel">
+        <div class="stats">
+          <div class="stat gain"><span>今日賺分</span><b id="mEarn">0</b></div>
+          <div class="stat loss"><span>消費積分</span><b id="mSpent">0</b></div>
+        </div>
+        <div class="lock" id="mLock" hidden></div>
+        <div class="phead"><span class="tiny">按 ＋ 就是換一份，當場扣分；按 − 是退回今天換的</span><button class="btn sm" id="mEdit">編輯品項</button></div>
+        <div class="shop" id="mGrid"></div>
+        <div class="remain">
+          <div class="rbox"><span>剩餘積分</span><b id="mRemain">0</b></div>
+          <button class="btn gold" id="mDeposit">存入基金</button>
+          <div class="tiny">沒存的也會在隔天打開時自動存進去</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 基金銀行 -->
+    <section class="page" data-page="fund" hidden>
+      <div class="ttl"><h1 data-t="基金銀行">基金銀行</h1><p>FUND BANK</p></div>
+      <div class="box panel">
+        <div class="bank">
+          <div class="big" id="fBal" title="點兩下可以改">0000</div>
+          <div class="tiny" id="fBalHint">點兩下可以直接改金額</div>
+        </div>
+        <div class="stats">
+          <div class="stat loss"><span>今日基金消費</span><b id="fdSpent">0</b></div>
+          <div class="stat gold"><span>今日存入</span><b id="fdIn">0</b></div>
+        </div>
+        <div class="tiny" id="fdAuto" style="text-align:center;margin:-4px 0 12px"></div>
+        <div class="lock" id="fdLock" hidden></div>
+        <div class="phead"><span class="tiny">大一點的東西用基金換，基金不夠就不能換</span><button class="btn sm" id="fdEdit">編輯品項</button></div>
+        <div class="shop" id="fdGrid"></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="modal" id="mAcct" hidden>
+  <div class="box">
+    <h3>資料存在哪裡</h3>
+    <div class="tiny" id="acctTxt"></div>
+    <div class="btns">
+      <button class="btn blue" id="acctLogin">用 Google 登入雲端</button>
+      <button class="btn" id="acctLogout">登出</button>
+      <button class="btn" id="acctClose">關閉</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script type="module">
+/* 積分自律系統（2026-09-13 起做，計劃書 100_Todo/plans/2026-09-13-積分自律系統.md）
+   做事賺積分、娛樂花積分，當天沒花完的存進基金。
+   資料跟工作台、記帳同一個 Firebase 專案，但是獨立節點、獨立規則，互不相干。 */
+
+const OWNER_EMAIL = 'zhuer0323@gmail.com';
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAWOXPFBmb-lU90dpBOq2B8Gn7LsR2p-jM",
+  authDomain: "busan-trip-2026-201f8.firebaseapp.com",
+  databaseURL: "https://busan-trip-2026-201f8-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "busan-trip-2026-201f8",
+  storageBucket: "busan-trip-2026-201f8.firestorage.app",
+  messagingSenderId: "300878890409",
+  appId: "1:300878890409:web:c80543dc5c43f6d81bb0b8"
+};
+const ROOM     = 'pt_v8k3n6wq';          // 改名要同步改 Firebase 規則
+const LS_KEY   = 'dora_points_v1';
+const PQ_KEY   = 'dora_points_pending';  // 還沒寫上雲端的改動，連上再補
+const MODE_KEY = 'dora_points_mode';     // 'cloud' 登入雲端／'local' 只用這台
+const DRAFT_KEY= 'dora_points_draft';    // 每日任務勾了還沒提交的草稿，只留在這台
+
+/* ---------- 起始內容（2026-09-13 照她的生活擬，分數區間照原指令） ---------- */
+const CATS = [
+  { k:'life',  n:'生活類',   def:1  },
+  { k:'study', n:'學習類',   def:10 },
+  { k:'work',  n:'工作類',   def:10 },
+  { k:'odd',   n:'偶發類',   def:15 },
+  { k:'limit', n:'限時任務', def:25 },
+];
+const CAT_NAME = Object.fromEntries(CATS.map(c => [c.k, c.n]));
+const CAT_COLOR = { life:'var(--life)', study:'var(--study)', work:'var(--work)', odd:'var(--odd)', limit:'var(--limit)' };
+const T = (id, name, pts) => ({ id, name, pts });
+const SEED_TASKS = {
+  life:  [T('l1','喝水 2000cc',1), T('l2','好好吃早餐',1), T('l3','整理桌面',2), T('l4','保養',2),
+          T('l5','做家事',3), T('l6','散步 20 分鐘',3), T('l7','23:30 前睡覺',5), T('l8','7:30 前起床',5)],
+  study: [T('s1','讀書 20 分鐘',10), T('s2','看一支廣告教學影片',10), T('s3','研究 Meta 後台新功能',15),
+          T('s4','整理學習筆記',15), T('s5','試做一個 AI 小工具',20), T('s6','上完一堂線上課',25)],
+  work:  [T('w1','廣告巡檢一輪',10), T('w2','客戶訊息全部回完',10), T('w3','寫完一家廣告回報',15),
+          T('w4','做素材或文案',20), T('w5','報價單或提案',25), T('w6','結案報表',30)],
+  odd:   [T('o1','跟家人好好吃頓飯',15), T('o2','聯絡一位老朋友',15), T('o3','運動健身',20),
+          T('o4','大掃除',30), T('o5','解決拖很久的一件事',40)],
+  limit: [T('x1','整理衣櫃換季',50), T('x2','更新作品集',100)],
+};
+/* 商城品項的 tag 是給轉盤 Buff 用的（娛樂半價、手搖飲半價、外送免分、綜藝禁兌），第二批才會用到 */
+const M = (id, name, price, unit, tag) => ({ id, name, price, unit, tag });
+const SEED_MALL = [
+  M('m1','補差價專用',1,'','other'), M('m2','購物',1,'/元','shop'), M('m3','追劇',10,'/集','ent'),
+  M('m4','手遊',15,'/小時','ent'), M('m5','電影',20,'/部','ent'), M('m6','綜藝',20,'/集','show'),
+  M('m7','手搖飲',30,'/杯','drink'), M('m8','甜點',30,'/份','food'), M('m9','外送',50,'/次','delivery'),
+  M('m10','外出大餐',150,'/次','food'), M('m11','按摩',200,'/次','ent'), M('m12','耍廢日',400,'/天','ent'),
+  M('m13','心願盲盒',1000,'','other'),
+];
+const SEED_FUND = [
+  M('f1','買一本書',400,'','shop'), M('f2','一次美甲',1000,'','shop'), M('f3','保養品',1200,'','shop'),
+  M('f4','一件衣服',1500,'','shop'), M('f5','3C 小物',3000,'','shop'), M('f6','小旅行',5000,'','shop'),
+  M('f7','心願清單大禮',10000,'','shop'),
+];
+const RULES = [
+  { t:'任務賺分', c:'#3A74D4', d:'按時完成生活、學習、工作類等任務，就能賺到對應的積分。' },
+  { t:'娛樂花分', c:'#C0508A', d:'追劇、手遊、購物、外送這些娛樂，一律要用已經賺到的積分換。' },
+  { t:'時間結界', c:'#7552CC', d:'平日 8:00–19:00 是任務時間，19:00 後才開放娛樂；週末全天開放。' },
+  { t:'積分日清', c:'#DC8424', d:'娛樂只能用當天賺的積分換，不能跨日；沒花完的自動存進基金。' },
+  { t:'禁止賒帳', c:'#3F9A5A', d:'積分不夠就是不夠，不能先換再補。' },
+];
+const defCfg = () => ({
+  seedV: 1,
+  tasks: JSON.parse(JSON.stringify(SEED_TASKS)),
+  mall:  SEED_MALL.map(x => ({...x})),
+  fund:  SEED_FUND.map(x => ({...x})),
+  focus: { min:25, pts:10 },
+  profile: { name:'朱兒', title:'廣告行銷經理・台中', intro:'', goal:'', photo:'' },   // 首頁人物卡
+});
+
+/* ---------- 狀態 ----------
+   S 就是雲端節點的整棵樹，本機與雲端長一樣：
+   cfg                      設定（任務清單、商城、基金品項、專注換算）
+   days/{日期}/done/{任務id} 已提交的任務 {n 名稱, c 類別, p 單次分數, k 次數}（存快照，之後改清單不影響舊紀錄）
+   days/{日期}/mall/{品項id} 商城兌換 {n, k 份數, t 總共花掉}
+   days/{日期}/focus/{id}   專注紀錄 {m 分鐘, p 積分, at}
+   days/{日期}/signed       首頁「系統執行」簽到
+   days/{日期}/buff、challengeNet、manualEarn  第二、三批才會寫
+   fundLog/{id}             基金的每一筆進出 {d 歸屬日, amt 正存負扣, kind, n}
+                            ——餘額永遠是加總算出來的，不存單一數字，兩台同時動也不會互蓋
+   run                      專注計時進行中的狀態 {startAt, acc}，跨裝置接得上 */
+let S = { cfg: defCfg(), days:{}, fundLog:{}, run:{ startAt:null, acc:0 } };
+let pending = {};              // path -> value（null 代表刪除）
+let mode = '';
+let _db=null, _ref=null, _set=null, _ready=false, _user=null;
+let page = 'home';
+let clockOffset = 0;           // 首頁時鐘被轉過的毫秒數，只影響顯示與夜間配色
+const editing = { life:false, study:false, work:false, odd:false, limit:false, mall:false, fund:false };
+
+const $  = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+
+/* ---------- 小工具 ---------- */
+const uid  = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const pad2 = n => String(n).padStart(2,'0');
+const ymd  = t => `${t.getFullYear()}-${pad2(t.getMonth()+1)}-${pad2(t.getDate())}`;
+const today = () => ymd(new Date());
+const r1   = n => Math.round(n*10)/10;
+const fmt  = n => { n = r1(n); return Number.isInteger(n) ? String(n) : n.toFixed(1); };
+const esc  = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const vals = o => Object.values(o || {});
+function toast(msg){
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2600);
+}
+const ICONS = {
+  home:'M3 11l9-7 9 7M5 10v10h5v-6h4v6h5V10',
+  task:'M10 6h10M10 12h10M10 18h10M3.5 6l1.5 1.5L7.5 5M3.5 12l1.5 1.5 2.5-2.5M3.5 18l1.5 1.5 2.5-2.5',
+  mall:'M5 8h14l-1 12H6L5 8zM9 8V6a3 3 0 016 0v2',
+  fund:'M3 10h18M5 10l7-5 7 5M6 10v8M10 10v8M14 10v8M18 10v8M3 20h18',
+  check:'M5 12l4 4 10-10',
+  play:'M7 5l12 7-12 7z',
+  pause:'M8 5v14M16 5v14',
+};
+const icon = (k, cls='ic') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" stroke-linejoin="miter"><path d="${ICONS[k]}"/></svg>`;
+
+/* ---------- 讀寫 ----------
+   所有改動一律走 put(路徑, 值)：先改本機那棵樹、存 localStorage、排進待寫清單，
+   登入雲端的話再寫上去，寫成功才從待寫清單拿掉。沒網路時重開網頁也不會掉。 */
+function getPath(path){ return path.split('/').reduce((o,k) => (o == null ? undefined : o[k]), S); }
+function setPath(obj, path, val){
+  const ks = path.split('/'); let o = obj;
+  for(let i=0;i<ks.length-1;i++){ if(o[ks[i]] == null || typeof o[ks[i]] !== 'object') o[ks[i]] = {}; o = o[ks[i]]; }
+  if(val === null || val === undefined) delete o[ks.at(-1)]; else o[ks.at(-1)] = val;
+}
+function saveLocal(){
+  try{
+    localStorage.setItem(LS_KEY, JSON.stringify(S));
+    localStorage.setItem(PQ_KEY, JSON.stringify(pending));
+  }catch(e){ console.warn('saveLocal', e); }
+}
+function loadLocal(){
+  try{
+    const d = JSON.parse(localStorage.getItem(LS_KEY) || 'null');
+    if(d) S = normalize(d);
+    pending = JSON.parse(localStorage.getItem(PQ_KEY) || '{}') || {};
+  }catch(e){ console.warn('loadLocal', e); }
+}
+function normalize(d){
+  const out = { cfg: Object.assign(defCfg(), d.cfg || {}), days: d.days || {}, fundLog: d.fundLog || {}, run: d.run || { startAt:null, acc:0 } };
+  const c = out.cfg;
+  c.tasks = Object.assign({ life:[], study:[], work:[], odd:[], limit:[] }, c.tasks || {});
+  for(const k of Object.keys(c.tasks)) c.tasks[k] = Array.isArray(c.tasks[k]) ? c.tasks[k] : vals(c.tasks[k]);
+  c.mall = Array.isArray(c.mall) ? c.mall : vals(c.mall);   // Firebase 會把空陣列吃掉、把陣列存成物件
+  c.fund = Array.isArray(c.fund) ? c.fund : vals(c.fund);
+  c.focus = Object.assign({ min:25, pts:10 }, c.focus || {});
+  c.profile = Object.assign({ name:'', title:'', intro:'', goal:'', photo:'' }, c.profile || {});
+  return out;
+}
+function put(path, val){
+  setPath(S, path, val);
+  pending[path] = (val === undefined ? null : val);
+  saveLocal();
+  writeCloud(path);
+}
+function writeCloud(path){
+  if(!_ready) return;
+  const val = pending[path];
+  _set(_ref(_db, `${ROOM}/${path}`), val).then(() => {
+    if(JSON.stringify(pending[path]) === JSON.stringify(val)){ delete pending[path]; saveLocal(); }
+    setSync();
+  }).catch(e => { console.warn('write', path, e); setSync('err', e.message); });
+}
+function flushPending(){ if(_ready) Object.keys(pending).forEach(writeCloud); }
+const putCfg = () => put('cfg', S.cfg);
+
+/* ---------- 算分引擎：所有頁面都從這裡讀數字，不各算各的 ---------- */
+const dayRec  = d => S.days[d] || {};
+const buffOf  = d => dayRec(d).buff || null;
+/* 賺分套 Buff，優先順序：固定值 > 分類翻倍 > 全體減半 > 原值（第一批還沒有轉盤，buff 一律是 null → 原值） */
+function earnPts(cat, p, buff){
+  if(!buff) return p;
+  if(buff.type === 'fixed'  && buff.cat === cat) return buff.val;
+  if(buff.type === 'double' && buff.cat === cat) return p * 2;
+  if(buff.type === 'half') return p / 2;
+  return p;
+}
+/* 商城價格套 Buff：禁兌直接擋、免分變 0、半價打五折 */
+function priceOf(item, buff){
+  if(buff && buff.side === 'mall' && (buff.tag === item.tag || buff.tag === '*')){
+    if(buff.type === 'ban')  return { price:item.price, banned:true };
+    if(buff.type === 'free') return { price:0 };
+    if(buff.type === 'half') return { price:item.price / 2 };
+  }
+  return { price:item.price };
+}
+function taskEarn(d){
+  const b = buffOf(d); const earnB = b && b.side !== 'mall' ? b : null;
+  return vals(dayRec(d).done).reduce((s,e) => s + earnPts(e.c, e.p, earnB) * e.k, 0);
+}
+const focusNet = d => vals(dayRec(d).focus).reduce((s,e) => s + (e.p || 0), 0);
+function dayEarn(d){
+  const r = dayRec(d);
+  if(typeof r.manualEarn === 'number') return r.manualEarn;     // 手動填過就直接用，不再疊加
+  const b = buffOf(d); const flat = b && b.type === 'flat' ? b.val : 0;
+  return r1(taskEarn(d) + (r.challengeNet || 0) + focusNet(d) + flat);
+}
+const daySpent     = d => r1(vals(dayRec(d).mall).reduce((s,e) => s + (e.t || 0), 0));
+const dayDeposited = d => r1(vals(S.fundLog).filter(e => e.d === d && (e.kind === 'deposit' || e.kind === 'auto')).reduce((s,e) => s + e.amt, 0));
+const dayBalance   = d => r1(dayEarn(d) - daySpent(d) - dayDeposited(d));
+const fundBalance  = () => r1(vals(S.fundLog).reduce((s,e) => s + (e.amt || 0), 0));
+const fundSpentOn  = d => r1(vals(S.fundLog).filter(e => e.d === d && e.kind === 'spend').reduce((s,e) => s - e.amt, 0));
+function totalXP(){ return Math.max(0, r1(Object.keys(S.days).reduce((s,d) => s + dayEarn(d), 0))); }
+/* 等級＝經驗值開平方：Lv.10 要 8100、Lv.11 要 10000（對照參考圖 Lv.10 顯示 8119/10000） */
+function levelOf(xp){
+  const lv = Math.floor(Math.sqrt(xp) / 10) + 1;
+  const prev = ((lv-1)*10) ** 2, next = (lv*10) ** 2;
+  return { lv, next, pct: Math.min(100, (xp - prev) / (next - prev) * 100) };
+}
+function dims(){
+  const out = { life:0, study:0, work:0 };
+  for(const d of Object.keys(S.days)){
+    const b = buffOf(d); const eb = b && b.side !== 'mall' ? b : null;
+    for(const e of vals(dayRec(d).done)) if(e.c in out) out[e.c] += earnPts(e.c, e.p, eb) * e.k;
+  }
+  return out;
+}
+function streak(){
+  let n = 0; const t = new Date();
+  if(!dayRec(ymd(t)).signed) t.setDate(t.getDate() - 1);     // 今天還沒簽，從昨天往回數
+  while(dayRec(ymd(t)).signed){ n++; t.setDate(t.getDate() - 1); }
+  return n;
+}
+/* 時間結界：週一到週五 8:00–19:00 商城鎖住。一律看真實時間，首頁時鐘轉過不算 */
+function isLocked(now = new Date()){
+  const wd = now.getDay(), h = now.getHours();
+  return wd >= 1 && wd <= 5 && h >= 8 && h < 19;
+}
+/* 積分日清：過去每一天沒花完的分，自動存進基金。
+   網頁沒開著沒辦法準時結，所以是「打開時補結」。
+   存入那筆的 id 固定是 auto_日期，兩台裝置同時結也只會是同一筆，不會多存一倍 */
+function settleDays(){
+  const t = today(); const got = [];
+  for(const d of Object.keys(S.days).sort()){
+    if(d >= t || S.fundLog['auto_' + d]) continue;
+    const bal = dayBalance(d);
+    if(bal > 0){ put(`fundLog/auto_${d}`, { d, amt:bal, kind:'auto', ts:Date.now() }); got.push([d, bal]); }
+  }
+  if(got.length){
+    const sum = r1(got.reduce((s,x) => s + x[1], 0));
+    toast(got.length === 1 ? `${got[0][0].slice(5).replace('-','/')} 剩下的 ${fmt(sum)} 分已自動存進基金` : `前幾天剩下的 ${fmt(sum)} 分已自動存進基金`);
+  }
+}
+
+/* ---------- 導航與分頁（第一批四頁；其餘頁面做好才加進來，不放「還沒開放」的假格子） ---------- */
+const PAGES = [
+  { k:'home', n:'首頁',     ic:'home' },
+  { k:'task', n:'每日任務', ic:'task' },
+  { k:'mall', n:'積分商城', ic:'mall' },
+  { k:'fund', n:'基金銀行', ic:'fund' },
+];
+function renderNav(){
+  $('#navLinks').innerHTML = PAGES.map(p =>
+    `<a data-page="${p.k}" class="${p.k === page ? 'on' : ''}">${icon(p.ic)}<span>${p.n}</span></a>`).join('');
+}
+function gotoPage(k){
+  if(!PAGES.some(p => p.k === k)) k = 'home';
+  page = k;
+  $$('.page').forEach(s => s.hidden = s.dataset.page !== k);
+  $$('#navLinks a').forEach(a => a.classList.toggle('on', a.dataset.page === k));
+  try{ localStorage.setItem('dora_points_page', k); }catch(e){}
+  window.scrollTo(0, 0);
+}
+$('#navLinks').addEventListener('click', e => { const a = e.target.closest('a[data-page]'); if(a) gotoPage(a.dataset.page); });
+
+/* ---------- 吸頂狀態列 ---------- */
+function renderBar(){
+  const xp = totalXP(); const L = levelOf(xp); const dm = dims();
+  $('#barLv').innerHTML = `<span class="lv">★ Lv.${L.lv}</span><span class="xpbar"><i style="width:${L.pct.toFixed(1)}%"></i></span><span class="tiny">${fmt(xp)}/${L.next}</span>`;
+  $('#barDims').innerHTML = `<span class="cap life">生活 ${fmt(dm.life)}</span><span class="cap study">學習 ${fmt(dm.study)}</span><span class="cap work">工作 ${fmt(dm.work)}</span>`;
+}
+function setSync(state, msg){
+  const b = $('#syncBtn'), t = $('#syncTxt');
+  b.className = 'sync';
+  const n = Object.keys(pending).length;
+  if(mode === 'local'){ b.classList.add('local'); t.textContent = '只存這台'; }
+  else if(state === 'err'){ b.classList.add('err'); t.textContent = '沒連上'; b.title = msg || ''; }
+  else if(!_ready){ t.textContent = '連線中'; }
+  else if(n){ t.textContent = `待補 ${n} 筆`; }
+  else { b.classList.add('ok'); t.textContent = '已同步'; }
+}
+$('#syncBtn').onclick = () => {
+  const cloud = mode === 'cloud' && _ready;
+  $('#acctTxt').innerHTML = cloud
+    ? `已用 ${esc(_user?.email || '')} 登入，資料存在雲端，電腦手機看到同一份。`
+    : mode === 'local'
+      ? '目前只存在這台裝置的瀏覽器裡，換裝置或清掉瀏覽器資料就看不到了。<br>登入後，這台記過的會一起帶上雲端（雲端還沒有資料的話）。'
+      : '還沒連上雲端。';
+  $('#acctLogin').hidden = cloud;
+  $('#acctLogout').hidden = !cloud;
+  $('#mAcct').hidden = false;
+};
+$('#acctClose').onclick = () => $('#mAcct').hidden = true;
+$('#mAcct').onclick = e => { if(e.target.id === 'mAcct') $('#mAcct').hidden = true; };
+$('#acctLogout').onclick = () => { try{ localStorage.removeItem(MODE_KEY); }catch(e){} if(window._signOut) window._signOut(); else location.reload(); };
+$('#acctLogin').onclick = async () => {
+  try{ await initFirebase(true); $('#mAcct').hidden = true; toast('已登入，資料開始同步'); }
+  catch(e){ toast(e.message || '登入失敗'); }
+};
+
+/* ---------- 首頁：規則、翻頁時鐘、系統執行 ---------- */
+function renderRules(){
+  $('#rules').innerHTML = RULES.map((r,i) =>
+    `<li><span class="no" style="background:${r.c}">${i+1}</span><b style="color:${r.c}">${r.t}</b><span class="desc">${r.d}</span></li>`).join('');
+}
+function renderHome(){
+  const t = today(); const signed = !!dayRec(t).signed; const n = streak();
+  const btn = $('#execBtn');
+  btn.disabled = signed;
+  btn.innerHTML = signed ? '系統正在執行' : `${icon('play')} 系統執行`;
+  $('#execNote').textContent = signed
+    ? `已連續執行 ${n} 天`
+    : `今日尚未執行，按下按鈕開啟今日副本${n ? `（目前連續 ${n} 天）` : ''}`;
+}
+/* 人物卡：四個欄位點下去直接改，離開欄位就存。等級、連續天數、基金是自動算的，不用填 */
+function renderProfile(){
+  const p = S.cfg.profile;
+  $$('#who [data-pf]').forEach(el => { if(document.activeElement !== el) el.value = p[el.dataset.pf] || ''; });
+  const first = (p.name || '我').trim().slice(0, 1);
+  $('#whoAva').innerHTML = (p.photo ? `<img src="${p.photo}" alt="">` : `<span class="ph">${esc(first)}</span>`) + '<span class="cam">換頭像</span>';
+  const L = levelOf(totalXP());
+  $('#whoBadges').innerHTML = `<span class="bdg lv">Lv.${L.lv}</span><span class="bdg">連續執行 ${streak()} 天</span><span class="bdg fund">基金 ${fmt(fundBalance())}</span>`;
+}
+$('#who').addEventListener('change', e => {
+  const el = e.target.closest('[data-pf]'); if(!el) return;
+  S.cfg.profile[el.dataset.pf] = el.value.trim();
+  putCfg(); renderProfile();
+});
+$('#whoAva').onclick = () => $('#whoFile').click();
+/* 頭像在瀏覽器裡縮成 200×200：填滿再裁中間正方形（圓角頭像留白邊很醜），webp 優先、舊版 Safari 退回 jpeg */
+function shrinkPhoto(file){
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file); const img = new Image();
+    img.onload = () => {
+      const N = 200, c = document.createElement('canvas'); c.width = c.height = N;
+      const s = Math.min(img.naturalWidth, img.naturalHeight);
+      c.getContext('2d').drawImage(img, (img.naturalWidth - s) / 2, (img.naturalHeight - s) / 2, s, s, 0, 0, N, N);
+      URL.revokeObjectURL(url);
+      let out = c.toDataURL('image/webp', 0.85);
+      if(!out.startsWith('data:image/webp')) out = c.toDataURL('image/jpeg', 0.85);
+      res(out);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('這個檔案讀不出來，換一張試試')); };
+    img.src = url;
+  });
+}
+$('#whoFile').addEventListener('change', async e => {
+  const f = e.target.files?.[0]; e.target.value = ''; if(!f) return;
+  try{ S.cfg.profile.photo = await shrinkPhoto(f); putCfg(); renderProfile(); toast('頭像換好了'); }
+  catch(err){ toast(err.message); }
+});
+
+$('#execBtn').onclick = () => {
+  const t = today();
+  if(dayRec(t).signed) return;
+  put(`days/${t}/signed`, true);
+  renderHome();
+  toast(`系統開始執行，已連續 ${streak()} 天`);
+};
+
+let _lastDigits = ['', '', ''];
+function tickClock(){
+  const shown = new Date(Date.now() + clockOffset);
+  const dg = [pad2(shown.getHours()), pad2(shown.getMinutes()), pad2(shown.getSeconds())];
+  ['#ckH','#ckM','#ckS'].forEach((sel, i) => {
+    if(dg[i] === _lastDigits[i]) return;
+    const el = $(sel); el.textContent = dg[i];
+    el.classList.remove('flip'); void el.offsetWidth; el.classList.add('flip');
+  });
+  _lastDigits = dg;
+  const h = shown.getHours();
+  document.body.classList.toggle('night', h >= 19 || h < 6);     // 夜間暖色跟著時鐘顯示的時間走
+  const off = $('#clockOff');
+  if(Math.abs(clockOffset) >= 60000){
+    const m = Math.round(Math.abs(clockOffset) / 60000);
+    off.hidden = false;
+    off.textContent = `已調${clockOffset > 0 ? '快' : '慢'} ${m >= 60 ? `${Math.floor(m/60)} 小時 ` : ''}${m % 60 ? `${m % 60} 分` : ''}`;
+  } else off.hidden = true;
+}
+/* 時鐘用極座標拖：以時鐘中心算角度，轉一整圈＝一小時 */
+(() => {
+  const el = $('#clock'); let last = null, cx = 0, cy = 0;
+  const ang = e => Math.atan2(e.clientY - cy, e.clientX - cx);
+  el.addEventListener('pointerdown', e => {
+    const r = el.getBoundingClientRect(); cx = r.left + r.width/2; cy = r.top + r.height/2;
+    last = ang(e); el.setPointerCapture(e.pointerId); el.classList.add('drag');
+  });
+  el.addEventListener('pointermove', e => {
+    if(last === null) return;
+    const a = ang(e); let d = a - last;
+    if(d > Math.PI) d -= 2*Math.PI; if(d < -Math.PI) d += 2*Math.PI;
+    last = a; clockOffset += d / (2*Math.PI) * 3600000;
+    tickClock();
+  });
+  const end = () => { last = null; el.classList.remove('drag'); };
+  el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
+})();
+$('#clockReset').onclick = () => { clockOffset = 0; tickClock(); };
+
+/* ---------- 每日任務 ----------
+   勾選／加減次數只是草稿（存在這台），按「提交」才統一結算寫進當天紀錄。
+   限時任務提交後就從清單拿掉，一次性。 */
+function getDraft(){
+  try{ const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); if(d && d.d === today()) return d.c || {}; }catch(e){}
+  return {};
+}
+function setDraft(c){ try{ localStorage.setItem(DRAFT_KEY, JSON.stringify({ d:today(), c })); }catch(e){} }
+function findTask(id){
+  for(const c of CATS){ const t = (S.cfg.tasks[c.k] || []).find(x => x.id === id); if(t) return { t, cat:c.k }; }
+  return null;
+}
+const earnBuff = d => { const b = buffOf(d); return b && b.side !== 'mall' ? b : null; };
+
+function renderTask(){
+  const t = today(); const draft = getDraft(); const done = dayRec(t).done || {};
+  $('#tEarn').textContent  = fmt(dayEarn(t));
+  $('#tCount').textContent = vals(done).reduce((s,e) => s + e.k, 0);
+  let wait = 0, nDraft = 0;
+  for(const [id,k] of Object.entries(draft)){
+    const f = findTask(id); if(!f || !k) continue;
+    wait += earnPts(f.cat, f.t.pts, earnBuff(t)) * k; nDraft += k;
+  }
+  const sb = $('#tSubmit');
+  sb.disabled = !nDraft; sb.classList.toggle('ready', !!nDraft);
+  sb.textContent = nDraft ? `提交任務（待結算 +${fmt(wait)} 分）` : '提交任務（先勾選做完的事）';
+
+  $('#tCols').innerHTML = CATS.map(c => {
+    const list = (S.cfg.tasks[c.k] || []).slice().sort((a,b) => a.pts - b.pts);
+    const ed = editing[c.k];
+    const rows = list.map(x => {
+      if(ed) return `<div class="trow">
+          <input class="nmi" data-cat="${c.k}" data-id="${x.id}" data-f="name" value="${esc(x.name)}">
+          <input class="pti" type="number" step="0.5" data-cat="${c.k}" data-id="${x.id}" data-f="pts" value="${x.pts}">
+          <button class="sq" data-act="del" data-cat="${c.k}" data-id="${x.id}" title="刪除">×</button></div>`;
+      const k = draft[x.id] || 0; const dk = done[x.id]?.k || 0;
+      const ctl = c.k === 'limit'
+        ? `<span class="once">僅一次</span>`
+        : `<button class="sq" data-act="dec" data-id="${x.id}" ${k ? '' : 'disabled'}>−</button><span class="cnt">${k}</span><button class="sq" data-act="inc" data-id="${x.id}">＋</button>`;
+      return `<div class="trow"><span class="pts">${fmt(x.pts)}</span>
+        <span class="nm">${esc(x.name)}${dk ? `<small>今天已完成 ×${dk}</small>` : ''}</span>
+        ${ctl}<button class="chk ${k ? 'on' : ''}" data-act="chk" data-id="${x.id}" aria-label="勾選">${icon('check')}</button></div>`;
+    }).join('') || `<div class="empty">${ed ? '按下面新增' : '還沒有任務，按編輯新增'}</div>`;
+    return `<div class="col ${c.k}">
+      <header><span>${c.n}</span><button class="btn sm" data-act="edit" data-cat="${c.k}">${ed ? '完成' : '編輯'}</button></header>
+      <div class="colbody">${rows}</div>
+      ${ed ? `<button class="addrow" data-act="add" data-cat="${c.k}">＋ 新增</button>` : ''}
+    </div>`;
+  }).join('');
+
+  const items = [
+    ...Object.entries(done).map(([id,e]) => ({ at:0, html:`<div class="done"><span class="tag" style="background:${CAT_COLOR[e.c] || 'var(--ink2)'}">${esc((CAT_NAME[e.c] || '').replace('類','').replace('任務',''))}</span>
+      <span class="nm">${esc(e.n)}${e.k > 1 ? ` ×${e.k}` : ''}</span><span class="pv">+${fmt(earnPts(e.c, e.p, earnBuff(t)) * e.k)}</span>
+      <button class="btn sm" data-undo="${id}">撤回</button></div>` })),
+    ...Object.entries(dayRec(t).focus || {}).map(([id,e]) => ({ at:e.at, html:`<div class="done"><span class="tag" style="background:var(--pri)">專注</span>
+      <span class="nm">${e.m} 分鐘</span><span class="pv">+${fmt(e.p)}</span>
+      <button class="btn sm" data-unfocus="${id}">撤回</button></div>` })),
+  ];
+  $('#tDone').innerHTML = items.map(x => x.html).join('') || '<div class="empty">今天還沒提交任何任務</div>';
+  renderFocus();
+}
+
+$('#tCols').addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if(!b) return;
+  const { act, id, cat } = b.dataset;
+  if(act === 'edit'){ editing[cat] = !editing[cat]; renderTask(); return; }
+  if(act === 'add'){
+    const c = CATS.find(x => x.k === cat);
+    const nid = uid();
+    S.cfg.tasks[cat].push({ id:nid, name:'新任務', pts:c.def });
+    putCfg(); renderTask();
+    const ni = $(`#tCols input.nmi[data-id="${nid}"]`); if(ni){ ni.focus(); ni.select(); }   // 清單照分數排，新的不一定在最後
+    return;
+  }
+  if(act === 'del'){
+    const f = findTask(id); if(!f) return;
+    if(!confirm(`刪掉「${f.t.name}」？已經記過的紀錄不會不見。`)) return;
+    S.cfg.tasks[cat] = S.cfg.tasks[cat].filter(x => x.id !== id);
+    putCfg(); renderAll(); return;
+  }
+  const d = getDraft(); const f = findTask(id); if(!f) return;
+  const max = f.cat === 'limit' ? 1 : 99;
+  if(act === 'inc') d[id] = Math.min(max, (d[id] || 0) + 1);
+  if(act === 'dec') d[id] = Math.max(0, (d[id] || 0) - 1);
+  if(act === 'chk') d[id] = d[id] ? 0 : 1;
+  if(!d[id]) delete d[id];
+  setDraft(d); renderTask();
+});
+$('#tCols').addEventListener('change', e => {
+  const i = e.target.closest('input[data-f]'); if(!i) return;
+  const f = findTask(i.dataset.id); if(!f) return;
+  if(i.dataset.f === 'name'){ const v = i.value.trim(); if(!v){ i.value = f.t.name; return; } f.t.name = v; }
+  if(i.dataset.f === 'pts'){ const v = Number(i.value); if(!isFinite(v) || v < 0){ i.value = f.t.pts; return; } f.t.pts = r1(v); }
+  putCfg();
+});
+$('#tSubmit').onclick = () => {
+  const t = today(); const d = getDraft(); let gain = 0, cfgChanged = false;
+  for(const [id,k] of Object.entries(d)){
+    const f = findTask(id); if(!f || !k) continue;
+    const cur = dayRec(t).done?.[id];
+    put(`days/${t}/done/${id}`, { n:f.t.name, c:f.cat, p:f.t.pts, k:(cur?.k || 0) + k });
+    gain += earnPts(f.cat, f.t.pts, earnBuff(t)) * k;
+    if(f.cat === 'limit'){ S.cfg.tasks.limit = S.cfg.tasks.limit.filter(x => x.id !== id); cfgChanged = true; }
+  }
+  if(cfgChanged) putCfg();
+  setDraft({}); renderAll();
+  toast(`結算完成，+${fmt(gain)} 分`);
+};
+/* 撤回：分已經花掉的話不給撤，不然當天會變負的（等於賒帳） */
+$('#tDone').addEventListener('click', e => {
+  const t = today();
+  const u = e.target.closest('[data-undo]');
+  if(u){
+    const id = u.dataset.undo; const cur = dayRec(t).done?.[id]; if(!cur) return;
+    const minus = earnPts(cur.c, cur.p, earnBuff(t));
+    if(dayBalance(t) - minus < 0){ toast('這筆的分已經花掉或存進基金了，要先退回商城兌換才能撤回'); return; }
+    put(`days/${t}/done/${id}`, cur.k > 1 ? { ...cur, k:cur.k - 1 } : null);
+    if(cur.c === 'limit' && cur.k <= 1 && !S.cfg.tasks.limit.some(x => x.id === id)){
+      S.cfg.tasks.limit.push({ id, name:cur.n, pts:cur.p }); putCfg();
+    }
+    renderAll(); toast(`已撤回「${cur.n}」，-${fmt(minus)} 分`); return;
+  }
+  const f = e.target.closest('[data-unfocus]');
+  if(f){
+    const id = f.dataset.unfocus; const cur = dayRec(t).focus?.[id]; if(!cur) return;
+    if(dayBalance(t) - cur.p < 0){ toast('這段專注的分已經花掉或存進基金了，要先退回商城兌換才能撤回'); return; }
+    put(`days/${t}/focus/${id}`, null); renderAll(); toast(`已撤回 ${cur.m} 分鐘的專注，-${fmt(cur.p)} 分`);
+  }
+});
+
+/* ---------- 專注計時（正計時） ----------
+   用「開始的時間點」算，不是每秒加一：中途關網頁、換手機打開，時間照樣接得上。
+   保存才折算積分入帳；重置只清空這一段，不計分也不記錄。 */
+const hms = ms => { const s = Math.floor(ms/1000); return `${pad2(Math.floor(s/3600))}:${pad2(Math.floor(s/60)%60)}:${pad2(s%60)}`; };
+const elapsed = () => (S.run?.acc || 0) + (S.run?.startAt ? Date.now() - S.run.startAt : 0);
+function renderFocus(){
+  const ms = elapsed(), running = !!S.run?.startAt;
+  const tm = $('#fTimer'); tm.textContent = hms(ms); tm.classList.toggle('run', running);
+  $('#fStart').innerHTML = running ? `${icon('pause')} 暫停` : `${icon('play')} ${ms > 0 ? '繼續' : '開始'}`;
+  const r = S.cfg.focus;
+  if(document.activeElement !== $('#fRateMin')) $('#fRateMin').value = r.min;
+  if(document.activeElement !== $('#fRatePts')) $('#fRatePts').value = r.pts;
+  const fs = vals(dayRec(today()).focus);
+  $('#fToday').textContent = fs.length ? `今天專注 ${fs.reduce((s,e) => s + e.m, 0)} 分鐘，+${fmt(fs.reduce((s,e) => s + e.p, 0))} 分` : '';
+}
+$('#fStart').onclick = () => {
+  if(S.run?.startAt) put('run', { startAt:null, acc:elapsed() });
+  else put('run', { startAt:Date.now(), acc:S.run?.acc || 0 });
+  renderFocus();
+};
+$('#fSave').onclick = () => {
+  const mins = Math.floor(elapsed() / 60000);
+  if(mins < 1){ toast('還不到 1 分鐘，先別保存'); return; }
+  const r = S.cfg.focus; const pts = r1(Math.floor(mins / r.min) * r.pts);
+  put(`days/${today()}/focus/${uid()}`, { m:mins, p:pts, at:Date.now() });
+  put('run', { startAt:null, acc:0 });
+  renderAll();
+  toast(pts ? `保存 ${mins} 分鐘，+${fmt(pts)} 分入帳` : `保存 ${mins} 分鐘，還不滿 ${r.min} 分鐘，這次沒有換到分`);
+};
+$('#fReset').onclick = () => {
+  if(elapsed() < 1000) return;
+  if(!confirm('清空這一段計時？不會計分，也不會留下紀錄。')) return;
+  put('run', { startAt:null, acc:0 }); renderFocus();
+  toast('已清空這一段，不計分也不記錄');
+};
+['#fRateMin', '#fRatePts'].forEach(sel => $(sel).addEventListener('change', () => {
+  const m = Math.max(1, Math.round(Number($('#fRateMin').value) || 25));
+  const p = Math.max(0, r1(Number($('#fRatePts').value) || 0));
+  S.cfg.focus = { min:m, pts:p }; putCfg(); renderFocus();
+}));
+
+/* ---------- 商城與基金共用的品項格子 ----------
+   key = 'mall'（花當天流動積分）或 'fund'（花基金）。兩邊長一樣，只有扣哪一包錢不同 */
+const LOCK_TXT = '平日 8:00–19:00 是任務時間，19:00 後才開放兌換（週末全天開放）';
+function shopHTML(key, counts, priceFn, locked){
+  const list = S.cfg[key];
+  if(editing[key]){
+    return list.map(x => `<div class="item">
+        <input class="nmi" data-key="${key}" data-id="${x.id}" data-f="name" value="${esc(x.name)}">
+        <input class="pri" type="number" step="0.5" min="0" data-key="${key}" data-id="${x.id}" data-f="price" value="${x.price}" title="分數">
+        <input class="uni" data-key="${key}" data-id="${x.id}" data-f="unit" value="${esc(x.unit || '')}" placeholder="單位" title="單位，例如 /杯">
+        <button class="sq" data-act="del" data-key="${key}" data-id="${x.id}" title="刪除">×</button></div>`).join('')
+      + `<button class="addrow" style="margin:0" data-act="add" data-key="${key}">＋ 新增品項</button>`;
+  }
+  return list.map(x => {
+    const pr = priceFn(x); const k = counts[x.id] || 0;
+    const price = pr.banned ? '今天禁兌' : pr.price !== x.price ? `<s>${fmt(x.price)}</s>${fmt(pr.price)}分${esc(x.unit || '')}` : `${fmt(x.price)}分${esc(x.unit || '')}`;
+    return `<div class="item"><span class="nm">${esc(x.name)}</span><span class="pr">${price}</span>
+      <button class="sq" data-act="dec" data-key="${key}" data-id="${x.id}" ${k ? '' : 'disabled'}>−</button>
+      <span class="cnt" style="min-width:18px;text-align:center;font-weight:900">${k}</span>
+      <button class="sq" data-act="inc" data-key="${key}" data-id="${x.id}" ${locked || pr.banned ? 'disabled' : ''}>＋</button></div>`;
+  }).join('') || '<div class="empty">還沒有品項，按編輯新增</div>';
+}
+function onShopClick(e){
+  const b = e.target.closest('[data-act]'); if(!b) return;
+  const { act, key, id } = b.dataset;
+  if(act === 'add'){
+    S.cfg[key].push({ id:uid(), name:'新品項', price: key === 'fund' ? 500 : 10, unit:'', tag:'other' });
+    putCfg(); renderAll();
+    const ins = $$(`input.nmi[data-key="${key}"]`); const last = ins.at(-1); if(last){ last.focus(); last.select(); }
+    return;
+  }
+  const item = S.cfg[key].find(x => x.id === id); if(!item) return;
+  if(act === 'del'){
+    if(!confirm(`刪掉「${item.name}」？今天已經換過的紀錄不會不見。`)) return;
+    S.cfg[key] = S.cfg[key].filter(x => x.id !== id); putCfg(); renderAll(); return;
+  }
+  if(key === 'mall'){ act === 'inc' ? mallBuy(item) : mallRefund(item); }
+  else { act === 'inc' ? fundBuy(item) : fundRefund(item); }
+}
+function onShopChange(e){
+  const i = e.target.closest('input[data-f]'); if(!i) return;
+  const item = S.cfg[i.dataset.key].find(x => x.id === i.dataset.id); if(!item) return;
+  const f = i.dataset.f;
+  if(f === 'name'){ const v = i.value.trim(); if(!v){ i.value = item.name; return; } item.name = v; }
+  if(f === 'price'){ const v = Number(i.value); if(!isFinite(v) || v < 0){ i.value = item.price; return; } item.price = r1(v); }
+  if(f === 'unit'){ let v = i.value.trim(); if(v && !v.startsWith('/')) v = '/' + v; item.unit = v; i.value = v; }
+  putCfg();
+}
+
+/* ---------- 積分商城：只扣當天流動積分，絕不碰基金；不夠直接擋 ---------- */
+function renderMall(){
+  const t = today(); const b = buffOf(t); const locked = isLocked();
+  $('#mEarn').textContent   = fmt(dayEarn(t));
+  $('#mSpent').textContent  = fmt(daySpent(t));
+  const bal = dayBalance(t);
+  $('#mRemain').textContent = fmt(bal);
+  $('#mLock').hidden = !locked; $('#mLock').textContent = LOCK_TXT;
+  $('#mEdit').textContent = editing.mall ? '完成' : '編輯品項';
+  const counts = Object.fromEntries(Object.entries(dayRec(t).mall || {}).map(([id,e]) => [id, e.k]));
+  $('#mGrid').innerHTML = shopHTML('mall', counts, x => priceOf(x, b), locked);
+  $('#mDeposit').disabled = bal <= 0;
+}
+function mallBuy(item){
+  const t = today(); const b = buffOf(t);
+  if(isLocked()){ toast(LOCK_TXT); return; }
+  const pr = priceOf(item, b);
+  if(pr.banned){ toast(`今天的 Buff 是「${b.label || '禁兌'}」，${item.name}不能換`); return; }
+  const bal = dayBalance(t);
+  if(bal < pr.price){ toast(`積分不夠，還差 ${fmt(pr.price - bal)} 分（禁止賒帳）`); return; }
+  const cur = dayRec(t).mall?.[item.id];
+  put(`days/${t}/mall/${item.id}`, { n:item.name, k:(cur?.k || 0) + 1, t:r1((cur?.t || 0) + pr.price) });
+  renderAll(); toast(`換了一份${item.name}，-${fmt(pr.price)} 分`);
+}
+function mallRefund(item){
+  const t = today(); const cur = dayRec(t).mall?.[item.id]; if(!cur) return;
+  const per = r1(cur.t / cur.k);
+  put(`days/${t}/mall/${item.id}`, cur.k > 1 ? { ...cur, k:cur.k - 1, t:r1(cur.t - per) } : null);
+  renderAll(); toast(`退回一份${cur.n}，+${fmt(per)} 分`);
+}
+$('#mGrid').addEventListener('click', onShopClick);
+$('#mGrid').addEventListener('change', onShopChange);
+$('#mEdit').onclick = () => { editing.mall = !editing.mall; renderMall(); };
+$('#mDeposit').onclick = () => {
+  const t = today(); const bal = dayBalance(t);
+  if(bal <= 0){ toast('今天沒有剩餘積分可以存'); return; }
+  put(`fundLog/${uid()}`, { d:t, amt:bal, kind:'deposit', ts:Date.now() });
+  renderAll(); toast(`存入 ${fmt(bal)} 分，基金現在 ${fmt(fundBalance())} 分`);
+};
+
+/* ---------- 基金銀行 ---------- */
+const bankNum = n => { const neg = n < 0; const s = fmt(Math.abs(n)); const [a, dec] = s.split('.'); return (neg ? '-' : '') + a.padStart(4, '0') + (dec ? '.' + dec : ''); };
+function fundCountsToday(){
+  const t = today(); const out = {};
+  for(const e of vals(S.fundLog)) if(e.d === t && e.kind === 'spend' && e.item) out[e.item] = (out[e.item] || 0) + 1;
+  return out;
+}
+function renderFund(){
+  const t = today(); const locked = isLocked();
+  const big = $('#fBal');
+  if(big.tagName !== 'INPUT') big.textContent = bankNum(fundBalance());
+  $('#fdSpent').textContent = fmt(fundSpentOn(t));
+  $('#fdIn').textContent    = fmt(dayDeposited(t));
+  const autos = vals(S.fundLog).filter(e => e.kind === 'auto').sort((a,b) => b.d.localeCompare(a.d));
+  $('#fdAuto').textContent = autos.length ? `上次自動存入：${autos[0].d.slice(5).replace('-','/')} 剩下的 ${fmt(autos[0].amt)} 分` : '';
+  $('#fdLock').hidden = !locked; $('#fdLock').textContent = LOCK_TXT;
+  $('#fdEdit').textContent = editing.fund ? '完成' : '編輯品項';
+  $('#fdGrid').innerHTML = shopHTML('fund', fundCountsToday(), x => ({ price:x.price }), locked);
+}
+function fundBuy(item){
+  if(isLocked()){ toast(LOCK_TXT); return; }
+  const fb = fundBalance();
+  if(fb < item.price){ toast(`基金不夠，還差 ${fmt(item.price - fb)} 分（禁止賒帳）`); return; }
+  put(`fundLog/${uid()}`, { d:today(), amt:-item.price, kind:'spend', item:item.id, n:item.name, ts:Date.now() });
+  renderAll(); toast(`用基金換了${item.name}，-${fmt(item.price)} 分`);
+}
+function fundRefund(item){
+  const t = today();
+  const hit = Object.entries(S.fundLog).filter(([,e]) => e.d === t && e.kind === 'spend' && e.item === item.id).sort((a,b) => b[1].ts - a[1].ts)[0];
+  if(!hit) return;
+  put(`fundLog/${hit[0]}`, null);
+  renderAll(); toast(`退回${item.name}，基金 +${fmt(-hit[1].amt)} 分`);
+}
+$('#fdGrid').addEventListener('click', onShopClick);
+$('#fdGrid').addEventListener('change', onShopChange);
+$('#fdEdit').onclick = () => { editing.fund = !editing.fund; renderFund(); };
+/* 餘額點兩下直接改：改的是差額，記成一筆「調整」，之前的每一筆進出都還在 */
+function editBank(){
+  const el = $('#fBal'); if(el.tagName === 'INPUT') return;
+  const inp = document.createElement('input');
+  inp.type = 'number'; inp.step = '0.5'; inp.min = '0'; inp.className = 'big'; inp.id = 'fBal'; inp.value = fundBalance();
+  el.replaceWith(inp); inp.focus(); inp.select();
+  $('#fBalHint').textContent = '輸入新的金額，按 Enter 存檔、Esc 取消';
+  let done = false;
+  const finish = ok => {
+    if(done) return; done = true;
+    const v = Number(inp.value);
+    const div = document.createElement('div');
+    div.className = 'big'; div.id = 'fBal'; div.title = '點兩下可以改';
+    inp.replaceWith(div); bindBank();
+    $('#fBalHint').textContent = '點兩下可以直接改金額';
+    if(ok && isFinite(v) && v >= 0){
+      const delta = r1(v - fundBalance());
+      if(delta !== 0){ put(`fundLog/${uid()}`, { d:today(), amt:delta, kind:'adjust', ts:Date.now() }); toast(`基金改成 ${fmt(v)} 分`); }
+    } else if(ok) toast('金額不能是負的');
+    renderAll();
+  };
+  inp.addEventListener('keydown', e => { if(e.key === 'Enter') finish(true); if(e.key === 'Escape') finish(false); });
+  inp.addEventListener('blur', () => finish(true));
+}
+function bindBank(){
+  const el = $('#fBal'); let lastTap = 0;
+  el.addEventListener('dblclick', editBank);
+  el.addEventListener('pointerup', e => {           // 手機 Safari 的 dblclick 不可靠，自己判斷連點
+    if(e.pointerType === 'mouse') return;
+    const n = Date.now(); if(n - lastTap < 350) editBank(); lastTap = n;
+  });
+}
+bindBank();
+
+/* ---------- 整頁重畫 ----------
+   正在輸入框裡打字時，雲端同步進來先不重畫（不然打到一半的字會被洗掉），離開輸入框再補畫 */
+let _dirty = false;
+function busy(){ const a = document.activeElement; return !!(a && a.matches && a.matches('#main input, #main textarea')); }
+function renderAll(){
+  if(busy()){ _dirty = true; return; }
+  _dirty = false;
+  renderBar(); renderHome(); renderProfile(); renderTask(); renderMall(); renderFund(); setSync();
+}
+$('#main').addEventListener('focusout', () => { if(_dirty) setTimeout(() => { if(!busy()) renderAll(); }, 0); });
+
+/* ---------- Firebase ---------- */
+async function initFirebase(interactive){
+  const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+  const { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } =
+    await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+  const { getDatabase, ref, set, get, onValue } =
+    await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+
+  const app  = getApps()[0] || initializeApp(FIREBASE_CONFIG);
+  const auth = getAuth(app);
+  let user = await new Promise(res => { const un = onAuthStateChanged(auth, u => { un(); res(u); }); });
+  if(!user){
+    if(!interactive) return false;
+    user = (await signInWithPopup(auth, new GoogleAuthProvider())).user;
+  }
+  if(user.email !== OWNER_EMAIL){
+    await signOut(auth);
+    throw new Error(`這個帳號（${user.email}）沒有權限，請用 ${OWNER_EMAIL} 登入`);
+  }
+  window._signOut = () => signOut(auth).then(() => location.reload());
+  _user = user; _db = getDatabase(app); _ref = ref; _set = set;
+  mode = 'cloud'; try{ localStorage.setItem(MODE_KEY, 'cloud'); }catch(e){}
+
+  const snap = await get(ref(_db, ROOM));
+  if(snap.exists()){
+    S = normalize(snap.val());
+    for(const [p,v] of Object.entries(pending)) setPath(S, p, v);   // 還沒寫上去的本機改動蓋回來
+  } else {
+    await set(ref(_db, ROOM), JSON.parse(JSON.stringify(S)));        // 雲端第一次用：把這台的內容（或預設清單）整包放上去
+    pending = {};
+  }
+  _ready = true;
+  flushPending(); saveLocal(); settleDays(); renderAll();
+
+  onValue(ref(_db, ROOM), s => {
+    if(!s.exists()) return;
+    const v = normalize(s.val());
+    for(const [p,val] of Object.entries(pending)) setPath(v, p, val);
+    if(JSON.stringify(v) === JSON.stringify(S)) return;
+    S = v; saveLocal(); renderAll();
+  });
+  return true;
+}
+window.addEventListener('online', flushPending);
+document.addEventListener('visibilitychange', () => { if(!document.hidden) flushPending(); });
+
+/* ---------- 啟動 ---------- */
+function showApp(){ $('#gate').hidden = true; $('#app').hidden = false; }
+function showGate(){ $('#app').hidden = true; $('#gate').hidden = false; }
+
+loadLocal();
+try{ mode = localStorage.getItem(MODE_KEY) || ''; }catch(e){ mode = ''; }
+renderRules(); renderNav();
+let _savedPage = 'home'; try{ _savedPage = localStorage.getItem('dora_points_page') || 'home'; }catch(e){}
+gotoPage(_savedPage);
+renderAll(); tickClock();
+
+$('#gateBtn').onclick = async () => {
+  $('#gateErr').textContent = '';
+  try{ await initFirebase(true); showApp(); }
+  catch(e){ $('#gateErr').textContent = e.message || '登入失敗，再試一次'; }
+};
+$('#gateLocal').onclick = () => {
+  mode = 'local'; try{ localStorage.setItem(MODE_KEY, 'local'); }catch(e){}
+  showApp(); settleDays(); renderAll();
+};
+
+if(mode === 'local'){ showApp(); settleDays(); renderAll(); }
+else if(mode === 'cloud'){
+  showApp();                                   // 先用這台暫存的資料畫出來，雲端接上再更新
+  initFirebase(false).then(ok => { if(!ok){ mode = ''; showGate(); } })
+    .catch(e => setSync('err', e.message));
+} else {
+  showGate();
+  initFirebase(false).then(ok => { if(ok) showApp(); }).catch(() => {});
+}
+
+/* 每秒：翻頁時鐘、專注計時；換日時補結算；8:00／19:00 商城開關時重畫 */
+let _day = today(), _lock = isLocked();
+setInterval(() => {
+  tickClock();
+  if(S.run?.startAt) $('#fTimer').textContent = hms(elapsed());
+  const t = today();
+  if(t !== _day){ _day = t; setDraft({}); settleDays(); renderAll(); }
+  const lk = isLocked();
+  if(lk !== _lock){ _lock = lk; renderAll(); }
+}, 1000);
+
+if('serviceWorker' in navigator && location.protocol === 'https:'){
+  navigator.serviceWorker.register('./sw.js').catch(e => console.warn('sw', e));
+}
+</script>
+</body>
+</html>
