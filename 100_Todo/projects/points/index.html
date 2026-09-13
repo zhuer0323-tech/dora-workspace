@@ -24,7 +24,7 @@
   --card:#FFFFFF; --soft:#FFE9F2; --ink:#4A2338; --ink2:#7A4D64; --line:#5B2A45;
   --pri:#E0508D; --pribg:#FFE1EE;
   --gain:#2F8F47; --gainbg:#E4F3E7; --loss:#C8324B; --lossbg:#FDE4EA;
-  --gold:#C98A12; --goldbg:#FFF1CF; --goldbtn:#F2B233;
+  --gold:#C98A12; --goldbg:#FFF1CF; --goldbtn:#F2B233; --fundink:#6E4300;
   --life:#3F9A5A; --study:#4F6BD6; --work:#DC8424; --odd:#1F9A96; --limit:#8A56CC;
   --lifebg:#E8F5EA; --studybg:#E9EDFC; --workbg:#FFF0DE; --oddbg:#DFF4F2; --limitbg:#F1E8FB;
   --tile:#4A2338; --tileink:#FFF1F6;
@@ -39,7 +39,7 @@ body.night{
   --card:#361F2C; --soft:#45293A; --ink:#FCE5EF; --ink2:#D5B0C2; --line:#F29BC4;
   --pri:#F27DB0; --pribg:#4A2436;
   --gain:#8FD39B; --gainbg:#2C3A2A; --loss:#FF8FA3; --lossbg:#4A2230;
-  --gold:#F2C45C; --goldbg:#4A3A1E; --goldbtn:#D9982A;
+  --gold:#F2C45C; --goldbg:#4A3A1E; --goldbtn:#D9982A; --fundink:#FFD77A;
   --lifebg:#2C3A2C; --studybg:#2C3148; --workbg:#46341F; --oddbg:#1F3B3A; --limitbg:#382B4A;
   --tile:#1A0F16; --tileink:#FFC2DC;
   --ttlfill:#FF9CC6; --ttlline:#1A0F16; --ttlsub:#FF9CC6;
@@ -260,8 +260,12 @@ svg.ic{width:18px;height:18px;flex:none}
 .remain .rbox b{display:block;font-family:var(--mono);font-size:24px;border:2px dashed var(--grid);border-radius:6px;margin-top:2px;color:var(--pri)}
 body.night .remain .rbox b{color:var(--pri)}
 .bank{text-align:center;padding:18px 10px 8px}
-.bank .big{display:inline-block;font-family:var(--mono);font-weight:700;font-size:clamp(56px,14vw,110px);line-height:1;color:var(--gold);
-  text-shadow:4px 4px 0 var(--line);cursor:text;user-select:none;letter-spacing:4px}
+/* 2026-09-13 她說黃字加疊影看不清楚：數字本身不再加陰影，改成深色字放在淡金色的框裡，遊戲感交給框的硬陰影。
+   字型用粗黑體＋等寬數字，等寬字的 0 中間有一點，大尺寸時很干擾 */
+.bank .big{display:inline-block;font-family:"Noto Sans TC",-apple-system,"PingFang TC",sans-serif;font-variant-numeric:tabular-nums;
+  font-weight:900;font-size:clamp(50px,12vw,96px);line-height:1.1;color:var(--fundink);letter-spacing:3px;
+  background:var(--goldbg);border:3px solid var(--line);border-radius:14px;box-shadow:4px 4px 0 var(--line);padding:8px 30px 10px;
+  cursor:text;user-select:none}
 .bank input.big{width:min(90%,420px);text-align:center;border:3px dashed var(--line);border-radius:10px;background:var(--goldbg);text-shadow:none;user-select:auto}
 .bank .tiny{margin-top:6px}
 
