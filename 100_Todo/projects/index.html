@@ -602,218 +602,18 @@ nav.tabs .tb.dragging{position:fixed;z-index:60;pointer-events:none;opacity:.95;
 .placeholder h3{margin:12px 0 8px;font-size:17px}
 .placeholder p{margin:0 auto;max-width:420px;font-size:13px;color:var(--ink3);line-height:1.8}
 
-/* ---------- 個人區：溫暖像素風・個人日常紀錄手帳（扁平設計，不用漸層／陰影／插畫） ---------- */
-#personalArea{background:#F4E9D0;border:4px solid #8B5E34;border-radius:14px;padding:0;overflow:hidden}
-.pbook-topbar{display:none;align-items:center;gap:10px;padding:10px 14px;background:#8B5E34;
-  color:#FFF8EA;font-weight:800;font-size:14px;border-bottom:3px solid #6B4423}
-.pbook-menubtn{background:#FFF8EA;color:#6B4423;border:2px solid #6B4423;border-radius:8px;
-  padding:5px 10px;font-weight:800;font-size:12.5px}
-.pbook-layout{display:flex;align-items:stretch;min-height:480px}
-.pbook-nav{width:168px;flex:none;background:#EFE0B8;border-right:3px solid #8B5E34;
-  padding:12px 8px;display:flex;flex-direction:column;gap:6px}
-.pnav-btn{text-align:left;padding:9px 10px;border-radius:8px;font-size:13px;font-weight:700;
-  color:#6B4423;background:transparent;border:2px solid transparent}
-.pnav-btn:hover{background:#E4D19C}
-.pnav-btn.on{background:#8B5E34;color:#FFF8EA;border-color:#6B4423}
-.pbook-mask{display:none}
-.pbook-content{flex:1;min-width:0;padding:16px;display:flex;flex-direction:column;gap:14px}
-.ppage{display:none;flex-direction:column;gap:14px}
-.ppage.on{display:flex}
-
-.pcard{background:#FFFDF5;border:3px solid #8B5E34;border-radius:10px;padding:14px 16px}
-.pcard-h{display:flex;align-items:center;justify-content:space-between;font-size:14px;font-weight:800;
-  color:#4A3222;margin-bottom:10px;padding-bottom:8px;border-bottom:2px dashed #E4D19C}
-.pabout-hi{font-size:11.5px;font-weight:700;color:#B49A76;margin-top:2px}
-
-.pstat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px}
-.pstat{text-align:center}
-.pstat-label{font-size:11px;font-weight:800;color:#8B5E34;letter-spacing:.5px}
-.pstat-num{font-size:22px;font-weight:900;color:#4A3222;margin-top:4px}
-.pstat-sub{font-size:10.5px;color:#8B5E34;margin-top:3px;font-weight:700}
-
-.pbar{height:10px;border-radius:5px;background:#EFE0B8;border:2px solid #8B5E34;overflow:hidden;margin-top:6px}
-.pbar i{display:block;height:100%;background:#7CB342}
-
-.padd{background:#7CB342;color:#fff;border:2px solid #5C8A32;border-radius:8px;
-  padding:5px 12px;font-size:12px;font-weight:800}
-.padd:hover{background:#6FA344}
-
-.plist{display:flex;flex-direction:column;gap:8px}
-.prow{display:flex;align-items:center;gap:10px;padding:9px 10px;border:2px solid #E4D19C;border-radius:8px;
-  background:#FFF9EC}
-.prow-box{width:22px;height:22px;border-radius:6px;border:2px solid #8B5E34;background:#fff;flex:none;
-  display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;cursor:pointer}
-.prow-box.on{background:#7CB342;border-color:#5C8A32}
-.prow-name{flex:1;font-size:13.5px;font-weight:700;color:#4A3222;cursor:pointer}
-.prow-name.done{text-decoration:line-through;color:#B49A76}
-.ptag{font-size:10px;font-weight:800;color:#fff;padding:2px 8px;border-radius:99px;flex:none}
-.pstreak{font-size:12px;font-weight:800;color:#E0692E;flex:none}
-.poverdue{font-size:10px;font-weight:800;color:#fff;background:#B03A2E;padding:2px 8px;border-radius:99px;flex:none}
-.prow-del{background:none;border:none;color:#B49A76;font-size:15px;flex:none;cursor:pointer;padding:2px 4px}
-.prow-del:hover{color:#C0392B}
-.pempty{font-size:12px;color:#B49A76;text-align:center;padding:14px 0}
-
-/* --- 關於我：跟六維雷達並排，雷達自己也收小一點（原本獨佔一整排、圖只有 260 顯得很空） --- */
-.pabout-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:stretch}
-.pabout-grid>.pcard{height:100%;display:flex;flex-direction:column}
-@media(max-width:860px){.pabout-grid{grid-template-columns:1fr}}
-#pHomeRadar .pradar{max-width:228px}
-.pabout{display:flex;align-items:center;gap:12px}
-.pavatar{width:64px;height:64px;border-radius:50%;border:3px solid #8B5E34;background:#EFE0B8;
-  flex:none;display:flex;align-items:center;justify-content:center;font-size:26px;overflow:hidden;padding:0}
-.pavatar img{width:100%;height:100%;object-fit:cover;display:block}
-.pavatar:hover{border-color:#6B4423;background:#E4D19C}
-.pabout-hd{flex:1;min-width:0}
-.pabout-name{width:100%;border:none;background:transparent;padding:2px 0;font:inherit;
-  font-size:15px;font-weight:900;color:#4A3222}
-.pabout-tag{width:100%;border:none;border-bottom:1.5px dashed #E4D19C;background:transparent;
-  padding:2px 0;margin-top:2px;font:inherit;font-size:12px;font-weight:700;color:#8B5E34}
-.pabout-name:focus,.pabout-tag:focus{outline:none;background:#fff;border-radius:6px;padding:2px 6px}
-.pabout-del{align-self:flex-start;margin-top:8px;background:none;border:none;
-  font-size:11px;font-weight:800;color:#B49A76;text-decoration:underline;padding:0}
-.pabout-del:hover{color:#C0392B}
-.pabout-f{margin-top:12px}
-.pabout-f>label{display:block;font-size:11.5px;font-weight:800;color:#8B5E34;margin-bottom:5px}
-.pabout-f textarea{resize:vertical;line-height:1.6}
-
-.tm-move{border:2px solid #8B5E34;background:#FFF9EC;color:#6B4423;border-radius:8px;
-  padding:6px 12px;font-size:12.5px;font-weight:800}
-.tm-move:hover{background:#E4D19C}
-.tm-move-hint{font-size:11px;font-weight:600;color:#B49A76;margin-top:5px;line-height:1.6}
-
-.pstub{text-align:center;color:#8B5E34;font-weight:800;font-size:14px}
-.pstub p{color:#B49A76;font-size:12px;font-weight:600;margin:8px 0 0}
-
-/* --- 手帳共用的表單元件（復盤／體重／之後的靈感與學習都用這一組） --- */
-.pdatebar{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
-.pdate-nav{width:28px;height:28px;border-radius:8px;border:2px solid #8B5E34;background:#FFF9EC;
-  color:#6B4423;font-weight:900;font-size:13px;flex:none;display:flex;align-items:center;justify-content:center}
-.pdate-nav:hover:not(:disabled){background:#E4D19C}
-.pdate-nav:disabled{opacity:.35}
-.pdate-now{font-size:13.5px;font-weight:900;color:#4A3222}
-.pdate-now .wd{color:#8B5E34;font-weight:700;margin-left:4px}
-.pdate-flag{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:99px;border:2px solid}
-.pdate-flag.yes{color:#4C7A22;background:#EBF5DF;border-color:#7CB342}
-.pdate-flag.no{color:#8B5E34;background:#F7EDD5;border-color:#E4D19C}
-.pdate-today{font-size:11.5px;font-weight:800;color:#4A6E9E;text-decoration:underline;background:none;border:none}
-
-.pmood{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:4px 0 6px;max-width:560px}
-.pmood-b{border:2px solid #E4D19C;background:#FFF9EC;border-radius:10px;padding:8px 2px;
-  display:flex;flex-direction:column;align-items:center;gap:3px}
-.pmood-b .emo{font-size:22px;line-height:1}
-.pmood-b .lb{font-size:10px;font-weight:800;color:#8B5E34}
-.pmood-b:hover{background:#F7EDD5}
-.pmood-b.on{background:#EFE0B8;border-color:#8B5E34}
-.pmood-b.on .lb{color:#4A3222}
-
-.pfield{margin-top:12px}
-.pfield>label{display:block;font-size:11.5px;font-weight:800;color:#8B5E34;margin-bottom:5px}
-.pinput{width:100%;border:2px solid #E4D19C;border-radius:8px;background:#FFF9EC;padding:9px 10px;
-  font:inherit;font-size:13.5px;color:#4A3222}
-.pinput:focus{outline:none;border-color:#8B5E34;background:#fff}
-.pinput::placeholder{color:#C4AC86}
-.pinline{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
-.pinline .pfield{margin-top:0;flex:1;min-width:110px}
-.pbtn{background:#7CB342;color:#fff;border:2px solid #5C8A32;border-radius:8px;
-  padding:9px 18px;font-size:13px;font-weight:800}
-.pbtn:hover{background:#6FA344}
-.pbtn.sub{background:#FFF9EC;color:#6B4423;border-color:#8B5E34}
-.pbtn.sub:hover{background:#E4D19C}
-.pbtn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
-
-/* --- 折線圖（心情趨勢、體重）：單一組資料，不放圖例，標題直接講它是什麼 --- */
-/* 圖不跟著卡片一路撐寬：SVG 是等比縮放的，撐滿寬螢幕會連座標字跟表情一起放大 */
-.pchart{width:100%;max-width:440px;margin-top:4px}
-.pchart svg{width:100%;height:auto;display:block}
-.pc-grid{stroke:#EFE0B8;stroke-width:1}
-.pc-axis{font-size:9px;font-weight:700;fill:#8B5E34}
-.pc-goal{stroke:#5C8A32;stroke-width:1.5;stroke-dasharray:5 4}
-.pc-goal-t{font-size:9px;font-weight:800;fill:#4C7A22}
-.pc-mood{fill:none;stroke:#4A90C4;stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
-.pc-mood-d{fill:#3B7BA8}
-.pc-wt{fill:none;stroke:#C97B4A;stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
-.pc-wt-d{fill:#A85F33}
-.pc-val{font-size:9.5px;font-weight:800;fill:#4A3222}
-
-.pseg{display:inline-flex;border:2px solid #8B5E34;border-radius:8px;overflow:hidden}
-.pseg button{padding:4px 11px;font-size:11.5px;font-weight:800;color:#6B4423;background:#FFF9EC;border:none}
-.pseg button+button{border-left:2px solid #8B5E34}
-.pseg button.on{background:#8B5E34;color:#FFF8EA}
-
-.pnote-list{display:flex;flex-direction:column;gap:6px;margin-top:4px}
-.pnote{display:flex;gap:8px;font-size:12.5px;color:#4A3222;line-height:1.6;
-  padding:7px 9px;border:2px solid #E4D19C;border-radius:8px;background:#FFF9EC}
-.pnote .d{font-weight:900;color:#8B5E34;flex:none}
-.psub-h{font-size:12px;font-weight:800;color:#8B5E34;margin:14px 0 6px}
-
-.plink-card{display:flex;align-items:center;gap:14px;text-decoration:none;color:inherit}
-.plink-card .ic{font-size:30px;flex:none}
-.plink-card .tx{flex:1;min-width:0}
-.plink-card .tt{display:block;font-size:14px;font-weight:900;color:#4A3222}
-.plink-card .ds{display:block;font-size:11.5px;font-weight:600;color:#8B5E34;margin-top:4px;line-height:1.7}
-.plink-card .go{font-size:12px;font-weight:800;color:#4C7A22;flex:none}
-.plink-card:hover{background:#FFF9EC}
-
-.pwrow{display:flex;align-items:center;gap:10px;padding:8px 10px;border:2px solid #E4D19C;
-  border-radius:8px;background:#FFF9EC;font-size:12.5px}
-.pwrow .d{font-weight:800;color:#8B5E34;flex:none;min-width:80px;white-space:nowrap}
-.pwrow .kg{font-weight:900;color:#4A3222}
-.pwrow .fat{color:#8B5E34;font-weight:700}
-.pwrow .sp{flex:1}
-
-/* --- 靈感收件匣 --- */
-.pchips{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:10px}
-.pchips .lb{font-size:11px;font-weight:800;color:#8B5E34;margin-right:2px}
-.pchips .lb+.lb{margin-left:8px}
-.pchip{border:2px solid #E4D19C;background:#FFF9EC;color:#6B4423;border-radius:99px;
-  padding:3px 11px;font-size:11.5px;font-weight:800}
-.pchip:hover{background:#F7EDD5}
-.pchip.on{background:#8B5E34;color:#FFF8EA;border-color:#6B4423}
-.pidea{border:2px solid #E4D19C;border-radius:8px;background:#FFF9EC;padding:9px 10px;
-  display:flex;flex-direction:column;gap:5px}
-.pidea.done{opacity:.62}
-.pidea.done .pidea-tx{text-decoration:line-through}
-.pidea-r1{display:flex;align-items:center;gap:6px}
-.pidea-tx{flex:1;min-width:0;border:none;background:transparent;padding:2px 0;
-  font:inherit;font-size:13.5px;font-weight:700;color:#4A3222}
-.pidea-tx:focus{outline:none;background:#fff;border-radius:6px;padding:2px 6px}
-.pidea-note{border:none;border-bottom:1.5px dashed #E4D19C;border-radius:0;background:transparent;
-  padding:2px 0;font-size:12px}
-.pidea-note:focus{background:#fff;border-radius:6px 6px 0 0;padding:2px 6px}
-.pidea-r2{display:flex;align-items:center;gap:7px}
-.pselect{border:2px solid #E4D19C;border-radius:8px;background:#FFFDF5;padding:3px 6px;
-  font:inherit;font-size:11.5px;font-weight:800;color:#6B4423}
-.pidea-d{margin-left:auto;font-size:10.5px;font-weight:700;color:#B49A76;flex:none}
-
-/* --- 學習時數 --- */
-.pc-bar{fill:#5C8A32}
-.pc-avg{stroke:#8B5E34;stroke-width:1.5;stroke-dasharray:5 4}
-.pc-avg-t{font-size:9px;font-weight:800;fill:#6B4423}
-.pstrow{display:flex;align-items:center;gap:10px;padding:8px 10px;border:2px solid #E4D19C;
-  border-radius:8px;background:#FFF9EC;font-size:12.5px}
-.pstrow .d{font-weight:800;color:#8B5E34;flex:none;min-width:80px;white-space:nowrap}
-.pstrow .m{font-weight:900;color:#4A3222;flex:none}
-.pstrow .t{color:#6B4423;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-.pradar{position:relative;width:100%;max-width:260px;aspect-ratio:200/210;margin:2px auto 0}
-.pradar-svg{width:100%;height:100%;display:block}
-.pr-ring{fill:none;stroke:#E4D19C;stroke-width:1}
-.pr-axis{stroke:#E4D19C;stroke-width:1}
-.pr-fill{fill:rgba(124,179,66,.35);stroke:#7CB342;stroke-width:2}
-.pr-dot{fill:#5C8A32}
-.pr-label{position:absolute;transform:translate(-50%,-50%);font-size:10.5px;font-weight:800;
-  color:#4A3222;text-align:center;white-space:nowrap;line-height:1.3}
-.plegend{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-top:12px}
-.plegend-item{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:#4A3222}
-.plegend-dot{width:10px;height:10px;border-radius:3px;flex:none}
-
-@media(max-width:760px){
-  .pbook-topbar{display:flex}
-  .pbook-nav{position:fixed;top:0;left:0;bottom:0;z-index:200;transform:translateX(-100%);
-    transition:transform .2s;width:200px}
-  .pbook-nav.open{transform:translateX(0)}
-  .pbook-mask.show{display:block;position:fixed;inset:0;background:rgba(74,50,34,.35);z-index:190}
-}
+/* ---------- 個人區：只放一張卡片連去積分自律系統 ----------
+   2026-09-13 起取代原本的「個人日常紀錄手帳」九頁（跟積分系統重疊，而且雲端一筆資料都沒有）。
+   舊程式在 git 88197bf，要找回復盤／體重／靈感那幾頁的寫法去那裡翻。 */
+#personalArea{padding:6px 0 28px}
+.pentry{display:flex;align-items:center;gap:18px;max-width:640px;margin:0 auto;padding:22px 24px;
+  background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);text-decoration:none;color:inherit}
+.pentry:hover{box-shadow:0 4px 18px rgba(232,150,178,.28)}
+.pentry .ic{font-size:44px;flex:none}
+.pentry .tx{flex:1;min-width:0}
+.pentry .tt{display:block;font-size:18px;font-weight:900;color:var(--ink)}
+.pentry .ds{display:block;font-size:13px;color:var(--ink2);margin-top:6px;line-height:1.7}
+.pentry .go{flex:none;font-size:13px;font-weight:800;color:#fff;background:var(--pink);padding:8px 14px;border-radius:99px}
 
 /* ---------- 彈窗 ---------- */
 .modal{position:fixed;inset:0;background:rgba(91,60,70,.42);z-index:900;display:none;
@@ -1271,223 +1071,16 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
     </section>
   </div>
 
-  <!-- ===== 個人區：溫暖像素風・個人日常紀錄手帳 ===== -->
+  <!-- ===== 個人區：積分自律系統的入口（2026-09-13 起取代原本的個人手帳） ===== -->
   <div id="personalArea" class="hide">
-    <div class="pbook">
-      <div class="pbook-topbar">
-        <button class="pbook-menubtn" id="pMenuBtn">☰ 目錄</button>
-        <div class="pbook-title">📔 個人日常紀錄手帳</div>
-      </div>
-      <div class="pbook-layout">
-        <nav class="pbook-nav" id="pNav">
-          <button class="pnav-btn on" data-ptab="home">🏠 首頁總覽</button>
-          <button class="pnav-btn" data-ptab="today">✅ 今日任務</button>
-          <button class="pnav-btn" data-ptab="habit">🔥 習慣打卡</button>
-          <button class="pnav-btn" data-ptab="money">💰 收支記帳</button>
-          <button class="pnav-btn" data-ptab="idea">💡 靈感選題庫</button>
-          <button class="pnav-btn" data-ptab="study">📚 閱讀學習</button>
-          <button class="pnav-btn" data-ptab="weight">⚖️ 體重紀錄</button>
-          <button class="pnav-btn" data-ptab="review">🌙 每日復盤</button>
-          <button class="pnav-btn" data-ptab="radar">🎯 雷達總覽</button>
-        </nav>
-        <div class="pbook-mask" id="pNavMask"></div>
-        <div class="pbook-content">
-
-          <section class="ppage on" data-ppage="home">
-            <div class="pstat-row">
-              <div class="pcard pstat">
-                <div class="pstat-label">今日任務</div>
-                <div class="pstat-num" id="pHomeToday">0/0</div>
-              </div>
-              <div class="pcard pstat">
-                <div class="pstat-label">等級</div>
-                <div class="pstat-num">Lv.<span id="pHomeLv">1</span></div>
-                <div class="pbar"><i id="pHomeBar" style="width:0%"></i></div>
-                <div class="pstat-sub" id="pHomeXp">0/100 XP</div>
-              </div>
-              <div class="pcard pstat">
-                <div class="pstat-label">連續打卡</div>
-                <div class="pstat-num">🔥<span id="pHomeStreak">0</span></div>
-              </div>
-            </div>
-            <div class="pabout-grid">
-              <div class="pcard" id="pAboutCard">
-                <div class="pcard-h">👤 關於我</div>
-                <div class="pabout">
-                  <button class="pavatar" id="pAvatar" title="點一下換照片"></button>
-                  <div class="pabout-hd">
-                    <input class="pabout-name" data-abt="name" maxlength="20" placeholder="你的名字">
-                    <div class="pabout-hi" id="pGreet"></div>
-                    <input class="pabout-tag" data-abt="tagline" maxlength="40" placeholder="一句話介紹自己">
-                  </div>
-                </div>
-                <button class="pabout-del" id="pAvatarDel" hidden>移除照片</button>
-                <div class="pabout-f">
-                  <label>現在的主線</label>
-                  <textarea class="pinput" data-abt="main" rows="2" maxlength="120"
-                            placeholder="這陣子最重要的一件事"></textarea>
-                </div>
-                <div class="pabout-f">
-                  <label>進行中的支線</label>
-                  <textarea class="pinput" data-abt="side" rows="2" maxlength="120"
-                            placeholder="同時在推進的其他事"></textarea>
-                </div>
-                <input type="file" id="pAvatarFile" accept="image/*" hidden>
-              </div>
-              <div class="pcard">
-                <div class="pcard-h">🎯 六維雷達</div>
-                <div id="pHomeRadar"></div>
-              </div>
-            </div>
-            <div class="pstat-row">
-              <div class="pcard pstat">
-                <div class="pstat-label">本週學習</div>
-                <div class="pstat-num" id="pHomeStudy" style="font-size:14px">還沒有紀錄</div>
-              </div>
-              <div class="pcard pstat">
-                <div class="pstat-label">最新體重</div>
-                <div class="pstat-num" id="pHomeWeight" style="font-size:14px">還沒有紀錄</div>
-              </div>
-            </div>
-          </section>
-
-          <section class="ppage" data-ppage="today">
-            <div class="pcard">
-              <div class="pcard-h">✅ 今日任務<button class="padd" id="pAddToday">＋ 新增</button></div>
-              <div class="plist" id="pTodayList"></div>
-            </div>
-          </section>
-
-          <section class="ppage" data-ppage="habit">
-            <div class="pcard">
-              <div class="pcard-h">🔥 習慣打卡<button class="padd" id="pAddHabit">＋ 新增</button></div>
-              <div class="plist" id="pHabitList"></div>
-            </div>
-          </section>
-
-          <section class="ppage" data-ppage="money">
-            <div class="pcard">
-              <a class="plink-card" href="./money/">
-                <span class="ic">💰</span>
-                <span class="tx">
-                  <span class="tt">收支記帳</span>
-                  <span class="ds">生活開銷記在獨立的記帳 App（有帳戶、轉帳、圖表，還能用 LINE 一句話記帳）。這裡不再重複記一份，免得兩邊數字永遠對不起來。</span>
-                </span>
-                <span class="go">開啟 ›</span>
-              </a>
-            </div>
-          </section>
-          <section class="ppage" data-ppage="idea">
-            <div class="pcard" id="pIdForm">
-              <div class="pcard-h">💡 丟一個靈感進來</div>
-              <input class="pinput" id="pIdNew" maxlength="140" placeholder="想到什麼就打一行，按 Enter 收進來">
-              <div class="pempty" style="text-align:left;padding:8px 0 0">
-                不用分類、不用寫完整。要用的時候再挑出來複製去禾言規劃表。
-              </div>
-            </div>
-            <div class="pcard">
-              <div class="pcard-h">📥 收件匣<span class="pdate-flag no" id="pIdCount"></span></div>
-              <div class="pchips" id="pIdFilter"></div>
-              <div class="plist" id="pIdList"></div>
-            </div>
-          </section>
-          <section class="ppage" data-ppage="study">
-            <div class="pcard" id="pStForm">
-              <div class="pcard-h">📚 記一段學習</div>
-              <div class="pinline">
-                <div class="pfield"><label>日期</label><input type="date" class="pinput" id="pStDate"></div>
-                <div class="pfield"><label>分鐘</label><input class="pinput" id="pStMins" inputmode="numeric" placeholder="50"></div>
-                <div class="pfield" style="flex:2"><label>學了什麼（可不填）</label>
-                  <input class="pinput" id="pStTopic" maxlength="80" placeholder="例：Meta 新版受眾設定"></div>
-              </div>
-              <div class="pbtn-row">
-                <button class="pbtn sub" data-stquick="25">25 分</button>
-                <button class="pbtn sub" data-stquick="50">50 分</button>
-                <button class="pbtn" id="pStSave">記一筆</button>
-              </div>
-            </div>
-            <div class="pcard">
-              <div class="pcard-h">📊 這週每天學了多久<span class="pdate-flag no" id="pStMonth"></span></div>
-              <div id="pStChart"></div>
-            </div>
-            <div class="pcard">
-              <div class="pcard-h">🗒 最近的紀錄</div>
-              <div class="plist" id="pStList"></div>
-            </div>
-          </section>
-          <section class="ppage" data-ppage="weight">
-            <div class="pcard" id="pWtForm">
-              <div class="pcard-h">⚖️ 記一筆體重</div>
-              <div class="pinline">
-                <div class="pfield"><label>日期</label><input type="date" class="pinput" id="pWtDate"></div>
-                <div class="pfield"><label>體重（公斤）</label><input class="pinput" id="pWtKg" inputmode="decimal" placeholder="52.3"></div>
-                <div class="pfield"><label>體脂（％，可不填）</label><input class="pinput" id="pWtFat" inputmode="decimal" placeholder="24.1"></div>
-              </div>
-              <div class="pbtn-row"><button class="pbtn" id="pWtSave">記一筆</button></div>
-              <div class="pinline" style="margin-top:14px;padding-top:12px;border-top:2px dashed #E4D19C">
-                <div class="pfield"><label>目標體重（圖上那條綠虛線）</label><input class="pinput" id="pWtGoal" inputmode="decimal" placeholder="還沒設定"></div>
-                <button class="pbtn sub" id="pWtGoalSave">存目標</button>
-              </div>
-            </div>
-            <div class="pcard">
-              <div class="pcard-h">📈 體重變化
-                <span class="pseg" id="pWtSeg">
-                  <button data-wtrange="30" class="on">30 天</button>
-                  <button data-wtrange="90">90 天</button>
-                  <button data-wtrange="year">今年</button>
-                </span>
-              </div>
-              <div id="pWtChart"></div>
-            </div>
-            <div class="pcard">
-              <div class="pcard-h">🗒 最近的紀錄</div>
-              <div class="plist" id="pWtList"></div>
-            </div>
-          </section>
-          <section class="ppage" data-ppage="review">
-            <div class="pcard" id="pRvForm">
-              <div class="pcard-h">🌙 每日復盤</div>
-              <div class="pdatebar">
-                <button class="pdate-nav" id="pRvPrev" title="前一天">◀</button>
-                <span class="pdate-now" id="pRvDate"></span>
-                <span class="pdate-flag" id="pRvFlag"></span>
-                <button class="pdate-nav" id="pRvNext" title="後一天">▶</button>
-                <button class="pdate-today" id="pRvToday">回到今天</button>
-              </div>
-              <div class="pfield">
-                <label>今天心情？</label>
-                <div class="pmood" id="pRvMood"></div>
-              </div>
-              <div class="pfield">
-                <label>今天最好的事</label>
-                <input class="pinput" id="pRvGood" maxlength="140" placeholder="一句話就好">
-              </div>
-              <div class="pfield">
-                <label>明天想調整的</label>
-                <input class="pinput" id="pRvAdjust" maxlength="140" placeholder="一句話就好">
-              </div>
-              <div class="pbtn-row">
-                <button class="pbtn sub" id="pRvDel">刪掉這天</button>
-                <button class="pbtn" id="pRvSave">存起來</button>
-              </div>
-            </div>
-            <div class="pcard">
-              <div class="pcard-h">📅 這週回顧<span class="pdate-flag no" id="pRvWkRange"></span></div>
-              <div id="pRvWeek"></div>
-            </div>
-          </section>
-
-          <section class="ppage" data-ppage="radar">
-            <div class="pcard">
-              <div class="pcard-h">🎯 雷達總覽</div>
-              <div id="pRadarBig"></div>
-              <div class="plegend" id="pRadarLegend"></div>
-            </div>
-          </section>
-
-        </div>
-      </div>
-    </div>
+    <a class="pentry" href="./points/" target="_blank" rel="noopener">
+      <span class="ic">🪙</span>
+      <span class="tx">
+        <span class="tt">積分自律系統</span>
+        <span class="ds">個人的每日任務、習慣、等級都搬到這裡了：做事賺積分、娛樂花積分，當天沒花完的存進基金。</span>
+      </span>
+      <span class="go">開啟 ›</span>
+    </a>
   </div>
 
 </div>
@@ -1557,24 +1150,6 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
         <div class="pv pv-2">
           <input type="range" id="tmProg" min="0" max="100" step="5" value="0">
           <span id="tmProgV" class="tiny" style="min-width:38px">0%</span>
-        </div>
-      </div>
-      <div id="tmQuestWrap" class="hide">
-        <div class="prop"><span class="pl">🏷 生活領域</span>
-          <div class="pv"><select id="tmQArea" class="bare">
-            <option value="">（選一個領域）</option>
-            <option value="biz">💼 事業</option>
-            <option value="family">👨‍👩‍👧 家庭</option>
-            <option value="study">📚 學習</option>
-            <option value="health">💪 健康</option>
-            <option value="self">🌱 自己</option>
-          </select></div>
-        </div>
-        <div class="prop hide" id="tmMoveWrap"><span class="pl">🔀 換一頁</span>
-          <div class="pv">
-            <button class="tm-move" id="tmMoveKind"></button>
-            <div class="tm-move-hint" id="tmMoveHint"></div>
-          </div>
         </div>
       </div>
     </div>
@@ -1708,9 +1283,7 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
 // 網頁版 Firebase 金鑰一定得寫在原始碼裡（藏不住），網頁上的通行碼也擋不住直接連資料庫的人，
 // 唯一真正有效的防線是「規則綁定登入帳號」。沒登入 = 讀不到任何一筆。
 const OWNER_EMAIL = 'zhuer0323@gmail.com';
-const LS = { tasks:'ws_tasks', clients:'ws_clients', ui:'ws_ui', mode:'ws_mode', rtpl:'ws_rtpl',
-             pReview:'ws_preview', pReviewWk:'ws_preview_wk', pWeight:'ws_pweight',
-             pIdeas:'ws_pideas', pStudy:'ws_pstudy' };
+const LS = { tasks:'ws_tasks', clients:'ws_clients', ui:'ws_ui', mode:'ws_mode', rtpl:'ws_rtpl' };
 
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyAWOXPFBmb-lU90dpBOq2B8Gn7LsR2p-jM",
@@ -1802,19 +1375,6 @@ const TOOLS = [
   {ic:'🎮', n:'數學冒險遊戲',    d:'國小二年級數學闖關，4 世界 12 關',  u:'./math-game/index.html'}
 ];
 
-/* ---------- 個人區：溫暖像素風・個人日常紀錄手帳 ----------
-   每筆任務可貼一個生活領域標籤，用來分類跟畫六維雷達圖（快樂另外算，見下方 pHappyScore）。
-   分類先固定這 5 種，不開放自訂，求好用優先。 */
-const PTAGS = {
-  biz:    { name:'事業', color:'#C97B4A' },
-  family: { name:'家庭', color:'#5DADE2' },
-  study:  { name:'學習', color:'#7CB342' },
-  health: { name:'健康', color:'#E0699F' },
-  self:   { name:'自己', color:'#E8A33D' }
-};
-const P_XP_TASK = 10;   // 完成一個今日任務給的 XP
-const P_XP_HABIT = 5;   // 習慣打卡一天給的 XP
-
 /* ---------- 小工具 ---------- */
 const $  = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
@@ -1848,13 +1408,6 @@ let tasks   = JSON.parse(localStorage.getItem(LS.tasks)   || '{}');
 let clients = JSON.parse(localStorage.getItem(LS.clients) || '{}');
 let ui      = JSON.parse(localStorage.getItem(LS.ui)      || '{}');
 let rtpl    = JSON.parse(localStorage.getItem(LS.rtpl)    || '{}');   // 回覆模板
-/* 個人手帳的四份紀錄，都掛在工作台同一個節點底下，Firebase 規則不用另外開
-   （規格見 100_Todo/plans/2026-09-03-個人手帳四頁.md） */
-let pReview   = JSON.parse(localStorage.getItem(LS.pReview)   || '{}');  // 每日復盤，key = YYYY-MM-DD
-let pReviewWk = JSON.parse(localStorage.getItem(LS.pReviewWk) || '{}');  // 週復盤，key = 該週的週一
-let pWeight   = JSON.parse(localStorage.getItem(LS.pWeight)   || '{}');  // 體重，key = YYYY-MM-DD
-let pIdeas    = JSON.parse(localStorage.getItem(LS.pIdeas)    || '{}');  // 靈感收件匣（第二批才會用到）
-let pStudy    = JSON.parse(localStorage.getItem(LS.pStudy)    || '{}');  // 學習時數（第二批才會用到）
 let scope   = 'work';
 let shownCount = PAGE_SIZE;
 let filter  = { client:'', type:'', prio:'', status:'open', range:'', repeat:'', q:'' };
@@ -1868,11 +1421,6 @@ function saveLocal(){
   localStorage.setItem(LS.clients, JSON.stringify(clients));
   localStorage.setItem(LS.ui, JSON.stringify(ui));
   localStorage.setItem(LS.rtpl, JSON.stringify(rtpl));
-  localStorage.setItem(LS.pReview, JSON.stringify(pReview));
-  localStorage.setItem(LS.pReviewWk, JSON.stringify(pReviewWk));
-  localStorage.setItem(LS.pWeight, JSON.stringify(pWeight));
-  localStorage.setItem(LS.pIdeas, JSON.stringify(pIdeas));
-  localStorage.setItem(LS.pStudy, JSON.stringify(pStudy));
 }
 function seedClients(){
   if (Object.keys(clients).length) return false;
@@ -2024,129 +1572,6 @@ const repeatDone = (t, dateStr) => !!(t.doneDates && t.doneDates[dateStr]);
 // 一般任務看 status；重複任務看「今天有沒有打勾」
 const isDone = (t, dateStr) => isRepeat(t) ? repeatDone(t, dateStr || TODAY()) : t.status === 'done';
 
-/* ---------- 個人區：日常手帳計算 ---------- */
-const isPersonalTask = t => t.area === 'personal';
-// 連續天數：今天還沒打勾的話，從昨天往回算（給一天的緩衝，不然一早開網頁就顯示斷了）
-function pStreak(t){
-  if (!t.doneDates) return 0;
-  let n = 0, d = new Date();
-  if (!t.doneDates[ymd(d)]) d.setDate(d.getDate() - 1);
-  while (t.doneDates[ymd(d)]){ n++; d.setDate(d.getDate() - 1); }
-  return n;
-}
-/* 「今日任務」原本沒有篩日期，列的是所有個人一次性任務，名字對不上、首頁那格也不會歸零。
-   現在＝到期日是今天的 ＋ 逾期還沒完成的。沒填到期日的當成今天，不然那筆會人間蒸發。 */
-const pTaskDue = t => t.due || TODAY();
-const pIsOverdue = t => pTaskDue(t) < TODAY() && t.status !== 'done';
-const pOnceTasks = () => Object.values(tasks).filter(t => isPersonalTask(t) && !isRepeat(t));
-const pTodayTasks = () => pOnceTasks().filter(t => pTaskDue(t) === TODAY() || pIsOverdue(t));
-const pLaterTasks = () => pOnceTasks().filter(t => pTaskDue(t) > TODAY());
-const pHabits = () => Object.values(tasks).filter(t => isPersonalTask(t) && isRepeat(t));
-function pExp(){
-  let exp = 0;
-  Object.values(tasks).forEach(t => {
-    if (!isPersonalTask(t)) return;
-    if (isRepeat(t)) exp += Object.keys(t.doneDates || {}).length * P_XP_HABIT;
-    else if (t.status === 'done') exp += P_XP_TASK;
-  });
-  return exp;
-}
-// 簡單好懂的等級：每 100 XP 一級，不用複雜的升級曲線，慢慢記、慢慢長
-function pLevelInfo(){
-  const exp = pExp(), need = 100;
-  return { level: Math.floor(exp/need) + 1, cur: exp % need, need, exp };
-}
-function pMaxStreak(){
-  let m = 0;
-  pHabits().forEach(t => m = Math.max(m, pStreak(t)));
-  return m;
-}
-// 每個領域算一個 0-100 分：一次性任務看有沒有完成，習慣類看連續天數（每天 10%，封頂 100%）
-function pDomainScore(tag){
-  const list = Object.values(tasks).filter(t => isPersonalTask(t) && t.qArea === tag);
-  if (!list.length) return 0;
-  const sum = list.reduce((s, t) => {
-    if (isRepeat(t)) return s + Math.min(100, pStreak(t) * 10);
-    return s + (t.status === 'done' ? 100 : 0);
-  }, 0);
-  return Math.round(sum / list.length);
-}
-/* 快樂維度：取最近 7 天「有填」的心情平均（1–5 換算成 0–100）。
-   沒填的日子不補 0——補 0 會把趨勢拉成假的，寧可少算幾天。整週都沒填才回 0。 */
-function pHappyScore(){
-  const vals = [];
-  for (let i = 0; i < 7; i++){
-    const d = new Date(); d.setDate(d.getDate() - i);
-    const r = pReview[ymd(d)];
-    if (r && r.mood) vals.push(r.mood);
-  }
-  if (!vals.length) return 0;
-  const avg = vals.reduce((a,b) => a + b, 0) / vals.length;
-  return Math.round((avg - 1) / 4 * 100);
-}
-
-/* ---------- 個人區：每日復盤／體重 的共用小工具 ---------- */
-const P_MOODS = [
-  { v:1, e:'😩', n:'很糟' }, { v:2, e:'🙁', n:'不太好' }, { v:3, e:'😐', n:'普通' },
-  { v:4, e:'🙂', n:'還不錯' }, { v:5, e:'😄', n:'很好' }
-];
-const P_WD = ['日','一','二','三','四','五','六'];
-const pShiftDay = (dateStr, n) => { const d = new Date(dateStr + 'T00:00:00'); d.setDate(d.getDate() + n); return ymd(d); };
-// 台灣習慣：週一是一週的開始（跟記帳 App 的 mondayOf 同一套算法）
-function pMondayOf(dateStr){
-  const d = new Date(dateStr + 'T00:00:00');
-  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
-  return ymd(d);
-}
-const pWeekDays = mon => [...Array(7)].map((_, i) => pShiftDay(mon, i));
-const pWeightRows = () => Object.entries(pWeight)
-  .map(([date, v]) => ({ date, ...v })).sort((a,b) => a.date.localeCompare(b.date));
-// 正在打字的表單不要被雲端同步的重繪洗掉（LINE 小秘書隨時可能寫進新任務觸發 renderAll）
-const pFormBusy = sel => { const el = document.activeElement; return !!(el && el.closest && el.closest(sel)); };
-// 存檔按鈕本身也在表單裡，不先放掉焦點的話上面那道保護會擋掉存完的重繪
-const pBlur = () => { const el = document.activeElement; if (el && el.blur) el.blur(); };
-
-let pRvDate = TODAY();   // 復盤頁現在看的是哪一天
-let pWtRange = '30';     // 體重圖的區間
-
-function savePReview(date, data){
-  pReview[date] = { ...data, updatedAt: Date.now() };
-  saveLocal(); push(`pReview/${date}`, pReview[date]); renderPBook();
-}
-function delPReview(date){ delete pReview[date]; saveLocal(); drop(`pReview/${date}`); renderPBook(); }
-function savePReviewWk(mon, next){
-  pReviewWk[mon] = { next, updatedAt: Date.now() };
-  saveLocal(); push(`pReviewWk/${mon}`, pReviewWk[mon]); renderPBook();
-}
-function savePWeight(date, kg, fat){
-  pWeight[date] = { kg, fat: (fat === null || fat === undefined) ? null : fat, updatedAt: Date.now() };
-  saveLocal(); push(`pWeight/${date}`, pWeight[date]); renderPBook();
-}
-function delPWeight(date){ delete pWeight[date]; saveLocal(); drop(`pWeight/${date}`); renderPBook(); }
-
-/* ---------- 靈感收件匣／學習時數 的共用小工具 ---------- */
-const P_IDEA_TAGS = { heyen:'禾言', client:'客戶', video:'影片', other:'其他' };
-const P_IDEA_ST   = { new:'新點子', todo:'想做', done:'做過了' };
-let pIdFilter = { tag:'', status:'' };
-const pMinsText = m => m >= 60 ? `${Math.floor(m/60)} 小時${m % 60 ? ` ${m % 60} 分` : ''}` : `${m} 分`;
-
-function savePIdea(id, data){ pIdeas[id] = data; saveLocal(); push(`pIdeas/${id}`, data); renderPBook(); }
-function delPIdea(id){ delete pIdeas[id]; saveLocal(); drop(`pIdeas/${id}`); renderPBook(); }
-function savePStudy(id, data){ pStudy[id] = data; saveLocal(); push(`pStudy/${id}`, data); renderPBook(); }
-function delPStudy(id){ delete pStudy[id]; saveLocal(); drop(`pStudy/${id}`); renderPBook(); }
-
-function pStudyWeek(){
-  const mon = pMondayOf(TODAY()), days = pWeekDays(mon);
-  const per = days.map(d => Object.values(pStudy)
-    .filter(s => s.date === d).reduce((a,b) => a + (b.mins || 0), 0));
-  return { mon, days, per };
-}
-function pStudyMonth(){
-  const m = TODAY().slice(0,7);
-  return Object.values(pStudy).filter(s => (s.date || '').startsWith(m))
-    .reduce((a,b) => a + (b.mins || 0), 0);
-}
-
 /* ---------- Firebase ---------- */
 let _db=null,_ref=null,_set=null,_remove=null,_ready=false,_signOut=null;
 
@@ -2198,11 +1623,6 @@ async function initFirebase(interactive){
     if (d.clients) clients = d.clients;
     if (d.ui)      ui      = d.ui;
     if (d.rtpl)    rtpl    = d.rtpl;
-    if (d.pReview)   pReview   = d.pReview;
-    if (d.pReviewWk) pReviewWk = d.pReviewWk;
-    if (d.pWeight)   pWeight   = d.pWeight;
-    if (d.pIdeas)    pIdeas    = d.pIdeas;
-    if (d.pStudy)    pStudy    = d.pStudy;
     _ready = true; setSync('ok');
 
     if (!d.clients){ seedClients(); push('clients', clients); }
@@ -2229,15 +1649,6 @@ async function initFirebase(interactive){
       const v = s.exists() ? s.val() : {};
       if (JSON.stringify(v) === JSON.stringify(rtpl)) return;
       rtpl = v; saveLocal(); renderRC();
-    });
-    // 個人手帳的四份紀錄：只影響手帳那幾頁，重畫 renderPBook 就夠，不用整站重畫
-    [['pReview', v => pReview = v], ['pReviewWk', v => pReviewWk = v], ['pWeight', v => pWeight = v],
-     ['pIdeas', v => pIdeas = v], ['pStudy', v => pStudy = v]].forEach(([key, assign]) => {
-      onValue(ref(_db, `${ROOM}/${key}`), s => {
-        const v = s.exists() ? s.val() : {};
-        if (JSON.stringify(v) === JSON.stringify({pReview,pReviewWk,pWeight,pIdeas,pStudy}[key])) return;
-        assign(v); saveLocal(); renderPBook();
-      });
     });
     return true;
   }catch(e){
@@ -3306,567 +2717,8 @@ function renderAll(){
   renderDayPlan(); renderRings(); renderAlerts(); renderScore();
   renderStats(); renderBoard(); renderClients(); renderReview(); renderStorageInfo();
   renderTypeList(); renderLearnList(); renderMoreBadge();
-  renderRcCatList(); renderRC(); renderPBook();
+  renderRcCatList(); renderRC();
 }
-
-/* ---------- 個人區：溫暖像素風・個人日常紀錄手帳 ---------- */
-// 名字就顯示在這行的正上方，所以問候只留時段＋日期，不再重複唸一次名字
-function pGreetLine(){
-  const d = new Date(), h = d.getHours();
-  const word = h < 11 ? '早安' : h < 14 ? '午安' : h < 18 ? '下午好' : '晚安';
-  return `${word}・${pad(d.getMonth()+1)}/${pad(d.getDate())} 週${P_WD[d.getDay()]}`;
-}
-
-/* ---------- 關於我（存在既有的 ui 節點，不另開 key） ---------- */
-const PHOTO_PX = 200;
-function savePAbout(patch){
-  ui.pAbout = { ...(ui.pAbout || {}), ...patch };
-  saveLocal(); push('ui', ui); renderPBook();
-}
-/* 人像用「填滿再裁中間」，不像客戶 logo 那樣整張縮進去——圓形頭像留白邊很醜 */
-function shrinkPhoto(file){
-  return new Promise((resolve, reject) => {
-    const fr = new FileReader();
-    fr.onerror = () => reject(new Error('讀不到這個檔案'));
-    fr.onload = () => {
-      const img = new Image();
-      img.onerror = () => reject(new Error('這個檔案不是圖片'));
-      img.onload = () => {
-        const side = Math.min(img.width, img.height);
-        const sx = (img.width - side) / 2, sy = (img.height - side) / 2;
-        const cv = document.createElement('canvas');
-        cv.width = cv.height = PHOTO_PX;
-        const ctx = cv.getContext('2d');
-        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, PHOTO_PX, PHOTO_PX);
-        ctx.drawImage(img, sx, sy, side, side, 0, 0, PHOTO_PX, PHOTO_PX);
-        let out = cv.toDataURL('image/webp', .82);
-        if (!out.startsWith('data:image/webp')) out = cv.toDataURL('image/jpeg', .82);  // Safari 舊版沒有 webp
-        if (out.length > 60000) out = cv.toDataURL('image/jpeg', .6);
-        resolve(out);
-      };
-      img.src = fr.result;
-    };
-    fr.readAsDataURL(file);
-  });
-}
-function renderPAbout(){
-  if (!$('#pAboutCard')) return;
-  const a = ui.pAbout || {};
-  $('#pAvatar').innerHTML = a.photo ? `<img src="${esc(a.photo)}" alt="">` : '👤';
-  $('#pAvatarDel').hidden = !a.photo;
-  if (pFormBusy('#pAboutCard')) return;   // 她正在打字
-  $$('#pAboutCard [data-abt]').forEach(el => { el.value = a[el.dataset.abt] || ''; });
-}
-function renderPBook(){
-  if (!$('#personalArea')) return;
-  renderPHome();
-  renderPToday();
-  renderPHabit();
-  renderPReview();
-  renderPWeight();
-  renderPIdea();
-  renderPStudy();
-  renderPAbout();
-  $('#pRadarBig').innerHTML = renderPRadar();
-  $('#pRadarLegend').innerHTML = Object.entries(PTAGS).map(([k,v]) =>
-    `<div class="plegend-item"><span class="plegend-dot" style="background:${v.color}"></span>${esc(v.name)}</div>`
-  ).join('') + `<div class="plegend-item"><span class="plegend-dot" style="background:#8B5E34"></span>快樂</div>`;
-}
-function renderPHome(){
-  const todayList = pTodayTasks();
-  const doneToday = todayList.filter(t => t.status === 'done').length;
-  const lv = pLevelInfo();
-  $('#pGreet').textContent = pGreetLine();
-  $('#pHomeToday').textContent = `${doneToday}/${todayList.length}`;
-  $('#pHomeLv').textContent = lv.level;
-  $('#pHomeBar').style.width = Math.round(lv.cur / lv.need * 100) + '%';
-  $('#pHomeXp').textContent = `${lv.cur}/${lv.need} XP`;
-  $('#pHomeStreak').textContent = pMaxStreak();
-  $('#pHomeRadar').innerHTML = renderPRadar();
-  $('#pHomeStudy').textContent = pStudyHome();
-  $('#pHomeWeight').innerHTML = pWeightHome();
-}
-/* 六維雷達：事業/家庭/學習/健康/自己看任務貼的領域標籤累積，快樂等每日復盤上線後接上心情紀錄再算 */
-function renderPRadar(){
-  const order = ['biz','family','study','health','self','happy'];
-  const labels = { biz:'事業', family:'家庭', study:'學習', health:'健康', self:'自己', happy:'快樂' };
-  const scores = {}; order.forEach(k => scores[k] = k === 'happy' ? pHappyScore() : pDomainScore(k));
-  const W = 200, H = 210, cx = 100, cy = 96, maxR = 62;
-  const pt = (i, frac) => {
-    const ang = -Math.PI/2 + i * (2*Math.PI/order.length);
-    return [cx + Math.cos(ang)*maxR*frac, cy + Math.sin(ang)*maxR*frac];
-  };
-  const ringPts = f => order.map((_,i) => pt(i,f).join(',')).join(' ');
-  const dataPts = order.map((k,i) => pt(i, Math.max(.05, scores[k]/100)).join(',')).join(' ');
-  const axes = order.map((_,i) => { const [x,y] = pt(i,1); return `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" class="pr-axis"/>`; }).join('');
-  const dots = order.map((k,i) => { const [x,y] = pt(i, Math.max(.05, scores[k]/100)); return `<circle cx="${x}" cy="${y}" r="2.4" class="pr-dot"/>`; }).join('');
-  const svg = `<svg viewBox="0 0 ${W} ${H}" class="pradar-svg">
-    <polygon points="${ringPts(1)}" class="pr-ring"/>
-    <polygon points="${ringPts(.66)}" class="pr-ring"/>
-    <polygon points="${ringPts(.33)}" class="pr-ring"/>
-    ${axes}
-    <polygon points="${dataPts}" class="pr-fill"/>
-    ${dots}
-  </svg>`;
-  const pctLabels = order.map((k,i) => {
-    const [x,y] = pt(i, 1.3);
-    return `<div class="pr-label" style="left:${(x/W*100).toFixed(1)}%;top:${(y/H*100).toFixed(1)}%">${labels[k]}<br>${scores[k]}%</div>`;
-  }).join('');
-  return `<div class="pradar">${svg}${pctLabels}</div>`;
-}
-function pRenderRow(t){
-  const rep = isRepeat(t);
-  const done = rep ? isDone(t) : t.status === 'done';
-  const streak = rep ? pStreak(t) : 0;
-  const tag = PTAGS[t.qArea];
-  const box = rep
-    ? `<button class="prow-box${done?' on':''}" data-qroutine="${t.id}">${done?'✓':''}</button>`
-    : `<button class="prow-box${done?' on':''}" data-qdone="${t.id}">${done?'✓':''}</button>`;
-  return `<div class="prow" data-id="${t.id}">
-    ${box}
-    <span class="prow-name${done?' done':''}" data-openrow="${t.id}">${esc(t.name)}</span>
-    ${tag ? `<span class="ptag" style="background:${tag.color}">${esc(tag.name)}</span>` : ''}
-    ${!rep && pIsOverdue(t) ? `<span class="poverdue">逾期 ${esc(pTaskDue(t).slice(5))}</span>` : ''}
-    ${rep && streak > 0 ? `<span class="pstreak">🔥${streak}</span>` : ''}
-    <button class="prow-del" data-delrow="${t.id}" title="刪除">🗑</button>
-  </div>`;
-}
-function renderPToday(){
-  const list = pTodayTasks().sort((a,b) =>
-    (a.status === 'done') - (b.status === 'done') ||      // 沒做完的排前面
-    (pIsOverdue(b) - pIsOverdue(a)) ||                    // 逾期的再往前
-    (a.createdAt || 0) - (b.createdAt || 0));
-  const later = pLaterTasks();
-  // 排在之後的不列出來（會洗版），但要講一聲，不然會以為任務不見了
-  const laterLine = later.length
-    ? `<div class="pempty">還有 ${later.length} 件排在之後，最近一件是 ${esc(later.map(pTaskDue).sort()[0].slice(5))}</div>`
-    : '';
-  $('#pTodayList').innerHTML = (list.length ? list.map(pRenderRow).join('')
-    : `<div class="pempty">今天沒有任務，點右上角「＋新增」加一個</div>`) + laterLine;
-}
-function renderPHabit(){
-  const list = pHabits().sort((a,b) => (a.createdAt||0)-(b.createdAt||0));
-  $('#pHabitList').innerHTML = list.length ? list.map(pRenderRow).join('')
-    : `<div class="pempty">還沒有習慣，點右上角「＋新增」加一個</div>`;
-}
-
-/* ---------- 每日復盤 ---------- */
-function renderPReview(){
-  if (!$('#pRvForm')) return;
-  renderPRvWeek();
-  if (pFormBusy('#pRvForm')) return;   // 她正在打字，別把內容洗掉
-  const d = pRvDate, r = pReview[d] || {};
-  const dt = new Date(d + 'T00:00:00');
-  const filled = !!(r.mood || r.good || r.adjust);
-  $('#pRvDate').innerHTML = `${esc(d)}<span class="wd">週${P_WD[dt.getDay()]}</span>`;
-  $('#pRvFlag').className = 'pdate-flag ' + (filled ? 'yes' : 'no');
-  $('#pRvFlag').textContent = filled ? '已填' : '還沒填';
-  $('#pRvNext').disabled = d >= TODAY();
-  $('#pRvToday').style.visibility = d === TODAY() ? 'hidden' : 'visible';
-  $('#pRvMood').innerHTML = P_MOODS.map(m =>
-    `<button class="pmood-b${r.mood === m.v ? ' on' : ''}" data-mood="${m.v}">
-       <span class="emo">${m.e}</span><span class="lb">${m.n}</span></button>`).join('');
-  $('#pRvGood').value = r.good || '';
-  $('#pRvAdjust').value = r.adjust || '';
-  $('#pRvDel').style.display = filled ? '' : 'none';
-}
-/* 心情趨勢：一週七天，沒填的日子把線斷開（補 0 會拉出假的趨勢） */
-function pMoodChart(moods){
-  if (!moods.some(v => v)) return `<div class="pempty">這週還沒有心情紀錄</div>`;
-  const W = 320, H = 112, L = 26, R = 8, T = 10, B = 20;
-  const x = i => L + i * ((W - L - R) / 6);
-  const y = v => T + (5 - v) / 4 * (H - T - B);
-  const grid = P_MOODS.map(m => `<line x1="${L}" y1="${y(m.v).toFixed(1)}" x2="${W-R}" y2="${y(m.v).toFixed(1)}" class="pc-grid"/>`).join('');
-  const yLab = P_MOODS.map(m => `<text x="4" y="${(y(m.v)+3.5).toFixed(1)}" class="pc-axis">${m.e}</text>`).join('');
-  const segs = []; let cur = [];
-  moods.forEach((v, i) => {
-    if (v) cur.push(`${x(i).toFixed(1)},${y(v).toFixed(1)}`);
-    else { if (cur.length > 1) segs.push(cur); cur = []; }
-  });
-  if (cur.length > 1) segs.push(cur);
-  const lines = segs.map(p => `<polyline points="${p.join(' ')}" class="pc-mood"/>`).join('');
-  const dots = moods.map((v,i) => v ? `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="3.2" class="pc-mood-d"/>` : '').join('');
-  const xLab = ['一','二','三','四','五','六','日'].map((n,i) =>
-    `<text x="${x(i).toFixed(1)}" y="${H-5}" class="pc-axis" text-anchor="middle">${n}</text>`).join('');
-  return `<div class="pchart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="這週每天的心情">${grid}${yLab}${lines}${dots}${xLab}</svg></div>`;
-}
-function renderPRvWeek(){
-  const mon = pMondayOf(pRvDate), days = pWeekDays(mon);
-  const rows = days.map(d => ({ d, r: pReview[d] || null }));
-  const moods = rows.map(x => (x.r && x.r.mood) ? x.r.mood : null);
-  const goods = rows.filter(x => x.r && x.r.good).map(x => ({ d: x.d, t: x.r.good }));
-  const adjs  = rows.filter(x => x.r && x.r.adjust).map(x => ({ d: x.d, t: x.r.adjust }));
-  const filledN = rows.filter(x => x.r && (x.r.mood || x.r.good || x.r.adjust)).length;
-  const wk = pReviewWk[mon] || {};
-  $('#pRvWkRange').textContent = `${mon.slice(5)} – ${days[6].slice(5)}`;
-  const noteList = list => list.length
-    ? `<div class="pnote-list">${list.map(x =>
-        `<div class="pnote"><span class="d">${esc(x.d.slice(5))}</span><span>${esc(x.t)}</span></div>`).join('')}</div>`
-    : `<div class="pempty">這週還沒有紀錄</div>`;
-  if (pFormBusy('#pRvWeek')) return;   // 「下週想先做好的一件事」正在打字
-  $('#pRvWeek').innerHTML = `
-    <div class="psub-h">心情趨勢（這週填了 ${filledN} 天）</div>
-    ${pMoodChart(moods)}
-    <div class="psub-h">這週最好的事</div>
-    ${noteList(goods)}
-    <div class="psub-h">這週想調整的</div>
-    ${noteList(adjs)}
-    <div class="pfield"><label>下週想先做好的一件事</label>
-      <input class="pinput" id="pRvNext1" maxlength="140" placeholder="只挑一件" value="${esc(wk.next || '')}"></div>
-    <div class="pbtn-row"><button class="pbtn sub" id="pRvWkSave">存這週回顧</button></div>`;
-}
-
-/* ---------- 體重紀錄 ---------- */
-function renderPWeight(){
-  if (!$('#pWtForm')) return;
-  $('#pWtChart').innerHTML = pWeightChart();
-  const rows = pWeightRows().slice(-14).reverse();
-  $('#pWtList').innerHTML = rows.length ? rows.map(r => {
-    const dt = new Date(r.date + 'T00:00:00');
-    return `<div class="pwrow" data-wtrow="${r.date}">
-      <span class="d">${esc(r.date.slice(5))} 週${P_WD[dt.getDay()]}</span>
-      <span class="kg">${r.kg} kg</span>
-      ${r.fat ? `<span class="fat">體脂 ${r.fat}%</span>` : ''}
-      <span class="sp"></span>
-      <button class="prow-del" data-wtdel="${r.date}" title="刪除">🗑</button>
-    </div>`;
-  }).join('') : `<div class="pempty">還沒有紀錄</div>`;
-  if (pFormBusy('#pWtForm')) return;
-  if (!$('#pWtDate').value) $('#pWtDate').value = TODAY();
-  $('#pWtGoal').value = ui.pWeightGoal || '';
-}
-function pWeightChart(){
-  const all = pWeightRows();
-  if (!all.length) return `<div class="pempty">還沒有紀錄，上面記第一筆就會長出來</div>`;
-  let from;
-  if (pWtRange === 'year') from = `${new Date().getFullYear()}-01-01`;
-  else { const d = new Date(); d.setDate(d.getDate() - (+pWtRange - 1)); from = ymd(d); }
-  const list = all.filter(r => r.date >= from);
-  if (!list.length) return `<div class="pempty">這段期間沒有紀錄</div>`;
-  const goal = +(ui.pWeightGoal || 0) || null;
-  let min = Math.min(...list.map(r => r.kg), ...(goal ? [goal] : []));
-  let max = Math.max(...list.map(r => r.kg), ...(goal ? [goal] : []));
-  if (max - min < 2){ const mid = (max + min) / 2; min = mid - 1; max = mid + 1; }
-  const gap = (max - min) * .15; min -= gap; max += gap;
-  const W = 320, H = 150, L = 32, R = 12, T = 12, B = 22;
-  const x = i => list.length === 1 ? L + (W - L - R) / 2 : L + i * ((W - L - R) / (list.length - 1));
-  const y = v => T + (max - v) / (max - min) * (H - T - B);
-  const grid = [0,.5,1].map(f => {
-    const v = min + (max - min) * f;
-    return `<line x1="${L}" y1="${y(v).toFixed(1)}" x2="${W-R}" y2="${y(v).toFixed(1)}" class="pc-grid"/>
-            <text x="4" y="${(y(v)+3.5).toFixed(1)}" class="pc-axis">${v.toFixed(1)}</text>`;
-  }).join('');
-  const goalLine = goal ? `<line x1="${L}" y1="${y(goal).toFixed(1)}" x2="${W-R}" y2="${y(goal).toFixed(1)}" class="pc-goal"/>
-    <text x="${W-R}" y="${(y(goal)-4).toFixed(1)}" class="pc-goal-t" text-anchor="end">目標 ${goal}</text>` : '';
-  const pts = list.map((r,i) => `${x(i).toFixed(1)},${y(r.kg).toFixed(1)}`).join(' ');
-  const line = list.length > 1 ? `<polyline points="${pts}" class="pc-wt"/>` : '';
-  const dots = list.map((r,i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(r.kg).toFixed(1)}" r="3" class="pc-wt-d"/>`).join('');
-  const last = list[list.length - 1];
-  const lastLab = `<text x="${x(list.length-1).toFixed(1)}" y="${(y(last.kg)-7).toFixed(1)}" class="pc-val" text-anchor="end">${last.kg}</text>`;
-  const xLab = `<text x="${L}" y="${H-5}" class="pc-axis">${list[0].date.slice(5)}</text>` +
-    (list.length > 1 ? `<text x="${W-R}" y="${H-5}" class="pc-axis" text-anchor="end">${last.date.slice(5)}</text>` : '');
-  return `<div class="pchart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="體重變化">${grid}${goalLine}${line}${dots}${lastLab}${xLab}</svg></div>`;
-}
-/* ---------- 靈感收件匣 ---------- */
-function renderPIdea(){
-  if (!$('#pIdList')) return;
-  const all = Object.values(pIdeas).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
-  const list = all.filter(x =>
-    (!pIdFilter.tag || x.tag === pIdFilter.tag) && (!pIdFilter.status || x.status === pIdFilter.status));
-  const filtering = !!(pIdFilter.tag || pIdFilter.status);
-  $('#pIdCount').textContent = filtering ? `${list.length} / ${all.length} 則` : `${all.length} 則`;
-  const chips = (key, label, map) => `<span class="lb">${label}</span>` +
-    `<button class="pchip${pIdFilter[key] === '' ? ' on' : ''}" data-idf="${key}" data-v="">全部</button>` +
-    Object.entries(map).map(([k,v]) =>
-      `<button class="pchip${pIdFilter[key] === k ? ' on' : ''}" data-idf="${key}" data-v="${k}">${v}</button>`).join('');
-  $('#pIdFilter').innerHTML = chips('tag', '標籤', P_IDEA_TAGS) + chips('status', '狀態', P_IDEA_ST);
-  if (pFormBusy('#pIdList')) return;   // 正在改某一則的文字或說明
-  const opts = (map, cur) => Object.entries(map)
-    .map(([k,v]) => `<option value="${k}"${cur === k ? ' selected' : ''}>${v}</option>`).join('');
-  $('#pIdList').innerHTML = list.length ? list.map(x => `
-    <div class="pidea${x.status === 'done' ? ' done' : ''}">
-      <div class="pidea-r1">
-        <input class="pidea-tx" data-idtext="${x.id}" maxlength="140" value="${esc(x.text || '')}">
-        <button class="prow-del" data-iddel="${x.id}" title="刪除">🗑</button>
-      </div>
-      <input class="pinput pidea-note" data-idnote="${x.id}" maxlength="200"
-             placeholder="補一句說明（選填）" value="${esc(x.note || '')}">
-      <div class="pidea-r2">
-        <select class="pselect" data-idtag="${x.id}">${opts(P_IDEA_TAGS, x.tag)}</select>
-        <select class="pselect" data-idstatus="${x.id}">${opts(P_IDEA_ST, x.status)}</select>
-        <span class="pidea-d">${esc((x.createdAt ? ymd(new Date(x.createdAt)) : '').slice(5))}</span>
-      </div>
-    </div>`).join('')
-    : `<div class="pempty">${filtering ? '這個條件下沒有東西' : '還沒有靈感，上面打一行丟進來'}</div>`;
-}
-
-/* ---------- 學習時數 ---------- */
-function renderPStudy(){
-  if (!$('#pStList')) return;
-  const month = pStudyMonth();
-  $('#pStMonth').textContent = month ? `這個月 ${pMinsText(month)}` : '這個月還沒有';
-  $('#pStChart').innerHTML = pStudyChart();
-  const list = Object.values(pStudy)
-    .sort((a,b) => (b.date || '').localeCompare(a.date || '') || (b.createdAt || 0) - (a.createdAt || 0))
-    .slice(0, 14);
-  $('#pStList').innerHTML = list.length ? list.map(s => {
-    const dt = new Date(s.date + 'T00:00:00');
-    return `<div class="pstrow">
-      <span class="d">${esc(s.date.slice(5))} 週${P_WD[dt.getDay()]}</span>
-      <span class="m">${pMinsText(s.mins)}</span>
-      <span class="t">${esc(s.topic || '')}</span>
-      <button class="prow-del" data-stdel="${s.id}" title="刪除">🗑</button>
-    </div>`;
-  }).join('') : `<div class="pempty">還沒有紀錄</div>`;
-  if (pFormBusy('#pStForm')) return;
-  if (!$('#pStDate').value) $('#pStDate').value = TODAY();
-}
-/* 這週每天的學習時間：單一組資料所以不放圖例，標題就說明它是什麼。
-   虛線是平均，只算有學的那幾天——一堆 0 會把平均壓到沒意義。 */
-function pStudyChart(){
-  const { per } = pStudyWeek();
-  const total = per.reduce((a,b) => a + b, 0);
-  if (!total) return `<div class="pempty">這週還沒有紀錄</div>`;
-  const active = per.filter(v => v > 0);
-  const avg = active.reduce((a,b) => a + b, 0) / active.length;
-  const max = Math.max(...per, 30);
-  const W = 320, H = 140, L = 34, R = 10, T = 20, B = 22;   // T 留寬一點，最高那根的數字才不會頂到邊
-  const step = (W - L - R) / 7, bw = step * .56;
-  const y = v => T + (1 - v / max) * (H - T - B);
-  const base = y(0);
-  const grid = [0, .5, 1].map(f => {
-    const v = max * f;
-    return `<line x1="${L}" y1="${y(v).toFixed(1)}" x2="${W-R}" y2="${y(v).toFixed(1)}" class="pc-grid"/>
-            <text x="4" y="${(y(v)+3.5).toFixed(1)}" class="pc-axis">${Math.round(v)}</text>`;
-  }).join('');
-  const bars = per.map((v,i) => {
-    if (!v) return '';
-    const cx = L + i * step + step / 2;
-    return `<rect x="${(cx - bw/2).toFixed(1)}" y="${y(v).toFixed(1)}" width="${bw.toFixed(1)}"
-              height="${(base - y(v)).toFixed(1)}" rx="2" class="pc-bar"/>
-            <text x="${cx.toFixed(1)}" y="${(y(v)-4).toFixed(1)}" class="pc-val" text-anchor="middle">${v}</text>`;
-  }).join('');
-  const avgLine = active.length > 1
-    ? `<line x1="${L}" y1="${y(avg).toFixed(1)}" x2="${W-R}" y2="${y(avg).toFixed(1)}" class="pc-avg"/>
-       <text x="${W-R}" y="${(y(avg)-4).toFixed(1)}" class="pc-avg-t" text-anchor="end">平均 ${Math.round(avg)} 分</text>`
-    : '';
-  const xLab = ['一','二','三','四','五','六','日'].map((n,i) =>
-    `<text x="${(L + i*step + step/2).toFixed(1)}" y="${H-5}" class="pc-axis" text-anchor="middle">${n}</text>`).join('');
-  return `<div class="pchart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="這週每天的學習時間">${grid}${avgLine}${bars}${xLab}</svg></div>`;
-}
-// 首頁那格：這週學了多久
-function pStudyHome(){
-  const total = pStudyWeek().per.reduce((a,b) => a + b, 0);
-  return total ? pMinsText(total) : '還沒有紀錄';
-}
-
-// 首頁那格：最新體重 ＋ 跟一週前比
-function pWeightHome(){
-  const rows = pWeightRows();
-  if (!rows.length) return '還沒有紀錄';
-  const last = rows[rows.length - 1];
-  const cut = pShiftDay(last.date, -7);
-  const prev = [...rows].reverse().find(r => r.date <= cut);
-  let diff = '';
-  if (prev){
-    const d = +(last.kg - prev.kg).toFixed(1);
-    diff = d === 0
-      ? ` <span style="font-size:11px;color:#8B5E34">持平</span>`
-      : ` <span style="font-size:11px;color:${d > 0 ? '#B03A2E' : '#4C7A22'}">${d > 0 ? '▲' : '▼'}${Math.abs(d)}</span>`;
-  }
-  return `${last.kg} kg${diff}`;
-}
-function switchPTab(name){
-  $$('.pnav-btn').forEach(b => b.classList.toggle('on', b.dataset.ptab === name));
-  $$('.ppage').forEach(p => p.classList.toggle('on', p.dataset.ppage === name));
-  $('#pNav').classList.remove('open');
-  $('#pNavMask').classList.remove('show');
-}
-$('#pNav').addEventListener('click', e => {
-  const b = e.target.closest('.pnav-btn'); if (!b) return;
-  switchPTab(b.dataset.ptab);
-});
-$('#pMenuBtn').onclick = () => { $('#pNav').classList.add('open'); $('#pNavMask').classList.add('show'); };
-$('#pNavMask').onclick = () => { $('#pNav').classList.remove('open'); $('#pNavMask').classList.remove('show'); };
-
-$('#pAvatarFile').onchange = async e => {
-  const f = e.target.files && e.target.files[0];
-  e.target.value = '';   // 選同一張還要能再觸發一次
-  if (!f) return;
-  try { savePAbout({ photo: await shrinkPhoto(f) }); toast('照片換好了'); }
-  catch(err){ toast(err.message || '這張圖讀不進來'); }
-};
-
-// 靈感收件匣：打一行按 Enter 就收進來，不用選任何東西（門檻高一點她就懶得記）
-$('#personalArea').addEventListener('keydown', e => {
-  if (e.key !== 'Enter') return;
-  if (e.target.id === 'pIdNew'){
-    const text = e.target.value.trim();
-    if (!text) return;
-    const id = uid();
-    e.target.value = '';
-    savePIdea(id, { id, text, note:'', tag:'other', status:'new', createdAt: Date.now() });
-    toast('收進來了');
-    return;
-  }
-  if (e.target.matches('[data-idtext],[data-idnote],#pStTopic,#pStMins,#pWtKg,#pWtFat')) e.target.blur();
-});
-// 靈感的文字／說明／標籤／狀態改了就存（文字類的 change 是離開欄位時才觸發）
-$('#personalArea').addEventListener('change', e => {
-  const t = e.target;
-  const abt = t.dataset && t.dataset.abt;
-  if (abt){
-    const v = t.value.trim();
-    if (((ui.pAbout || {})[abt] || '') !== v) savePAbout({ [abt]: v });
-    return;
-  }
-  const map = { idtext:'text', idnote:'note', idtag:'tag', idstatus:'status' };
-  const key = Object.keys(map).find(k => t.dataset && t.dataset[k]);
-  if (!key) return;
-  const x = pIdeas[t.dataset[key]];
-  if (!x) return;
-  const field = map[key], val = t.value.trim();
-  if (field === 'text' && !val){ toast('內容不能空白'); renderPIdea(); return; }
-  if (x[field] === val) return;
-  if (t.tagName === 'SELECT') pBlur();   // 不放掉焦點的話重繪會被 pFormBusy 擋掉
-  savePIdea(x.id, { ...x, [field]: val });
-});
-/* ---------- 每日復盤／體重 的互動 ---------- */
-$('#personalArea').addEventListener('click', e => {
-  /* --- 每日復盤 --- */
-  const mb = e.target.closest('[data-mood]');
-  if (mb){   // 只換選取樣式，不重畫整張表單（重畫會把打到一半的字洗掉）
-    const v = +mb.dataset.mood;
-    $$('#pRvMood .pmood-b').forEach(b => b.classList.toggle('on', +b.dataset.mood === v));
-    return;
-  }
-  if (e.target.closest('#pRvPrev')){ pRvDate = pShiftDay(pRvDate, -1); renderPReview(); return; }
-  if (e.target.closest('#pRvNext')){
-    if (pRvDate < TODAY()) { pRvDate = pShiftDay(pRvDate, 1); renderPReview(); }
-    return;
-  }
-  if (e.target.closest('#pRvToday')){ pRvDate = TODAY(); renderPReview(); return; }
-  if (e.target.closest('#pRvSave')){
-    const picked = $('#pRvMood .pmood-b.on');
-    const data = {
-      mood: picked ? +picked.dataset.mood : null,
-      good: $('#pRvGood').value.trim(),
-      adjust: $('#pRvAdjust').value.trim()
-    };
-    if (!data.mood && !data.good && !data.adjust){ toast('至少點一個心情或寫一句話'); return; }
-    pBlur(); savePReview(pRvDate, data);
-    toast(pRvDate === TODAY() ? '今天的復盤存好了' : `${pRvDate} 存好了`);
-    return;
-  }
-  if (e.target.closest('#pRvDel')){
-    if (confirm(`確定刪掉 ${pRvDate} 的復盤？`)){ pBlur(); delPReview(pRvDate); toast('已刪除'); }
-    return;
-  }
-  if (e.target.closest('#pRvWkSave')){
-    const nextOne = $('#pRvNext1').value.trim();
-    pBlur(); savePReviewWk(pMondayOf(pRvDate), nextOne);
-    toast('這週回顧存好了');
-    return;
-  }
-  /* --- 體重 --- */
-  const seg = e.target.closest('[data-wtrange]');
-  if (seg){
-    pWtRange = seg.dataset.wtrange;
-    $$('#pWtSeg button').forEach(b => b.classList.toggle('on', b === seg));
-    $('#pWtChart').innerHTML = pWeightChart();
-    return;
-  }
-  if (e.target.closest('#pWtSave')){
-    const date = $('#pWtDate').value || TODAY();
-    const kg = parseFloat($('#pWtKg').value);
-    const fatRaw = $('#pWtFat').value.trim();
-    const fat = fatRaw === '' ? null : parseFloat(fatRaw);
-    if (!(kg > 0)){ toast('先填體重'); $('#pWtKg').focus(); return; }
-    if (fatRaw !== '' && !(fat > 0)){ toast('體脂填數字，不填就留空'); return; }
-    const dup = !!pWeight[date];
-    $('#pWtKg').value = ''; $('#pWtFat').value = ''; $('#pWtDate').value = TODAY();
-    pBlur(); savePWeight(date, +kg.toFixed(1), fat === null ? null : +fat.toFixed(1));
-    toast(dup ? `${date} 已更新` : '記好了');
-    return;
-  }
-  if (e.target.closest('#pWtGoalSave')){
-    const g = $('#pWtGoal').value.trim();
-    ui.pWeightGoal = g === '' ? '' : (+parseFloat(g).toFixed(1) || '');
-    pBlur(); saveLocal(); push('ui', ui); renderPWeight();
-    toast(ui.pWeightGoal ? `目標設成 ${ui.pWeightGoal} kg` : '目標已清掉');
-    return;
-  }
-  const wtDel = e.target.closest('[data-wtdel]');
-  if (wtDel){
-    const d = wtDel.dataset.wtdel;
-    if (confirm(`確定刪掉 ${d} 的體重紀錄？`)){ delPWeight(d); toast('已刪除'); }
-    return;
-  }
-  const wtRow = e.target.closest('[data-wtrow]');
-  if (wtRow){   // 點紀錄帶回上面的輸入框改
-    const r = pWeight[wtRow.dataset.wtrow];
-    if (r){
-      $('#pWtDate').value = wtRow.dataset.wtrow;
-      $('#pWtKg').value = r.kg;
-      $('#pWtFat').value = r.fat || '';
-      $('#pWtKg').focus();
-    }
-    return;
-  }
-
-  /* --- 關於我 --- */
-  if (e.target.closest('#pAvatar')){ $('#pAvatarFile').click(); return; }
-  if (e.target.closest('#pAvatarDel')){
-    if (confirm('確定移除照片？')){ pBlur(); savePAbout({ photo:'' }); toast('照片已移除'); }
-    return;
-  }
-
-  /* --- 靈感收件匣 --- */
-  const idf = e.target.closest('[data-idf]');
-  if (idf){ pIdFilter[idf.dataset.idf] = idf.dataset.v; pBlur(); renderPIdea(); return; }
-  const idDel = e.target.closest('[data-iddel]');
-  if (idDel){
-    const x = pIdeas[idDel.dataset.iddel];
-    if (x && confirm(`確定刪掉「${x.text}」？`)){ pBlur(); delPIdea(x.id); toast('已刪除'); }
-    return;
-  }
-  /* --- 學習時數 --- */
-  const stq = e.target.closest('[data-stquick]');
-  if (stq){ $('#pStMins').value = stq.dataset.stquick; $('#pStMins').focus(); return; }
-  if (e.target.closest('#pStSave')){
-    const date = $('#pStDate').value || TODAY();
-    const mins = parseInt($('#pStMins').value, 10);
-    if (!(mins > 0)){ toast('先填分鐘數'); $('#pStMins').focus(); return; }
-    const topic = $('#pStTopic').value.trim();
-    const id = uid();
-    $('#pStMins').value = ''; $('#pStTopic').value = ''; $('#pStDate').value = TODAY();
-    pBlur();
-    savePStudy(id, { id, date, mins, topic, createdAt: Date.now() });
-    toast(`記了 ${pMinsText(mins)}`);
-    return;
-  }
-  const stDel = e.target.closest('[data-stdel]');
-  if (stDel){
-    const s = pStudy[stDel.dataset.stdel];
-    if (s && confirm(`確定刪掉 ${s.date} 那筆 ${pMinsText(s.mins)}？`)){ pBlur(); delPStudy(s.id); toast('已刪除'); }
-    return;
-  }
-
-  if (e.target.closest('#pAddToday')){ openTask(null, {}); return; }
-  if (e.target.closest('#pAddHabit')){ openTask(null, { repeat:'daily' }); return; }
-  const rb = e.target.closest('[data-qroutine]');
-  if (rb){ toggleRoutine(rb.dataset.qroutine); return; }
-  const db = e.target.closest('[data-qdone]');
-  if (db){ const t = tasks[db.dataset.qdone]; if (t) setStatus(t.id, t.status==='done' ? 'todo' : 'done'); return; }
-  const del = e.target.closest('[data-delrow]');
-  if (del){
-    const t = tasks[del.dataset.delrow];
-    if (t && confirm(`確定刪除「${t.name}」？`)) delTask(t.id);
-    return;
-  }
-  const openr = e.target.closest('[data-openrow]');
-  if (openr){ openTask(openr.dataset.openrow); return; }
-});
 
 /* ---------- 任務操作 ---------- */
 function saveTask(t){
@@ -3936,10 +2788,8 @@ function openTask(id, preset){
   $('#tmProg').value = t?.progress || 0;
   $('#tmProgV').textContent = (t?.progress||0) + '%';
   $('#tmNote').value = t?.note || '';
-  $('#tmQArea').value = t?.qArea || preset?.qArea || '';
   syncClientTrigger('tmClient');
   syncRepeatFields();
-  syncQuestFields();
   $('#taskModal').classList.add('on');
   requestAnimationFrame(()=>{ autoGrow($('#tmName')); autoGrow($('#tmNote')); });
   if (!t) setTimeout(()=>$('#tmName').focus(), 120);
@@ -3956,52 +2806,6 @@ function syncRepeatFields(){
 function syncProgVisibility(){
   const rep = $('#tmRepeat').value !== 'none';
   $('#tmProgWrap').classList.toggle('hide', rep);
-}
-/* 個人任務專屬欄位：只有切到「個人」才看得到生活領域；客戶／工作類型是工作那邊的概念，個人用不到 */
-function syncQuestFields(){
-  const personal = scope === 'personal';
-  $('#tmQuestWrap').classList.toggle('hide', !personal);
-  $('#tmClientWrap').classList.toggle('hide', personal);
-  $('#tmTypeWrap').classList.toggle('hide', personal);
-  /* 個人手帳裡「今日任務」與「習慣打卡」已經是左邊兩個分頁，視窗裡再放一個「重複」下拉，
-     等於同一件事兩個入口——不小心點到「每天」，那筆就從今日任務消失、跑去習慣打卡，
-     而且完全沒有提示。所以個人模式把重複藏起來，改成下面那顆會講清楚要搬去哪的按鈕。 */
-  $('#tmRepeatWrap').classList.toggle('hide', personal);
-  if (personal) $('#tmWdaysWrap').classList.add('hide');
-  syncMoveKind();
-  syncProgVisibility();
-}
-// 只有「已經建立的」個人任務才需要搬家鈕：新增中的那筆是從哪一頁按＋進來的就是哪一種
-function syncMoveKind(){
-  const show = scope === 'personal' && !!editingTask;
-  $('#tmMoveWrap').classList.toggle('hide', !show);
-  if (!show) return;
-  const rep = isRepeat(editingTask);
-  $('#tmMoveKind').textContent = rep ? '改回一次性任務' : '改成每天的習慣';
-  $('#tmMoveHint').textContent = rep
-    ? '現在在「習慣打卡」。改回去之後會出現在「今日任務」，每天打勾的紀錄會清掉。'
-    : '現在在「今日任務」。改成習慣之後會出現在「習慣打卡」，改成每天打勾。';
-}
-function moveTaskKind(){
-  if (!editingTask) return;
-  const id = editingTask.id;
-  const t = tasks[id]; if (!t) return;
-  const rep = isRepeat(t);
-  const msg = rep
-    ? `把「${t.name}」改回一次性任務？\n它會移到「今日任務」，每天打勾的紀錄會清掉。`
-    : `把「${t.name}」改成每天的習慣？\n它會移到「習慣打卡」，改成每天打勾。`;
-  if (!confirm(msg)) return;
-  closeTask();   // 先關掉：倒數中的自動存檔會在這裡結清，不然它醒來會把舊的重複設定寫回去
-  const cur = tasks[id]; if (!cur) return;
-  if (rep){
-    cur.repeat = 'none'; cur.wdays = []; cur.doneDates = {};
-    cur.due = cur.due || TODAY(); cur.status = cur.status || 'todo';
-  } else {
-    cur.repeat = 'daily'; cur.due = ''; cur.doneDates = cur.doneDates || {};
-  }
-  saveTask(cur);
-  switchPTab(rep ? 'today' : 'habit');
-  toast(rep ? '已移到「今日任務」' : '已移到「習慣打卡」');
 }
 const closeTask = () => {
   flushAutoSave();                                // 倒數中的存檔先結清：存完再關，
@@ -4073,10 +2877,6 @@ function readTaskForm(){
     createdAt: editingTask?.createdAt || Date.now(),
     doneAt: (!rep && status==='done') ? (editingTask?.doneAt || Date.now()) : null
   };
-  // 個人任務多一件事：貼哪個生活領域標籤，用來分類跟畫雷達圖
-  if (scope === 'personal'){
-    t.qArea = $('#tmQArea').value || '';
-  }
   return t;
 }
 
@@ -4139,7 +2939,6 @@ $('#tmSave').onclick = () => {
   toast(madeNew ? `已新增 · 順便建了新客戶「${madeNew}」` : '已新增');
 };
 $('#tmCancel2').onclick = () => closeTask();
-$('#tmMoveKind').onclick = moveTaskKind;
 $('#tmDel').onclick = () => {
   if (!editingTask) return;
   if (!confirm(`確定刪除「${editingTask.name}」？`)) return;
@@ -4402,7 +3201,7 @@ $('#scopeSw').onclick = e => {
   $('#workArea').classList.toggle('hide', personal);
   $('#personalArea').classList.toggle('hide', !personal);
   $('#fab').style.display = personal ? 'none' : 'flex';
-  if (!personal) renderAll(); else renderPBook();
+  if (!personal) renderAll();
 };
 $('#goToday').onclick = () => {
   filter.range = 'today'; filter.status = 'open'; shownCount = PAGE_SIZE;
