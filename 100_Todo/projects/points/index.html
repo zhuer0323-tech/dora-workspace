@@ -3,18 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>積分自律系統</title>
+<title>朱兒的獨自升級</title>
 <meta name="theme-color" content="#E0508D">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./icon-192.png">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="積分系統">
+<meta name="apple-mobile-web-app-title" content="獨自升級">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-/* 積分自律系統
+/* 朱兒的獨自升級（原名「積分自律系統」，2026-09-13 改名；網址維持 /points/）
    版型照小紅書那份指令：格線底、粗框、純色偏移的硬陰影（不用模糊陰影）。
    配色 2026-09-13 她要求改粉色系：原本淡藍格線＋深藍框，換成粉白格線＋深莓紫框，遊戲感靠粗框與硬陰影撐住。
    加分綠、扣分紅、基金金三個意義色不動。
@@ -111,6 +111,7 @@ svg.ic{width:18px;height:18px;flex:none}
 #gate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
 #gate .box{max-width:380px;width:100%;padding:26px 22px;text-align:center}
 #gate .ttl{margin:0 0 14px}
+#gate .ttl h1{font-size:clamp(28px,8vw,36px);letter-spacing:1px}   /* 系統名稱七個字，窄框放得下 */
 #gate .btn{width:100%;padding:10px;margin-top:10px;font-size:15px}
 #gateErr{color:var(--loss);font-size:13px;min-height:18px;margin-top:8px}
 
@@ -284,7 +285,7 @@ body.night .remain .rbox b{color:var(--pri)}
 <body>
 <div id="gate">
   <div class="box">
-    <div class="ttl"><h1 data-t="積分系統">積分系統</h1><p>SELF DISCIPLINE</p></div>
+    <div class="ttl"><h1>朱兒的獨自升級</h1><p>SOLO LEVELING</p></div>
     <div class="tiny">做事賺積分、娛樂花積分，剩下的存進基金。<br>用 Google 登入，電腦手機看到同一份。</div>
     <button class="btn blue" id="gateBtn">用 Google 登入</button>
     <button class="btn" id="gateLocal">先不登入，只用這台裝置</button>
@@ -294,7 +295,7 @@ body.night .remain .rbox b{color:var(--pri)}
 
 <div id="app" hidden>
   <nav id="nav">
-    <div class="brand"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M10 2h4v2h2v2h2v2h2v8h-2v2h-2v2h-2v2h-4v-2H8v-2H6v-2H4V8h2V6h2V4h2z"/><path fill="#fff" d="M11 7h2v3h3v2h-3v5h-2v-5H8v-2h3z"/></svg>積分系統</div>
+    <div class="brand"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M10 2h4v2h2v2h2v2h2v8h-2v2h-2v2h-2v2h-4v-2H8v-2H6v-2H4V8h2V6h2V4h2z"/><path fill="#fff" d="M11 7h2v3h3v2h-3v5h-2v-5H8v-2h3z"/></svg>朱兒的獨自升級</div>
     <div id="navLinks" style="display:contents"></div>
     <div class="navfoot tiny" id="navFoot"></div>
   </nav>
@@ -417,7 +418,7 @@ body.night .remain .rbox b{color:var(--pri)}
 <div id="toast"></div>
 
 <script type="module">
-/* 積分自律系統（2026-09-13 起做，計劃書 100_Todo/plans/2026-09-13-積分自律系統.md）
+/* 朱兒的獨自升級（原名積分自律系統，2026-09-13 起做，計劃書 100_Todo/plans/2026-09-13-積分自律系統.md）
    做事賺積分、娛樂花積分，當天沒花完的存進基金。
    資料跟工作台、記帳同一個 Firebase 專案，但是獨立節點、獨立規則，互不相干。 */
 
