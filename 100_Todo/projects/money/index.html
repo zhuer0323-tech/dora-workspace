@@ -77,7 +77,7 @@ header.top h1 .sub{font-size:12px;color:var(--ink3);font-weight:400;margin-left:
 .seg{display:flex;background:var(--pink-xl);border-radius:99px;padding:3px}
 .seg button{flex:1;padding:6px 0;border-radius:99px;font-size:13.5px;font-weight:700;color:var(--ink3)}
 .seg button.on{background:#fff;color:var(--pink-d);box-shadow:var(--shadow)}
-.amtbox{display:flex;align-items:center;gap:10px;margin:9px 2px 9px}
+.amtbox{display:flex;align-items:center;gap:10px;margin:7px 2px 7px}
 .amtbox .cur{font-size:17px;color:var(--ink3);font-weight:700}
 .amtbox .val{flex:1;font-size:38px;font-weight:800;letter-spacing:1px;line-height:1.1;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -85,9 +85,12 @@ header.top h1 .sub{font-size:12px;color:var(--ink3);font-weight:400;margin-left:
 .amtbox.in .val{color:var(--ok)}
 .scanrow{width:100%;text-align:left;background:var(--pink-xl);color:var(--ink2);
   border-radius:12px;padding:11px 13px;font-size:14px;font-weight:600}
-/* 一排五個：十類剛好兩排排完。窄螢幕退回四欄（「固定支出」四個字塞不下） */
-.cats{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-@media(max-width:359px){.cats{grid-template-columns:repeat(4,1fr)}}
+/* 一排六個：「固定支出」「預存資金」按鈕上只寫「固定」「預存」，十一類剛好兩排排完。
+   她自己加了比較長的分類名時，renderCats 會加 c5／c4 退回少一點欄數 */
+.cats{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.cats.c5{grid-template-columns:repeat(5,1fr)}
+.cats.c4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:359px){.cats.c5{grid-template-columns:repeat(4,1fr)}}
 .cats button{padding:7px 2px;border-radius:12px;background:var(--pink-xl);font-size:12.5px;
   color:var(--ink2);font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;line-height:1.3}
 .cats button .cdot{width:8px;height:8px;border-radius:99px}
@@ -103,7 +106,7 @@ header.top h1 .sub{font-size:12px;color:var(--ink3);font-weight:400;margin-left:
 .accs button.on .ty{color:rgba(255,255,255,.65)}
 .accs .none{font-size:12.5px;color:var(--ink3);padding:6px 2px}
 /* 固定支出的細項：一排橫著滑、不換行，才不會把記一筆頁撐出一個手機畫面 */
-.subs{flex-wrap:nowrap;overflow-x:auto;margin-top:7px;padding-bottom:2px;scrollbar-width:none}
+.subs{flex-wrap:nowrap;overflow-x:auto;margin-top:5px;padding-bottom:2px;scrollbar-width:none}
 .subs::-webkit-scrollbar{display:none}
 .subs button{flex:none;padding:5px 11px;font-size:12.5px}
 
@@ -140,8 +143,9 @@ header.top h1 .sub{font-size:12px;color:var(--ink3);font-weight:400;margin-left:
 .metarow input[type=date]{background:var(--pink-xl);border-radius:12px;padding:7px 10px;font-size:13px;color:var(--ink2)}
 .metarow input.note{flex:1;background:var(--pink-xl);border-radius:12px;padding:7px 12px;font-size:13.5px;min-width:0}
 .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px}
-/* 高度壓過的鍵盤：還是 44px 以上，手指按得到 */
-.pad button{padding:10px 0;border-radius:14px;background:#fff;box-shadow:var(--shadow);
+/* 高度壓過的鍵盤：一顆 48px，還是 44px 以上，手指按得到。
+   2026-09-14 再壓一次，375×812 的手機才塞得下（原本就超出 17px） */
+.pad button{padding:8px 0;border-radius:14px;background:#fff;box-shadow:var(--shadow);
   font-size:20px;font-weight:700;color:var(--ink)}
 .pad button.sm{font-size:16px;color:var(--ink2)}
 .pad button:active{background:var(--pink-xl)}
@@ -308,6 +312,17 @@ header.top h1 .sub{font-size:12px;color:var(--ink3);font-weight:400;margin-left:
 .aline .nm b{font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px}
 .aline .nm .n2{display:block;font-size:11px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .aline .nm .n2.over{color:var(--bad)}
+.aline .nm .n2.wrap{white-space:normal;line-height:1.55}
+.aline .nm .n2 .todo{color:var(--warn);font-weight:700}
+.aline .nm .n2 .good{color:var(--ok);font-weight:700}
+/* 右邊：上面預算框、下面小字「實際」 */
+.aline .av{display:flex;flex-direction:column;align-items:flex-end;gap:1px;flex:none}
+.aline .av .act{font-size:11px;color:var(--ink3);white-space:nowrap}
+.aline .av .act.over{color:var(--bad);font-weight:700}
+.aline .av .act.todo{color:var(--warn)}
+.aline .mini.set{background:none;color:var(--ink3);padding:6px 3px;font-size:14px}
+.agh span b{color:var(--ink2)}
+.aempty{font-size:12px;color:var(--ink3);padding:6px 0 2px;line-height:1.7}
 .aline input[type=number]{width:104px;background:var(--pink-xl);border-radius:10px;padding:7px 10px;
   font-size:14px;text-align:right;flex:none}
 .aline input[type=checkbox]{width:18px;height:18px;accent-color:var(--pink-d);flex:none}
@@ -553,7 +568,7 @@ body.on-alloc #toast{bottom:160px}
     <h3>改這一筆<button class="x" data-close>✕</button></h3>
     <div class="fld"><label>金額</label><input id="eAmt" type="number" inputmode="numeric"></div>
     <div class="fld" id="eCatFld"><label>分類</label><select id="eCat"></select></div>
-    <div class="fld" id="eSubFld" style="display:none"><label>固定支出的細項</label><select id="eSub"></select></div>
+    <div class="fld" id="eSubFld" style="display:none"><label id="eSubLab">細項</label><select id="eSub"></select></div>
     <div class="fld" id="eAccFld"><label>帳戶</label><select id="eAcc"></select></div>
     <div class="fld"><label>日期</label><input id="eDate" type="date"></div>
     <div class="fld"><label>備註</label><input id="eNote" maxlength="40"></div>
@@ -581,6 +596,31 @@ body.on-alloc #toast{bottom:160px}
       <button class="del" id="acDel">🗑</button>
       <button class="gh" data-close>取消</button>
       <button class="go" id="acSave">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======== 預存項目／分期付款 ======== -->
+<div class="modal" id="mPlan">
+  <div class="bg" data-close></div>
+  <div class="sheet">
+    <h3><span id="plTitle">預存項目</span><button class="x" data-close>✕</button></h3>
+    <div class="fld"><label>名稱</label><input id="plName" maxlength="8"></div>
+    <div class="fld"><label id="plAmtLab">一次繳多少</label><input id="plAmt" type="number" inputmode="numeric" placeholder="0"></div>
+    <div id="plPre">
+      <div class="fld"><label>幾個月繳一次</label><input id="plEvery" type="number" inputmode="numeric" min="1" max="24" placeholder="例如 12"></div>
+      <div class="fld"><label>下次哪個月繳</label><input id="plNext" type="month"></div>
+      <div class="fld"><label>上個月底為止，已經存了多少</label><input id="plOpen" type="number" inputmode="numeric" placeholder="還沒開始存就填 0"></div>
+    </div>
+    <div id="plInst">
+      <div class="fld"><label>從哪個月開始繳</label><input id="plStart" type="month"></div>
+      <div class="fld"><label>共幾期</label><input id="plN" type="number" inputmode="numeric" min="1" placeholder="例如 12"></div>
+    </div>
+    <div class="tiny" id="plTip"></div>
+    <div class="btns">
+      <button class="del" id="plDel">🗑</button>
+      <button class="gh" data-close>取消</button>
+      <button class="go" id="plSave">儲存</button>
     </div>
   </div>
 </div>
@@ -666,9 +706,9 @@ const PQ_KEY = 'dora_money_pending'; // 沒訊號時先存這裡，連上再補�
 /* 支出分類（2026-08-19 朱兒定的十類）。
    「固定支出」單獨拉一類是關鍵：房租水電不是她能決定要不要花的，
    混在日用裡會讓佔比圖每個月都長一樣，看不出哪裡失控 */
-const DEF_OUT = ['固定支出','飲食','交通','日用','娛樂','醫療','人情','治裝','學習','其他'];
+const DEF_OUT = ['固定支出','預存資金','飲食','交通','日用','娛樂','醫療','人情','治裝','學習','其他'];
 const OLD_OUT_V1 = ['飲食','交通','日用','娛樂','醫療','人情','其他'];
-const CATS_VERSION = 2;
+const CATS_VERSION = 3;              // v3（2026-09-14）：加「預存資金」
 const DEF_IN  = ['薪水','獎金','接案','其他'];
 /* 帳戶。信用卡用「餘額變負數」表示欠款：
    刷卡 3000 → 卡的餘額 -3000（就是你欠的）
@@ -693,10 +733,18 @@ const defSettings = () => ({
   budget:0, goal:0, catsV:CATS_VERSION,
   cats:DEF_OUT.slice(), catsIn:DEF_IN.slice(),
   accs:DEF_ACCS.map(a => ({...a})), defAcc:'bank',
-  fixItems:[]                        // 固定支出的細項名稱，例如 房租、保險
+  fixItems:[],                       // 固定支出的細項名稱，例如 房租、電話費
+  preItems:[],                       // 預存項目 [{id,name,amt,every,next:'YYYY-MM',open,openYm}]
+  inst:[]                            // 分期付款 [{id,name,start:'YYYY-MM',n,amt}]
 });
-/* 分配頁把支出分類分成「固定」跟「生活費」兩組，固定就是這一類 */
+/* 分配頁四大項（2026-09-14 朱兒定）：固定支出（含分期）／變動支出／預存資金／儲蓄投資。
+   「固定支出」「預存資金」這兩類是系統分類，名字鎖住不能改也不能刪——
+   圖表、分配、LINE 記帳都靠名字認它們 */
 const FIXED_CAT = '固定支出';
+const PRE_CAT   = '預存資金';           // 保險、稅金這種幾個月才繳一次的：每月先存、繳時扣
+const SYS_CATS  = [FIXED_CAT, PRE_CAT];
+const SUB_CATS  = [FIXED_CAT, PRE_CAT]; // 選了會多一排細項的分類
+const CAT_SHORT = { 固定支出:'固定', 預存資金:'預存' };   // 記一筆按鈕上的短名
 const SAVE_ANY  = '_';               // 存錢那組「不指定帳戶」那一行的 key
 /* 分類顏色。這十色是跑色盲模擬選出來的，兩兩之間在紅綠色弱與一般視覺下都分得開
    （全配對 CVD ΔE 8.4、一般視覺 ΔE 15.4，都在門檻之上）。
@@ -708,6 +756,9 @@ const PALETTE = ['#1874ed','#d4a22a','#b4065f','#28c2be','#96a4f6',
 const CAT_COLORS = {
   固定支出:'#773ac1', 飲食:'#f86680', 交通:'#1874ed', 日用:'#28c2be', 娛樂:'#d4a22a',
   醫療:'#60974d', 人情:'#b4065f', 治裝:'#a96caf', 學習:'#96a4f6', 其他:'#934f00',
+  // 2026-09-14 加：跟上面十色一起跑過全配對（CVD ΔE 8.4、一般視覺 15.4，對白底 ≥ 3:1）。
+  // 能過關的只剩深藍這一帶，其他候選不是跟原本的色撞就是太刺眼
+  預存資金:'#235a8c',
   薪水:'#60974d', 獎金:'#d4a22a', 接案:'#1874ed',
 };
 const BAR_COLOR = '#D95C86';        // 柱狀圖單色，對白底 3.6:1
@@ -744,12 +795,22 @@ function ymShift(ym,n){
 function ymLabel(ym){ const [y,m]=ym.split('-'); return `${y} 年 ${Number(m)} 月`; }
 function money(n){ return (n<0?'-':'') + 'NT$' + Math.abs(Math.round(n)).toLocaleString('en-US'); }
 function plain(n){ return Math.abs(Math.round(n)).toLocaleString('en-US'); }
-/* 換分類只跑一次，而且只在「還是原本那七類、她沒改過」的時候才換 */
+/* 分類搬家，照版本號每一版只跑一次。
+   v2：舊的七類換成十類，只在「還是原本那七類、她沒改過」的時候才換
+   v3：插入「預存資金」。這是系統分類，她改過清單也照插，放在固定支出後面 */
 function migrateCats(){
-  if((settings.catsV || 1) >= CATS_VERSION) return false;
-  const cur = settings.cats || [];
-  const same = cur.length === OLD_OUT_V1.length && cur.every((c,i) => c === OLD_OUT_V1[i]);
-  if(same) settings.cats = DEF_OUT.slice();
+  const v = settings.catsV || 1;
+  if(v >= CATS_VERSION) return false;
+  let cur = Array.isArray(settings.cats) ? settings.cats.slice() : DEF_OUT.slice();
+  if(v < 2){
+    const same = cur.length === OLD_OUT_V1.length && cur.every((c,i) => c === OLD_OUT_V1[i]);
+    if(same) cur = DEF_OUT.filter(c => c !== PRE_CAT);
+  }
+  if(!cur.includes(PRE_CAT)){
+    const i = cur.indexOf(FIXED_CAT);
+    cur.splice(i >= 0 ? i + 1 : 0, 0, PRE_CAT);
+  }
+  settings.cats = cur;
   settings.catsV = CATS_VERSION;
   return true;
 }
@@ -830,6 +891,9 @@ function loadLocal(){
     if(d.settings) settings = Object.assign(settings, d.settings);
     if(d.allocs) allocs = d.allocs;
     pending = JSON.parse(localStorage.getItem(PQ_KEY) || '[]');
+    // 分類搬家只存本機、不排進待補：登入後會先補寫再讀雲端，排了會拿舊的設定蓋掉雲端。
+    // 要等 pending 讀進來才存，不然會把待補清單洗成空的
+    if(migrateCats()) saveLocal();
   }catch(e){ console.warn('讀本機失敗', e); }
 }
 
@@ -893,30 +957,36 @@ function allocOf(ym){ const a = allocs[ym]; return a && typeof a === 'object' ? 
 // Firebase 會把陣列存成物件，讀回來兩種都要吃
 function arr(x){ return Array.isArray(x) ? x.filter(Boolean) : (x && typeof x === 'object' ? Object.values(x).filter(Boolean) : []); }
 function allocTotals(ym){ const a = allocOf(ym); return a ? totalsOf(a) : null; }
+/* 四大項：固定支出（含分期）／變動支出／預存資金／儲蓄投資 */
 function totalsOf(a){
   const inc = arr(a.inc).filter(r => r.on !== false).reduce((s,r) => s + (Number(r.amt)||0), 0);
-  let fix = 0, life = 0; const byCat = {}, byFix = {};
+  let fix = 0, vary = 0, pre = 0; const byCat = {}, byFix = {}, byPre = {};
   arr(a.cat).forEach(r => {
     const v = Number(r.v)||0; byCat[r.k] = v;
-    if(r.k === FIXED_CAT) fix += v; else life += v;
+    if(r.k === FIXED_CAT) fix += v; else if(r.k === PRE_CAT) pre += v; else vary += v;
   });
-  // 固定支出的細項（房租、保險…）也算進固定支出；cat 裡的「固定支出」是「不分細項」那一行
+  // 固定支出的細項與分期也算進固定支出；cat 裡的「固定支出」是「不分細項」那一行
   arr(a.fix).forEach(r => { const v = Number(r.v)||0; byFix[r.k] = v; fix += v; });
+  // 預存項目（保險、稅金…）；cat 裡的「預存資金」是「不分項目」那一行
+  arr(a.pre).forEach(r => { const v = Number(r.v)||0; byPre[r.k] = v; pre += v; });
   if(fix) byCat[FIXED_CAT] = fix;
+  if(pre) byCat[PRE_CAT] = pre;
   const save = arr(a.save).reduce((s,r) => s + (Number(r.v)||0), 0);
-  const used = fix + life + save;
-  return { inc, fix, life, save, used, left: inc - used, byCat, byFix, done: !!a.done, has: used > 0 };
+  const used = fix + vary + pre + save;
+  return { inc, fix, vary, pre, save, used, left: inc - used, byCat, byFix, byPre, done: !!a.done, has: used > 0 };
 }
 /* 這個月的預算口徑。
-   有排分配 → 看「生活費」（固定支出本來就一定要付，不放進還能花多少）
+   有排分配 → 看「變動支出」（固定支出一定要付、預存資金是先存起來的，都不放進還能花多少）
    沒排分配 → 退回舊的每月總預算，不會突然整條消失 */
 function budgetOf(ym){
   const t = allocTotals(ym);
-  if(t && t.has) return { src:'alloc', amt:t.life, fix:t.fix, save:t.save, byCat:t.byCat };
+  if(t && t.has) return { src:'alloc', amt:t.vary, fix:t.fix, pre:t.pre, save:t.save, byCat:t.byCat };
   const b = Number(settings.budget)||0;
-  return { src: b ? 'old' : 'none', amt:b, fix:0, save:Number(settings.goal)||0, byCat:{} };
+  return { src: b ? 'old' : 'none', amt:b, fix:0, pre:0, save:Number(settings.goal)||0, byCat:{} };
 }
-function spentFor(src, s){ return src === 'alloc' ? s.out - (s.byCat[FIXED_CAT]||0) : s.out; }
+function spentFor(src, s){
+  return src === 'alloc' ? s.out - (s.byCat[FIXED_CAT]||0) - (s.byCat[PRE_CAT]||0) : s.out;
+}
 
 /* 週一為一週的開始（台灣習慣） */
 function mondayOf(d){
@@ -965,22 +1035,51 @@ function renderCats(){
   if(!isTr){
     const list = kind==='in' ? settings.catsIn : settings.cats;
     if(!list.includes(cat)) cat = list[0] || '';
+    const lab = c => CAT_SHORT[c] || c;
+    // 名字都在兩個字以內才排得下一排六個；有比較長的就少排幾欄
+    const longest = Math.max(0, ...list.map(c => lab(c).length));
+    $('#catBox').className = 'cats' + (longest <= 2 ? '' : longest <= 4 ? ' c5' : ' c4');
     $('#catBox').innerHTML = list.map(c =>
-      `<button data-cat="${esc(c)}" class="${c===cat?'on':''}">
-         <i class="cdot" style="background:${catColor(c)}"></i>${esc(c)}</button>`).join('');
+      `<button data-cat="${esc(c)}" class="${c===cat?'on':''}" title="${esc(c)}">
+         <i class="cdot" style="background:${catColor(c)}"></i>${esc(lab(c))}</button>`).join('');
   }
   renderSubs();
   renderAccs();
 }
 function fixList(){ return Array.isArray(settings.fixItems) ? settings.fixItems : []; }
-/* 選到「固定支出」才出現細項那一排；不選也可以記（算「不分細項」） */
+function preList(){ return arr(settings.preItems); }
+function instList(){ return arr(settings.inst); }
+function monthDiff(a, b){
+  const [ay,am] = a.split('-').map(Number), [by,bm] = b.split('-').map(Number);
+  return (by-ay)*12 + (bm-am);
+}
+/* 分期在某個月是第幾期；還沒開始或已經繳完回 0 */
+function instNo(p, ym){
+  if(!p || !p.start) return 0;
+  const k = monthDiff(p.start, ym) + 1;
+  return k >= 1 && k <= (Number(p.n)||0) ? k : 0;
+}
+function instActive(ym){ return instList().filter(p => instNo(p, ym)); }
+/* 某個分類在某個月可以選的細項：固定支出＝細項＋那個月還在繳的分期；預存資金＝預存項目 */
+function subList(c, ym){
+  if(c === FIXED_CAT) return [...new Set([...fixList(), ...instActive(ym).map(p => p.name)])];
+  if(c === PRE_CAT) return preList().map(p => p.name);
+  return [];
+}
+/* 固定支出細項、分期、預存項目三種名字不能撞：LINE 記帳靠名字判斷要記到哪一類 */
+function subTaken(name, except){
+  return [...fixList(), ...instList().map(p => p.name), ...preList().map(p => p.name)]
+    .some(n => n === name && n !== except);
+}
+/* 選到固定支出或預存資金才出現細項那一排；不選也可以記（算「不分細項」） */
 function renderSubs(){
   const box = $('#subBox');
-  const show = kind === 'out' && cat === FIXED_CAT && fixList().length > 0;
+  const list = kind === 'out' ? subList(cat, ($('#fDate').value || today()).slice(0,7)) : [];
+  const show = list.length > 0;
   box.style.display = show ? '' : 'none';
   if(!show){ sub = ''; return; }
-  if(sub && !fixList().includes(sub)) sub = '';
-  box.innerHTML = fixList().map(s =>
+  if(sub && !list.includes(sub)) sub = '';
+  box.innerHTML = list.map(s =>
     `<button data-sub="${esc(s)}" class="${s===sub?'on':''}">${esc(s)}</button>`).join('');
 }
 /* 明細上顯示的分類名：固定支出有細項就接在後面 */
@@ -1039,7 +1138,7 @@ function renderBudget(){
   }
   const spent = spentFor(b.src, s);
   const left = b.amt - spent, pct = b.amt ? Math.min(100, spent / b.amt * 100) : (spent ? 100 : 0);
-  const word = b.src === 'alloc' ? '生活費' : '';
+  const word = b.src === 'alloc' ? '變動支出' : '';
   $('#bbLeft').textContent = left >= 0 ? `${word}還能花 ${money(left)}` : `${word}超支 ${money(-left)}`;
   $('#bbRight').textContent = `已花 ${money(spent)} / ${plain(b.amt)}`;
   fill.style.width = pct + '%';
@@ -1053,7 +1152,7 @@ function renderSum(){
   const p = period(), s = sumOf(rangeItems(p.a, p.b));
   $('#sMon').textContent = p.label;
   $('#sNext').disabled = !p.canNext;
-  const life = p.src === 'alloc' ? '生活費' : '';
+  const life = p.src === 'alloc' ? '變動支出' : '';
   $('#sLeftTitle').textContent = rg==='y' ? `${p.word}花了多少` : `${p.word}${life}還能花多少`;
   $('#sRankTitle').textContent = `${p.word}的錢花到哪去`;
   $('#sSaveTitle').textContent = `${p.word}存了多少`;
@@ -1074,8 +1173,8 @@ function renderSum(){
     $('#sLeft').textContent = left>=0 ? money(left) : '超支 ' + money(-left);
     $('#sLeft').className = 'big' + (left<0 ? ' bad' : '');
     $('#sLeftSub').textContent =
-      `${rg==='w' ? '一週抓' : life ? '生活費預算' : '預算'} ${money(bud)}，已花 ${money(spent)}` +
-      (life ? '（固定支出另外算）' : '') +
+      `${rg==='w' ? '一週抓' : life ? '變動支出預算' : '預算'} ${money(bud)}，已花 ${money(spent)}` +
+      (life ? '（固定支出、預存資金另外算）' : '') +
       (left>=0 && p.days>0 ? `　·　剩 ${p.days} 天，一天可以花 ${money(left/p.days)}` : '');
     const f = $('#sLeftFill');
     f.style.width = pct + '%';
@@ -1093,7 +1192,8 @@ function renderSum(){
   const catBud = rg==='m' && p.src==='alloc' ? budgetOf(p.a.slice(0,7)).byCat : {};
   $('#sRank').innerHTML = rows.length ? rows.map(([c,v])=>{
     const pct = s.out ? v/s.out*100 : 0;
-    const cb = catBud[c];
+    // 預存資金的預算是「每月先存多少」，跟繳費那個月一次繳的金額比沒有意義，不寫
+    const cb = c === PRE_CAT ? undefined : catBud[c];
     const budTx = cb === undefined ? '' :
       ` <span class="pct" style="${v > cb ? 'color:var(--bad);font-weight:700' : ''}">/ 預算 ${plain(cb)}</span>`;
     return `<div class="rrow" data-cat="${esc(c)}">
@@ -1128,9 +1228,10 @@ function renderSum(){
 /* 柱狀圖的資料：週＝七天、月＝當月每一天、年＝十二個月 */
 function barBuckets(p){
   // 不算固定支出：房租在 1 號一筆一萬多，會把其他每天的幾百塊壓成一條線，
-  // 整張圖只剩「1 號很高」這個每個月都一樣的廢資訊。固定那塊交給上面的分割條講
+  // 整張圖只剩「1 號很高」這個每個月都一樣的廢資訊。固定那塊交給上面的分割條講。
+  // 預存資金同理：保險一次繳兩萬會把整張圖壓扁
   const list = rangeItems(p.a, p.b)
-    .filter(it => isOut(it) && (it.cat||'') !== '固定支出');
+    .filter(it => isOut(it) && !SYS_CATS.includes(it.cat||''));
   const sum = {};
   list.forEach(it => { const k = rg==='y' ? (it.d||'').slice(0,7) : it.d;
                        sum[k] = (sum[k]||0) + (Number(it.amt)||0); });
@@ -1159,7 +1260,7 @@ function renderBars(p){
   const max = Math.max(...rows.map(r => r.v), 0);
   const spent = rows.filter(r => r.v > 0);
   $('#sBarTitle').innerHTML = (rg==='y' ? '每個月花多少' : '每天花多少')
-    + ' <span class="tiny" style="font-weight:400">不含固定支出</span>';
+    + ' <span class="tiny" style="font-weight:400">不含固定支出與預存</span>';
 
   if(!max){
     $('#sBars').innerHTML = `<div class="empty" style="flex:1">${p.word}還沒有支出</div>`;
@@ -1188,11 +1289,11 @@ function renderBars(p){
     + `　·　點一根看${rg==='y' ? '那個月' : '那天'}`;
 }
 
-/* 固定支出 vs 可以控制的。只有兩塊，這種才適合分割條 */
+/* 固定與預存 vs 可以控制的。只有兩塊，這種才適合分割條 */
 function renderSplit(sum){
   const box = $('#sSplitWrap');
-  const fixed = sum.byCat['固定支出'] || 0;
-  if(!sum.out || !settings.cats.includes('固定支出') || !fixed){ box.innerHTML = ''; return; }
+  const fixed = (sum.byCat[FIXED_CAT] || 0) + (sum.byCat[PRE_CAT] || 0);
+  if(!sum.out || !fixed){ box.innerHTML = ''; return; }
   const free = sum.out - fixed;
   const fp = fixed/sum.out*100;
   box.innerHTML = `
@@ -1201,7 +1302,7 @@ function renderSplit(sum){
       <i style="width:${100-fp}%;background:var(--bar)"></i>
     </div>
     <div class="splitlab">
-      <span class="k"><i style="background:${catColor('固定支出')}"></i>固定 ${money(fixed)}（${fp.toFixed(0)}%）</span>
+      <span class="k"><i style="background:${catColor('固定支出')}"></i>固定與預存 ${money(fixed)}（${fp.toFixed(0)}%）</span>
       <span class="k"><i style="background:var(--bar)"></i>可以控制的 ${money(free)}（${(100-fp).toFixed(0)}%）</span>
     </div>`;
 }
@@ -1331,13 +1432,13 @@ function addItem(){
   items[id] = kind==='tr'
     ? { ...base, from: trFrom, to: trTo }
     : { ...base, cat: cat || '其他', acc, inv: pendingInv || '',
-        ...(kind === 'out' && cat === FIXED_CAT && sub ? { sub } : {}) };
+        ...(kind === 'out' && SUB_CATS.includes(cat) && sub ? { sub } : {}) };
   pendingInv = '';
   saveLocal(); cloudSetItem(id);
   localStorage.setItem('dora_money_lastacc', acc);      // 下次預設用同一個帳戶
   toast(kind==='tr'
     ? `轉好了　${money(n)}　${accName(trFrom)} → ${accName(trTo)}`
-    : `記好了　${kind==='in'?'+':''}${money(n)}　${cat}${kind==='out' && cat===FIXED_CAT && sub ? '・' + sub : ''}`);
+    : `記好了　${kind==='in'?'+':''}${money(n)}　${cat}${kind==='out' && SUB_CATS.includes(cat) && sub ? '・' + sub : ''}`);
   amt=''; sub=''; $('#fNote').value=''; $('#fDate').value = today();
   renderAll();
 }
@@ -1389,6 +1490,7 @@ $('.pad').onclick = e => {
 };
 $('#btnSave').onclick = addItem;
 $('#fDate').value = today();
+$('#fDate').onchange = renderSubs;      // 分期只在還在繳的月份出現，換日期要重排細項
 
 // 電腦上直接用鍵盤打
 document.addEventListener('keydown', e => {
@@ -1472,18 +1574,22 @@ function openEdit(id){
     : it.inv ? `發票號碼 ${it.inv}` : '';
   openM('#mEdit');
 }
-/* 改帳視窗：分類是固定支出才出現細項下拉 */
+/* 改帳視窗：分類是固定支出或預存資金才出現細項下拉 */
+function editSubs(){ return subList($('#eCat').value, ($('#eDate').value || today()).slice(0,7)); }
 function syncEditSub(cur){
-  const show = $('#eCat').value === FIXED_CAT && (fixList().length > 0 || !!cur);
+  const c = $('#eCat').value, list = editSubs();
+  const show = SUB_CATS.includes(c) && (list.length > 0 || !!cur);
   $('#eSubFld').style.display = show ? '' : 'none';
   if(!show) return;
-  const opts = !cur || fixList().includes(cur) ? fixList() : fixList().concat(cur);
-  $('#eSub').innerHTML = '<option value="">不分細項</option>' +
+  $('#eSubLab').textContent = c === PRE_CAT ? '預存項目' : '固定支出的細項（含分期）';
+  const opts = !cur || list.includes(cur) ? list : list.concat(cur);
+  $('#eSub').innerHTML = `<option value="">${c === PRE_CAT ? '不分項目' : '不分細項'}</option>` +
     opts.map(s => `<option ${s===cur?'selected':''}>${esc(s)}</option>`).join('');
 }
 $('#eCat').onchange = () => {
   const it = items[editingId];
-  if(it && it.kind !== 'in') syncEditSub($('#eSub').value);
+  // 換了分類，原本的細項如果不屬於新分類就清掉
+  if(it && it.kind !== 'in') syncEditSub(editSubs().includes($('#eSub').value) ? $('#eSub').value : '');
 };
 $('#eSave').onclick = () => {
   const it = items[editingId]; if(!it) return;
@@ -1493,7 +1599,7 @@ $('#eSave').onclick = () => {
   it.note = $('#eNote').value.trim();
   if(it.kind !== 'tr' && it.kind !== 'adj'){
     it.cat = $('#eCat').value;
-    if(it.kind !== 'in' && it.cat === FIXED_CAT && $('#eSub').value) it.sub = $('#eSub').value;
+    if(it.kind !== 'in' && SUB_CATS.includes(it.cat) && $('#eSub').value) it.sub = $('#eSub').value;
     else delete it.sub;
     if(accList().length) it.acc = $('#eAcc').value || it.acc;
   }
@@ -1525,9 +1631,9 @@ function openDay(r){
   const a = rg==='y' ? `${r.k}-01` : r.k;
   const b = rg==='y' ? `${r.k}-31` : r.k;
   const list = rangeItems(a, b)
-    .filter(it => isOut(it) && (it.cat||'') !== '固定支出')
+    .filter(it => isOut(it) && !SYS_CATS.includes(it.cat||''))
     .sort((x,y) => (y.d===x.d ? (y.ts||0)-(x.ts||0) : (y.d>x.d?1:-1)));
-  $('#cTitle').innerHTML = `${esc(r.full)}　<span class="tiny">共 ${money(r.v)}（不含固定支出）</span>
+  $('#cTitle').innerHTML = `${esc(r.full)}　<span class="tiny">共 ${money(r.v)}（不含固定支出與預存）</span>
     <button class="x" data-close>✕</button>`;
   $('#cBox').innerHTML = list.map(it => {
     const sub = [rg==='y' ? `${Number(it.d.slice(5,7))}/${Number(it.d.slice(8,10))}` : '',
@@ -1579,8 +1685,8 @@ function addCat(k, name){
 function renameCat(k, old, name){
   const nv = String(name||'').trim();
   if(!nv || nv === old) return false;
-  // 圖表、分配、LINE 記帳都靠「固定支出」這個名字認它，改掉會整個對不起來
-  if(k === 'out' && old === FIXED_CAT){ toast('「固定支出」是特別的一類，名字不能改'); return false; }
+  // 圖表、分配、LINE 記帳都靠「固定支出」「預存資金」這兩個名字認它們，改掉會整個對不起來
+  if(k === 'out' && SYS_CATS.includes(old)){ toast(`「${old}」是特別的一類，名字不能改`); return false; }
   const list = catListOf(k);
   if(list.includes(nv)){ toast('已經有這個分類了'); return false; }
   const i = list.indexOf(old); if(i < 0) return false;
@@ -1601,7 +1707,7 @@ function renameCat(k, old, name){
   saveLocal(); cloudSettings(); return true;
 }
 function deleteCat(k, c){
-  if(k === 'out' && c === FIXED_CAT){ toast('「固定支出」是特別的一類，不能刪'); return false; }
+  if(k === 'out' && SYS_CATS.includes(c)){ toast(`「${c}」是特別的一類，不能刪`); return false; }
   const list = catListOf(k);
   if(list.length <= 1){ toast('至少要留一個分類'); return false; }
   if(catUsed(c,k)){ toast(`「${c}」還有帳在用，刪不掉`); return false; }
@@ -1616,14 +1722,14 @@ function deleteCat(k, c){
 }
 function addFix(name){
   const v = String(name||'').trim(); if(!v) return false;
-  if(fixList().includes(v)){ toast('已經有這個細項了'); return false; }
+  if(subTaken(v)){ toast('這個名字用過了（細項、分期、預存項目不能同名）'); return false; }
   settings.fixItems = fixList().concat(v); saveLocal(); cloudSettings(); return true;
 }
 function fixUsed(s){ return Object.values(items).some(it => isOut(it) && it.cat === FIXED_CAT && it.sub === s); }
 function renameFix(old, name){
   const nv = String(name||'').trim();
   if(!nv || nv === old) return false;
-  if(fixList().includes(nv)){ toast('已經有這個細項了'); return false; }
+  if(subTaken(nv, old)){ toast('這個名字用過了（細項、分期、預存項目不能同名）'); return false; }
   settings.fixItems = fixList().map(s => s === old ? nv : s);
   Object.entries(allocs).forEach(([ym,a]) => {
     let hit = false; arr(a.fix).forEach(r => { if(r.k === old){ r.k = nv; hit = true; } });
@@ -1646,17 +1752,21 @@ function deleteFix(s){
   _draft = null;
   saveLocal(); cloudSettings(); return true;
 }
-/* 某個月固定支出實際付了多少：有細項的分開算，沒選細項（或細項已經刪掉）的算「不分細項」 */
-function fixSpent(ym){
+/* 某個月固定支出（或預存資金）實際付了多少：有細項的分開算，
+   沒選細項（或細項、分期、預存項目已經刪掉）的算「不分細項」 */
+function subSpent(ym, c){
+  const names = new Set(c === PRE_CAT ? preList().map(p => p.name)
+                                      : [...fixList(), ...instList().map(p => p.name)]);
   const bySub = {}; let none = 0;
   monthItems(ym).forEach(it => {
-    if(!isOut(it) || it.cat !== FIXED_CAT) return;
+    if(!isOut(it) || it.cat !== c) return;
     const n = Number(it.amt)||0;
-    if(it.sub && fixList().includes(it.sub)) bySub[it.sub] = (bySub[it.sub]||0) + n;
+    if(it.sub && names.has(it.sub)) bySub[it.sub] = (bySub[it.sub]||0) + n;
     else none += n;
   });
   return { bySub, none };
 }
+function fixSpent(ym){ return subSpent(ym, FIXED_CAT); }
 
 /* ---------- 設定 ---------- */
 $('#btnSet').onclick = () => {
@@ -1927,7 +2037,9 @@ function blankAlloc(ym){
   else if(prev && arr(prev.inc).length)
     inc = arr(prev.inc).map(r => ({ id:uid(), cat:r.cat, amt:Number(r.amt)||0, on:r.on!==false, booked:'' }));
   else inc = [{ id:uid(), cat:settings.catsIn[0] || '薪水', amt:0, on:true, booked:'' }];
-  return { inc, cat:[], fix:[], save:[], done:false, ts:Date.now() };
+  const a = { inc, cat:[], fix:[], pre:[], save:[], done:false, ts:Date.now() };
+  fillPlans(a, ym);                     // 分期帶每期金額、預存項目帶建議值
+  return a;
 }
 function curAlloc(){
   if(allocOf(alMon)) return allocs[alMon];
@@ -1936,7 +2048,7 @@ function curAlloc(){
 }
 function commitAlloc(){
   const a = curAlloc();
-  a.inc = arr(a.inc); a.cat = arr(a.cat); a.fix = arr(a.fix); a.save = arr(a.save);
+  a.inc = arr(a.inc); a.cat = arr(a.cat); a.fix = arr(a.fix); a.pre = arr(a.pre); a.save = arr(a.save);
   a.ts = Date.now(); allocs[alMon] = a; _draft = null;
   saveLocal(); cloudAlloc(alMon); renderBudget();
 }
@@ -1950,9 +2062,77 @@ function setLine(a, f, k, v){
 function saveInto(accId, ym){
   return monthItems(ym).filter(it => it.kind==='tr' && it.to===accId).reduce((s,it) => s + (Number(it.amt)||0), 0);
 }
+/* 儲蓄投資那組：每個存款銀行、股票帳戶各一行，加「不指定帳戶」 */
 function saveRows(){
-  return accList().filter(a => a.type==='save').map(a => ({ k:a.id, name:a.name }))
+  return accList().filter(a => a.type==='save' || a.type==='stock').map(a => ({ k:a.id, name:a.name, type:a.type }))
     .concat({ k:SAVE_ANY, name:'存起來（不指定帳戶）' });
+}
+
+/* 預存項目在某個月的狀況。
+   已存 ＝ 設定時填的「上個月底已存」
+        ＋ 從設定那個月起，每個月分配給它的預算（當月一到就算存進去）
+        － 從設定那個月起，記在這個項目的繳費
+   這是帳面上幫她記著，不會真的搬錢。
+   a：這個月正在排的分配（可能還是草稿、沒寫進 allocs），沒給就讀 allocs */
+function preInfo(p, ym, a){
+  const from = p.openYm || ym;
+  const every = Math.max(1, Number(p.every)||12), amt = Number(p.amt)||0;
+  let due = p.next || ym;
+  while(due < ym) due = ymShift(due, every);            // 繳費月過了就往後推一個週期
+  const cycleStart = ymShift(due, -every);              // 上一次繳費月；這之後繳的都算這一期
+  let before = Number(p.open)||0, paid = 0, early = 0;  // before：上個月底為止已存
+  Object.entries(allocs).forEach(([m, al]) => { if(m >= from && m < ym) before += getLine(al, 'pre', p.name); });
+  Object.values(items).forEach(it => {
+    if(!isOut(it) || it.cat !== PRE_CAT || it.sub !== p.name) return;
+    const m = (it.d||'').slice(0,7), n = Number(it.amt)||0;
+    if(m < from || m > ym) return;
+    if(m < ym){ before -= n; if(m > cycleStart) early += n; }
+    else paid += n;
+  });
+  const cyclePaid = paid > 0 || early > 0;              // 這一期繳過了（這個月繳，或提早繳）
+  const target = early > 0 ? ymShift(due, every) : due; // 提早繳過了，建議就改算下一期
+  const bud = getLine(a || allocOf(ym) || {}, 'pre', p.name);
+  const sug = ym < from ? 0 : Math.max(0, Math.ceil((amt - before) / (monthDiff(ym, target) + 1) / 100) * 100);
+  return { from, every, amt, before, paid, due, left: monthDiff(ym, due), bud,
+           now: before + bud - paid, sug, cyclePaid, started: ym >= from };
+}
+function preStatus(p, ym, a){
+  const f = preInfo(p, ym, a), mNo = s => Number(s.slice(5,7));
+  if(!f.started) return `從 ${mNo(f.from)} 月開始算`;
+  const head = `已存 ${plain(f.now)}／要繳 ${plain(f.amt)}`;
+  const sug = f.sug ? `　·　建議每月存 ${plain(f.sug)}` : '';
+  if(f.now < 0) return `<span class="todo">預存不夠，這次墊了 ${plain(-f.now)}</span>`;
+  if(f.cyclePaid) return `<span class="good">這期繳好了 ✓</span>　·　${head}${sug}`;
+  if(f.left === 0) return `<span class="todo">這個月要繳，還沒記</span>　·　${head}${sug}`;
+  return `${head}　還差 ${f.left} 個月（${mNo(f.due)} 月繳）${sug}`;
+}
+/* 分期與預存項目沒有那一行的補上（分期＝每期金額、預存＝建議值），已經有的不動 */
+function fillPlans(a, ym){
+  a.fix = arr(a.fix); a.pre = arr(a.pre);
+  instActive(ym).forEach(p => {
+    if(Number(p.amt) && !a.fix.some(r => r.k === p.name)) a.fix.push({ k:p.name, v:Number(p.amt) });
+  });
+  preList().forEach(p => {
+    if(a.pre.some(r => r.k === p.name)) return;
+    const s = preInfo(p, ym, a).sug;
+    if(s) a.pre.push({ k:p.name, v:s });
+  });
+}
+/* 分期繳完（或期數改少）的月份，把那一行拿掉——不然畫面上看不到，卻還算在總額裡 */
+function pruneInst(a, ym){
+  const all = new Set(instList().map(p => p.name)), live = new Set(instActive(ym).map(p => p.name));
+  a.fix = arr(a.fix).filter(r => !all.has(r.k) || live.has(r.k));
+}
+/* 分期、預存項目改名：記過的帳、每個月分配裡的那一行一起改 */
+function renameSub(c, field, old, nv){
+  Object.entries(allocs).forEach(([ym,a]) => {
+    let hit = false; arr(a[field]).forEach(r => { if(r.k === old){ r.k = nv; hit = true; } });
+    if(hit){ a[field] = arr(a[field]); cloudAlloc(ym); }
+  });
+  Object.entries(items).forEach(([id,it]) => {
+    if(it.cat === c && it.sub === old){ it.sub = nv; cloudSetItem(id); }
+  });
+  if(sub === old) sub = nv;
 }
 
 function renderAlloc(){
@@ -1977,57 +2157,93 @@ function renderAlloc(){
     </div>`;
   }).join('') || '<div class="tiny">還沒有收入，按下面新增</div>';
 
-  // ③ 分配
+  // ③ 分配：固定支出（含分期）／變動支出／預存資金／儲蓄投資
   const prevA = allocOf(pm), ps = monthSum(pm), cs = monthSum(ym);
   const prevHas = !!(prevA && totalsOf(prevA).has);
   $('#aCopy').textContent = prevHas ? '沿用上個月' : '帶入上月實際';
   $('#aCopy').style.display = prevHas || ps.out ? '' : 'none';
   const fsPrev = fixSpent(pm), fsNow = fixSpent(ym);
+  const psPrev = subSpent(pm, PRE_CAT), psNow = subSpent(ym, PRE_CAT);
+  const reached = ym <= ymNow();       // 還沒到的月份不提醒「還沒記」
   const dot = c => `<i class="cdot" style="width:8px;height:8px;border-radius:99px;flex:none;background:${catColor(c)}"></i>`;
   // 名字是輸入框，點下去直接改。data-ren：cat 分類／fix 固定支出細項／acc 存款銀行
   const nameBox = (type, key, val, max) =>
     `<input class="ren" data-ren="${type}" data-old="${esc(key)}" value="${esc(val)}" maxlength="${max}" title="點一下改名">`;
   const noX = '<span class="mini x" style="visibility:hidden">✕</span>';     // 沒有刪除鈕的行，留位置讓金額框對齊
-  const num = (g, k, v) =>
-    `<input type="number" inputmode="numeric" data-g="${g}" data-k="${esc(k)}" value="${v||''}" placeholder="0">`;
+  /* 右邊：上面預算框、下面小字實際。
+     data-ov 的那幾格打字時會重算要不要標紅；預存、儲蓄投資不標紅（ov:false） */
+  const av = (g, k, v, act, o = {}) =>
+    `<div class="av"><input type="number" inputmode="numeric" data-g="${g}" data-k="${esc(k)}" value="${v||''}" placeholder="0">` +
+    `<span class="act" ${o.ov === false ? '' : `data-ov="${g}" data-k="${esc(k)}" data-v="${act}"`}>${o.tx ?? '實際 ' + plain(act)}</span></div>`;
+  const insts = instActive(ym);
   const catRow = c => {
     const v = getLine(a,'cat',c);
-    if(c === FIXED_CAT){          // 固定支出本身鎖住名字；有細項時這行是「沒分到細項的」
+    if(c === FIXED_CAT){          // 固定支出本身鎖住名字；有細項或分期時這行是「沒分到細項的」
       return `<div class="aline"><div class="nm">
-          <b>${dot(c)}${fixList().length ? '其他固定支出（不分細項）' : esc(c)}</b>
-          <span class="n2">上月 ${plain(fsPrev.none)}　·　本月已花 ${plain(fsNow.none)}</span></div>
-        ${num('cat', c, v)}${noX}</div>`;
+          <b>${dot(c)}${fixList().length || insts.length ? '其他固定支出（不分細項）' : esc(c)}</b>
+          <span class="n2">上月實際 ${plain(fsPrev.none)}</span></div>
+        ${av('cat', c, v, fsNow.none)}${noX}</div>`;
+    }
+    if(c === PRE_CAT){            // 記了預存資金、卻沒選項目的那些
+      return `<div class="aline"><div class="nm">
+          <b>${dot(c)}其他預存（不分項目）</b>
+          <span class="n2">上月實際 ${plain(psPrev.none)}</span></div>
+        ${av('cat', c, v, psNow.none, { ov:false, tx:'本月繳 ' + plain(psNow.none) })}${noX}</div>`;
     }
     return `<div class="aline"><div class="nm">
         <div class="nmrow">${dot(c)}${nameBox('cat', c, c, 6)}</div>
-        <span class="n2" data-sp="${esc(c)}">上月 ${plain(ps.byCat[c]||0)}　·　本月已花 ${plain(cs.byCat[c]||0)}</span></div>
-      ${num('cat', c, v)}<button class="mini x" data-delcat="${esc(c)}" title="刪掉這個分類">✕</button></div>`;
+        <span class="n2">上月實際 ${plain(ps.byCat[c]||0)}</span></div>
+      ${av('cat', c, v, cs.byCat[c]||0)}<button class="mini x" data-delcat="${esc(c)}" title="刪掉這個分類">✕</button></div>`;
   };
   const fixRow = s => `<div class="aline"><div class="nm">
         <div class="nmrow">${dot(FIXED_CAT)}${nameBox('fix', s, s, 8)}</div>
-        <span class="n2" data-spfix="${esc(s)}">上月 ${plain(fsPrev.bySub[s]||0)}　·　本月已付 ${plain(fsNow.bySub[s]||0)}</span></div>
-      ${num('fix', s, getLine(a,'fix',s))}<button class="mini x" data-delfix="${esc(s)}" title="刪掉這個細項">✕</button></div>`;
+        <span class="n2">上月實際 ${plain(fsPrev.bySub[s]||0)}</span></div>
+      ${av('fix', s, getLine(a,'fix',s), fsNow.bySub[s]||0)}<button class="mini x" data-delfix="${esc(s)}" title="刪掉這個細項">✕</button></div>`;
+  const instRow = p => {
+    const k = instNo(p, ym), n = Number(p.n)||0, act = fsNow.bySub[p.name]||0;
+    return `<div class="aline"><div class="nm">
+        <b>${dot(FIXED_CAT)}${esc(p.name)}</b>
+        <span class="n2 wrap">分期 第 ${k} 期／共 ${n} 期，剩 ${n-k} 期</span></div>
+      ${av('fix', p.name, getLine(a,'fix',p.name), act, !act && reached ? { tx:'還沒記' } : {})}
+      <button class="mini set" data-plan="inst" data-id="${esc(p.id)}" title="改這筆分期">⚙</button></div>`;
+  };
+  const preRow = p => `<div class="aline"><div class="nm">
+        <b>${dot(PRE_CAT)}${esc(p.name)}</b>
+        <span class="n2 wrap" data-pre="${esc(p.id)}"></span></div>
+      ${av('pre', p.name, getLine(a,'pre',p.name), 0, { ov:false, tx:'本月繳 ' + plain(psNow.bySub[p.name]||0) })}
+      <button class="mini set" data-plan="pre" data-id="${esc(p.id)}" title="改這個預存項目">⚙</button></div>`;
   const saveRow = r => {
     const v = getLine(a,'save',r.k);
-    const n2 = r.k === SAVE_ANY ? '還沒有專用的存款銀行也可以先排'
-      : `上月存入 ${plain(saveInto(r.k,pm))}　·　本月已存入 ${plain(saveInto(r.k,ym))}`;
-    const label = r.k === SAVE_ANY ? `<b>🐷 ${esc(r.name)}</b>` : `<div class="nmrow">🐷 ${nameBox('acc', r.k, r.name, 8)}</div>`;
-    return `<div class="aline"><div class="nm">${label}<span class="n2">${n2}</span></div>${num('save', r.k, v)}${noX}</div>`;
+    if(r.k === SAVE_ANY) return `<div class="aline"><div class="nm"><b>🐷 ${esc(r.name)}</b>
+        <span class="n2">還沒有專用的帳戶也可以先排</span></div>${av('save', r.k, v, 0, { ov:false, tx:'—' })}${noX}</div>`;
+    return `<div class="aline"><div class="nm">
+        <div class="nmrow">${ACC_ICON[r.type]||'🐷'} ${nameBox('acc', r.k, r.name, 8)}</div>
+        <span class="n2">上月轉入 ${plain(saveInto(r.k,pm))}</span></div>
+      ${av('save', r.k, v, 0, { ov:false, tx:'實際 ' + plain(saveInto(r.k,ym)) })}${noX}</div>`;
   };
   const addRow = (type, ph, max) =>
     `<div class="addrow"><input data-addin="${type}" placeholder="${ph}" maxlength="${max}"><button data-addbtn="${type}">加</button></div>`;
+  // 大項標題：預算小計、實際小計（數字在 renderAllocSummary 填）
+  const gh = (name, id) => `<div class="agh">${name}<span>預算 <b id="aSub${id}"></b>　實際 <b id="aAct${id}"></b></span></div>`;
   const hasFix   = settings.cats.includes(FIXED_CAT);
-  const lifeCats = settings.cats.filter(c => c !== FIXED_CAT);
-  // 有細項之後，「不分細項」那行只在還有用到時才出現，免得跟細項重複排
-  const plainFix = hasFix && (!fixList().length || getLine(a,'cat',FIXED_CAT) > 0 || fsNow.none > 0);
+  const hasPre   = settings.cats.includes(PRE_CAT);
+  const lifeCats = settings.cats.filter(c => !SYS_CATS.includes(c));
+  // 有細項或分期之後，「不分細項」那行只在還有用到時才出現，免得跟細項重複排
+  const plainFix = hasFix && (!(fixList().length || insts.length) || getLine(a,'cat',FIXED_CAT) > 0 || fsNow.none > 0);
+  const plainPre = hasPre && (getLine(a,'cat',PRE_CAT) > 0 || psNow.none > 0);
   $('#aLines').innerHTML =
-    (hasFix ? `<div class="agh">固定<span>本月一定要付的　<b id="aSubFix"></b></span></div>` +
-       fixList().map(fixRow).join('') + (plainFix ? catRow(FIXED_CAT) : '') +
-       addRow('fix', '新增固定支出細項，例如 房租、保險', 8) : '') +
-    `<div class="agh">存錢<span>先把未來的自己顧好　<b id="aSubSave"></b></span></div>` + saveRows().map(saveRow).join('') +
-    '<button class="addline" data-newsave>＋ 新增存款銀行</button>' +
-    `<div class="agh">生活費<span>平常花的　<b id="aSubLife"></b></span></div>` + lifeCats.map(catRow).join('') +
-    addRow('cat', '新增生活費分類', 6);
+    (hasFix ? gh('固定支出', 'Fix') +
+       fixList().map(fixRow).join('') + insts.map(instRow).join('') + (plainFix ? catRow(FIXED_CAT) : '') +
+       addRow('fix', '新增固定支出細項，例如 電話費', 8) +
+       '<button class="addline" data-newinst>＋ 新增分期付款</button>' : '') +
+    gh('變動支出', 'Vary') + lifeCats.map(catRow).join('') +
+    addRow('cat', '新增變動支出分類', 6) +
+    (hasPre ? gh('預存資金', 'Pre') +
+       (preList().length ? '' : '<div class="aempty">保險、稅金、季租停車費這種幾個月才繳一次的加進來，每個月先存一點，繳的那個月就不會爆預算。</div>') +
+       preList().map(preRow).join('') + (plainPre ? catRow(PRE_CAT) : '') +
+       '<button class="addline" data-newpre>＋ 新增預存項目</button>' : '') +
+    gh('儲蓄投資', 'Save') + saveRows().map(saveRow).join('') +
+    '<button class="addline" data-newsave>＋ 新增存款或股票帳戶</button>';
   renderAllocSummary();
 }
 
@@ -2042,16 +2258,26 @@ function renderAllocSummary(){
   if(!t.inc) why = '先在 ① 填這個月的收入，這裡才算得出來。';
   else if(!ps.out){ sug = round100(t.inc * 0.2); why = '上個月還沒有支出紀錄，先建議收入的兩成。'; }
   else{
-    const pf = ps.byCat[FIXED_CAT]||0, po = ps.out - pf;
-    sug = round100(t.inc - pf - po);
-    why = `收入 ${money(t.inc)} － 上個月固定支出 ${money(pf)} － 上個月其他支出 ${money(po)}，四捨五入到百位。` +
-          (sug ? '' : '照上個月的花法存不下來，可以先從生活費挪一點出來。');
+    // 預存用「這個月建議存多少」，不用上個月實際：繳費那個月一次繳一大筆，拿來算會失真
+    const pf = ps.byCat[FIXED_CAT]||0, pv = ps.out - pf - (ps.byCat[PRE_CAT]||0);
+    const pp = preList().reduce((s,p) => s + preInfo(p, ym, a).sug, 0);
+    sug = round100(t.inc - pf - pp - pv);
+    why = `收入 ${money(t.inc)} － 上個月固定支出 ${money(pf)} － 這個月預存 ${money(pp)} － 上個月變動支出 ${money(pv)}，四捨五入到百位。` +
+          (sug ? '' : '照上個月的花法存不下來，可以先從變動支出挪一點出來。');
   }
   $('#aSug').textContent = sug === null ? '—' : money(sug);
-  $('#aSugWhy').textContent = why + (t.inc ? `　你在 ③ 排的存錢：${money(t.save)}` : '');
+  $('#aSugWhy').textContent = why + (t.inc ? `　你在 ③ 排的儲蓄投資：${money(t.save)}` : '');
 
-  const setTx = (id, v) => { const el = $(id); if(el) el.textContent = money(v); };
-  setTx('#aSubFix', t.fix); setTx('#aSubSave', t.save); setTx('#aSubLife', t.life);
+  // 四大項的預算小計、實際小計
+  const setTx = (id, v) => { const el = $(id); if(el) el.textContent = plain(v); };
+  const cf = cs.byCat[FIXED_CAT]||0, cp = cs.byCat[PRE_CAT]||0;
+  const saved = saveRows().reduce((s,r) => s + (r.k === SAVE_ANY ? 0 : saveInto(r.k, ym)), 0);
+  setTx('#aSubFix', t.fix);   setTx('#aActFix', cf);
+  setTx('#aSubVary', t.vary); setTx('#aActVary', cs.out - cf - cp);
+  setTx('#aSubPre', t.pre);   setTx('#aActPre', cp);
+  setTx('#aSubSave', t.save); setTx('#aActSave', saved);
+  // 預存項目的「已存多少」會跟著這個月的預算變，打字時也要更新
+  preList().forEach(p => { const el = $(`#aLines [data-pre="${CSS.escape(p.id)}"]`); if(el) el.innerHTML = preStatus(p, ym, a); });
 
   // 四個步驟
   const s1 = t.inc > 0, s3 = s1 && t.used > 0 && t.left === 0, s4 = s3 && t.done;
@@ -2075,36 +2301,38 @@ function renderAllocSummary(){
   btn.classList.toggle('done', s4);
   btn.textContent = s4 ? '已完成 ✓' : '完成本月預算';
 
-  // 本月已花超過這一類預算的標紅
-  $$('#aLines [data-sp]').forEach(el => {
-    const v = getLine(a, 'cat', el.dataset.sp);
-    el.classList.toggle('over', !!v && (cs.byCat[el.dataset.sp]||0) > v);
-  });
-  const fsNow = fixSpent(ym);
-  $$('#aLines [data-spfix]').forEach(el => {
-    const v = getLine(a, 'fix', el.dataset.spfix);
-    el.classList.toggle('over', !!v && (fsNow.bySub[el.dataset.spfix]||0) > v);
+  // 實際花超過這一行預算的標紅
+  $$('#aLines .act[data-ov]').forEach(el => {
+    const v = getLine(a, el.dataset.ov, el.dataset.k);
+    el.classList.toggle('over', !!v && Number(el.dataset.v) > v);
   });
 }
 
 /* 沿用上個月：排過就照抄分配；沒排過就用上個月實際花的金額（四捨五入到百位）。
-   這個月的收入有填就不動 */
+   這個月的收入有填就不動。分期不照抄，一律改帶這個月還在繳的；預存沒有的補建議值 */
 function copyPrevAlloc(){
   const pm = ymShift(alMon,-1), pa = allocOf(pm), a = curAlloc();
+  const instNames = new Set(instList().map(p => p.name));
   if(pa && totalsOf(pa).has){
     a.cat  = arr(pa.cat).map(r => ({ k:r.k, v:Number(r.v)||0 }));
     a.save = arr(pa.save).map(r => ({ k:r.k, v:Number(r.v)||0 }));
     a.fix  = arr(pa.fix).map(r => ({ k:r.k, v:Number(r.v)||0 }));
+    a.pre  = arr(pa.pre).map(r => ({ k:r.k, v:Number(r.v)||0 }));
+    pruneInst(a, alMon);
     if(!totalsOf(a).inc)
       a.inc = arr(pa.inc).map(r => ({ id:uid(), cat:r.cat, amt:Number(r.amt)||0, on:r.on!==false, booked:'' }));
   }else{
     const ps = monthSum(pm);
     if(!ps.out){ toast('上個月沒有分配也沒有支出，要自己填'); return; }
-    // 固定支出有分細項的，照細項帶；其他照分類帶
+    // 固定支出有分細項的，照細項帶（分期另外補）；預存資金改用建議值；其他照分類帶
     const fs = fixSpent(pm);
-    a.fix = Object.entries(fs.bySub).map(([k,v]) => ({ k, v:round100(v) })).filter(r => r.v);
-    a.cat = Object.entries(ps.byCat).map(([k,v]) => ({ k, v:round100(k === FIXED_CAT ? fs.none : v) })).filter(r => r.v);
+    a.fix = Object.entries(fs.bySub).filter(([k]) => !instNames.has(k))
+      .map(([k,v]) => ({ k, v:round100(v) })).filter(r => r.v);
+    a.cat = Object.entries(ps.byCat).filter(([k]) => k !== PRE_CAT)
+      .map(([k,v]) => ({ k, v:round100(k === FIXED_CAT ? fs.none : v) })).filter(r => r.v);
+    a.pre = [];
   }
+  fillPlans(a, alMon);
   a.done = false;
   commitAlloc(); renderAlloc();
   toast('帶入了，可以再改');
@@ -2144,8 +2372,6 @@ function onRename(el){
     row.querySelectorAll('[data-k]').forEach(x => x.dataset.k = v);
     row.querySelectorAll('[data-delcat]').forEach(x => x.dataset.delcat = v);
     row.querySelectorAll('[data-delfix]').forEach(x => x.dataset.delfix = v);
-    row.querySelectorAll('[data-sp]').forEach(x => x.dataset.sp = v);
-    row.querySelectorAll('[data-spfix]').forEach(x => x.dataset.spfix = v);
   }
   toast('改好了');
   renderAll();
@@ -2184,6 +2410,10 @@ $('#pgAlloc').addEventListener('click', e => {
   const ab = t.closest('[data-addbtn]');
   if(ab){ addFromRow(ab.dataset.addbtn); return; }
   if(t.closest('[data-newsave]')){ openAcc(null); return; }
+  if(t.closest('[data-newpre]')){ openPlan('pre', null); return; }
+  if(t.closest('[data-newinst]')){ openPlan('inst', null); return; }
+  const pl = t.closest('[data-plan]');
+  if(pl){ openPlan(pl.dataset.plan, pl.dataset.id); return; }
   if(t.closest('#aUsePrev') || t.closest('#aCopy')){ copyPrevAlloc(); return; }
   if(t.closest('#aAddInc')){
     const a = curAlloc(); a.inc = arr(a.inc);
@@ -2214,6 +2444,113 @@ $('#pgAlloc').addEventListener('click', e => {
     toast(`記好了　+${money(r.amt)}　${r.cat} → ${accName(defAccId())}`);
   }
 });
+
+/* ---------- 預存項目與分期付款的設定視窗（分配頁的 ⚙ 與「＋ 新增」） ---------- */
+let planKind = 'pre', planId = null;
+function planOf(k, id){ return (k === 'pre' ? preList() : instList()).find(p => p.id === id) || null; }
+function openPlan(k, id){
+  planKind = k; planId = id;
+  const p = id ? planOf(k, id) : null, isPre = k === 'pre';
+  $('#plTitle').textContent = (p ? '' : '新增') + (isPre ? '預存項目' : '分期付款');
+  $('#plPre').style.display  = isPre ? '' : 'none';
+  $('#plInst').style.display = isPre ? 'none' : '';
+  $('#plName').value = p ? p.name : '';
+  $('#plName').placeholder = isPre ? '例如 保險、牌照稅' : '例如 iPhone';
+  $('#plAmtLab').textContent = isPre ? '一次繳多少' : '每期多少';
+  $('#plAmt').value = p ? (Number(p.amt)||'') : '';
+  if(isPre){
+    const f = p ? preInfo(p, ymNow()) : null;
+    $('#plEvery').value = p ? (Number(p.every)||12) : '';
+    $('#plNext').value  = f ? f.due : '';
+    $('#plOpen').value  = f && f.started ? Math.round(f.before) : (p ? Number(p.open)||0 : '');
+  }else{
+    $('#plStart').value = p ? p.start : ymNow();
+    $('#plN').value     = p ? p.n : '';
+  }
+  const del = $('#plDel');
+  del.style.display = p ? '' : 'none'; del.textContent = '🗑'; del.style.flex = ''; delete del.dataset.arm;
+  syncPlanTip();
+  openM('#mPlan');
+}
+function syncPlanTip(){
+  const amt = Number($('#plAmt').value)||0;
+  let tip;
+  if(planKind === 'pre'){
+    const every = Math.round(Number($('#plEvery').value)||0), next = $('#plNext').value;
+    const open = Number($('#plOpen').value)||0;
+    if(!amt || !every || !/^\d{4}-\d{2}$/.test(next)){
+      tip = '填好之後，分配頁會自動算每個月要先存多少。繳的那個月記一筆「預存資金」選這個項目，會從已存裡扣，不算超支。';
+    }else{
+      const months = Math.max(0, monthDiff(ymNow(), next)) + 1;
+      const sug = Math.max(0, Math.ceil((amt - open) / months / 100) * 100);
+      tip = `到 ${ymLabel(next)} 還有 ${months} 個月（含這個月），建議每月先存 ${money(sug)}。` +
+            '帳面上幫你記著，不會真的搬錢。';
+    }
+  }else{
+    const start = $('#plStart').value, n = Math.round(Number($('#plN').value)||0);
+    tip = /^\d{4}-\d{2}$/.test(start) && n > 0
+      ? `最後一期是 ${ymLabel(ymShift(start, n-1))}，總共 ${money(amt*n)}。每個月繳的時候記一筆「固定支出」選這筆分期。`
+      : '填好之後，還在繳的月份分配頁會自動帶每期金額，繳完自動消失。';
+  }
+  $('#plTip').textContent = tip;
+}
+['plAmt','plEvery','plNext','plOpen','plStart','plN'].forEach(id => $('#'+id).addEventListener('input', syncPlanTip));
+
+$('#plSave').onclick = () => {
+  const isPre = planKind === 'pre', old = planId ? planOf(planKind, planId) : null;
+  const name = $('#plName').value.trim(), amt = Math.round(Number($('#plAmt').value)||0);
+  if(!name){ toast('要有名稱'); return; }
+  if(subTaken(name, old ? old.name : undefined)){ toast('這個名字用過了（細項、分期、預存項目不能同名）'); return; }
+  if(!(amt > 0)){ toast(isPre ? '一次繳多少要填' : '每期多少要填'); return; }
+  let rec;
+  if(isPre){
+    const every = Math.round(Number($('#plEvery').value)||0), next = $('#plNext').value;
+    if(!(every >= 1 && every <= 24)){ toast('幾個月繳一次要填 1 到 24'); return; }
+    if(!/^\d{4}-\d{2}$/.test(next)){ toast('下次哪個月繳要選'); return; }
+    const open = Math.round(Number($('#plOpen').value)||0);
+    rec = { id: old ? old.id : 'p' + uid(), name, amt, every, next };
+    // 「已經存了多少」沒改就沿用原本的起算點；有改（或是新加的）就從這個月重新起算
+    const f = old ? preInfo(old, ymNow()) : null;
+    if(f && f.started && open === Math.round(f.before)){ rec.open = Number(old.open)||0; rec.openYm = old.openYm; }
+    else { rec.open = open; rec.openYm = ymNow(); }
+  }else{
+    const start = $('#plStart').value, n = Math.round(Number($('#plN').value)||0);
+    if(!/^\d{4}-\d{2}$/.test(start)){ toast('從哪個月開始繳要選'); return; }
+    if(!(n >= 1 && n <= 360)){ toast('共幾期要填'); return; }
+    rec = { id: old ? old.id : 'i' + uid(), name, start, n, amt };
+  }
+  const key = isPre ? 'preItems' : 'inst';
+  settings[key] = old ? arr(settings[key]).map(p => p.id === old.id ? rec : p) : arr(settings[key]).concat(rec);
+  if(old && old.name !== name) renameSub(isPre ? PRE_CAT : FIXED_CAT, isPre ? 'pre' : 'fix', old.name, name);
+  // 這個月起已經排過的分配：補上這一行、拿掉已經繳完的分期。過去的月份不動
+  Object.keys(allocs).filter(m => m >= ymNow()).forEach(m => {
+    const a = allocs[m], was = JSON.stringify([arr(a.fix), arr(a.pre)]);
+    if(!isPre) pruneInst(a, m);
+    fillPlans(a, m);
+    if(JSON.stringify([a.fix, a.pre]) !== was) cloudAlloc(m);
+  });
+  _draft = null;
+  saveLocal(); cloudSettings(); closeM('#mPlan'); renderAll();
+  toast(old ? '改好了' : `加好了　${name}`);
+};
+/* 刪除要按兩次。記過的帳留著（會算進「不分細項」那行），這個月起的分配那一行拿掉 */
+$('#plDel').onclick = () => {
+  const isPre = planKind === 'pre', old = planOf(planKind, planId); if(!old) return;
+  const b = $('#plDel');
+  if(!b.dataset.arm){
+    b.dataset.arm = '1'; b.textContent = '確定刪除'; b.style.flex = '0 0 auto';
+    toast('再按一次就刪掉，記過的帳會留著'); return;
+  }
+  const key = isPre ? 'preItems' : 'inst', field = isPre ? 'pre' : 'fix';
+  settings[key] = arr(settings[key]).filter(p => p.id !== old.id);
+  Object.keys(allocs).filter(m => m >= ymNow()).forEach(m => {
+    const a = allocs[m], n = arr(a[field]).length;
+    a[field] = arr(a[field]).filter(r => r.k !== old.name);
+    if(a[field].length !== n) cloudAlloc(m);
+  });
+  _draft = null;
+  saveLocal(); cloudSettings(); closeM('#mPlan'); renderAll(); toast('刪掉了，記過的帳還在');
+};
 
 /* ---------- Firebase ---------- */
 async function initFirebase(interactive){
@@ -2267,7 +2604,9 @@ async function initFirebase(interactive){
     if(!s.exists()) return;
     const v = Object.assign(defSettings(), s.val());
     if(JSON.stringify(v) === JSON.stringify(settings)) return;
-    settings = v; saveLocal(); renderAll();
+    settings = v;
+    if(migrateCats()) cloudSettings();           // 舊版頁面寫回沒有「預存資金」的清單時補回來
+    saveLocal(); renderAll();
   });
   return true;
 }

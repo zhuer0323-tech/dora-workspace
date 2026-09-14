@@ -12,21 +12,43 @@
 
 import { todayTW } from './date.js';
 
-const DEF_OUT = ['固定支出','飲食','交通','日用','娛樂','醫療','人情','治裝','學習','其他'];
+const DEF_OUT = ['固定支出','預存資金','飲食','交通','日用','娛樂','醫療','人情','治裝','學習','其他'];
 const DEF_IN  = ['薪水','獎金','接案','其他'];
 const FIXED_CAT = '固定支出';
+const PRE_CAT   = '預存資金';      // 保險、稅金這種幾個月才繳一次的（2026-09-14 加）
+const SUB_CATS  = [FIXED_CAT, PRE_CAT];
+// Firebase 會把陣列存成物件，兩種都要吃
+const toList = x => Array.isArray(x) ? x.filter(Boolean) : Object.values(x || {}).filter(Boolean);
 
-/* 理財導航的分配（2026-09-13 起，網頁 money/ 的「分配」頁）。
-   alloc/{YYYY-MM}.cat = [{k:分類, v:預算}]，save = [{k:帳戶, v:金額}]。
-   生活費 ＝ 固定支出以外每一類的預算加總。Firebase 會把陣列存成物件，兩種都要吃 */
+/* 理財導航的分配（網頁 money/ 的「分配」頁，2026-09-14 改成四大項）。
+   alloc/{YYYY-MM}：cat = [{k:分類, v:預算}]、fix = 固定支出細項與分期、pre = 預存項目、save = 儲蓄投資。
+   變動支出 ＝ 固定支出、預存資金以外每一類的預算加總 */
 function allocInfo(alloc){
-  const list = x => Array.isArray(x) ? x.filter(Boolean) : Object.values(x || {}).filter(Boolean);
   if (!alloc || typeof alloc !== 'object') return { used: 0, life: 0 };
-  let life = 0, fix = 0;
-  for (const r of list(alloc.cat)){ const v = Number(r.v)||0; if (r.k === FIXED_CAT) fix += v; else life += v; }
-  for (const r of list(alloc.fix)) fix += Number(r.v)||0;       // 固定支出的細項（房租、保險…）
-  const save = list(alloc.save).reduce((s,r) => s + (Number(r.v)||0), 0);
-  return { used: life + fix + save, life };
+  let life = 0, fix = 0, pre = 0;
+  for (const r of toList(alloc.cat)){
+    const v = Number(r.v)||0;
+    if (r.k === FIXED_CAT) fix += v; else if (r.k === PRE_CAT) pre += v; else life += v;
+  }
+  for (const r of toList(alloc.fix)) fix += Number(r.v)||0;       // 固定支出的細項與分期
+  for (const r of toList(alloc.pre)) pre += Number(r.v)||0;       // 預存項目（保險、稅金…）
+  const save = toList(alloc.save).reduce((s,r) => s + (Number(r.v)||0), 0);
+  return { used: life + fix + pre + save, life };
+}
+
+/* 分期在某個月還在繳嗎（第 1 期到第 n 期之間） */
+function instLive(p, ym){
+  if (!p || !/^\d{4}-\d{2}$/.test(p.start || '')) return false;
+  const [sy, sm] = p.start.split('-').map(Number), [y, m] = ym.split('-').map(Number);
+  const k = (y - sy) * 12 + (m - sm) + 1;
+  return k >= 1 && k <= (Number(p.n) || 0);
+}
+/* 某一類可以套的細項名稱：固定支出＝細項＋那個月還在繳的分期；預存資金＝預存項目 */
+function subsOf(settings, c, ym){
+  if (c === FIXED_CAT)
+    return [...toList(settings?.fixItems), ...toList(settings?.inst).filter(p => instLive(p, ym)).map(p => p.name)];
+  if (c === PRE_CAT) return toList(settings?.preItems).map(p => p.name);
+  return [];
 }
 
 /* 講法 → 分類。只有她的分類清單裡真的有那一類，才會套用；
@@ -35,6 +57,8 @@ const ALIAS = {
   // 每個月固定會跑的那些，跟「日用」分開——房租水電不是能決定要不要花的
   固定支出:['房租','房貸','管理費','水費','電費','瓦斯','電話費','手機費','網路費','第四台',
         '保險','保費','訂閱','會員費','netflix','spotify','icloud','youtube premium'],
+  // 幾個月才繳一次的稅。「稅」一個字太短不放（會吃到退稅、稅後）
+  預存資金:['牌照稅','燃料稅','房屋稅','地價稅','所得稅','稅金'],
   飲食:['早餐','午餐','晚餐','宵夜','下午茶','咖啡','手搖','飲料','便當','吃飯','聚餐','外送',
         '小七','全家','超商','麥當勞','星巴克','便利商店','餐','喝'],
   交通:['加油','停車','停車費','計程車','小黃','uber','捷運','公車','客運','高鐵','台鐵','火車',
@@ -140,6 +164,17 @@ export function parseMoney(text, settings){
       break;
     }
   }
+  // 講到她設的細項、分期、預存項目名稱（電話費、iPhone、保險…）就直接記到那一類，最長的優先
+  const ym = (dt.date || ymd(todayTW())).slice(0, 7);
+  const longestIn = names => names.reduce((b, n) => (n && s.includes(n) && n.length > b.length) ? n : b, '');
+  let sub = '';
+  if (!cat && kind === 'out'){
+    for (const c of SUB_CATS){
+      if (!cats.includes(c)) continue;
+      const n = longestIn(subsOf(settings, c, ym));
+      if (n.length > sub.length){ sub = n; cat = c; }
+    }
+  }
   if (!cat){
     const low = s.toLowerCase();
     let best = null;
@@ -153,13 +188,8 @@ export function parseMoney(text, settings){
   }
   if (!cat) cat = cats.includes('其他') ? '其他' : cats[0];
 
-  // 固定支出的細項：她在分配頁列的名字（房租、保險…）有出現在這句話裡就套上，最長的優先
-  let sub = '';
-  if (kind === 'out' && cat === FIXED_CAT && Array.isArray(settings?.fixItems)){
-    for (const f of settings.fixItems){
-      if (f && s.includes(f) && f.length > sub.length) sub = f;
-    }
-  }
+  // 直接講分類名（或講法對照到）固定支出、預存資金時，也看看有沒有講到細項
+  if (kind === 'out' && !sub && SUB_CATS.includes(cat)) sub = longestIn(subsOf(settings, cat, ym));
 
   return { ok:true, amt, cat, sub, kind, note: s.slice(0,40), date: dt.date || ymd(todayTW()) };
 }
@@ -189,7 +219,7 @@ export async function addMoney(text, env, db, dry = false){
   const lines = [head + (p.note ? `（${p.note}）` : ''), `日期：${md}`];
 
   // 順便回報這個月還剩多少。算不出來就跳過，帳已經寫進去了不受影響
-  // 口徑跟網頁一樣：有排分配 → 看生活費（固定支出另外算）；沒排 → 看舊的每月總預算
+  // 口徑跟網頁一樣：有排分配 → 看變動支出（固定支出、預存資金另外算）；沒排 → 看舊的每月總預算
   try {
     const ym = p.date.slice(0,7);
     const alloc = allocInfo(await db.get(`alloc/${ym}`).catch(() => null));
@@ -201,10 +231,10 @@ export async function addMoney(text, env, db, dry = false){
       for (const it of Object.values(items)){
         if (!it || !String(it.d||'').startsWith(ym)) continue;
         if (it.kind === 'in' || it.kind === 'tr' || it.kind === 'adj') continue;   // 只算真的花掉的
-        if (useAlloc && it.cat === FIXED_CAT) continue;
+        if (useAlloc && SUB_CATS.includes(it.cat)) continue;
         out += Number(it.amt)||0;
       }
-      const word = useAlloc ? '生活費' : '';
+      const word = useAlloc ? '變動支出' : '';
       const left = budget - out;
       lines.push(left >= 0 ? `這個月${word}還能花 ${money(left)}` : `這個月${word}已經超支 ${money(-left)}`);
     }
