@@ -598,6 +598,8 @@ Graph API Explorer 與 App 後台都進不去，所以 `dora-meta-token-setup.sh
 - 捷徑打「`120 午餐`」→ 直接寫進雲端 → 跳通知，**完全不用開 App**
 - LINE 打「`記帳 120 午餐`」也可以；**開頭要有記帳字眼**才走記帳，其餘照舊排任務
 - 密碼 `MONEY_TOKEN` 存在 Cloudflare，本機備份 `~/Library/Scripts/dora-money-token.txt`。
+  ⚠️ **本機這份已經過期**（2026-09-14 試算回「密碼不對」，但她 iPhone 捷徑照常記得進去）。
+  Cloudflare 的 secret 讀不回來，**不要自己換線上密碼**（捷徑會失效），要測就請她從捷徑裡複製密碼更新本機檔
   ⚠️ **dora-workspace 是公開倉庫，這串絕對不能進版控**
 - 分類清單讀雲端 `settings`，**不自動長出新分類**；講法對照表在 `money.js` 的 `ALIAS`
 - 測試加 `?dry=1` 只回結果不寫入
