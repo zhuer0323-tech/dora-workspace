@@ -715,11 +715,13 @@ const DEF_IN  = ['薪水','獎金','接案','其他'];
    月底從銀行轉 3000 過去 → 銀行 -3000、卡回到 0
    這樣總資產自動把卡債扣掉，不用另外算一套 */
 /* 銀行分兩種（2026-09-13 朱兒定）：一般銀行＝日常進出、薪轉、扣款；存款銀行＝存錢用，不拿來花 */
-const ACC_TYPES = { cash:'現金', bank:'一般銀行', save:'存款銀行', stock:'股票', card:'信用卡' };
-const ACC_ICON  = { cash:'💵', bank:'🏦', save:'🐷', stock:'📈', card:'💳' };
+/* 電子支付（2026-09-14 加）＝街口、全支付這種先儲值再付的餘額，放日常組。
+   Apple Pay、LINE Pay 綁卡付的不是這種，記到信用卡就好 */
+const ACC_TYPES = { cash:'現金', bank:'一般銀行', epay:'電子支付', save:'存款銀行', stock:'股票', card:'信用卡' };
+const ACC_ICON  = { cash:'💵', bank:'🏦', epay:'📱', save:'🐷', stock:'📈', card:'💳' };
 /* 帳戶頁的分組。日常＝平常進出的錢，存款＝專款專用、存起來不動的 */
 const ACC_GROUPS = [
-  { key:'daily', name:'日常', types:['cash','bank'] },
+  { key:'daily', name:'日常', types:['cash','bank','epay'] },
   { key:'save',  name:'存款', types:['save'] },
   { key:'stock', name:'股票', types:['stock'] },
   { key:'card',  name:'信用卡', types:['card'] },
@@ -1842,7 +1844,7 @@ function renderAccPage(){
   $('#nAsset').textContent = money(n.asset);
   $('#nDebt').textContent = money(n.debt);
   const EMPTY = {
-    daily:'還沒有現金或一般銀行。',
+    daily:'還沒有現金、一般銀行或電子支付。',
     save:'還沒有存款銀行。按「＋ 新帳戶」加一個（類型選存款銀行），存錢時用「＋ 存入」把錢搬進去。',
     stock:'還沒有股票帳戶。持股與自動抓股價是第二批的功能。',
     card:'還沒有信用卡帳戶。',

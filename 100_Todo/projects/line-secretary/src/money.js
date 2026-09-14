@@ -51,6 +51,66 @@ function subsOf(settings, c, ym){
   return [];
 }
 
+/* LINE 什麼樣的句子算記帳（其他一律當任務）：
+   1. 開頭是記帳字眼，或 $ ＋ 符號
+   2. 數字開頭（2026-09-14 加，打「120 午餐」就好）。
+      但數字後面緊接日期、時間寫法的照舊排任務：8/20、8-20、8月20日、20號、3天後、3點、15:00
+   3. 昨天／前天／大前天開頭、後面接數字（「昨天 120 午餐」）
+   風險：任務標題本身數字開頭又沒寫日期（「2 支影片剪輯」）會被記成花了 2 塊，前面加日期就不會 */
+const MONEY_WORD = /^(記帳|記一筆|花了|支出|花費|消費|收入|入帳|[$＄+＋])/;
+const MONEY_NUM  = /^\d[\d,]*(?:\.\d+)?(?![\d,.])(?!\s*(?:[/\-:：月號日點]|天後))/;
+const MONEY_PAST = /^(大前天|前天|昨[天日])\s*\d/;
+export function isMoneyText(text){
+  const t = String(text || '').trim();
+  return MONEY_WORD.test(t) || MONEY_NUM.test(t) || MONEY_PAST.test(t);
+}
+
+/* 付款方式 → 帳戶（2026-09-14 加）。
+   先比她取的帳戶名稱（兩個字以上、最長的優先，例如「國泰」「街口」），再比講法：
+     現金 → 現金帳戶
+     刷卡、信用卡、Apple Pay 這種綁卡付的 → 信用卡帳戶
+     街口、全支付這種儲值的 → 電子支付帳戶（沒開就不套）
+     「行動支付」沒講是哪一個 → 有電子支付帳戶就記那裡，沒有就當綁卡算信用卡
+   花錢不從存款銀行、股票出（跟網頁一樣）。沒講到就不填，網頁會算進預設帳戶 */
+const PAY_WORDS = [
+  { words:['現金'], types:['cash'] },
+  { words:['信用卡','刷卡','apple pay','applepay','google pay','samsung pay','line pay','linepay'], types:['card'] },
+  { words:['街口','全支付','悠遊付','icash pay','全盈支付','pi錢包','pi 錢包'], types:['epay'] },
+  { words:['行動支付'], types:['epay','card'] },
+];
+const escRe = x => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function pickAcc(s, settings, kind){
+  const all  = toList(settings?.accs).filter(a => a && a.id);
+  const ok   = a => a.type !== 'stock' && !(kind === 'out' && a.type === 'save');
+  const accs = all.filter(ok);
+  const low = s.toLowerCase();
+  // 名字比對要看全部帳戶：講「玉山銀行」而它是存款銀行（花錢不能用）時，
+  // 不能退回去套名字藏在裡面的「銀行」，直接當沒講
+  let best = null;
+  for (const a of all){
+    const n = String(a.name || '').trim();
+    if (n.length >= 2 && low.includes(n.toLowerCase()) && (!best || n.length > best.word.length))
+      best = { id: a.id, name: n, word: n, acc: a };
+  }
+  if (best) return ok(best.acc) ? { id: best.id, name: best.name, word: best.word } : null;
+  for (const p of PAY_WORDS){
+    const w = p.words.find(x => low.includes(x));
+    if (!w) continue;
+    for (const t of p.types){
+      const a = accs.find(x => x.type === t);
+      if (a) return { id: a.id, name: a.name, word: w };
+    }
+  }
+  return null;
+}
+/* 沒講付款方式時網頁算進哪個帳戶（跟網頁的 defAccId() 同一套） */
+function defAccName(settings){
+  const accs = toList(settings?.accs);
+  const a = accs.find(x => x.id === settings?.defAcc) || accs.find(x => x.type === 'bank')
+         || accs.find(x => x.type === 'cash') || accs[0];
+  return a ? a.name : '';
+}
+
 /* 講法 → 分類。只有她的分類清單裡真的有那一類，才會套用；
    沒有就退回「其他」，不會自己長出新分類（跟 LINE 排任務同一個原則） */
 const ALIAS = {
@@ -155,6 +215,10 @@ export function parseMoney(text, settings){
   s = (s.slice(0, mAmt.index) + ' ' + s.slice(mAmt.index + mAmt[0].length))
       .replace(/\s+/g,' ').replace(/^(元|塊錢|塊)\s*/,'').replace(/[$＄]/g,'').trim();
 
+  // 付款方式：講到的那個字從備註拿掉，免得備註變成「午餐 現金」
+  const acc = pickAcc(s, settings, kind);
+  if (acc) s = s.replace(new RegExp(escRe(acc.word), 'i'), ' ').replace(/\s+/g,' ').trim();
+
   // 分類：先看她有沒有直接講分類名，再查講法對照表
   let cat = '';
   for (const c of cats){                       // 直接講「飲食」→ 那個字從備註拿掉
@@ -191,7 +255,8 @@ export function parseMoney(text, settings){
   // 直接講分類名（或講法對照到）固定支出、預存資金時，也看看有沒有講到細項
   if (kind === 'out' && !sub && SUB_CATS.includes(cat)) sub = longestIn(subsOf(settings, cat, ym));
 
-  return { ok:true, amt, cat, sub, kind, note: s.slice(0,40), date: dt.date || ymd(todayTW()) };
+  return { ok:true, amt, cat, sub, kind, note: s.slice(0,40), date: dt.date || ymd(todayTW()),
+           acc: acc ? acc.id : '', accName: acc ? acc.name : '' };
 }
 
 /** 寫進記帳的雲端節點，回一句確認。dry=true 只試算不寫入（測試用） */
@@ -205,7 +270,8 @@ export async function addMoney(text, env, db, dry = false){
     await db.put(`items/${id}`, {
       d: p.date, amt: p.amt, cat: p.cat, note: p.note,
       kind: p.kind, inv: '', ts: Date.now(), src: 'shortcut',
-      ...(p.sub ? { sub: p.sub } : {})
+      ...(p.sub ? { sub: p.sub } : {}),
+      ...(p.acc ? { acc: p.acc } : {})
     });
   }
 
@@ -217,6 +283,9 @@ export async function addMoney(text, env, db, dry = false){
       ? `✅ 收入 +${money(p.amt)}　${p.cat}`
       : `✅ 記好了 ${money(p.amt)}　${p.cat}${p.sub ? '・' + p.sub : ''}`;
   const lines = [head + (p.note ? `（${p.note}）` : ''), `日期：${md}`];
+  const dn = defAccName(settings);
+  if (p.accName) lines.push(`帳戶：${p.accName}`);
+  else if (dn) lines.push(`帳戶：${dn}（沒寫付款方式，算預設）`);
 
   // 順便回報這個月還剩多少。算不出來就跳過，帳已經寫進去了不受影響
   // 口徑跟網頁一樣：有排分配 → 看變動支出（固定支出、預存資金另外算）；沒排 → 看舊的每月總預算

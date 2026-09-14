@@ -12,7 +12,7 @@
 import { makeDb } from './firebase.js';
 import { classify } from './classify.js';
 import { parseDue, todayStr } from './date.js';
-import { addMoney } from './money.js';
+import { addMoney, isMoneyText } from './money.js';
 import { queueReport } from './report.js';
 
 export default {
@@ -64,9 +64,9 @@ async function handleEvent(ev, env){
   if (!text) return;
 
   try {
-    // 「記帳 120 午餐」「$120 午餐」→ 記個人帳；沒有這些開頭一律當任務，
-    // 不用猜的，免得「8/20 漁三 結案報表」被當成花了 8 塊
-    if (MONEY_PREFIX.test(text)){
+    // 「120 午餐」「記帳 120 午餐」「$120 午餐」→ 記個人帳；規則在 money.js 的 isMoneyText()。
+    // 數字後面緊接日期寫法的照舊當任務，免得「8/20 漁三 結案報表」被當成花了 8 塊
+    if (isMoneyText(text)){
       await lineReply(ev.replyToken, await addMoney(text, env, makeDb(env, env.MN_ROOM)), env);
       return;
     }
@@ -83,7 +83,6 @@ async function handleEvent(ev, env){
   }
 }
 
-const MONEY_PREFIX = /^(記帳|記一筆|花了|支出|花費|消費|收入|入帳|[$＄+＋])/;
 
 /* 什麼樣的句子算「要跑廣告回報」：**以「回報」開頭或結尾**。
    帶日期的一律當任務——「8/20 漁三 廣告回報」是要排一件事，不是要現在跑數字 */
