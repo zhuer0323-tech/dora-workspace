@@ -4,8 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<title>朱兒的理財導航</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👛</text></svg>">
+<!-- 沒登入時分頁只寫「請登入」、圖示是鎖；登入成功才換成理財導航（enterApp） -->
+<title>請登入</title>
+<link rel="icon" id="fav" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔒</text></svg>">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <meta name="theme-color" content="#E57399">
@@ -370,9 +371,10 @@ body.on-alloc #toast{bottom:160px}
 <body>
 
 <div id="gate">
-  <div class="logo">👛</div>
-  <h1>朱兒的記帳</h1>
-  <p>這裡有你的個人開銷紀錄，要用 zhuer0323@gmail.com 登入才看得到。</p>
+  <!-- 沒登入的人打開網址只看得到這裡：不寫名字、email，也不寫裡面是什麼 -->
+  <div class="logo">🔒</div>
+  <h1>請登入</h1>
+  <p>登入後才看得到內容。</p>
   <button id="gateBtn">用 Google 登入</button>
   <div class="err" id="gateErr"></div>
 </div>
@@ -666,7 +668,7 @@ body.on-alloc #toast{bottom:160px}
       <label>紙本發票</label>
       <button class="scanrow" id="btnScan">📷　掃紙本發票的條碼</button>
       <div class="tiny" style="margin-top:5px">
-        你的發票多半走雲端載具、手上不會有紙本，所以這顆收在這裡。
+        紙本發票不常拿到，所以這顆收在這裡。
         偶爾拿到紙本發票時按它，掃左邊那個方形條碼就會自動帶入金額。
       </div>
     </div>
@@ -684,12 +686,18 @@ body.on-alloc #toast{bottom:160px}
 <div id="toast"></div>
 
 <script type="module">
-/* 朱兒的記帳
+/* 理財導航
    個人生活開銷，只有她自己用。
    資料跟工作台放在同一個 Firebase 專案，但是獨立節點、獨立規則，
    兩邊的程式與資料都不共用，改這裡不會動到工作台的任務。 */
 
-const OWNER_EMAIL = 'zhuer0323@gmail.com';
+/* 擁有者的 email 只存 SHA-256 比對碼，網頁原始碼裡看不到明文。
+   真正擋人的是 Firebase 規則（只認她的帳號）；這裡只是登入後先擋一下，免得別的帳號看到空白頁 */
+const OWNER_HASH = '5d0e25f26b9be53c3a58a198657847c71c08407af36fe8df409ace6993bd2b4a';
+async function sha256hex(s){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(s||'').trim().toLowerCase()));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
+}
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyAWOXPFBmb-lU90dpBOq2B8Gn7LsR2p-jM",
   authDomain: "busan-trip-2026-201f8.firebaseapp.com",
@@ -703,7 +711,7 @@ const ROOM   = 'mn_x3f9b6qz';        // 改名要同步改 Firebase 規則
 const LS_KEY = 'dora_money_v1';
 const PQ_KEY = 'dora_money_pending'; // 沒訊號時先存這裡，連上再補寫
 
-/* 支出分類（2026-08-19 朱兒定的十類）。
+/* 支出分類（2026-08-19 定的十類）。
    「固定支出」單獨拉一類是關鍵：房租水電不是她能決定要不要花的，
    混在日用裡會讓佔比圖每個月都長一樣，看不出哪裡失控 */
 const DEF_OUT = ['固定支出','預存資金','飲食','交通','日用','娛樂','醫療','人情','治裝','學習','其他'];
@@ -714,7 +722,7 @@ const DEF_IN  = ['薪水','獎金','接案','其他'];
    刷卡 3000 → 卡的餘額 -3000（就是你欠的）
    月底從銀行轉 3000 過去 → 銀行 -3000、卡回到 0
    這樣總資產自動把卡債扣掉，不用另外算一套 */
-/* 銀行分兩種（2026-09-13 朱兒定）：一般銀行＝日常進出、薪轉、扣款；存款銀行＝存錢用，不拿來花 */
+/* 銀行分兩種（2026-09-13 定）：一般銀行＝日常進出、薪轉、扣款；存款銀行＝存錢用，不拿來花 */
 /* 電子支付（2026-09-14 加）＝街口、全支付這種先儲值再付的餘額，放日常組。
    Apple Pay、LINE Pay 綁卡付的不是這種，記到信用卡就好 */
 const ACC_TYPES = { cash:'現金', bank:'一般銀行', epay:'電子支付', save:'存款銀行', stock:'股票', card:'信用卡' };
@@ -739,7 +747,7 @@ const defSettings = () => ({
   preItems:[],                       // 預存項目 [{id,name,amt,every,next:'YYYY-MM',open,openYm}]
   inst:[]                            // 分期付款 [{id,name,start:'YYYY-MM',n,amt}]
 });
-/* 分配頁四大項（2026-09-14 朱兒定）：固定支出（含分期）／變動支出／預存資金／儲蓄投資。
+/* 分配頁四大項（2026-09-14 定）：固定支出（含分期）／變動支出／預存資金／儲蓄投資。
    「固定支出」「預存資金」這兩類是系統分類，名字鎖住不能改也不能刪——
    圖表、分配、LINE 記帳都靠名字認它們 */
 const FIXED_CAT = '固定支出';
@@ -2241,7 +2249,7 @@ function renderAlloc(){
     gh('變動支出', 'Vary') + lifeCats.map(catRow).join('') +
     addRow('cat', '新增變動支出分類', 6) +
     (hasPre ? gh('預存資金', 'Pre') +
-       (preList().length ? '' : '<div class="aempty">保險、稅金、季租停車費這種幾個月才繳一次的加進來，每個月先存一點，繳的那個月就不會爆預算。</div>') +
+       (preList().length ? '' : '<div class="aempty">保險、稅金這種幾個月才繳一次的加進來，每個月先存一點，繳的那個月就不會爆預算。</div>') +
        preList().map(preRow).join('') + (plainPre ? catRow(PRE_CAT) : '') +
        '<button class="addline" data-newpre>＋ 新增預存項目</button>' : '') +
     gh('儲蓄投資', 'Save') + saveRows().map(saveRow).join('') +
@@ -2571,9 +2579,9 @@ async function initFirebase(interactive){
     if(!interactive) return false;
     user = (await signInWithPopup(auth, new GoogleAuthProvider())).user;
   }
-  if(user.email !== OWNER_EMAIL){
+  if(await sha256hex(user.email) !== OWNER_HASH){
     await signOut(auth);
-    throw new Error(`這個帳號（${user.email}）沒有權限，請用 ${OWNER_EMAIL} 登入`);
+    throw new Error('這個帳號沒有權限');           // 不提示該用哪個帳號，免得把 email 露出來
   }
   window._signOut = () => signOut(auth).then(()=>location.reload());
 
@@ -2623,11 +2631,17 @@ loadLocal();
 acc = localStorage.getItem('dora_money_lastacc') || '';
 renderAll();
 
+/* 登入成功才換上真正的標題和圖示；沒登入的人看到的分頁只寫「請登入」 */
+function enterApp(){
+  $('#gate').style.display='none'; $('#app').style.display='';
+  document.title = '理財導航';
+  $('#fav').href = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👛</text></svg>";
+}
 $('#gateBtn').onclick = async () => {
   $('#gateErr').textContent = '';
   try{
     await initFirebase(true);
-    $('#gate').style.display='none'; $('#app').style.display='';
+    enterApp();
   }catch(e){
     $('#gateErr').textContent = e.message || '登入失敗，再試一次';
     setSync('err', e.message);
@@ -2636,7 +2650,7 @@ $('#gateBtn').onclick = async () => {
 (async () => {
   try{
     const ok = await initFirebase(false);       // 登入過就直接進去
-    if(ok){ $('#gate').style.display='none'; $('#app').style.display=''; }
+    if(ok) enterApp();
     else setSync('wait');
   }catch(e){ setSync('err', e.message); }
 })();
