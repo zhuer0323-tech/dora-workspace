@@ -170,6 +170,9 @@ Node.js 透過 nvm 安裝，路徑：`/Users/angela/.nvm/versions/node/v24.15.0/
   待辦區沿用 Flex 預設不另外寫）
 - **Mac 要開機才會觸發**
 - **注意**：腳本與憑證必須放在 `~/Library/Scripts/`，放 `~/Downloads/` 會因 macOS TCC 權限被擋
+- **運勢順便存給「朱兒的獨自升級」首頁**（2026-09-14 加）：抓完運勢寫 `pt_v8k3n6wq/home/astro/{今天}`
+  （word／stars／text／num／color／dir／at），走同一把服務帳號金鑰；整段 try 包住，失敗不影響推播。
+  改之前的版本留在 `dora-morning-briefing.sh.bak-20260914`。這支腳本 repo 裡沒有備份
 
 ### 早報的待辦怎麼來（2026-08-17 改）
 - **資料來源**：工作台的 Firebase（`ws_k7m2q9xr4t/tasks` ＋ `clients`），**只讀不寫**
@@ -769,6 +772,26 @@ Graph API Explorer 與 App 後台都進不去，所以 `dora-meta-token-setup.sh
 - ⚠️ Playwright 套件在 `~/.nvm/versions/node/v24.19.0/lib/node_modules/@playwright/mcp/node_modules/playwright`，
   它要的瀏覽器版本（1237）這台沒有，**`chromium.launch()` 要帶 `executablePath` 指到
   `~/Library/Caches/ms-playwright/chromium-1234/chrome-mac-arm64/Google Chrome for Testing.app/...`**，不用另外下載
+
+### 2026-09-14 年度目標改版（P0＋P1＋連動＋首頁，2026-09-14 上線）
+計劃書 `100_Todo/plans/2026-09-14-獨自升級-年度目標.md`。原本第二、三批合併調整：月計畫→併進里程碑、歷史→併進回顧統計（P2）、
+我的→併進年度總覽；轉盤、刮刮卡、獎罰雙池等年度目標做完再說。
+- **頁面**：年度總覽（取代首頁，人物卡／規則／時鐘收進最下面收合區）、年度目標、每日任務、積分商城、基金銀行。回顧統計 P2 做好才加
+- **資料**：同節點 `pt_v8k3n6wq` 新增 `goals/{id}/info|ms|auto|vlog`，獎勵在 `days/{日}/rw/{ms_里程碑id|g_目標id}`（一個只會有一筆），不用改規則
+- **舊任務**打開時 `normTask()` 補 `goal/attr/freq/cap/step/off/linkedAt`（限時欄＝一次性、偶發欄＝偶發、不加屬性；上限預設 5）
+- **成果進度與行動完成率分開算**：`goalProgress()` 看真實數字、`goalRate()` 看任務做了幾次（從連結那天起算，還沒過完的這一期做了才算）
+- **撤回獎勵**：那天餘額夠直接拿掉；分已存進基金就從基金扣回並記成那天的負存入；當天就花掉了不給撤（禁止賒帳）
+- **連動只讀**：登入後讀 `mn_x3f9b6qz/items|settings`、`ws_k7m2q9xr4t/clients`。
+  ⚠️ `mnBalances()` 抄自記帳 App 的 `accBalances()／netWorth()`、`wsRuns()` 抄自工作台 `normRuns()`，**那兩邊改算法這裡要跟著改**
+  （理財導航第二批「股票照市值算」上線時一定要改）。續約＝那年開始、期數 > 1 的走期，一家只算一家
+- **測試**：「只用這台」模式讀 localStorage `dora_points_testsrc` 當假的理財／工作台資料（雲端模式不讀）。
+  自動測試腳本做過 103 項（在 session 暫存區，沒進 repo），重跑要照計劃書 Step 7 清單
+- 已知限制：「只用這台」模式下，同一個瀏覽器新舊版輪流開，舊版會把本機暫存的年度目標洗掉（雲端模式不受影響）
+- **同日追加「首頁」**（她看完截圖要的，導航第一個，分頁代號 `home`；年度總覽改成 `overview`）：
+  人物卡、今天的一句話、牡羊座運勢、系統執行＋四個角色數字、核心目標迷你進度（沒標核心就列前 3 個進行中），規則與時鐘收在最下面
+  - 語錄存 `cfg.quotes`（一行一句，每天照一年第幾天輪），第一次打開放 30 句內建的 `QUOTES`；`cfg.quotesV` 標記放過了，清空也不會塞回來
+  - 運勢是 **8:30 早報腳本寫進 `home/astro/{日期}`**（網頁自己抓會被跨網域擋），網頁只讀、顯示最新一筆；
+    不是今天的就寫「最近一次」，週末和 Mac 沒開機的日子不會更新
 
 ---
 

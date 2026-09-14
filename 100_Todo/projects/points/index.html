@@ -281,6 +281,129 @@ body.night .remain .rbox b{color:var(--pri)}
 .modal .box{width:100%;max-width:360px;padding:18px}
 .modal h3{margin:0 0 8px;font-size:16px}
 .modal .btns{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
+
+/* ---------- 年度總覽與年度目標（2026-09-14 加） ---------- */
+.yrs{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin:-6px 0 14px}
+.yr{border:2px solid var(--line);border-radius:8px;background:var(--card);padding:2px 12px;font-family:var(--mono);font-weight:700;box-shadow:2px 2px 0 var(--line)}
+.yr.on{background:var(--pri);color:#fff}
+.ovstats{margin:14px 0 18px}
+/* 手機寬四格排 2×2，不要變成 3＋1 落單一格 */
+@media (max-width:699px){ .ovstats{display:grid;grid-template-columns:1fr 1fr;gap:10px} .ovstats .stat{min-width:0} }
+/* ---------- 首頁：今天的一句話、牡羊座運勢、核心目標 ---------- */
+.homeside{display:flex;flex-direction:column;gap:18px;min-width:0}
+.homeside .panel{margin:0}
+.quote blockquote{margin:4px 0 0;padding:4px 0 4px 14px;border-left:5px solid var(--pri);font-size:clamp(18px,2.4vw,22px);font-weight:900;line-height:1.6;overflow-wrap:anywhere}
+.astro .aword{margin:0 0 8px;font-weight:900;color:var(--ttlsub)}
+.astro .astars{font-size:13px;font-weight:700}
+.astro .astars b{color:var(--pri);letter-spacing:2px;font-size:15px}
+.astro .atext{margin:4px 0 10px;font-size:14px}
+.astro .lucky{display:flex;flex-wrap:wrap;gap:6px}
+.astro .lucky .chip{font-size:12px}
+.astro-old{margin-bottom:8px}
+.hgoals{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:10px}
+.hgoal{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;align-items:center;text-align:left;padding:10px 12px;border:2px solid var(--line);border-radius:8px;background:var(--card);box-shadow:2px 2px 0 var(--line)}
+.hgoal .hname{font-weight:900;font-size:14px;min-width:0}
+.hgoal .hname small{display:block;font-weight:700;font-size:11px;color:var(--ink2)}
+.hgoal>b{font-family:var(--mono);font-size:20px;color:var(--pri)}
+.hgoal .pbar{grid-column:1/-1}
+.ovgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+@media (max-width:860px){ .ovgrid{grid-template-columns:1fr;gap:0} }
+/* 進度條：粉色是成果，深色直線是時間走到哪（直線跑在粉色前面很多＝可能落後） */
+.pbar{position:relative;display:block;height:12px;border:2px solid var(--line);border-radius:4px;background:var(--soft)}
+.pbar i{display:block;height:100%;background:var(--pri)}
+.pbar .tmark{position:absolute;top:-5px;bottom:-5px;width:3px;margin-left:-1.5px;background:var(--ink);border-radius:2px}
+.pbar.big{height:16px}
+.ovall{display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 12px;margin-bottom:6px}
+.ovall>span:first-child{font-weight:900}
+.ovall>b{font-family:var(--mono);font-size:22px;color:var(--pri)}
+.ovall .pbar,.ovall .tiny{grid-column:1/-1}
+/* 進度一覽表：電腦是表格，手機每一列變成一張卡片 */
+.gtable{display:flex;flex-direction:column;border:2px solid var(--line);border-radius:8px;overflow:hidden;margin-top:10px}
+.gr{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.3fr) minmax(0,1.6fr) minmax(0,.8fr) minmax(0,1fr) minmax(0,1.4fr);gap:10px;align-items:center;padding:9px 12px;border-top:1px dashed var(--grid);background:var(--card);font-size:13px}
+.gr.gh{border-top:0;background:var(--soft);font-weight:900;font-size:12px;color:var(--ink2)}
+.gr.st-pause,.gr.st-done{background:var(--soft)}
+.gc small{display:block;color:var(--ink2);font-size:11px;font-weight:700}
+.linkbtn{border:0;background:none;padding:0;font-weight:900;font-size:14px;text-align:left;text-decoration:underline;text-decoration-color:var(--dot);text-underline-offset:3px}
+.c-prog{display:flex;flex-direction:column;gap:3px}
+.c-prog>b{font-family:var(--mono)}
+.core{display:inline-block;font-size:10px;font-weight:900;color:#2B1C00;background:var(--goldbtn);border:1.5px solid var(--line);border-radius:4px;padding:0 5px;margin-right:6px;vertical-align:2px}
+.badge{display:inline-block;font-size:11px;font-weight:900;padding:0 6px;border:1.5px solid currentColor;border-radius:5px;white-space:nowrap}
+.badge.st-todo,.badge.st-arch{color:var(--ink2)} .badge.st-doing{color:var(--pri)} .badge.st-risk{color:var(--loss)}
+.badge.st-pause{color:var(--fundink)} .badge.st-done{color:var(--gain)}
+.gnote{color:var(--ink2);font-size:12px;font-weight:700}
+.warn{color:var(--loss)!important;font-weight:900;font-size:12px}
+@media (max-width:760px){
+  .gr.gh{display:none}
+  .gr{grid-template-columns:1fr 1fr;gap:6px 12px}
+  .gr .c-name,.gr .c-prog,.gr .c-src{grid-column:1/-1}
+  .gc[data-l]::before{content:attr(data-l);display:block;font-size:11px;font-weight:700;color:var(--ink2)}
+}
+/* 目標卡片 */
+.gcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:16px;align-items:start;margin-bottom:18px}
+.gcard{padding:14px;display:flex;flex-direction:column;gap:8px}
+.gcard.st-arch,.gcard.st-pause{opacity:.8}
+.gcard header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.gcard h3{margin:0;font-size:16px;font-weight:900;line-height:1.35;display:inline}
+.gmeta{display:flex;flex-wrap:wrap;gap:5px}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:1px 7px;border:1.5px solid var(--line);border-radius:5px;background:var(--card)}
+.chip.a-life{color:var(--life)} .chip.a-study{color:var(--study)} .chip.a-work{color:var(--work)}
+.chip.has{background:var(--pribg)}
+.gprog{display:flex;flex-direction:column;gap:5px}
+.gnum{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.gnum b{font-family:var(--mono);font-size:26px;line-height:1;color:var(--pri)}
+.gnum span{font-weight:700;font-size:13px}
+.gline{font-size:13px;font-weight:700}
+.gtoggle{align-self:flex-start}
+.gdetail{border-top:2px dashed var(--grid);padding-top:10px;display:flex;flex-direction:column;gap:8px}
+.gdetail h4,.foldbody h4{margin:4px 0 0;font-size:13px;font-weight:900}
+.gdetail .why{margin:0;font-size:13px}
+.gdetail .addrow{margin:0}
+.gbtns{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.mslist{display:flex;flex-direction:column;gap:6px}
+.msrow{display:flex;align-items:center;gap:8px;padding:6px 8px;border:2px solid var(--line);border-radius:8px;background:var(--card);font-size:13px}
+.msrow .nm{flex:1;min-width:0;font-weight:700;overflow-wrap:anywhere}
+.msrow .nm small{display:block;font-weight:500;color:var(--ink2);font-size:11px}
+.msrow .pv{font-weight:900;color:var(--gain);white-space:nowrap}
+.msrow.done .nm{text-decoration:line-through;text-decoration-color:var(--ink2)}
+.empty-g{text-align:center}
+.empty-g h2{margin:0 0 6px;font-size:18px}
+.empty-g .gbtns{justify-content:center;margin-top:10px}
+/* 續約一覽 */
+.rtable{display:flex;flex-direction:column;border:2px solid var(--line);border-radius:8px;overflow:hidden;font-size:12px}
+.rr{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.9fr) minmax(0,1.7fr) minmax(0,.8fr);gap:6px;padding:5px 8px;border-top:1px dashed var(--grid);align-items:center;background:var(--card)}
+.rr.rh{border-top:0;background:var(--soft);font-weight:900;color:var(--ink2)}
+.rr em{display:block;font-style:normal;color:var(--loss);font-weight:900;font-size:11px}
+.rr.warnrow{background:var(--lossbg)}
+/* 收合區 */
+.fold{padding:0}
+.fold>summary{cursor:pointer;padding:12px 16px;font-weight:900;list-style:none;display:flex;align-items:center;gap:8px}
+.fold>summary::-webkit-details-marker{display:none}
+.fold>summary::before{content:"";width:0;height:0;border-left:7px solid var(--line);border-top:5px solid transparent;border-bottom:5px solid transparent;transition:transform .15s}
+.fold[open]>summary::before{transform:rotate(90deg)}
+.foldbody{padding:0 16px 16px}
+.foldbody .homegrid{margin-bottom:18px}
+.catchips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 12px}
+.ovlist{display:flex;flex-direction:column;gap:6px}
+.ovlist h4{margin:6px 0 0;font-size:12px;color:var(--ink2)}
+.trow .nm .gtag,.done .nm .gtag{display:block;font-size:11px;font-weight:700;color:var(--pri)}
+.trow .nm small.capx{color:var(--loss)}
+.trow.off{opacity:.55}
+/* 共用表單視窗 */
+.modal .box.wide{max-width:520px;max-height:calc(100vh - 32px);overflow:auto}
+.frow{display:flex;flex-direction:column;gap:3px;margin-bottom:10px}
+.frow>label{font-size:13px;font-weight:900}
+.frow .req{font-size:10px;color:#fff;background:var(--loss);border-radius:3px;padding:0 4px;vertical-align:1px}
+.frow input:not([type=checkbox]),.frow select,.frow textarea{width:100%;border:2px solid var(--line);border-radius:6px;padding:6px 8px;background:var(--card);color:var(--ink);font:inherit;font-size:16px}
+.frow.chk2 label{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700}
+.frow.chk2 input{width:18px;height:18px;flex:none;accent-color:var(--pri)}
+.frow.bad input,.frow.bad select,.frow.bad textarea{border-color:var(--loss)}
+.frow .tiny:empty{display:none}
+.ferr1{color:var(--loss);font-size:12px;font-weight:700}
+.ferr1:empty{display:none}
+#fmErr{color:var(--loss);font-size:13px;font-weight:700}
+.fmbtns{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:12px}
+.fmbtns #fmDel{margin-right:auto}
 </style>
 </head>
 <body>
@@ -308,33 +431,100 @@ body.night .remain .rbox b{color:var(--pri)}
       <button class="sync" id="syncBtn" title="雲端同步"><i></i><span id="syncTxt">連線中</span></button>
     </header>
 
-    <!-- 首頁 -->
+    <!-- 首頁（2026-09-14 她要求：個人介紹＋重點資訊＋星座運勢＋激勵語錄；系統規則與時鐘收在最下面） -->
     <section class="page" data-page="home">
-      <div class="ttl"><h1>系統規則</h1><p>SYSTEM RULE</p></div>
+      <div class="ttl"><h1>我的首頁</h1><p>MY PAGE</p></div>
       <div class="homegrid">
         <div class="box who" id="who">
           <button class="ava" id="whoAva" title="換頭像"></button>
           <input type="file" id="whoFile" accept="image/*" hidden>
-          <input class="fld nm" data-pf="name" placeholder="你的名字" maxlength="20">
-          <input class="fld ttlf" data-pf="title" placeholder="一句話介紹自己" maxlength="40">
+          <input class="fld nm" data-pf="name" placeholder="你的名字" maxlength="20" aria-label="名字">
+          <input class="fld ttlf" data-pf="title" placeholder="一句話介紹自己" maxlength="40" aria-label="一句話介紹自己">
           <div class="badges" id="whoBadges"></div>
-          <div class="sect"><label>自我介紹</label><textarea class="fld" data-pf="intro" placeholder="寫幾句你是誰、在做什麼" maxlength="300"></textarea></div>
-          <div class="sect"><label>現在的目標</label><textarea class="fld" data-pf="goal" placeholder="這陣子最想達成的一件事" maxlength="120"></textarea></div>
+          <div class="sect"><label for="pfIntro">自我介紹</label><textarea class="fld" id="pfIntro" data-pf="intro" placeholder="寫幾句你是誰、在做什麼" maxlength="300"></textarea></div>
+          <div class="sect"><label for="pfGoal">現在的目標</label><textarea class="fld" id="pfGoal" data-pf="goal" placeholder="這陣子最想達成的一件事" maxlength="120"></textarea></div>
         </div>
-        <ol class="rules" id="rules"></ol>
-      </div>
-      <div class="clockwrap">
-        <div class="clock" id="clock" title="按住轉圈可以調時間">
-          <div class="tile"><span id="ckH">00</span></div><div class="colon">:</div>
-          <div class="tile"><span id="ckM">00</span></div><div class="colon">:</div>
-          <div class="tile"><span id="ckS">00</span></div>
+        <div class="homeside">
+          <div class="box panel quote">
+            <div class="phead"><h2>今天的一句話</h2><span class="gbtns"><button class="btn sm" id="quoteNext">換一句</button><button class="btn sm" id="quoteEdit">編輯語錄</button></span></div>
+            <blockquote id="quoteTxt"></blockquote>
+          </div>
+          <div class="box panel astro">
+            <div class="phead"><h2>牡羊座今日運勢</h2><span class="tiny" id="astroDate"></span></div>
+            <div id="astroBody"></div>
+          </div>
         </div>
-        <div class="clock-off" id="clockOff" hidden></div>
-        <button class="btn sm" id="clockReset">回到現在</button>
-        <div class="tiny">按住時鐘轉一圈＝調一小時，只是看時間，不影響商城開放時段</div>
       </div>
       <button class="exec" id="execBtn"></button>
       <p class="execNote" id="execNote"></p>
+      <div class="stats ovstats" id="ovStats"></div>
+      <div class="box panel">
+        <div class="phead"><h2>核心目標</h2><button class="btn sm" data-goto="overview">看進度一覽表</button></div>
+        <div id="homeGoals"></div>
+      </div>
+      <details class="box panel fold">
+        <summary>系統規則與時鐘</summary>
+        <div class="foldbody">
+          <ol class="rules" id="rules"></ol>
+          <div class="clockwrap">
+            <div class="clock" id="clock" title="按住轉圈可以調時間">
+              <div class="tile"><span id="ckH">00</span></div><div class="colon">:</div>
+              <div class="tile"><span id="ckM">00</span></div><div class="colon">:</div>
+              <div class="tile"><span id="ckS">00</span></div>
+            </div>
+            <div class="clock-off" id="clockOff" hidden></div>
+            <button class="btn sm" id="clockReset">回到現在</button>
+            <div class="tiny">按住時鐘轉一圈＝調一小時，只是看時間，不影響商城開放時段</div>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <!-- 年度總覽（2026-09-14 加：先看今年各目標走到哪） -->
+    <section class="page" data-page="overview" hidden>
+      <div class="ttl"><h1 data-t="年度總覽">年度總覽</h1><p>ANNUAL OVERVIEW</p></div>
+      <div class="yrs" id="ovYears" aria-label="選年度"></div>
+
+      <div class="box panel">
+        <div class="phead"><h2>進度一覽表</h2><button class="btn sm" data-gact="refresh">重新抓取</button></div>
+        <div id="ovOverall"></div>
+        <div class="tiny" id="ovSrc"></div>
+        <div id="ovTable"></div>
+      </div>
+
+      <div class="ovgrid">
+        <div class="box panel">
+          <div class="phead"><h2>本週該做的任務</h2><button class="btn sm" data-goto="task">去每日任務</button></div>
+          <div id="ovWeek"></div>
+        </div>
+        <div class="box panel">
+          <div class="phead"><h2>本月重點與本季里程碑</h2></div>
+          <div id="ovMs"></div>
+        </div>
+      </div>
+      <div class="box panel" id="ovRenewBox" hidden>
+        <div class="phead"><h2>續約提醒</h2><span class="tiny">工作台・專案走期</span></div>
+        <div id="ovRenew"></div>
+      </div>
+
+      <details class="box panel fold">
+        <summary>分類分布與最近完成的里程碑</summary>
+        <div class="foldbody"><div id="ovCats"></div><div id="ovRecent"></div></div>
+      </details>
+
+    </section>
+
+    <!-- 年度目標 -->
+    <section class="page" data-page="goals" hidden>
+      <div class="ttl"><h1 data-t="年度目標">年度目標</h1><p>ANNUAL GOALS</p></div>
+      <div class="yrs" id="gYears" aria-label="選年度"></div>
+      <div class="box panel">
+        <div class="phead"><span class="tiny" id="gCount"></span>
+          <span class="gbtns"><button class="btn sm" id="gShowArch"></button><button class="btn sm" data-gact="example">套用範例</button><button class="btn sm blue" data-gact="add">＋ 新增目標</button></span>
+        </div>
+        <div class="tiny" id="gSrc"></div>
+      </div>
+      <div id="gList"></div>
     </section>
 
     <!-- 每日任務 -->
@@ -416,6 +606,21 @@ body.night .remain .rbox b{color:var(--pri)}
   </div>
 </div>
 
+<!-- 共用表單視窗：年度目標、里程碑、任務設定、更新目前值、套用範例都用這一個 -->
+<div class="modal" id="mForm" hidden>
+  <div class="box wide" role="dialog" aria-modal="true" aria-labelledby="fmTitle">
+    <h3 id="fmTitle"></h3>
+    <div class="tiny" id="fmDesc"></div>
+    <div id="fmBody" style="margin-top:12px"></div>
+    <div id="fmErr" role="alert"></div>
+    <div class="fmbtns">
+      <button class="btn red" type="button" id="fmDel" hidden>刪除</button>
+      <button class="btn" type="button" id="fmCancel">取消</button>
+      <button class="btn blue" type="button" id="fmOk">儲存</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script type="module">
@@ -491,21 +696,120 @@ const defCfg = () => ({
   profile: { name:'朱兒', title:'廣告行銷經理・台中', intro:'', goal:'', photo:'' },   // 首頁人物卡
 });
 
+/* ---------- 年度目標（2026-09-14 加，計劃書 100_Todo/plans/2026-09-14-獨自升級-年度目標.md） ----------
+   年度目標 → 里程碑 → 每日任務 → 積分。
+   成果進度看真實數字，行動完成率看任務做了幾次，兩個分開算：勾再多任務也不會讓存款目標變完成 */
+const GOAL_CATS = [
+  { k:'money',  n:'財務／資產',     a:'life'  },
+  { k:'career', n:'工作／職涯',     a:'work'  },
+  { k:'brand',  n:'副業／個人品牌', a:'work'  },
+  { k:'skill',  n:'學習／技能',     a:'study' },
+  { k:'health', n:'健康／體態',     a:'life'  },
+  { k:'family', n:'家庭／關係',     a:'life'  },
+  { k:'growth', n:'自我成長／生活', a:'life'  },   // 需求原文同時列在生活與學習，預設帶生活，表單裡可以改
+  { k:'dream',  n:'體驗／夢想清單', a:'life'  },
+];
+const GCAT = Object.fromEntries(GOAL_CATS.map(c => [c.k, c]));
+const ATTR_NAME = { life:'生活', study:'學習', work:'工作' };
+const GSTATUS = { todo:'尚未開始', doing:'進行中', risk:'有落後風險', pause:'暫停', done:'已完成', arch:'已封存' };
+const ACTIVE_ST = ['todo','doing','risk'];     // 算進「同一年最多 5 個」的狀態
+const MAX_ACTIVE = 5, MAX_CORE = 3;
+const PRI_NAME = { hi:'高', mid:'中', lo:'低' };
+const FREQ_NAME = { day:'每日', week:'每週', month:'每月', odd:'偶發', once:'一次性' };
+/* 目標的進度從哪裡來。link 是 mn（理財導航）或 ws（工作台）的，一律只讀不寫 */
+const GSRC = {
+  num:      { n:'手動填數字',                  how:'依實際數值（自己填）' },
+  ms:       { n:'里程碑完成數',                how:'依里程碑完成數' },
+  pct:      { n:'手動填百分比',                how:'手動填的百分比' },
+  mn_save:  { n:'理財導航：存款銀行合計',       how:'理財導航・存款銀行合計', unit:'元', link:'mn' },
+  mn_net:   { n:'理財導航：淨資產',             how:'理財導航・淨資產',       unit:'元', link:'mn' },
+  mn_acc:   { n:'理財導航：指定一個帳戶',       how:'理財導航・指定帳戶',     unit:'元', link:'mn' },
+  ws_renew: { n:'工作台：今年續約客戶數',       how:'工作台・今年續約客戶數', unit:'家', link:'ws' },
+  ws_group: { n:'工作台：某一區進行中的客戶數', how:'工作台・進行中客戶數',   unit:'家', link:'ws' },
+};
+const isNumSrc = s => s === 'num' || !!GSRC[s]?.link;
+/* 工作台專案客戶的分區，抄自工作台 index.html 的 CGROUPS（那邊改分區這裡要跟著改） */
+const WS_GROUPS = { ad:'廣告投放', consult:'顧問陪跑', project:'專案協作', vendor:'合作廠商', lf:'LF' };
+const MN_ROOM = 'mn_x3f9b6qz', WS_ROOM = 'ws_k7m2q9xr4t';   // 理財導航、工作台的雲端位置（只讀）
+const TESTSRC_KEY = 'dora_points_testsrc';   // 只有「只用這台」模式會讀：測試用的假理財／工作台資料
+/* 範例：年度目標頁空白時按了才加，不會自動塞。
+   任務的 alias 是「已經有類似的任務就連結它，不重複加」 */
+const EXAMPLES = [
+  { k:'save', n:'{Y} 年底存款達 50 萬', info:{ cat:'money', attr:'life', src:'mn_save', metric:'存款', target:500000, reward:1000,
+      why:'手上有一筆可以運用的錢，遇到機會或意外都不慌' },
+    tasks:[ { col:'life', name:'每月固定存款', pts:30, freq:'month' }, { col:'life', name:'每週記帳', pts:10, freq:'week' },
+            { col:'life', name:'月底盤點資產', pts:30, freq:'month' } ] },
+  { k:'ai', n:'年底前獨立完成一套 AI 工作自動化流程', info:{ cat:'skill', attr:'study', src:'ms', reward:800,
+      why:'把重複的工作交給 AI，時間留給判斷與創意' },
+    ms:[ ['完成課程','10-31',100], ['做出原型','11-15',200], ['實際投入工作','11-30',300], ['整理教學文件','12-20',200] ],
+    tasks:[ { col:'study', name:'每週學習', pts:20, freq:'week' }, { col:'study', name:'整理筆記', pts:15, freq:'week', alias:['整理學習筆記'] },
+            { col:'study', name:'製作 AI 小工具', pts:30, freq:'week', alias:['試做一個 AI 小工具'] } ] },
+  { k:'lead', n:'成為顧問陪跑團隊領導之一', info:{ cat:'career', attr:'work', src:'ms', reward:1000 } },
+  { k:'renew', n:'專案客戶成功續約', info:{ cat:'career', attr:'work', src:'ws_renew', metric:'續約客戶', reward:500 } },
+];
+/* 首頁「今天的一句話」的內建語錄（2026-09-14）：前幾句沿用早報的加油語，其餘同一個語氣。
+   第一次打開時放進 cfg.quotes，之後在首頁「編輯語錄」自己改；cfg.quotesV 標記放過了，清空也不會再塞回來 */
+const QUOTES = [
+  '每一個早晨都是全新的機會，你可以的。',
+  '今天也要閃閃發光，加油朱兒！',
+  '你的努力有人看見，繼續往前走。',
+  '小步也是前進，不要停下來。',
+  '相信自己，今天的你比昨天更強大。',
+  '今天的挑戰，都是明天的養分。',
+  '先做完，再慢慢做好。',
+  '不用一次到位，今天往前一格就好。',
+  '累了就休息，但不要放棄。',
+  '把今天最重要的一件事做完，就算贏了。',
+  '忙碌的每一天，都在幫你累積底氣。',
+  '慢慢來，比較快。',
+  '別跟別人比進度，跟昨天的自己比。',
+  '做不到一百分，也值得開始。',
+  '想清楚了就去做，邊做邊調整。',
+  '今天存下的每一分，都會變成明天的選擇權。',
+  '專注二十五分鐘，世界會安靜下來。',
+  '覺得卡住的時候，通常正在往上爬。',
+  '先照顧好自己，才照顧得好客戶。',
+  '能把事情變簡單，是很厲害的能力。',
+  '成果是一次一次做出來的。',
+  '給自己一點掌聲，你已經走得比想像中遠。',
+  '今天說好的事，今天完成。',
+  '遇到難題，先拆成三件小事。',
+  '好好休息，才走得更遠。',
+  '想要的生活，要自己一點一點排出來。',
+  '保持好奇，工作就不會只剩重複。',
+  '用心做完一件事，比同時開十件更有力量。',
+  '年底的你，會謝謝今天沒有放棄的你。',
+  '今天也是升級的一天。',
+];
+
 /* ---------- 狀態 ----------
    S 就是雲端節點的整棵樹，本機與雲端長一樣：
    cfg                      設定（任務清單、商城、基金品項、專注換算）
-   days/{日期}/done/{任務id} 已提交的任務 {n 名稱, c 類別, p 單次分數, k 次數}（存快照，之後改清單不影響舊紀錄）
+     cfg/tasks/{欄}[]       任務 {id, name, pts, goal 推進哪個目標, attr 屬性, freq 頻率, cap 一天最多幾次, step 每次推進目標多少, off 暫停, linkedAt 連結目標那天}
+                            （2026-09-14 前的任務沒有後面這些欄位，打開時 normTask() 自動補，不用搬家）
+   days/{日期}/done/{任務id} 已提交的任務 {n 名稱, c 欄, p 單次分數, k 次數, a 屬性, g 目標, s 推進量, f 頻率}（存快照，之後改清單不影響舊紀錄）
+   days/{日期}/rw/{key}     里程碑與目標完成的獎勵 {n, g 目標, p 分數, a 屬性, kind, at}，key 是 ms_里程碑id 或 g_目標id，一個只會有一筆
    days/{日期}/mall/{品項id} 商城兌換 {n, k 份數, t 總共花掉}
    days/{日期}/focus/{id}   專注紀錄 {m 分鐘, p 積分, at}
    days/{日期}/signed       首頁「系統執行」簽到
-   days/{日期}/buff、challengeNet、manualEarn  第二、三批才會寫
+   days/{日期}/buff、challengeNet、manualEarn  之後的遊戲機制才會寫
    fundLog/{id}             基金的每一筆進出 {d 歸屬日, amt 正存負扣, kind, n}
                             ——餘額永遠是加總算出來的，不存單一數字，兩台同時動也不會互蓋
-   run                      專注計時進行中的狀態 {startAt, acc}，跨裝置接得上 */
-let S = { cfg: defCfg(), days:{}, fundLog:{}, run:{ startAt:null, acc:0 } };
+   run                      專注計時進行中的狀態 {startAt, acc}，跨裝置接得上
+   goals/{目標id}/info      年度目標本身（欄位見 saveGoal）
+   goals/{目標id}/ms/{id}   里程碑 {name, due, cond, reward, note, ord, done, doneD}
+   goals/{目標id}/auto      上次從理財導航／工作台抓到的數字 {v, detail, at}，沒登入時顯示它
+   goals/{目標id}/vlog/{日期} 那天的數字（一天一筆），之後畫趨勢圖用
+   ——目標分開存在 goals 底下，手機上的舊版網頁讀不到它，也寫不壞它
+   home/astro/{日期}        牡羊座運勢 {word, stars, text, num, color, dir, at}，由 Mac 上的 8:30 早報腳本寫進來，網頁只讀 */
+let S = { cfg: defCfg(), days:{}, fundLog:{}, run:{ startAt:null, acc:0 }, goals:{}, home:{} };
 let pending = {};              // path -> value（null 代表刪除）
 let mode = '';
-let _db=null, _ref=null, _set=null, _ready=false, _user=null;
+let _db=null, _ref=null, _set=null, _get=null, _ready=false, _user=null;
+let yearSel = new Date().getFullYear();        // 年度總覽與年度目標共用的年度
+let showArch = false;                          // 年度目標頁要不要列出已封存的
+const openGoals = new Set();                   // 年度目標頁展開了哪幾張卡
+let SRC = { mn:null, ws:null, at:0, err:'' };  // 讀進來的理財導航、工作台資料，只放記憶體，不存本機也不寫雲端
 let page = 'home';
 let clockOffset = 0;           // 首頁時鐘被轉過的毫秒數，只影響顯示與夜間配色
 const editing = { life:false, study:false, work:false, odd:false, limit:false, mall:false, fund:false };
@@ -531,6 +835,9 @@ const ICONS = {
   task:'M10 6h10M10 12h10M10 18h10M3.5 6l1.5 1.5L7.5 5M3.5 12l1.5 1.5 2.5-2.5M3.5 18l1.5 1.5 2.5-2.5',
   mall:'M5 8h14l-1 12H6L5 8zM9 8V6a3 3 0 016 0v2',
   fund:'M3 10h18M5 10l7-5 7 5M6 10v8M10 10v8M14 10v8M18 10v8M3 20h18',
+  flag:'M5 21V4M5 4h12l-2.5 4L17 12H5',
+  user:'M12 12a4 4 0 100-8 4 4 0 000 8zM4 21c0-4 3.6-6 8-6s8 2 8 6',
+  chart:'M5 20V11M11 20V5M17 20v-7M3 20h18',
   check:'M5 12l4 4 10-10',
   play:'M7 5l12 7-12 7z',
   pause:'M8 5v14M16 5v14',
@@ -560,7 +867,7 @@ function loadLocal(){
   }catch(e){ console.warn('loadLocal', e); }
 }
 function normalize(d){
-  const out = { cfg: Object.assign(defCfg(), d.cfg || {}), days: d.days || {}, fundLog: d.fundLog || {}, run: d.run || { startAt:null, acc:0 } };
+  const out = { cfg: Object.assign(defCfg(), d.cfg || {}), days: d.days || {}, fundLog: d.fundLog || {}, run: d.run || { startAt:null, acc:0 }, goals:{}, home: d.home && typeof d.home === 'object' ? d.home : {} };
   const c = out.cfg;
   c.tasks = Object.assign({ life:[], study:[], work:[], odd:[], limit:[] }, c.tasks || {});
   for(const k of Object.keys(c.tasks)) c.tasks[k] = Array.isArray(c.tasks[k]) ? c.tasks[k] : vals(c.tasks[k]);
@@ -568,10 +875,25 @@ function normalize(d){
   c.fund = Array.isArray(c.fund) ? c.fund : vals(c.fund);
   c.focus = Object.assign({ min:25, pts:10 }, c.focus || {});
   c.profile = Object.assign({ name:'', title:'', intro:'', goal:'', photo:'' }, c.profile || {});
+  for(const k of Object.keys(c.tasks)) c.tasks[k] = c.tasks[k].filter(t => t && t.id).map(t => normTask(t, k));
+  if(!c.quotesV){ c.quotes = QUOTES.slice(); c.quotesV = 1; }
+  c.quotes = (Array.isArray(c.quotes) ? c.quotes : vals(c.quotes)).filter(q => typeof q === 'string' && q.trim());
+  for(const [id, g] of Object.entries(d.goals || {}))
+    if(g && g.info) out.goals[id] = { info:g.info, ms:g.ms || {}, auto:g.auto || null, vlog:g.vlog || {} };
   return out;
+}
+/* 2026-09-14 前的任務只有 {id, name, pts}，打開時補上新設定。只補沒有的欄位，她改過的不動；補過再補結果一樣。
+   生活／學習／工作欄＝每日、屬性跟欄位一樣；偶發欄＝偶發、不加屬性；限時欄＝一次性、不加屬性 */
+function normTask(t, col){
+  const freq = col === 'odd' ? 'odd' : col === 'limit' ? 'once' : 'day';
+  const o = Object.assign({ goal:'', attr: ATTR_NAME[col] ? col : '', freq, cap: freq === 'once' ? 1 : 5, step:0, off:false, linkedAt:'' }, t);
+  if(o.freq === 'once') o.cap = 1;
+  return o;
 }
 function put(path, val){
   setPath(S, path, val);
+  // 整包寫上層時，底下還沒寫上去的舊改動作廢，免得連上網之後把剛刪掉的東西補回來
+  for(const p of Object.keys(pending)) if(p.startsWith(path + '/')) delete pending[p];
   pending[path] = (val === undefined ? null : val);
   saveLocal();
   writeCloud(path);
@@ -582,7 +904,11 @@ function writeCloud(path){
   _set(_ref(_db, `${ROOM}/${path}`), val).then(() => {
     if(JSON.stringify(pending[path]) === JSON.stringify(val)){ delete pending[path]; saveLocal(); }
     setSync();
-  }).catch(e => { console.warn('write', path, e); setSync('err', e.message); });
+  }).catch(e => {
+    console.warn('write', path, e); setSync('err', e.message);
+    // 右上角小燈號容易沒注意到，一分鐘內最多跳一次
+    if(Date.now() - (writeCloud._warned || 0) > 60000){ writeCloud._warned = Date.now(); toast('雲端沒寫進去，先存在這台，連上網會自動補'); }
+  });
 }
 function flushPending(){ if(_ready) Object.keys(pending).forEach(writeCloud); }
 const putCfg = () => put('cfg', S.cfg);
@@ -616,8 +942,10 @@ function dayEarn(d){
   const r = dayRec(d);
   if(typeof r.manualEarn === 'number') return r.manualEarn;     // 手動填過就直接用，不再疊加
   const b = buffOf(d); const flat = b && b.type === 'flat' ? b.val : 0;
-  return r1(taskEarn(d) + (r.challengeNet || 0) + focusNet(d) + flat);
+  return r1(taskEarn(d) + (r.challengeNet || 0) + focusNet(d) + rwSum(d) + flat);
 }
+/* 里程碑與目標完成的獎勵：跟任務一樣算進當天賺分（所以經驗值、今日點數都會加），不套 Buff */
+const rwSum = d => vals(dayRec(d).rw).reduce((s,e) => s + (e.p || 0), 0);
 const daySpent     = d => r1(vals(dayRec(d).mall).reduce((s,e) => s + (e.t || 0), 0));
 const dayDeposited = d => r1(vals(S.fundLog).filter(e => e.d === d && (e.kind === 'deposit' || e.kind === 'auto')).reduce((s,e) => s + e.amt, 0));
 const dayBalance   = d => r1(dayEarn(d) - daySpent(d) - dayDeposited(d));
@@ -630,11 +958,13 @@ function levelOf(xp){
   const prev = ((lv-1)*10) ** 2, next = (lv*10) ** 2;
   return { lv, next, pct: Math.min(100, (xp - prev) / (next - prev) * 100) };
 }
+/* 三項屬性：任務照自己的屬性加（舊紀錄沒有 a，照欄位）；里程碑與目標獎勵照目標的屬性加 */
 function dims(){
   const out = { life:0, study:0, work:0 };
   for(const d of Object.keys(S.days)){
     const b = buffOf(d); const eb = b && b.side !== 'mall' ? b : null;
-    for(const e of vals(dayRec(d).done)) if(e.c in out) out[e.c] += earnPts(e.c, e.p, eb) * e.k;
+    for(const e of vals(dayRec(d).done)){ const a = e.a !== undefined ? e.a : e.c; if(a in out) out[a] += earnPts(e.c, e.p, eb) * e.k; }
+    for(const e of vals(dayRec(d).rw)) if(e.a in out) out[e.a] += e.p || 0;
   }
   return out;
 }
@@ -651,13 +981,19 @@ function isLocked(now = new Date()){
 }
 /* 積分日清：過去每一天沒花完的分，自動存進基金。
    網頁沒開著沒辦法準時結，所以是「打開時補結」。
-   存入那筆的 id 固定是 auto_日期，兩台裝置同時結也只會是同一筆，不會多存一倍 */
+   存入那筆的 id 固定是 auto_日期，兩台裝置同時結也只會是同一筆，不會多存一倍。
+   已經結過的日子如果又多出分（手機上的舊版網頁不認得里程碑獎勵，結算時會少存），補存差額到 autofix_日期 */
 function settleDays(){
   const t = today(); const got = [];
   for(const d of Object.keys(S.days).sort()){
-    if(d >= t || S.fundLog['auto_' + d]) continue;
+    if(d >= t) continue;
     const bal = dayBalance(d);
-    if(bal > 0){ put(`fundLog/auto_${d}`, { d, amt:bal, kind:'auto', ts:Date.now() }); got.push([d, bal]); }
+    if(!S.fundLog['auto_' + d]){
+      if(bal > 0){ put(`fundLog/auto_${d}`, { d, amt:bal, kind:'auto', ts:Date.now() }); got.push([d, bal]); }
+    } else if(bal > 0.05){
+      const fix = S.fundLog['autofix_' + d];
+      put(`fundLog/autofix_${d}`, { d, amt:r1((fix?.amt || 0) + bal), kind:'auto', ts:Date.now() }); got.push([d, bal]);
+    }
   }
   if(got.length){
     const sum = r1(got.reduce((s,x) => s + x[1], 0));
@@ -665,26 +1001,243 @@ function settleDays(){
   }
 }
 
-/* ---------- 導航與分頁（第一批四頁；其餘頁面做好才加進來，不放「還沒開放」的假格子） ---------- */
+/* ---------- 年度目標：日期小工具 ---------- */
+const numOr = v => (v === '' || v === null || v === undefined || !isFinite(Number(v))) ? null : Number(v);
+const clamp = (n, a, b) => Math.min(b, Math.max(a, n));
+const dnum  = s => { const [y,m,d] = s.split('-').map(Number); return Date.UTC(y, m-1, d) / 86400000; };
+const addDays  = (s, n) => { const [y,m,d] = s.split('-').map(Number); return ymd(new Date(y, m-1, d + n)); };
+const mondayOf = s => { const [y,m,d] = s.split('-').map(Number); const t = new Date(y, m-1, d); t.setDate(t.getDate() - (t.getDay() + 6) % 7); return ymd(t); };
+const md = s => s ? `${Number(s.slice(5,7))}/${Number(s.slice(8,10))}` : '';
+const stampText = ts => { if(!ts) return ''; const d = new Date(ts); return `${d.getMonth()+1}/${d.getDate()} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`; };
+const agoText = ts => ts && Date.now() - ts < 120000 ? '剛剛' : `${stampText(ts)} `;
+function monthRange(){ const t = today(); const [y,m] = t.split('-').map(Number); return [`${t.slice(0,7)}-01`, ymd(new Date(y, m, 0))]; }
+function quarterRange(){ const t = new Date(); const q = Math.floor(t.getMonth() / 3) * 3; return [ymd(new Date(t.getFullYear(), q, 1)), ymd(new Date(t.getFullYear(), q + 3, 0))]; }
+function yearPct(){ const t = new Date(); const a = new Date(t.getFullYear(), 0, 1), b = new Date(t.getFullYear() + 1, 0, 1); return (t - a) / (b - a) * 100; }
+/* 數字顯示：一千以上加千分位取整數，其餘最多兩位小數 */
+function fmtVal(v, unit){
+  if(v === null || v === undefined) return '—';
+  const s = Math.abs(v) >= 1000 ? Math.round(v).toLocaleString('en-US') : String(Math.round(v * 100) / 100);
+  return unit === '%' ? `${s}%` : unit ? `${s} ${unit}` : s;
+}
+
+/* ---------- 年度目標：清單 ---------- */
+const goalEntries = () => Object.entries(S.goals || {}).filter(([,g]) => g && g.info).map(([id, g]) => ({ id, g, i:g.info }));
+const PRI_ORDER = { hi:0, mid:1, lo:2 };
+const goalsOfYear = (y, withArch) => goalEntries()
+  .filter(x => Number(x.i.year) === Number(y) && (withArch || x.i.status !== 'arch'))
+  .sort((a,b) => (b.i.core ? 1 : 0) - (a.i.core ? 1 : 0) || (PRI_ORDER[a.i.pri] ?? 1) - (PRI_ORDER[b.i.pri] ?? 1) || (a.i.created || 0) - (b.i.created || 0));
+const goalName = id => S.goals?.[id]?.info?.name || '';
+const tasksAll = () => CATS.flatMap(c => (S.cfg.tasks[c.k] || []).map(t => ({ t, col:c.k })));
+const activeCount = (year, exceptId) => goalEntries().filter(x => x.id !== exceptId && Number(x.i.year) === Number(year) && ACTIVE_ST.includes(x.i.status)).length;
+const coreCount   = (year, exceptId) => goalEntries().filter(x => x.id !== exceptId && Number(x.i.year) === Number(year) && x.i.core && x.i.status !== 'arch').length;
+
+/* ---------- 年度目標：讀理財導航、工作台（只讀） ----------
+   ⚠️ 下面兩段算法是抄過來的，那兩邊改算法時這裡要跟著改：
+   mnBalances() 抄自 money/index.html 的 accBalances()／netWorth()
+   wsRuns()     抄自工作台 index.html 的 normRuns()、續約用 currentRun() 的判斷 */
+function mnBalances(mn){
+  const st = mn?.settings || {};
+  const accs = (Array.isArray(st.accs) ? st.accs : vals(st.accs)).filter(a => a && a.id);
+  const byId = id => accs.find(a => a.id === id) || null;
+  // 手機捷徑與 LINE 記的帳沒有帳戶，算進設定裡指定的那個；指定的被刪了就找第一個銀行或現金
+  const defAcc = byId(st.defAcc) ? st.defAcc : (accs.find(a => a.type === 'bank') || accs.find(a => a.type === 'cash') || accs[0] || {}).id || '';
+  const bal = {}; accs.forEach(a => bal[a.id] = Number(a.open) || 0);
+  // 起始餘額＝建立帳戶那天當下的餘額，所以那天之前的帳不再重複扣
+  const hit = (id, v, d) => { const a = byId(id); if(!a) return; if(a.openD && d && d < a.openD) return; bal[id] += v; };
+  vals(mn?.items).forEach(it => {
+    if(!it) return;
+    const n = Number(it.amt) || 0, d = it.d || '';
+    if(it.kind === 'tr'){ hit(it.from, -n, d); hit(it.to, n, d); }
+    else if(it.kind === 'adj') hit(it.acc, n, d);
+    else if(it.kind === 'in') hit(it.acc || defAcc, n, d);
+    else hit(it.acc || defAcc, -n, d);
+  });
+  return { accs, bal };
+}
+function wsRuns(c){
+  const rs = Array.isArray(c?.runs) ? c.runs : c?.runs && typeof c.runs === 'object' ? vals(c.runs) : [];
+  if(rs.length) return rs.filter(r => r && typeof r === 'object');
+  const m = String(c?.run || '').match(/(\d{4}-\d{2}-\d{2})\s*[~～-]+\s*(\d{4}-\d{2}-\d{2})/);
+  return m ? [{ no:'1', start:m[1], end:m[2] }] : [];
+}
+const wsClients = ws => vals(ws?.clients).filter(c => c && typeof c === 'object' && (c.name || c.short));
+/* 續約：那一年開始的走期、期數大於 1 就算。一家客戶一年續幾期都只算一家（按月一期的不會被算成 12 次）。
+   warn＝還在合作、這期剩 14 天內（或結束不到 30 天）、後面還沒排下一期 */
+function renewals(clients, year){
+  const t = today(), y = String(year);
+  return clients.map(c => {
+    const runs = wsRuns(c).filter(r => r.start || r.end);
+    if(!runs.length) return null;
+    const renewN = runs.filter(r => String(r.start || '').slice(0,4) === y && Number(r.no) > 1).length;
+    const cur = runs.find(r => (!r.start || r.start <= t) && (!r.end || r.end >= t)) || runs[runs.length - 1];
+    const later = runs.some(r => r.start && cur.end && r.start > cur.end);
+    const left = cur.end ? dnum(cur.end) - dnum(t) : null;
+    const warn = !!c.active && !later && left !== null && left <= 14 && left >= -30;
+    return { name:c.short || c.name, active:!!c.active, no:cur.no, end:cur.end || '', renewN, left, warn };
+  }).filter(Boolean).sort((a,b) => (b.warn - a.warn) || (b.renewN - a.renewN) || String(a.name).localeCompare(String(b.name)));
+}
+/* 連動型目標當下的數字；讀不到回 null */
+function srcValue(i){
+  const s = GSRC[i.src]; if(!s?.link) return null;
+  if(s.link === 'mn'){
+    if(!SRC.mn) return null;
+    const { accs, bal } = mnBalances(SRC.mn);
+    if(i.src === 'mn_save'){
+      const list = accs.filter(a => a.type === 'save');
+      return { v:r1(list.reduce((t,a) => t + (bal[a.id] || 0), 0)), detail:`存款銀行 ${list.length} 個帳戶合計` };
+    }
+    if(i.src === 'mn_net') return { v:r1(accs.reduce((t,a) => t + (bal[a.id] || 0), 0)), detail:'全部帳戶加總，信用卡欠款已扣' };
+    const a = accs.find(x => x.id === i.srcAcc);
+    return a ? { v:r1(bal[a.id] || 0), detail:`帳戶「${a.name}」` } : null;
+  }
+  if(!SRC.ws) return null;
+  const cl = wsClients(SRC.ws);
+  if(i.src === 'ws_renew'){
+    const list = renewals(cl, i.year).filter(x => x.renewN > 0);
+    return { v:list.length, detail: list.length ? list.map(x => x.name).join('、') : '今年還沒有續約的客戶' };
+  }
+  const g = WS_GROUPS[i.srcGroup] ? i.srcGroup : 'ad';
+  return { v:cl.filter(c => c.active && (WS_GROUPS[c.group] ? c.group : 'ad') === g).length, detail:`${WS_GROUPS[g]}進行中的客戶` };
+}
+
+/* ---------- 年度目標：成果進度（真實數字）與行動完成率（任務做了幾次）分開算 ---------- */
+/* 目前值：手動型看自己填的；連動型優先用當下抓到的，抓不到用上次存的 */
+function goalValue(g){
+  const i = g.info;
+  if(i.src === 'num') return { v:numOr(i.cur), kind:'manual' };
+  const live = srcValue(i);
+  if(live) return { ...live, kind:'live', at:SRC.at };
+  if(g.auto && numOr(g.auto.v) !== null) return { v:Number(g.auto.v), detail:g.auto.detail, kind:'cache', at:g.auto.at };
+  return { v:null, kind:'none' };
+}
+/* pct＝畫進度條用（0–100）；raw＝真實比例（可能小於 0 或大於 100）；note＝要一起顯示的說明 */
+function goalProgress(g){
+  const i = g.info; const how = GSRC[i.src]?.how || '';
+  if(i.src === 'ms'){
+    const list = vals(g.ms); const n = list.filter(m => m.done).length;
+    if(!list.length) return { pct:null, how, note:'還沒建里程碑' };
+    const raw = n / list.length * 100;
+    return { pct:raw, raw, how, text:`${n} / ${list.length} 個里程碑` };
+  }
+  if(i.src === 'pct'){
+    const p = numOr(i.manualPct);
+    if(p === null) return { pct:null, how, note:'還沒填百分比' };
+    return { pct:clamp(p, 0, 100), raw:p, how, text:`手動填 ${fmtVal(p)}%`, note: p > 100 ? `超標，達成 ${fmtVal(p)}%` : '' };
+  }
+  const val = goalValue(g); const unit = i.unit || GSRC[i.src]?.unit || '';
+  const st = numOr(i.start) ?? 0, tg = numOr(i.target);
+  if(val.v === null) return { pct:null, how, val, note: GSRC[i.src]?.link ? '還沒抓到數字（登入雲端後才讀得到）' : '還沒填目前值' };
+  const text = `${fmtVal(val.v, unit)} ／ ${tg === null ? '—' : fmtVal(tg, unit)}`;
+  if(tg === null) return { pct:null, how, val, text, note:'還沒填目標值' };
+  if(tg === st){ const p = val.v === tg ? 100 : 0; return { pct:p, raw:p, how, val, text, note:'起始值和目標值一樣，確認一下' }; }
+  // 下降型（體重、負債）也是同一條公式：目標比起始小，分母是負的，自動成立
+  const raw = (val.v - st) / (tg - st) * 100;
+  const note = raw < 0 ? `比起點退步 ${fmtVal(Math.abs(val.v - st), unit)}` : raw > 100 ? `超標，達成 ${Math.round(raw)}%` : '';
+  return { pct:clamp(raw, 0, 100), raw, how, val, text, note };
+}
+/* 時間過了幾 %：從目標建立那天（或那年 1/1，取晚的）算到截止日。9 月才建的目標，才不會一建好就顯示落後 */
+function timePct(i){
+  if(!i.due) return null;
+  const y0 = `${i.year}-01-01`; const made = i.created ? ymd(new Date(i.created)) : y0;
+  const a = dnum(made > y0 ? made : y0), b = dnum(i.due), t = dnum(today());
+  if(b <= a) return t >= b ? 100 : 0;
+  return clamp((t - a) / (b - a) * 100, 0, 100);
+}
+/* 落後提醒：時間進度比成果進度多 15% 以上。只提醒，不會自動改她設的狀態 */
+const isBehind = (i, P) => { const tp = timePct(i); return ACTIVE_ST.includes(i.status) && P.pct !== null && tp !== null && tp - P.pct >= 15; };
+
+const periodOf = (freq, d) => freq === 'week' ? mondayOf(d) : freq === 'month' ? d.slice(0,7) : d;
+/* 行動完成率：每日任務每天算一次、每週任務每週一次、每月任務每月一次；從連結目標那天起算。
+   還沒過完的這一期做了才算進去，免得週一就顯示本週 0/1 */
+function taskRate(task, from, to){
+  if(!['day','week','month'].includes(task.freq)) return null;
+  const t = today(); const start = task.linkedAt && task.linkedAt > from ? task.linkedAt : from; const end = to < t ? to : t;
+  const need = new Set(), done = new Set(); const curP = periodOf(task.freq, t);
+  for(let d = start; d <= end; d = addDays(d, 1)){
+    const p = periodOf(task.freq, d);
+    if(dayRec(d).done?.[task.id]) done.add(p);
+    if(p !== curP) need.add(p);
+  }
+  if(done.has(curP)) need.add(curP);
+  return { done:done.size, need:need.size };
+}
+/* 這一期（今天／這週／這個月）已經做了幾次 */
+function periodDone(task){
+  const td = today(); const from = task.freq === 'week' ? mondayOf(td) : task.freq === 'month' ? `${td.slice(0,7)}-01` : td;
+  let n = 0; for(let d = from; d <= td; d = addDays(d, 1)) n += dayRec(d).done?.[task.id]?.k || 0;
+  return n;
+}
+/* 一個目標的行動：週期型任務算完成率；偶發、一次性只算次數（看已提交紀錄，任務刪了也算得到） */
+function goalRate(gid, from, to){
+  let done = 0, need = 0, extra = 0;
+  for(const { t } of tasksAll()){
+    if(t.goal !== gid || t.off) continue;
+    const r = taskRate(t, from, to); if(r){ done += r.done; need += r.need; }
+  }
+  const end = to < today() ? to : today();
+  for(let d = from; d <= end; d = addDays(d, 1))
+    for(const e of vals(dayRec(d).done)) if(e.g === gid && (e.f === 'odd' || e.f === 'once')) extra += e.k || 0;
+  return { done, need, extra };
+}
+
+/* ---------- 年度目標：獎勵 ----------
+   獎勵記在完成那天的 days/{日}/rw/{ms_里程碑id 或 g_目標id}。一個里程碑固定一個位置，
+   重新整理、兩台同時按都只會有一筆；發之前先掃過每一天，已經發過就不再發 */
+const rewardDay = key => Object.keys(S.days).find(d => S.days[d]?.rw?.[key]) || null;
+function giveReward(key, rec){
+  if(!(rec.p > 0) || rewardDay(key)) return 0;
+  put(`days/${today()}/rw/${key}`, { ...rec, at:Date.now() });
+  return rec.p;
+}
+/* 撤回獎勵要看分還在不在（禁止賒帳）：
+   ① 那天的餘額還夠 → 直接拿掉
+   ② 分已經存進基金（隔天自動存或手動存）→ 拿掉，同時從基金扣回，記成那天的負存入，那天的帳才對得起來
+   ③ 分當天就花掉了、或基金不夠 → 不給撤 */
+function rewardUndoPlan(key){
+  const d = rewardDay(key); if(!d) return { ok:true, p:0 };
+  const r = S.days[d].rw[key];
+  if(dayBalance(d) - r.p >= -0.05) return { ok:true, d, p:r.p, fund:false };
+  if(dayDeposited(d) >= r.p - 0.05 && fundBalance() >= r.p - 0.05) return { ok:true, d, p:r.p, fund:true };
+  return { ok:false, d, p:r.p, msg: dayDeposited(d) < r.p - 0.05
+    ? `${md(d)} 那天的分已經花掉了，這筆獎勵不能撤回（禁止賒帳）`
+    : `基金不夠扣回 ${fmt(r.p)} 分，不能撤回（禁止賒帳）` };
+}
+function applyRewardUndo(key, plan){
+  if(!plan.d) return;
+  put(`days/${plan.d}/rw/${key}`, null);
+  if(plan.fund) put(`fundLog/${uid()}`, { d:plan.d, amt:-plan.p, kind:'deposit', n:'撤回獎勵', ts:Date.now() });
+}
+/* 任務設了「每次推進目標多少」：提交時目標的目前值加上去，撤回減回來（只用在手動數字型目標） */
+function bumpGoal(gid, delta){
+  const i = S.goals?.[gid]?.info; if(!i || i.src !== 'num' || !delta) return;
+  const n = r1((numOr(i.cur) ?? numOr(i.start) ?? 0) + delta);
+  put(`goals/${gid}/info`, { ...i, cur:n, updated:Date.now() });
+  put(`goals/${gid}/vlog/${today()}`, n);
+}
+
+/* ---------- 導航與分頁（頁面做好才加進來，不放「還沒開放」的假格子；回顧統計做好再加） ---------- */
 const PAGES = [
-  { k:'home', n:'首頁',     ic:'home' },
-  { k:'task', n:'每日任務', ic:'task' },
-  { k:'mall', n:'積分商城', ic:'mall' },
-  { k:'fund', n:'基金銀行', ic:'fund' },
+  { k:'home',     n:'首頁',     ic:'user' },
+  { k:'overview', n:'年度總覽', ic:'chart' },
+  { k:'goals', n:'年度目標', ic:'flag' },
+  { k:'task',  n:'每日任務', ic:'task' },
+  { k:'mall',  n:'積分商城', ic:'mall' },
+  { k:'fund',  n:'基金銀行', ic:'fund' },
 ];
+/* 用有 href 的連結，鍵盤按 Tab 才跳得到、Enter 才按得動 */
 function renderNav(){
   $('#navLinks').innerHTML = PAGES.map(p =>
-    `<a data-page="${p.k}" class="${p.k === page ? 'on' : ''}">${icon(p.ic)}<span>${p.n}</span></a>`).join('');
+    `<a href="#${p.k}" data-page="${p.k}" class="${p.k === page ? 'on' : ''}"${p.k === page ? ' aria-current="page"' : ''}>${icon(p.ic)}<span>${p.n}</span></a>`).join('');
 }
 function gotoPage(k){
   if(!PAGES.some(p => p.k === k)) k = 'home';
   page = k;
   $$('.page').forEach(s => s.hidden = s.dataset.page !== k);
-  $$('#navLinks a').forEach(a => a.classList.toggle('on', a.dataset.page === k));
+  $$('#navLinks a').forEach(a => { a.classList.toggle('on', a.dataset.page === k); a.toggleAttribute('aria-current', a.dataset.page === k); if(a.dataset.page === k) a.setAttribute('aria-current', 'page'); });
   try{ localStorage.setItem('dora_points_page', k); }catch(e){}
   window.scrollTo(0, 0);
 }
-$('#navLinks').addEventListener('click', e => { const a = e.target.closest('a[data-page]'); if(a) gotoPage(a.dataset.page); });
+$('#navLinks').addEventListener('click', e => { const a = e.target.closest('a[data-page]'); if(a){ e.preventDefault(); gotoPage(a.dataset.page); } });
 
 /* ---------- 吸頂狀態列 ---------- */
 function renderBar(){
@@ -848,20 +1401,28 @@ function renderTask(){
   sb.textContent = nDraft ? `提交任務（待結算 +${fmt(wait)} 分）` : '提交任務（先勾選做完的事）';
 
   $('#tCols').innerHTML = CATS.map(c => {
-    const list = (S.cfg.tasks[c.k] || []).slice().sort((a,b) => a.pts - b.pts);
     const ed = editing[c.k];
+    // 暫停的任務平常不出現，編輯模式才看得到（變淡）
+    const list = (S.cfg.tasks[c.k] || []).filter(x => ed || !x.off).sort((a,b) => a.pts - b.pts);
     const rows = list.map(x => {
-      if(ed) return `<div class="trow">
-          <input class="nmi" data-cat="${c.k}" data-id="${x.id}" data-f="name" value="${esc(x.name)}">
-          <input class="pti" type="number" step="0.5" data-cat="${c.k}" data-id="${x.id}" data-f="pts" value="${x.pts}">
-          <button class="sq" data-act="del" data-cat="${c.k}" data-id="${x.id}" title="刪除">×</button></div>`;
+      if(ed) return `<div class="trow ${x.off ? 'off' : ''}">
+          <input class="nmi" data-cat="${c.k}" data-id="${x.id}" data-f="name" value="${esc(x.name)}" aria-label="任務名稱">
+          <input class="pti" type="number" step="0.5" data-cat="${c.k}" data-id="${x.id}" data-f="pts" value="${x.pts}" aria-label="分數">
+          <button class="btn sm" data-act="set" data-id="${x.id}" title="推進哪個目標、頻率、每天上限">設定</button>
+          <button class="sq" data-act="del" data-cat="${c.k}" data-id="${x.id}" title="刪除" aria-label="刪除「${esc(x.name)}」">×</button></div>`;
       const k = draft[x.id] || 0; const dk = done[x.id]?.k || 0;
-      const ctl = c.k === 'limit'
+      const once = x.freq === 'once';
+      const full = !once && k + dk >= (x.cap || 5);
+      const pd = x.freq === 'week' || x.freq === 'month' ? periodDone(x) : 0;
+      const sub = (x.goal && S.goals[x.goal] ? `<span class="gtag">推進：${esc(goalName(x.goal))}</span>` : '')
+        + (pd ? `<small>${x.freq === 'week' ? '本週' : '本月'}已完成 ×${pd}</small>` : dk ? `<small>今天已完成 ×${dk}</small>` : '')
+        + (full ? `<small class="capx">今天已經到上限 ${x.cap} 次</small>` : '');
+      const ctl = once
         ? `<span class="once">僅一次</span>`
-        : `<button class="sq" data-act="dec" data-id="${x.id}" ${k ? '' : 'disabled'}>−</button><span class="cnt">${k}</span><button class="sq" data-act="inc" data-id="${x.id}">＋</button>`;
+        : `<button class="sq" data-act="dec" data-id="${x.id}" ${k ? '' : 'disabled'} aria-label="少一次">−</button><span class="cnt">${k}</span><button class="sq" data-act="inc" data-id="${x.id}" ${full ? 'disabled' : ''} aria-label="多一次">＋</button>`;
       return `<div class="trow"><span class="pts">${fmt(x.pts)}</span>
-        <span class="nm">${esc(x.name)}${dk ? `<small>今天已完成 ×${dk}</small>` : ''}</span>
-        ${ctl}<button class="chk ${k ? 'on' : ''}" data-act="chk" data-id="${x.id}" aria-label="勾選">${icon('check')}</button></div>`;
+        <span class="nm">${esc(x.name)}${sub}</span>
+        ${ctl}<button class="chk ${k ? 'on' : ''}" data-act="chk" data-id="${x.id}" aria-label="勾選「${esc(x.name)}」">${icon('check')}</button></div>`;
     }).join('') || `<div class="empty">${ed ? '按下面新增' : '還沒有任務，按編輯新增'}</div>`;
     return `<div class="col ${c.k}">
       <header><span>${c.n}</span><button class="btn sm" data-act="edit" data-cat="${c.k}">${ed ? '完成' : '編輯'}</button></header>
@@ -886,10 +1447,11 @@ $('#tCols').addEventListener('click', e => {
   const b = e.target.closest('[data-act]'); if(!b) return;
   const { act, id, cat } = b.dataset;
   if(act === 'edit'){ editing[cat] = !editing[cat]; renderTask(); return; }
+  if(act === 'set'){ taskForm(id); return; }
   if(act === 'add'){
     const c = CATS.find(x => x.k === cat);
     const nid = uid();
-    S.cfg.tasks[cat].push({ id:nid, name:'新任務', pts:c.def });
+    S.cfg.tasks[cat].push(normTask({ id:nid, name:'新任務', pts:c.def }, cat));
     putCfg(); renderTask();
     const ni = $(`#tCols input.nmi[data-id="${nid}"]`); if(ni){ ni.focus(); ni.select(); }   // 清單照分數排，新的不一定在最後
     return;
@@ -901,7 +1463,12 @@ $('#tCols').addEventListener('click', e => {
     putCfg(); renderAll(); return;
   }
   const d = getDraft(); const f = findTask(id); if(!f) return;
-  const max = f.cat === 'limit' ? 1 : 99;
+  // 一天上限：一次性只能 1 次；其他扣掉今天已經提交過的次數
+  const dk = dayRec(today()).done?.[id]?.k || 0;
+  const max = f.t.freq === 'once' ? 1 : Math.max(0, (f.t.cap || 5) - dk);
+  if((act === 'inc' || (act === 'chk' && !d[id])) && (d[id] || 0) + 1 > max){
+    toast(f.t.freq === 'once' ? '這個任務只能做一次' : `「${f.t.name}」一天最多算 ${f.t.cap} 次，今天已經到上限`); return;
+  }
   if(act === 'inc') d[id] = Math.min(max, (d[id] || 0) + 1);
   if(act === 'dec') d[id] = Math.max(0, (d[id] || 0) - 1);
   if(act === 'chk') d[id] = d[id] ? 0 : 1;
@@ -920,9 +1487,14 @@ $('#tSubmit').onclick = () => {
   for(const [id,k] of Object.entries(d)){
     const f = findTask(id); if(!f || !k) continue;
     const cur = dayRec(t).done?.[id];
-    put(`days/${t}/done/${id}`, { n:f.t.name, c:f.cat, p:f.t.pts, k:(cur?.k || 0) + k });
-    gain += earnPts(f.cat, f.t.pts, earnBuff(t)) * k;
-    if(f.cat === 'limit'){ S.cfg.tasks.limit = S.cfg.tasks.limit.filter(x => x.id !== id); cfgChanged = true; }
+    // 草稿勾好之後才改了上限的話，照新的上限算
+    const room = f.t.freq === 'once' ? 1 : Math.max(0, (f.t.cap || 5) - (cur?.k || 0));
+    const kk = Math.min(k, room); if(!kk) continue;
+    // 快照多存屬性、目標、推進量、頻率：之後改任務設定，舊紀錄的算法不會跟著變
+    put(`days/${t}/done/${id}`, { n:f.t.name, c:f.cat, p:f.t.pts, k:(cur?.k || 0) + kk, a:f.t.attr || '', g:f.t.goal || '', s:f.t.step || 0, f:f.t.freq });
+    gain += earnPts(f.cat, f.t.pts, earnBuff(t)) * kk;
+    if(f.t.goal && f.t.step) bumpGoal(f.t.goal, f.t.step * kk);
+    if(f.t.freq === 'once'){ S.cfg.tasks[f.cat] = S.cfg.tasks[f.cat].filter(x => x.id !== id); cfgChanged = true; }
   }
   if(cfgChanged) putCfg();
   setDraft({}); renderAll();
@@ -937,8 +1509,13 @@ $('#tDone').addEventListener('click', e => {
     const minus = earnPts(cur.c, cur.p, earnBuff(t));
     if(dayBalance(t) - minus < 0){ toast('這筆的分已經花掉或存進基金了，要先退回商城兌換才能撤回'); return; }
     put(`days/${t}/done/${id}`, cur.k > 1 ? { ...cur, k:cur.k - 1 } : null);
-    if(cur.c === 'limit' && cur.k <= 1 && !S.cfg.tasks.limit.some(x => x.id === id)){
-      S.cfg.tasks.limit.push({ id, name:cur.n, pts:cur.p }); putCfg();
+    if(cur.g && cur.s) bumpGoal(cur.g, -cur.s);
+    // 一次性任務撤回就放回原本那一欄（舊紀錄沒有 f，照以前的限時欄判斷）
+    const once = cur.f ? cur.f === 'once' : cur.c === 'limit';
+    if(once && cur.k <= 1 && !findTask(id)){
+      const col = S.cfg.tasks[cur.c] ? cur.c : 'limit';
+      S.cfg.tasks[col].push(normTask({ id, name:cur.n, pts:cur.p, goal:cur.g || '', attr:cur.a ?? '', freq:'once', step:cur.s || 0, linkedAt:cur.g ? today() : '' }, col));
+      putCfg();
     }
     renderAll(); toast(`已撤回「${cur.n}」，-${fmt(minus)} 分`); return;
   }
@@ -1150,6 +1727,650 @@ function bindBank(){
 }
 bindBank();
 
+/* ---------- 共用表單視窗 ----------
+   欄位 {k, label, type(text/number/date/select/textarea/check), value, options, req, hint（字或函式）, show（函式）, ph, max, min, step}
+   onSave(值) 回傳：沒回傳＝存好關掉；物件＝各欄位的錯誤；字串＝整體的錯誤（空字串＝不關也不顯示，用在跳確認又按取消） */
+let _form = null, _formBack = null;
+function fieldHTML(f){
+  const id = 'fm_' + f.k, v = f.value ?? '';
+  const hint = `<div class="tiny" id="${id}_hint">${typeof f.hint === 'string' ? esc(f.hint) : ''}</div>`;
+  const err = `<div class="ferr1" id="${id}_err" aria-live="polite"></div>`;
+  if(f.type === 'check')
+    return `<div class="frow chk2" data-row="${f.k}"><label><input type="checkbox" id="${id}" data-k="${f.k}" aria-describedby="${id}_hint ${id}_err" ${v ? 'checked' : ''}>${esc(f.label)}</label>${hint}${err}</div>`;
+  const attrs = [`id="${id}"`, `data-k="${f.k}"`, `aria-describedby="${id}_hint ${id}_err"`];
+  if(f.req) attrs.push('aria-required="true"');
+  let ctl;
+  if(f.type === 'select'){
+    ctl = `<select ${attrs.join(' ')}>${f.options.map(([ov, ot]) => `<option value="${esc(ov)}" ${String(ov) === String(v) ? 'selected' : ''}>${esc(ot)}</option>`).join('')}</select>`;
+  } else if(f.type === 'textarea'){
+    ctl = `<textarea ${attrs.join(' ')} rows="${f.rows || 2}" maxlength="${f.max || 300}">${esc(v)}</textarea>`;
+  } else {
+    const type = f.type || 'text';
+    if(type === 'number'){ attrs.push(`step="${f.step ?? 'any'}"`, 'inputmode="decimal"'); if(f.min != null) attrs.push(`min="${f.min}"`); }
+    if(type === 'text') attrs.push(`maxlength="${f.max || 60}"`);
+    if(f.ph) attrs.push(`placeholder="${esc(f.ph)}"`);
+    ctl = `<input type="${type}" value="${esc(v)}" ${attrs.join(' ')}>`;
+  }
+  return `<div class="frow" data-row="${f.k}"><label for="${id}">${esc(f.label)}${f.req ? ' <span class="req">必填</span>' : ''}</label>${ctl}${hint}${err}</div>`;
+}
+function formVals(){
+  const v = {};
+  $$('#fmBody [data-k]').forEach(el => v[el.dataset.k] = el.type === 'checkbox' ? el.checked : el.value);
+  return v;
+}
+function formRefresh(){
+  if(!_form) return;
+  const v = formVals();
+  for(const f of _form.fields){
+    const row = $(`#fmBody [data-row="${f.k}"]`); if(!row) continue;
+    if(f.show) row.hidden = !f.show(v);
+    if(typeof f.hint === 'function') $(`#fm_${f.k}_hint`).textContent = f.hint(v) || '';
+  }
+}
+function openForm(o){
+  _form = o; _formBack = document.activeElement;
+  $('#fmTitle').textContent = o.title;
+  $('#fmDesc').textContent = o.desc || '';
+  $('#fmBody').innerHTML = o.fields.map(fieldHTML).join('');
+  $('#fmErr').textContent = '';
+  $('#fmOk').textContent = o.okText || '儲存';
+  $('#fmDel').hidden = !o.onDelete;
+  formRefresh();
+  $('#mForm').hidden = false;
+  const first = $$('#fmBody [data-k]').find(el => !el.closest('[hidden]'));
+  if(first) first.focus();
+}
+function closeForm(){
+  $('#mForm').hidden = true; _form = null;
+  if(_formBack && document.contains(_formBack) && _formBack.focus) _formBack.focus();
+}
+function submitForm(){
+  if(!_form) return;
+  $$('#fmBody .ferr1').forEach(el => el.textContent = '');
+  $$('#fmBody .frow').forEach(r => r.classList.remove('bad'));
+  $('#fmErr').textContent = '';
+  const res = _form.onSave(formVals());
+  if(res === undefined || res === true){ closeForm(); return; }
+  if(typeof res === 'string'){ $('#fmErr').textContent = res; return; }
+  let firstBad = null;
+  for(const [k, msg] of Object.entries(res)){
+    const e = $(`#fm_${k}_err`);
+    if(e){ e.textContent = msg; const row = e.closest('.frow'); row.classList.add('bad'); row.hidden = false; firstBad = firstBad || $(`#fm_${k}`); }
+    else $('#fmErr').textContent = msg;
+  }
+  if(!$('#fmErr').textContent) $('#fmErr').textContent = '有欄位要修正，看紅字';
+  if(firstBad) firstBad.focus();
+}
+function onFormChange(e){
+  const k = e.target.dataset?.k; if(!_form || !k) return;
+  if(_form.onChange) _form.onChange(k, formVals(), (key, val) => {
+    const el = $(`#fm_${key}`); if(!el) return;
+    if(el.type === 'checkbox') el.checked = !!val; else el.value = val;
+  });
+  formRefresh();
+}
+$('#fmOk').onclick = submitForm;
+$('#fmCancel').onclick = closeForm;
+$('#fmDel').onclick = () => { if(_form?.onDelete && _form.onDelete()) closeForm(); };
+$('#mForm').addEventListener('click', e => { if(e.target.id === 'mForm') closeForm(); });
+$('#mForm').addEventListener('keydown', e => {
+  if(e.key === 'Escape'){ e.preventDefault(); closeForm(); }
+  if(e.key === 'Enter' && e.target.matches('#fmBody input') && !e.isComposing){ e.preventDefault(); submitForm(); }
+});
+$('#fmBody').addEventListener('input', onFormChange);
+$('#fmBody').addEventListener('change', onFormChange);
+
+/* ---------- 首頁：人物卡、今天的一句話、牡羊座運勢、角色數字、核心目標 ---------- */
+let quoteShift = 0;   // 按「換一句」往後跳幾句，只在這次打開有效，隔天照樣輪
+function quoteOfToday(){
+  const list = S.cfg.quotes || []; if(!list.length) return '';
+  const t = new Date(); const doy = Math.floor((t - new Date(t.getFullYear(), 0, 0)) / 86400000);
+  return list[(((doy + quoteShift) % list.length) + list.length) % list.length];
+}
+function renderHomePage(){
+  const t = today(), xp = totalXP(), L = levelOf(xp);
+  $('#ovStats').innerHTML = [
+    ['', `經驗值 ${fmt(xp)} / ${L.next}`, `Lv.${L.lv}`],
+    ['gain', `今日點數（今天賺 ${fmt(dayEarn(t))}）`, fmt(dayBalance(t))],
+    ['gold', '基金', fmt(fundBalance())],
+    ['', '連續執行', `${streak()} 天`],
+  ].map(([c, s, b]) => `<div class="stat ${c}"><span>${s}</span><b>${b}</b></div>`).join('');
+
+  const q = quoteOfToday();
+  $('#quoteTxt').textContent = q || '還沒有語錄，按「編輯語錄」寫幾句給自己';
+  $('#quoteNext').disabled = (S.cfg.quotes || []).length < 2;
+
+  // 運勢：早報腳本每個平日寫一筆，網頁顯示最新那一筆；不是今天的就寫明是哪天的
+  const days = Object.keys(S.home?.astro || {}).filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k)).sort();
+  const d = days.at(-1), a = d ? S.home.astro[d] : null;
+  if(!a){
+    $('#astroDate').textContent = '';
+    $('#astroBody').innerHTML = '<div class="empty">還沒有運勢。平日 8:30 早報送出時會一起存進來</div>';
+  } else {
+    const n = (String(a.stars || '').match(/★/g) || []).length;
+    $('#astroDate').textContent = d === t ? `${md(d)}（今天）` : `最近一次：${md(d)}`;
+    $('#astroBody').innerHTML = `${d !== t ? '<div class="tiny astro-old">週末和 Mac 沒開機的日子不會更新，這是最近一次的運勢</div>' : ''}
+      ${a.word ? `<p class="aword">「${esc(a.word)}」</p>` : ''}
+      ${a.stars ? `<div class="astars">整體運勢 <b aria-label="${n} 顆星">${esc(a.stars)}</b></div>` : ''}
+      ${a.text ? `<p class="atext">${esc(a.text)}</p>` : ''}
+      <div class="lucky">${[['幸運數字', a.num], ['幸運色', a.color], ['幸運方位', a.dir]].filter(([, v]) => v && v !== '?')
+        .map(([k, v]) => `<span class="chip">${k} <b>${esc(v)}</b></span>`).join('')}</div>`;
+  }
+
+  // 核心目標：今年標了核心的；還沒標就先列前 3 個進行中的
+  const y = new Date().getFullYear();
+  const gs = goalsOfYear(y);
+  const core = gs.filter(x => x.i.core);
+  const list = (core.length ? core : gs.filter(x => ACTIVE_ST.includes(x.i.status))).slice(0, 3);
+  $('#homeGoals').innerHTML = list.length
+    ? `${core.length ? '' : '<div class="tiny" style="margin-bottom:8px">還沒標核心目標，先列前 3 個進行中的（到年度目標按「編輯目標」勾核心）</div>'}
+      <div class="hgoals">${list.map(x => {
+        const P = goalProgress(x.g), tp = timePct(x.i);
+        return `<button class="hgoal" data-goto="goals" data-open="${x.id}">
+          <span class="hname">${esc(x.i.name)}<small>${esc(P.text || P.note || P.how)}</small></span>
+          <b>${P.pct === null ? '—' : Math.round(P.raw ?? P.pct) + '%'}</b>
+          <span class="pbar"><i style="width:${(P.pct ?? 0).toFixed(1)}%"></i>${tp !== null ? `<b class="tmark" style="left:${tp.toFixed(1)}%"></b>` : ''}</span></button>`;
+      }).join('')}</div>`
+    : `<div class="empty">${y} 年還沒有目標<br><button class="btn sm blue" style="margin-top:8px" data-goto="goals">去年度目標頁新增</button></div>`;
+}
+$('#quoteNext').onclick = () => { quoteShift++; renderHomePage(); };
+$('#quoteEdit').onclick = () => openForm({
+  title:'編輯語錄', desc:'一行一句。每天照順序輪一句，按「換一句」可以往後跳', okText:'儲存',
+  fields:[{ k:'quotes', label:'語錄', type:'textarea', rows:12, max:6000, value:(S.cfg.quotes || []).join('\n') }],
+  onSave(v){
+    const list = v.quotes.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 200);
+    S.cfg.quotes = list; S.cfg.quotesV = 1; putCfg(); quoteShift = 0; renderAll();
+    toast(list.length ? `語錄存好了，共 ${list.length} 句` : '語錄清空了');
+  },
+});
+
+/* ---------- 年度總覽 ---------- */
+function yearChips(){
+  const y0 = new Date().getFullYear();
+  const ys = [...new Set([y0, y0 + 1, yearSel, ...goalEntries().map(x => Number(x.i.year)).filter(Boolean)])].sort();
+  return ys.map(y => `<button class="yr ${y === yearSel ? 'on' : ''}" data-year="${y}" aria-pressed="${y === yearSel}">${y}</button>`).join('');
+}
+function srcStatusText(list){
+  const need = [...new Set(list.map(x => GSRC[x.i.src]?.link).filter(Boolean))];
+  if(!need.length) return '';
+  const names = need.map(k => k === 'mn' ? '理財導航' : '工作台').join('、');
+  if(!SRC.at) return mode === 'cloud' ? `正在讀${names}…` : `${names}的數字要登入雲端才讀得到，現在顯示上次抓到的`;
+  return `${names}：${stampText(SRC.at)} 讀取${SRC.err ? `（${SRC.err}，先顯示上次的數字）` : ''}`;
+}
+function renderOverview(){
+  $('#ovYears').innerHTML = yearChips();
+  const t = today();
+
+  // 進度一覽表
+  const gs = goalsOfYear(yearSel);
+  const [mFrom, mTo] = monthRange();
+  const rows = gs.map(x => ({ ...x, P:goalProgress(x.g), tp:timePct(x.i), R:goalRate(x.id, mFrom, mTo) }));
+  const counted = rows.filter(x => x.i.status !== 'pause' && x.P.pct !== null);
+  const overall = counted.length ? counted.reduce((s,x) => s + x.P.pct, 0) / counted.length : null;
+  const isNow = yearSel === new Date().getFullYear();
+  $('#ovOverall').innerHTML = gs.length ? `<div class="ovall"><span>${yearSel} 年整體進度</span><b>${overall === null ? '—' : Math.round(overall) + '%'}</b>
+      <span class="pbar big" role="progressbar" aria-label="年度整體進度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(overall ?? 0)}"><i style="width:${(overall ?? 0).toFixed(1)}%"></i>${isNow ? `<b class="tmark" style="left:${yearPct().toFixed(1)}%"></b>` : ''}</span>
+      <span class="tiny">${counted.length} 個目標的平均，每個最多算 100%${gs.length > counted.length ? `；${gs.length - counted.length} 個暫停或還沒有數字的沒算進去` : ''}${isNow ? `・今年過了 ${Math.round(yearPct())}%（深色直線）` : ''}</span></div>` : '';
+  $('#ovSrc').textContent = srcStatusText(gs);
+  $('#ovTable').innerHTML = gs.length ? goalTableHTML(rows)
+    : `<div class="empty">${yearSel} 年還沒有目標<br><button class="btn sm blue" style="margin-top:8px" data-goto="goals">去年度目標頁新增</button></div>`;
+
+  // 本週該做：連到目標的每日任務，加上所有每週／每月任務，這一期還沒做的
+  const wk = tasksAll().filter(({ t:x }) => !x.off && ['day','week','month'].includes(x.freq) && (x.freq !== 'day' || (x.goal && S.goals[x.goal])) && !periodDone(x));
+  $('#ovWeek').innerHTML = wk.length ? `<div class="donelist">${wk.map(({ t:x, col }) => `<div class="done"><span class="tag" style="background:${CAT_COLOR[col]}">${FREQ_NAME[x.freq]}</span>
+      <span class="nm">${esc(x.name)}${x.goal && S.goals[x.goal] ? `<span class="gtag">推進：${esc(goalName(x.goal))}</span>` : ''}</span><span class="pv">+${fmt(x.pts)}</span></div>`).join('')}</div>`
+    : '<div class="empty">這一期該做的都做完了，或還沒有每週、每月任務，也沒有連到目標的每日任務</div>';
+
+  // 本月重點與本季里程碑
+  const [, qTo] = quarterRange();
+  const msEvery = gs.flatMap(x => Object.entries(x.g.ms || {}).map(([mid, m]) => ({ gid:x.id, mid, m, gname:x.i.name, st:x.i.status })));
+  const open = msEvery.filter(o => !o.m.done && o.m.due && o.st !== 'pause').sort((a,b) => a.m.due.localeCompare(b.m.due));
+  const groups = [
+    ['已經過了截止日', open.filter(o => o.m.due < t)],
+    ['這個月到期', open.filter(o => o.m.due >= t && o.m.due <= mTo)],
+    ['這一季其他', open.filter(o => o.m.due > mTo && o.m.due <= qTo)],
+  ].filter(([, l]) => l.length);
+  const risk = rows.filter(x => x.i.status === 'risk' || isBehind(x.i, x.P));
+  const msRow = o => `<div class="msrow"><span class="nm">${esc(o.m.name)}<small>${esc(o.gname)}・截止 ${md(o.m.due)}</small></span><span class="pv">+${fmt(Number(o.m.reward) || 0)}</span>
+      <button class="btn sm" data-gact="msdone" data-gid="${o.gid}" data-mid="${o.mid}">完成</button></div>`;
+  $('#ovMs').innerHTML = groups.length || risk.length ? `<div class="ovlist">
+      ${groups.map(([h, l]) => `<h4>${h}</h4>${l.map(msRow).join('')}`).join('')}
+      ${risk.length ? `<h4>要注意的目標</h4>${risk.map(x => `<div class="msrow"><span class="nm">${esc(x.i.name)}<small>${x.i.status === 'risk' ? '狀態：有落後風險' : `時間過了 ${Math.round(x.tp)}%、進度 ${Math.round(x.P.pct)}%`}</small></span>
+        <button class="btn sm" data-goto="goals" data-open="${x.id}">看目標</button></div>`).join('')}` : ''}
+    </div>` : '<div class="empty">這個月、這一季沒有到期的里程碑，目標也都跟得上進度</div>';
+
+  // 續約提醒：有續約目標才出現
+  const rh = gs.some(x => x.i.src === 'ws_renew' && ACTIVE_ST.includes(x.i.status)) ? renewTableHTML(yearSel, true) : '';
+  $('#ovRenewBox').hidden = !rh; $('#ovRenew').innerHTML = rh;
+
+  // 收合區：分類分布、最近完成的里程碑
+  const cnt = {}; gs.forEach(x => cnt[x.i.cat] = (cnt[x.i.cat] || 0) + 1);
+  $('#ovCats').innerHTML = `<h4>八大分類（${yearSel} 年，不含封存）</h4><div class="catchips">${GOAL_CATS.map(c => `<span class="chip ${cnt[c.k] ? 'has' : ''}">${c.n} <b>${cnt[c.k] || 0}</b></span>`).join('')}</div>`;
+  const recent = msEvery.filter(o => o.m.done).sort((a,b) => String(b.m.doneD).localeCompare(String(a.m.doneD))).slice(0, 5);
+  $('#ovRecent').innerHTML = `<h4>最近完成的里程碑</h4>${recent.length
+    ? `<div class="ovlist">${recent.map(o => `<div class="msrow done"><span class="nm">${esc(o.m.name)}<small>${esc(o.gname)}・${md(o.m.doneD)} 完成</small></span><span class="pv">+${fmt(Number(o.m.reward) || 0)}</span></div>`).join('')}</div>`
+    : '<div class="empty">還沒有完成的里程碑</div>'}`;
+}
+function goalTableHTML(rows){
+  return `<div class="gtable" role="table" aria-label="年度目標進度一覽">
+    <div class="gr gh" role="row"><span role="columnheader">目標</span><span role="columnheader">目前／目標</span><span role="columnheader">成果進度</span><span role="columnheader">時間過了</span><span role="columnheader">本月行動</span><span role="columnheader">資料來源</span></div>
+    ${rows.map(x => {
+      const P = x.P;
+      const upd = P.val && (P.val.kind === 'live' || P.val.kind === 'cache') ? `<small>${P.val.kind === 'live' ? `${agoText(P.val.at)}更新` : `上次抓到 ${stampText(P.val.at)}`}</small>` : '';
+      return `<div class="gr st-${x.i.status}" role="row">
+        <span class="gc c-name" role="cell">${x.i.core ? '<span class="core">核心</span>' : ''}<button class="linkbtn" data-goto="goals" data-open="${x.id}">${esc(x.i.name)}</button>
+          <small>${esc(GCAT[x.i.cat]?.n || '')}・<span class="badge st-${x.i.status}">${GSTATUS[x.i.status] || ''}</span></small></span>
+        <span class="gc" role="cell" data-l="目前／目標">${esc(P.text || '—')}</span>
+        <span class="gc c-prog" role="cell" data-l="成果進度"><b>${P.pct === null ? '—' : Math.round(P.raw ?? P.pct) + '%'}</b>
+          <span class="pbar"><i style="width:${(P.pct ?? 0).toFixed(1)}%"></i>${x.tp !== null ? `<b class="tmark" style="left:${x.tp.toFixed(1)}%"></b>` : ''}</span>
+          ${P.note ? `<span class="gnote">${esc(P.note)}</span>` : ''}${isBehind(x.i, P) ? '<span class="warn">可能落後</span>' : ''}</span>
+        <span class="gc" role="cell" data-l="時間過了">${x.tp === null ? '沒設截止日' : Math.round(x.tp) + '%'}</span>
+        <span class="gc" role="cell" data-l="本月行動">${x.R.need ? `${x.R.done}/${x.R.need}（${Math.round(x.R.done / x.R.need * 100)}%）` : x.R.extra ? `做了 ${x.R.extra} 次` : '—'}</span>
+        <span class="gc c-src" role="cell" data-l="資料來源">${esc(P.how)}${upd}</span>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+function renewTableHTML(year, onlyWarn){
+  if(!SRC.ws) return onlyWarn ? '' : `<div class="tiny">${mode === 'cloud' ? '工作台資料還沒讀到，按「重新抓取」再試一次' : '登入雲端後才讀得到工作台的客戶'}</div>`;
+  let list = renewals(wsClients(SRC.ws), year).filter(x => x.active || x.renewN);
+  if(onlyWarn) list = list.filter(x => x.warn);
+  if(!list.length) return onlyWarn ? '' : '<div class="tiny">工作台裡還沒有排專案走期的客戶</div>';
+  return `<div class="rtable" role="table" aria-label="客戶續約一覽">
+      <div class="rr rh" role="row"><span role="columnheader">客戶</span><span role="columnheader">目前</span><span role="columnheader">這期到</span><span role="columnheader">今年續約</span></div>
+      ${list.map(x => `<div class="rr ${x.warn ? 'warnrow' : ''}" role="row"><span role="cell">${esc(x.name)}${x.active ? '' : '<em style="color:var(--ink2)">已結案</em>'}</span><span role="cell">第 ${esc(x.no || '?')} 期</span>
+        <span role="cell">${x.end ? md(x.end) : '—'}${x.warn ? `<em>${x.left < 0 ? '走期已結束' : x.left === 0 ? '今天到期' : `剩 ${x.left} 天`}，還沒排下一期</em>` : ''}</span><span role="cell">${x.renewN ? `${x.renewN} 期` : '—'}</span></div>`).join('')}
+    </div><div class="tiny">判斷方式：${year} 年開始、期數大於 1 的走期算續約，一家客戶只算一家；有沒有排下一期看工作台的專案走期</div>`;
+}
+
+/* ---------- 年度目標頁 ---------- */
+function renderGoals(){
+  $('#gYears').innerHTML = yearChips();
+  const all = goalsOfYear(yearSel, true);
+  const arch = all.filter(x => x.i.status === 'arch').length;
+  $('#gCount').textContent = `${yearSel} 年・進行中 ${activeCount(yearSel)}/${MAX_ACTIVE}・核心 ${coreCount(yearSel)}/${MAX_CORE}`;
+  const sa = $('#gShowArch'); sa.hidden = !arch && !showArch; sa.textContent = showArch ? '收起已封存' : `顯示已封存（${arch}）`;
+  $('#gSrc').textContent = srcStatusText(all);
+  const list = all.filter(x => showArch || x.i.status !== 'arch');
+  $('#gList').innerHTML = list.length ? `<div class="gcards">${list.map(goalCardHTML).join('')}</div>`
+    : `<div class="box panel empty-g"><h2>${yearSel} 年還沒有${arch ? '進行中的' : ''}目標</h2>
+        <p class="tiny">先寫下今年最重要的 1～3 件事。存款、客戶續約這類數字可以直接連到理財導航、工作台，不用自己抄。</p>
+        <div class="gbtns"><button class="btn blue" data-gact="add">＋ 新增目標</button><button class="btn" data-gact="example">套用範例</button></div></div>`;
+}
+function goalCardHTML({ id, g, i }){
+  const P = goalProgress(g), tp = timePct(i);
+  const [from, to] = monthRange(); const R = goalRate(id, from, to);
+  const nLinked = tasksAll().filter(x => x.t.goal === id && !x.t.off).length;
+  const open = openGoals.has(id);
+  const src = P.val && (P.val.kind === 'live' || P.val.kind === 'cache')
+    ? `・${esc(P.val.detail || '')}・${P.val.kind === 'live' ? `${agoText(P.val.at)}更新` : `上次抓到 ${stampText(P.val.at)}`}` : '';
+  const rate = [R.need ? `本月行動 ${R.done}/${R.need}（${Math.round(R.done / R.need * 100)}%）` : '', R.extra ? `偶發・一次性做了 ${R.extra} 次` : ''].filter(Boolean).join('・')
+    || (nLinked ? `本月行動：連了 ${nLinked} 個任務，這一期做了才開始算完成率` : '本月行動：還沒有連到這個目標的任務');
+  return `<article class="box gcard st-${i.status}" data-card="${id}">
+    <header><div>${i.core ? '<span class="core">核心</span>' : ''}<h3>${esc(i.name)}</h3></div><span class="badge st-${i.status}">${GSTATUS[i.status] || ''}</span></header>
+    <div class="gmeta"><span class="chip">${esc(GCAT[i.cat]?.n || '未分類')}</span><span class="chip a-${i.attr}">${ATTR_NAME[i.attr] || '不加屬性'}</span>
+      <span class="chip">優先 ${PRI_NAME[i.pri] || '中'}</span>${i.due ? `<span class="chip">截止 ${esc(i.due.replaceAll('-', '/'))}</span>` : ''}</div>
+    <div class="gprog">
+      <div class="gnum"><b>${P.pct === null ? '—' : Math.round(P.raw ?? P.pct) + '%'}</b><span>${esc(P.text || '')}</span></div>
+      <span class="pbar" role="progressbar" aria-label="成果進度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(P.pct ?? 0)}"><i style="width:${(P.pct ?? 0).toFixed(1)}%"></i>${tp !== null ? `<b class="tmark" style="left:${tp.toFixed(1)}%"></b>` : ''}</span>
+      <div class="tiny">算法：${esc(P.how)}${src}${tp !== null ? `・時間過了 ${Math.round(tp)}%` : ''}</div>
+      ${P.note ? `<div class="gnote">${esc(P.note)}</div>` : ''}
+    </div>
+    <div class="gline">${rate}</div>
+    ${isBehind(i, P) ? `<div class="warn">時間過了 ${Math.round(tp)}%、進度 ${Math.round(P.pct)}%，可能落後</div>` : ''}
+    <button class="btn sm gtoggle" data-gact="toggle" data-gid="${id}" aria-expanded="${open}">${open ? '收起' : '展開里程碑與設定'}</button>
+    ${open ? goalDetailHTML(id, g, i) : ''}
+  </article>`;
+}
+function goalDetailHTML(id, g, i){
+  const t = today();
+  const ms = Object.entries(g.ms || {}).sort((a,b) => String(a[1].due || '9999').localeCompare(String(b[1].due || '9999')) || (a[1].ord ?? 0) - (b[1].ord ?? 0));
+  const linked = tasksAll().filter(x => x.t.goal === id);
+  const locked = i.status === 'done' || i.status === 'arch';
+  return `<div class="gdetail">
+    ${i.why ? `<p class="why"><b>為什麼：</b>${esc(i.why)}</p>` : ''}
+    <h4>里程碑</h4>
+    <div class="mslist">${ms.map(([mid, m]) => `<div class="msrow ${m.done ? 'done' : ''}">
+        <button class="chk ${m.done ? 'on' : ''}" data-gact="${m.done ? 'msundo' : 'msdone'}" data-gid="${id}" data-mid="${mid}" aria-label="${m.done ? '撤回完成' : '標記完成'}：${esc(m.name)}">${icon('check')}</button>
+        <span class="nm">${esc(m.name)}<small>${m.done ? `${md(m.doneD)} 完成` : m.due ? `${m.due < t ? '已經過了截止日・' : ''}截止 ${md(m.due)}` : '沒有截止日'}${m.cond ? `・${esc(m.cond)}` : ''}</small></span>
+        <span class="pv">+${fmt(Number(m.reward) || 0)}</span>
+        <button class="btn sm" data-gact="msedit" data-gid="${id}" data-mid="${mid}">編輯</button></div>`).join('')
+      || '<div class="empty">還沒有里程碑。把目標拆成幾個有日期的小關卡，完成時各拿一次獎勵</div>'}</div>
+    <button class="addrow" data-gact="msadd" data-gid="${id}">＋ 新增里程碑</button>
+    <h4>連到這個目標的任務</h4>
+    <div class="tiny">${linked.length ? linked.map(x => `${esc(x.t.name)}（${FREQ_NAME[x.t.freq]}${x.t.off ? '・暫停中' : ''}）`).join('、') : '還沒有。到「每日任務」按編輯，任務旁邊的「設定」就能連過來'}</div>
+    ${i.src === 'ws_renew' ? `<h4>客戶續約一覽</h4>${renewTableHTML(i.year)}` : ''}
+    <div class="gbtns">
+      <button class="btn sm" data-gact="edit" data-gid="${id}">編輯目標</button>
+      ${i.src === 'num' ? `<button class="btn sm" data-gact="val" data-gid="${id}">更新目前值</button>` : ''}
+      ${GSRC[i.src]?.link ? '<button class="btn sm" data-gact="refresh">重新抓取</button>' : ''}
+      ${i.status === 'arch' ? `<button class="btn sm" data-gact="unarch" data-gid="${id}">恢復</button>` : `<button class="btn sm" data-gact="arch" data-gid="${id}">封存</button>`}
+      ${locked ? '' : `<button class="btn sm red" data-gact="del" data-gid="${id}">刪除</button>`}
+    </div>
+    ${locked ? '<div class="tiny">已完成、已封存的目標不能直接刪，要先恢復或把狀態改掉</div>' : ''}
+  </div>`;
+}
+
+/* 新增／編輯目標 */
+function goalForm(gid){
+  const old = gid ? S.goals[gid]?.info : null;
+  const i = old || { year:yearSel, name:'', cat:'', attr:'life', why:'', src:'num', srcAcc:'', srcGroup:'consult', metric:'', unit:'',
+    start:'', target:'', cur:'', manualPct:'', due:`${yearSel}-12-31`, pri:'mid', status:'doing', core:false, reward:500 };
+  const accs = SRC.mn ? mnBalances(SRC.mn).accs : [];
+  let attrTouched = !!old;
+  openForm({
+    title: old ? '編輯年度目標' : '新增年度目標',
+    desc: old ? '' : '存款、續約這類數字可以選「理財導航」「工作台」，會自動抓，不用自己填目前值',
+    fields: [
+      { k:'name', label:'目標名稱', value:i.name, req:true, max:40, ph:'例如：年底存款達 50 萬' },
+      { k:'year', label:'年度', type:'number', value:i.year, step:1 },
+      { k:'cat', label:'人生分類', type:'select', value:i.cat, req:true, options:[['', '請選一個'], ...GOAL_CATS.map(c => [c.k, c.n])] },
+      { k:'attr', label:'角色屬性（里程碑和完成獎勵加在哪一項）', type:'select', value:i.attr, options:Object.entries(ATTR_NAME) },
+      { k:'why', label:'為什麼想完成', type:'textarea', value:i.why, max:200 },
+      { k:'src', label:'進度從哪裡來', type:'select', value:i.src, options:Object.entries(GSRC).map(([k, s]) => [k, s.n]) },
+      { k:'srcAcc', label:'哪一個帳戶', type:'select', value:i.srcAcc, show:v => v.src === 'mn_acc',
+        options: accs.length ? accs.map(a => [a.id, a.name]) : [['', '（登入雲端後才讀得到帳戶）']] },
+      { k:'srcGroup', label:'哪一區的客戶', type:'select', value:i.srcGroup || 'consult', show:v => v.src === 'ws_group', options:Object.entries(WS_GROUPS) },
+      { k:'metric', label:'成果指標名稱', value:i.metric, show:v => isNumSrc(v.src), ph:'例如：可運用資產', max:20 },
+      { k:'unit', label:'單位', value:i.unit, show:v => v.src === 'num', ph:'例如：元、公斤、本、%', max:6 },
+      { k:'start', label:'起始值', type:'number', value:i.start, show:v => isNumSrc(v.src),
+        hint:v => GSRC[v.src]?.link ? '留空的話，存檔時自動帶入現在抓到的數字' : '開始時是多少。體重、負債這種要變少的，目標值填得比起始值小就好' },
+      { k:'target', label:'目標值', type:'number', value:i.target, show:v => isNumSrc(v.src) },
+      { k:'cur', label:'目前值', type:'number', value:i.cur, show:v => v.src === 'num', hint:'之後可以在目標卡片按「更新目前值」' },
+      { k:'manualPct', label:'目前完成幾 %', type:'number', value:i.manualPct, min:0, show:v => v.src === 'pct' },
+      { k:'due', label:'截止日期', type:'date', value:i.due },
+      { k:'pri', label:'優先級', type:'select', value:i.pri || 'mid', options:Object.entries(PRI_NAME) },
+      { k:'status', label:'狀態', type:'select', value:i.status, show:() => i.status !== 'arch', options:Object.entries(GSTATUS).filter(([k]) => k !== 'arch'),
+        hint:'改成「已完成」會發完成獎勵，改回來會收回' },
+      { k:'core', label:'年度核心目標（最多 3 個，總覽排最前面）', type:'check', value:!!i.core },
+      { k:'reward', label:'完成整個目標的獎勵積分', type:'number', value:i.reward ?? 500, min:0, hint:'建議 500～1000，狀態改成「已完成」時發一次' },
+    ],
+    onChange(k, v, set){
+      if(k === 'attr') attrTouched = true;
+      if(k === 'cat' && !attrTouched && GCAT[v.cat]) set('attr', GCAT[v.cat].a);
+    },
+    onSave: v => saveGoal(gid, v),
+  });
+}
+/* 狀態改成已完成就發完成獎勵；從已完成改回別的就收回（改成封存不收回）。回傳 {got} {back} 或 {err} */
+function goalStatusFx(gid, info, from, to){
+  if(to === 'done' && from !== 'done')
+    return { got:giveReward(`g_${gid}`, { n:`完成目標：${info.name}`, g:gid, p:Number(info.reward) || 0, a:info.attr || '', kind:'goal' }) };
+  if(from === 'done' && to !== 'done' && to !== 'arch'){
+    const plan = rewardUndoPlan(`g_${gid}`);
+    if(!plan.ok) return { err:plan.msg };
+    if(plan.p && !confirm(plan.fund
+      ? `「${info.name}」改成${GSTATUS[to]}：完成獎勵的 ${fmt(plan.p)} 分已經存進基金，會從基金扣回。`
+      : `「${info.name}」改成${GSTATUS[to]}：會收回完成獎勵 ${fmt(plan.p)} 分。`)) return { err:'' };
+    applyRewardUndo(`g_${gid}`, plan);
+    return { back:plan.p };
+  }
+  return {};
+}
+function saveGoal(gid, v){
+  const old = gid ? S.goals[gid]?.info : null;
+  const err = {};
+  const name = v.name.trim(); if(!name) err.name = '要填目標名稱';
+  const year = Math.round(Number(v.year)); if(!(year >= 2000 && year <= 2100)) err.year = '填四位數的年份，例如 2026';
+  if(!GCAT[v.cat]) err.cat = '選一個人生分類';
+  for(const k of ['start', 'target', 'cur', 'manualPct', 'reward']) if(v[k] !== '' && v[k] !== undefined && !isFinite(Number(v[k]))) err[k] = '要填數字';
+  if(isNumSrc(v.src) && v.target === '') err.target = '要填目標值，才算得出進度';
+  if(v.src === 'mn_acc' && !v.srcAcc) err.srcAcc = '選一個帳戶（要先登入雲端才讀得到帳戶）';
+  if(Number(v.reward) < 0) err.reward = '不能是負的';
+  if(v.src === 'pct' && Number(v.manualPct) < 0) err.manualPct = '不能是負的';
+  const status = old?.status === 'arch' ? 'arch' : v.status;
+  if(ACTIVE_ST.includes(status) && activeCount(year, gid) >= MAX_ACTIVE) err.status = `${year} 年進行中的目標已經有 ${MAX_ACTIVE} 個了，先把其中一個改成暫停、已完成或封存`;
+  if(v.core && status !== 'arch' && coreCount(year, gid) >= MAX_CORE) err.core = `${year} 年的核心目標已經有 ${MAX_CORE} 個了`;
+  if(Object.keys(err).length) return err;
+
+  const id = gid || uid();
+  const n = k => v[k] === '' || v[k] === undefined ? '' : Number(v[k]);
+  const numSrc = isNumSrc(v.src);
+  const info = { ...(old || {}), year, name, cat:v.cat, attr:v.attr, why:(v.why || '').trim(), src:v.src,
+    srcAcc: v.src === 'mn_acc' ? v.srcAcc : '', srcGroup: v.src === 'ws_group' ? v.srcGroup : '',
+    metric: numSrc ? (v.metric || '').trim() : '', unit: GSRC[v.src]?.unit || (v.src === 'num' ? (v.unit || '').trim() : ''),
+    start: numSrc ? n('start') : '', target: numSrc ? n('target') : '', cur: v.src === 'num' ? n('cur') : (old?.cur ?? ''),
+    manualPct: v.src === 'pct' ? n('manualPct') : '', due:v.due || '', pri:v.pri || 'mid', status, core:!!v.core,
+    reward: v.reward === '' ? 0 : r1(Number(v.reward)), created: old?.created || Date.now(), updated: Date.now() };
+  if(GSRC[info.src]?.link && info.start === ''){ const live = srcValue(info); if(live) info.start = live.v; }
+  const fx = goalStatusFx(id, info, old ? old.status : '', status);
+  if(fx.err !== undefined) return fx.err ? { status:fx.err } : '';
+  put(`goals/${id}/info`, info);
+  if(info.src === 'num' && info.cur !== '' && info.cur !== old?.cur) put(`goals/${id}/vlog/${today()}`, info.cur);
+  if(!gid) openGoals.add(id);
+  cacheAuto(); renderAll();
+  toast(`${gid ? '已更新' : '已新增'}「${name}」${fx.got ? `，完成獎勵 +${fmt(fx.got)} 分` : ''}${fx.back ? `，收回 ${fmt(fx.back)} 分` : ''}`);
+}
+function valueForm(gid){
+  const i = S.goals[gid]?.info; if(!i) return;
+  openForm({ title:`更新目前值：${i.name}`, desc: i.metric ? `${i.metric}${i.unit ? `（${i.unit}）` : ''}` : '',
+    fields:[{ k:'cur', label:'現在是多少', type:'number', value:i.cur, req:true }],
+    onSave(v){
+      if(v.cur === '' || !isFinite(Number(v.cur))) return { cur:'要填數字' };
+      const n = Number(v.cur);
+      put(`goals/${gid}/info`, { ...i, cur:n, updated:Date.now() });
+      put(`goals/${gid}/vlog/${today()}`, n);
+      renderAll(); toast(`已更新：${fmtVal(n, i.unit)}`);
+    } });
+}
+function archiveGoal(gid, on){
+  const i = S.goals[gid]?.info; if(!i) return;
+  if(on){
+    if(!confirm(`封存「${i.name}」？封存後不算進進行中，隨時可以恢復。`)) return;
+    put(`goals/${gid}/info`, { ...i, archFrom:i.status, status:'arch', updated:Date.now() });
+    toast(`已封存「${i.name}」`);
+  } else {
+    const to = i.archFrom || 'doing';
+    if(ACTIVE_ST.includes(to) && activeCount(i.year, gid) >= MAX_ACTIVE){ toast(`${i.year} 年進行中的目標已經有 ${MAX_ACTIVE} 個，先暫停或封存一個再恢復`); return; }
+    const core = i.core && coreCount(i.year, gid) < MAX_CORE;
+    put(`goals/${gid}/info`, { ...i, status:to, archFrom:'', core, updated:Date.now() });
+    toast(`已恢復「${i.name}」${i.core && !core ? `（核心目標已經有 ${MAX_CORE} 個，這個先不標核心）` : ''}`);
+  }
+  renderAll();
+}
+function deleteGoal(gid){
+  const i = S.goals[gid]?.info; if(!i) return;
+  if(i.status === 'done' || i.status === 'arch'){ toast('已完成、已封存的目標不能直接刪，要先恢復或把狀態改掉'); return; }
+  const linked = tasksAll().filter(x => x.t.goal === gid);
+  if(!confirm(`刪掉「${i.name}」？${linked.length ? `連到它的 ${linked.length} 個任務會留著，只拿掉連結。` : ''}已經發過的獎勵不會收回。`)) return;
+  if(linked.length){ linked.forEach(x => Object.assign(x.t, { goal:'', linkedAt:'', step:0 })); putCfg(); }
+  put(`goals/${gid}`, null); openGoals.delete(gid);
+  renderAll(); toast(`已刪除「${i.name}」`);
+}
+
+/* 里程碑 */
+function msForm(gid, mid){
+  const g = S.goals[gid]; if(!g) return;
+  const m = mid ? g.ms?.[mid] : null;
+  openForm({ title: m ? '編輯里程碑' : '新增里程碑', desc:g.info.name,
+    fields:[
+      { k:'name', label:'里程碑名稱', value:m?.name || '', req:true, max:40, ph:'例如：做出原型' },
+      { k:'due', label:'截止日期', type:'date', value:m?.due || '' },
+      { k:'cond', label:'完成條件', value:m?.cond || '', max:60, ph:'例如：存款到 30 萬、交出第一版' },
+      { k:'reward', label:'獎勵積分', type:'number', min:0, value:m?.reward ?? 100,
+        hint: m?.done ? '這個里程碑已經完成，改分數不會改到已經發的獎勵' : '建議 100～300，完成時發一次' },
+      { k:'note', label:'備註', type:'textarea', value:m?.note || '', max:200 },
+    ],
+    onDelete: m ? () => {
+      if(m.done){ toast('已完成的里程碑不能直接刪，要先撤回完成'); return false; }
+      if(!confirm(`刪掉里程碑「${m.name}」？`)) return false;
+      put(`goals/${gid}/ms/${mid}`, null); put(`goals/${gid}/info/updated`, Date.now());
+      renderAll(); toast('已刪除里程碑'); return true;
+    } : null,
+    onSave(v){
+      const err = {};
+      if(!v.name.trim()) err.name = '要填名稱';
+      if(v.reward !== '' && (!isFinite(Number(v.reward)) || Number(v.reward) < 0)) err.reward = '要填 0 以上的數字';
+      if(Object.keys(err).length) return err;
+      const id = mid || uid();
+      const rec = { ...(m || { done:false, doneD:'' }), name:v.name.trim(), due:v.due || '', cond:(v.cond || '').trim(),
+        reward: v.reward === '' ? 0 : r1(Number(v.reward)), note:(v.note || '').trim(), ord: m?.ord ?? vals(g.ms).length };
+      put(`goals/${gid}/ms/${id}`, rec); put(`goals/${gid}/info/updated`, Date.now());
+      openGoals.add(gid); renderAll(); toast(m ? '里程碑已更新' : `已新增里程碑「${rec.name}」`);
+    } });
+}
+function msComplete(gid, mid){
+  const g = S.goals[gid], m = g?.ms?.[mid]; if(!m || m.done) return;
+  const p = Number(m.reward) || 0;
+  if(!confirm(`完成里程碑「${m.name}」？${p ? `會拿到 +${fmt(p)} 分。` : ''}`)) return;
+  const got = giveReward(`ms_${mid}`, { n:`里程碑：${m.name}`, g:gid, p, a:g.info.attr || '', kind:'ms' });
+  put(`goals/${gid}/ms/${mid}`, { ...m, done:true, doneD:today() }); put(`goals/${gid}/info/updated`, Date.now());
+  renderAll();
+  toast(got ? `完成里程碑「${m.name}」，+${fmt(got)} 分` : `完成里程碑「${m.name}」${p ? '（這個里程碑的獎勵之前發過了，不再重發）' : ''}`);
+}
+function msUndo(gid, mid){
+  const g = S.goals[gid], m = g?.ms?.[mid]; if(!m || !m.done) return;
+  const plan = rewardUndoPlan(`ms_${mid}`);
+  if(!plan.ok){ toast(plan.msg); return; }
+  if(!confirm(plan.fund ? `撤回「${m.name}」？獎勵的 ${fmt(plan.p)} 分已經存進基金，會從基金扣回。`
+    : plan.p ? `撤回「${m.name}」？會收回 ${fmt(plan.p)} 分。` : `撤回「${m.name}」的完成？`)) return;
+  applyRewardUndo(`ms_${mid}`, plan);
+  put(`goals/${gid}/ms/${mid}`, { ...m, done:false, doneD:'' }); put(`goals/${gid}/info/updated`, Date.now());
+  renderAll(); toast(`已撤回「${m.name}」${plan.p ? `，-${fmt(plan.p)} 分` : ''}`);
+}
+
+/* 套用範例：勾選要的才加；有類似的任務就連結原本那個，不重複加 */
+function exampleForm(){
+  const y = yearSel;
+  const hint = x => [
+    `進度：${GSRC[x.info.src].n}`,
+    x.ms?.length ? `里程碑：${x.ms.map(m => m[0]).join('、')}` : '',
+    x.tasks?.length ? `任務：${x.tasks.map(t => t.name).join('、')}` : '',
+    x.k === 'lead' ? '里程碑內容加進來後自己填' : '', x.k === 'renew' ? '目標家數加進來後自己填' : '',
+  ].filter(Boolean).join('；');
+  openForm({ title:'套用範例', desc:`加到 ${y} 年，勾你要的。加進來之後全部都能改、能刪。`, okText:'加進來',
+    fields: EXAMPLES.map(x => ({ k:x.k, type:'check', label:x.n.replace('{Y}', y), value:false, hint:hint(x) })),
+    onSave(v){
+      const pick = EXAMPLES.filter(x => v[x.k]);
+      if(!pick.length) return '至少勾一個';
+      if(activeCount(y) + pick.length > MAX_ACTIVE) return `${y} 年進行中的目標最多 ${MAX_ACTIVE} 個，現在已經有 ${activeCount(y)} 個`;
+      let addT = 0, linkT = 0;
+      for(const x of pick){
+        const id = uid();
+        const info = { year:y, name:x.n.replace('{Y}', y), why:'', srcAcc:'', srcGroup:'', metric:'', unit:'', start:'', target:'', cur:'', manualPct:'',
+          due:`${y}-12-31`, pri:'mid', status:'doing', core:false, ...x.info, created:Date.now(), updated:Date.now() };
+        info.unit = GSRC[info.src]?.unit || info.unit;
+        if(GSRC[info.src]?.link){ const live = srcValue(info); if(live) info.start = live.v; }
+        put(`goals/${id}/info`, info);
+        (x.ms || []).forEach(([name, mmdd, p], k) => put(`goals/${id}/ms/${uid()}${k}`, { name, due:`${y}-${mmdd}`, cond:'', reward:p, note:'', ord:k, done:false, doneD:'' }));
+        for(const et of x.tasks || []){
+          const names = [et.name, ...(et.alias || [])];
+          const hit = tasksAll().find(z => names.includes(z.t.name));
+          if(hit){ if(!hit.t.goal){ hit.t.goal = id; hit.t.linkedAt = today(); linkT++; } }
+          else { S.cfg.tasks[et.col].push(normTask({ id:uid(), name:et.name, pts:et.pts, freq:et.freq, cap:1, goal:id, linkedAt:today() }, et.col)); addT++; }
+        }
+        openGoals.add(id);
+      }
+      if(addT || linkT) putCfg();
+      cacheAuto(); renderAll();
+      toast(`加了 ${pick.length} 個目標${addT ? `、${addT} 個任務` : ''}${linkT ? `，連結了 ${linkT} 個原本就有的任務` : ''}`);
+    } });
+}
+
+/* 任務設定：推進哪個目標、屬性、頻率、一天上限、每次推進多少、暫停 */
+function taskForm(id){
+  const f = findTask(id); if(!f) return;
+  const t = f.t;
+  const gopts = [['', '不連結'], ...goalEntries().filter(x => x.i.status !== 'arch' || x.id === t.goal)
+    .sort((a,b) => b.i.year - a.i.year).map(x => [x.id, `${x.i.year}・${x.i.name}`])];
+  openForm({ title:'任務設定', desc:`「${t.name}」在「${CAT_NAME[f.cat]}」這一欄`,
+    fields:[
+      { k:'name', label:'任務名稱', value:t.name, req:true, max:40 },
+      { k:'pts', label:'每次幾分', type:'number', min:0, value:t.pts, hint:'參考：微習慣 1～5、專注行動 10～20、每週成果 30～50' },
+      { k:'goal', label:'推進哪個年度目標', type:'select', value:t.goal, options:gopts },
+      { k:'attr', label:'角色屬性', type:'select', value:t.attr, options:[...Object.entries(ATTR_NAME), ['', '不加屬性']] },
+      { k:'freq', label:'多久做一次', type:'select', value:t.freq, options:Object.entries(FREQ_NAME),
+        hint:'每日、每週、每月會算進行動完成率；一次性的提交後就從清單拿掉' },
+      { k:'cap', label:'一天最多算幾次', type:'number', step:1, min:1, value:t.cap, show:v => v.freq !== 'once' },
+      { k:'step', label:'每做一次，目標的目前值加多少', type:'number', min:0, value:t.step || '', show:v => S.goals[v.goal]?.info?.src === 'num',
+        hint:'例如「讀完一本書」加 1。存款這種看真實數字的目標不要填' },
+      { k:'off', label:'暫停這個任務（不出現在每日清單）', type:'check', value:!!t.off },
+    ],
+    onChange(k, v, set){ if(k === 'goal' && v.goal && !v.attr){ const a = S.goals[v.goal]?.info?.attr; if(a) set('attr', a); } },
+    onSave(v){
+      const err = {};
+      if(!v.name.trim()) err.name = '要填名稱';
+      if(v.pts === '' || !isFinite(Number(v.pts)) || Number(v.pts) < 0) err.pts = '要填 0 以上的數字';
+      const cap = Math.round(Number(v.cap));
+      if(v.freq !== 'once' && !(cap >= 1 && cap <= 99)) err.cap = '填 1～99';
+      if(v.step !== '' && (!isFinite(Number(v.step)) || Number(v.step) < 0)) err.step = '要填 0 以上的數字';
+      if(Object.keys(err).length) return err;
+      const cur = findTask(id); if(!cur) return '這個任務已經不在了';
+      const x = cur.t; const goalChanged = v.goal !== x.goal;
+      Object.assign(x, { name:v.name.trim(), pts:r1(Number(v.pts)), goal:v.goal, attr:v.attr, freq:v.freq, cap: v.freq === 'once' ? 1 : cap,
+        step: S.goals[v.goal]?.info?.src === 'num' && v.step !== '' ? r1(Number(v.step)) : 0, off:!!v.off,
+        linkedAt: v.goal ? (goalChanged ? today() : (x.linkedAt || today())) : '' });
+      putCfg(); renderAll(); toast('任務設定已存');
+    } });
+}
+
+/* 年度目標頁、總覽上的按鈕 */
+document.addEventListener('click', e => {
+  const y = e.target.closest('[data-year]');
+  if(y){ yearSel = Number(y.dataset.year); renderAll(); return; }
+  const go = e.target.closest('[data-goto]');
+  if(go){
+    const open = go.dataset.open; if(open) openGoals.add(open);
+    gotoPage(go.dataset.goto); renderAll();
+    if(open) requestAnimationFrame(() => document.querySelector(`[data-card="${open}"]`)?.scrollIntoView({ block:'start' }));
+    return;
+  }
+  const b = e.target.closest('[data-gact]'); if(!b) return;
+  const { gact, gid, mid } = b.dataset;
+  if(gact === 'toggle'){ openGoals.has(gid) ? openGoals.delete(gid) : openGoals.add(gid); renderGoals(); return; }
+  if(gact === 'add') return goalForm();
+  if(gact === 'edit') return goalForm(gid);
+  if(gact === 'example') return exampleForm();
+  if(gact === 'val') return valueForm(gid);
+  if(gact === 'refresh') return refreshSources(true);
+  if(gact === 'msadd') return msForm(gid);
+  if(gact === 'msedit') return msForm(gid, mid);
+  if(gact === 'msdone') return msComplete(gid, mid);
+  if(gact === 'msundo') return msUndo(gid, mid);
+  if(gact === 'arch') return archiveGoal(gid, true);
+  if(gact === 'unarch') return archiveGoal(gid, false);
+  if(gact === 'del') return deleteGoal(gid);
+});
+$('#gShowArch').onclick = () => { showArch = !showArch; renderGoals(); };
+
+/* ---------- 讀理財導航、工作台 ----------
+   登入雲端後讀三個位置（只讀）：記帳的帳目與設定、工作台的客戶。
+   不掛即時監聽，開頁、回到前景、按「重新抓取」才讀 */
+async function refreshSources(manual){
+  if(mode === 'local'){
+    let t = null; try{ t = JSON.parse(localStorage.getItem(TESTSRC_KEY) || 'null'); }catch(e){}
+    if(t){ SRC = { mn:t.mn || null, ws:t.ws || null, at:Date.now(), err:'' }; cacheAuto(); renderAll(); }
+    else if(manual) toast('「只用這台」模式讀不到理財導航和工作台，要用 Google 登入雲端');
+    return;
+  }
+  if(!_ready || !_get){ if(manual) toast('還沒連上雲端，等一下再按'); return; }
+  if(refreshSources._busy) return;
+  refreshSources._busy = true;
+  try{
+    const [it, st, cl] = await Promise.allSettled([
+      _get(_ref(_db, `${MN_ROOM}/items`)), _get(_ref(_db, `${MN_ROOM}/settings`)), _get(_ref(_db, `${WS_ROOM}/clients`)) ]);
+    [it, st, cl].forEach(r => { if(r.status === 'rejected') console.warn('source', r.reason); });
+    const miss = [];
+    const mn = it.status === 'fulfilled' && st.status === 'fulfilled' ? { items:it.value.val() || {}, settings:st.value.val() || {} } : (miss.push('理財導航'), SRC.mn);
+    const ws = cl.status === 'fulfilled' ? { clients:cl.value.val() || {} } : (miss.push('工作台'), SRC.ws);
+    SRC = { mn, ws, at: miss.length === 2 ? SRC.at : Date.now(), err: miss.length ? `${miss.join('、')}沒讀到` : '' };
+    cacheAuto(); renderAll();
+    if(manual) toast(miss.length ? `${miss.join('、')}沒讀到，先顯示上次的數字` : '已重新抓取理財導航與工作台');
+  } finally { refreshSources._busy = false; }
+}
+/* 抓到的數字存一份在目標上：沒登入、沒網路時還看得到上次的數字。每天留一筆，之後畫趨勢圖用 */
+function cacheAuto(){
+  if(!SRC.at) return;
+  const t = today();
+  for(const { id, g, i } of goalEntries()){
+    if(!GSRC[i.src]?.link || i.status === 'arch') continue;
+    const live = srcValue(i); if(!live) continue;
+    if(!g.auto || g.auto.v !== live.v || g.auto.detail !== live.detail || SRC.at - (g.auto.at || 0) > 3600000)
+      put(`goals/${id}/auto`, { v:live.v, detail:live.detail, at:SRC.at });
+    if(g.vlog?.[t] !== live.v) put(`goals/${id}/vlog/${t}`, live.v);
+  }
+}
+
 /* ---------- 整頁重畫 ----------
    正在輸入框裡打字時，雲端同步進來先不重畫（不然打到一半的字會被洗掉），離開輸入框再補畫 */
 let _dirty = false;
@@ -1157,7 +2378,7 @@ function busy(){ const a = document.activeElement; return !!(a && a.matches && a
 function renderAll(){
   if(busy()){ _dirty = true; return; }
   _dirty = false;
-  renderBar(); renderHome(); renderProfile(); renderTask(); renderMall(); renderFund(); setSync();
+  renderBar(); renderHome(); renderProfile(); renderHomePage(); renderOverview(); renderGoals(); renderTask(); renderMall(); renderFund(); setSync();
 }
 $('#main').addEventListener('focusout', () => { if(_dirty) setTimeout(() => { if(!busy()) renderAll(); }, 0); });
 
@@ -1181,7 +2402,7 @@ async function initFirebase(interactive){
     throw new Error(`這個帳號（${user.email}）沒有權限，請用 ${OWNER_EMAIL} 登入`);
   }
   window._signOut = () => signOut(auth).then(() => location.reload());
-  _user = user; _db = getDatabase(app); _ref = ref; _set = set;
+  _user = user; _db = getDatabase(app); _ref = ref; _set = set; _get = get;
   mode = 'cloud'; try{ localStorage.setItem(MODE_KEY, 'cloud'); }catch(e){}
 
   const snap = await get(ref(_db, ROOM));
@@ -1194,6 +2415,7 @@ async function initFirebase(interactive){
   }
   _ready = true;
   flushPending(); saveLocal(); settleDays(); renderAll();
+  refreshSources();                            // 年度目標要的理財導航、工作台數字
 
   onValue(ref(_db, ROOM), s => {
     if(!s.exists()) return;
@@ -1205,12 +2427,17 @@ async function initFirebase(interactive){
   return true;
 }
 window.addEventListener('online', flushPending);
-document.addEventListener('visibilitychange', () => { if(!document.hidden) flushPending(); });
+document.addEventListener('visibilitychange', () => {
+  if(document.hidden) return;
+  flushPending();
+  if(Date.now() - SRC.at > 5 * 60000) refreshSources();   // 離開超過 5 分鐘，回來重讀理財導航、工作台
+});
 
 /* ---------- 啟動 ---------- */
 function showApp(){ $('#gate').hidden = true; $('#app').hidden = false; }
 function showGate(){ $('#app').hidden = true; $('#gate').hidden = false; }
 
+S = normalize(S);                              // 預設任務清單也補上新設定
 loadLocal();
 try{ mode = localStorage.getItem(MODE_KEY) || ''; }catch(e){ mode = ''; }
 renderRules(); renderNav();
@@ -1225,10 +2452,10 @@ $('#gateBtn').onclick = async () => {
 };
 $('#gateLocal').onclick = () => {
   mode = 'local'; try{ localStorage.setItem(MODE_KEY, 'local'); }catch(e){}
-  showApp(); settleDays(); renderAll();
+  showApp(); settleDays(); renderAll(); refreshSources();
 };
 
-if(mode === 'local'){ showApp(); settleDays(); renderAll(); }
+if(mode === 'local'){ showApp(); settleDays(); renderAll(); refreshSources(); }
 else if(mode === 'cloud'){
   showApp();                                   // 先用這台暫存的資料畫出來，雲端接上再更新
   initFirebase(false).then(ok => { if(!ok){ mode = ''; showGate(); } })
