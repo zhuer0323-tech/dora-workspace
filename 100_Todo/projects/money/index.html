@@ -22,6 +22,7 @@
   --line:#F6DCE4;
   --ok:#6FC79A; --warn:#F0A24B; --bad:#E05263;
   --bar:#D95C86; --bar-on:#B03A63;   /* 柱狀圖：對白底 3.6:1，跟粉色系同一家 */
+  --gain:#2A7F53; --loss:#C93A4D;    /* 股票賺賠：對白底都 4.9:1，另外有「賺／賠」字與正負號，色弱也分得出來 */
   --shadow:0 2px 10px rgba(232,150,178,.13);
   --shadow-l:0 6px 22px rgba(232,150,178,.20);
   --r:18px;
@@ -293,6 +294,38 @@ header.top h1 .sub{font-size:12px;color:var(--ink3);font-weight:400;margin-left:
 .arow b.debt{color:var(--bad)}
 .arow .chev{color:var(--ink3);font-size:14px}
 .agrp .hint{font-size:12.5px;color:var(--ink3);padding:4px 2px}
+/* 帳戶列第二行小字（股票賺賠）與存款目標進度（2026-09-15） */
+.arow .nm .n2{display:block;font-size:11.5px;font-weight:400;color:var(--ink3);overflow:hidden;text-overflow:ellipsis}
+.gain{color:var(--gain)}.loss{color:var(--loss)}
+.agoal{padding:0 2px 10px 46px;cursor:pointer}
+.agoal .track{margin-top:0;height:6px}
+.agoal .gl{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--ink2);margin-top:5px}
+.agoal .gl b{font-weight:800}
+.agoal .gl2{font-size:11.5px;color:var(--ink3);line-height:1.6}
+.agoal .gl2 b{color:var(--ink)}
+.agoal .good{color:var(--gain);font-weight:700}
+.agoal .todo{color:var(--warn);font-weight:700}
+/* 股票帳戶：持股畫面 */
+.skhead{padding:2px 2px 10px}
+.skhead .k{font-size:12px;color:var(--ink3);font-weight:600}
+.skhead .subline b{font-weight:700}
+.hold{padding:10px 2px;border-top:1px solid var(--line);cursor:pointer}
+.hold .h1{display:flex;align-items:baseline;gap:6px;min-width:0}
+.hold .h1 b{font-size:14.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hold .h1 .mv{margin-left:auto;font-weight:800;font-size:15px;white-space:nowrap;flex:none}
+.hold .h2{display:flex;flex-wrap:wrap;justify-content:space-between;gap:1px 10px;font-size:12px;color:var(--ink2);margin-top:3px}
+.hold .h2 b{font-weight:700}
+.cd{font-size:11px;color:var(--ink3);font-weight:400;flex:none}
+.est{font-size:10.5px;font-weight:700;color:#A15C00;background:#FFF1DD;border-radius:6px;padding:0 5px;flex:none}
+.lots{margin-top:8px;background:var(--pink-xl);border-radius:12px;padding:2px 10px 6px}
+.lot{display:grid;grid-template-columns:1fr auto auto auto;gap:10px;align-items:center;font-size:12.5px;padding:8px 0;border-top:1px solid var(--line)}
+.lot:first-child{border-top:0}
+.lots .tiny{padding-top:2px}
+.chk{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--ink2);margin:2px 0 10px}
+.chk input{width:18px;height:18px;accent-color:var(--pink-d)}
+.fld .addrow{margin-top:0}
+.fld .addrow input{width:auto}
+.fld input[readonly]{color:var(--ink3)}
 
 /* ---------- 分配頁 ---------- */
 .steps{display:flex;background:#fff;border-radius:var(--r);box-shadow:var(--shadow);padding:11px 6px;margin-bottom:11px}
@@ -590,9 +623,15 @@ body.on-alloc #toast{bottom:160px}
     <h3><span id="acTitle">帳戶</span><button class="x" data-close>✕</button></h3>
     <div class="fld"><label>名稱</label><input id="acName" maxlength="8" placeholder="例如 玉山、緊急預備金"></div>
     <div class="fld"><label>類型</label><select id="acType"></select></div>
-    <div class="fld"><label id="acBalLab">目前實際餘額</label>
+    <div class="fld" id="acBalFld"><label id="acBalLab">目前實際餘額</label>
       <input id="acBal" type="number" inputmode="numeric" placeholder="不改就留空"></div>
     <div class="tiny" id="acBalTip"></div>
+    <div id="acGoalWrap" style="margin-top:12px">
+      <div class="fld"><label>存款目標（選填）</label>
+        <input id="acGoal" type="number" inputmode="numeric" placeholder="例如 12345（舉例）"></div>
+      <div class="fld"><label>想在哪個月之前存到（選填）</label><input id="acGoalDue" type="month"></div>
+      <div class="tiny" id="acGoalTip"></div>
+    </div>
     <div id="acRecent" style="margin-top:12px"></div>
     <div class="btns">
       <button class="del" id="acDel">🗑</button>
@@ -627,6 +666,70 @@ body.on-alloc #toast{bottom:160px}
   </div>
 </div>
 
+<!-- ======== 股票帳戶：持股與定期定額 ======== -->
+<div class="modal" id="mStock">
+  <div class="bg" data-close></div>
+  <div class="sheet">
+    <h3><span id="skTitle">股票</span><button class="x" data-close>✕</button></h3>
+    <div id="skHead"></div>
+    <div id="skHolds"></div>
+    <div class="btns" style="margin-top:10px">
+      <button class="gh" id="skAddLot">＋ 目前持股</button>
+      <button class="gh" id="skAddDca">＋ 定期定額</button>
+    </div>
+    <div class="acclab" style="margin-top:14px">定期定額</div>
+    <div id="skDca"></div>
+    <div class="tiny" style="margin-top:10px">
+      定期定額每天收盤後由雲端自動記：一筆轉帳（從扣款帳戶到這個股票帳戶）加一筆買進紀錄，股數用成交日的收盤價估，標「估」。
+      自己轉帳進來的錢不算進市值，買了股票記得加一筆持股。
+    </div>
+    <div class="btns"><button class="gh" id="skAcc">帳戶設定</button><button class="go" data-close>好了</button></div>
+  </div>
+</div>
+
+<!-- ======== 一筆買進紀錄（目前持股／定期定額那一期） ======== -->
+<div class="modal" id="mLot">
+  <div class="bg" data-close></div>
+  <div class="sheet">
+    <h3><span id="ltTitle">持股</span><button class="x" data-close>✕</button></h3>
+    <div class="fld"><label>股票代號</label>
+      <div class="addrow"><input id="ltCode" maxlength="6" autocapitalize="characters" placeholder="例如 0050（舉例）"><button id="ltLook">查</button></div>
+      <div class="tiny" id="ltName"></div></div>
+    <div class="fld"><label>股數</label><input id="ltSh" type="number" inputmode="numeric" placeholder="零股就填實際股數"></div>
+    <div class="fld"><label id="ltAmtLab">總成本（含手續費）</label><input id="ltAmt" type="number" inputmode="numeric"></div>
+    <div class="fld"><label>或填買進均價（會幫你算總成本）</label><input id="ltAvg" type="number" inputmode="decimal" step="0.01"></div>
+    <div class="fld"><label>日期</label><input id="ltDate" type="date"></div>
+    <div class="tiny" id="ltTip"></div>
+    <div class="btns">
+      <button class="del" id="ltDel">🗑</button>
+      <button class="gh" data-close>取消</button>
+      <button class="go" id="ltSave">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======== 定期定額設定 ======== -->
+<div class="modal" id="mDca">
+  <div class="bg" data-close></div>
+  <div class="sheet">
+    <h3><span id="dcTitle">定期定額</span><button class="x" data-close>✕</button></h3>
+    <div class="fld"><label>股票代號</label>
+      <div class="addrow"><input id="dcCode" maxlength="6" autocapitalize="characters" placeholder="例如 0050（舉例）"><button id="dcLook">查</button></div>
+      <div class="tiny" id="dcName"></div></div>
+    <div class="fld"><label>每個月幾號買</label><input id="dcDay" type="number" inputmode="numeric" min="1" max="31" placeholder="例如 6"></div>
+    <div class="fld"><label>每次扣多少（含手續費）</label><input id="dcAmt" type="number" inputmode="numeric" placeholder="例如 12345（舉例）"></div>
+    <div class="fld"><label>從哪個帳戶扣</label><select id="dcFrom"></select></div>
+    <div class="fld"><label>從哪個月開始記</label><input id="dcStart" type="month"></div>
+    <label class="chk" id="dcOffWrap"><input type="checkbox" id="dcOff"> 暫停（暫停期間不會自動記）</label>
+    <div class="tiny" id="dcTip"></div>
+    <div class="btns">
+      <button class="del" id="dcDel">🗑</button>
+      <button class="gh" data-close>取消</button>
+      <button class="go" id="dcSave">儲存</button>
+    </div>
+  </div>
+</div>
+
 <!-- ======== 某一類的明細 ======== -->
 <div class="modal" id="mCat">
   <div class="bg" data-close></div>
@@ -645,10 +748,8 @@ body.on-alloc #toast{bottom:160px}
       <select id="setDefAcc"></select></div>
 
     <div class="fld" style="margin-top:16px"><label>還沒排分配的月份：每月預算</label>
-      <input id="setBudget" type="number" inputmode="numeric" placeholder="例如 20000"></div>
-    <div class="fld"><label>還沒排分配的月份：存錢目標</label>
-      <input id="setGoal" type="number" inputmode="numeric" placeholder="例如 10000"></div>
-    <div class="tiny">有排「分配」的月份，預算和存錢目標一律照分配算，這兩格只是備用。</div>
+      <input id="setBudget" type="number" inputmode="numeric" placeholder="例如 12345（舉例）"></div>
+    <div class="tiny">有排「分配」的月份，預算一律照分配算，這格只是備用。存錢目標看分配的「儲蓄投資」；存款銀行的目標在帳戶頁點那個帳戶設。</div>
 
     <div class="fld" style="margin-top:16px">
       <label>支出分類</label>
@@ -745,7 +846,8 @@ const defSettings = () => ({
   accs:DEF_ACCS.map(a => ({...a})), defAcc:'bank',
   fixItems:[],                       // 固定支出的細項名稱，例如 房租、電話費
   preItems:[],                       // 預存項目 [{id,name,amt,every,next:'YYYY-MM',open,openYm}]
-  inst:[]                            // 分期付款 [{id,name,start:'YYYY-MM',n,amt}]
+  inst:[],                           // 分期付款 [{id,name,start:'YYYY-MM',n,amt}]
+  dca:[]                             // 定期定額 [{id,acc,code,day,amt,from,start:'YYYY-MM',off}]
 });
 /* 分配頁四大項（2026-09-14 定）：固定支出（含分期）／變動支出／預存資金／儲蓄投資。
    「固定支出」「預存資金」這兩類是系統分類，名字鎖住不能改也不能刪——
@@ -756,6 +858,10 @@ const SYS_CATS  = [FIXED_CAT, PRE_CAT];
 const SUB_CATS  = [FIXED_CAT, PRE_CAT]; // 選了會多一排細項的分類
 const CAT_SHORT = { 固定支出:'固定', 預存資金:'預存' };   // 記一筆按鈕上的短名
 const SAVE_ANY  = '_';               // 存錢那組「不指定帳戶」那一行的 key
+/* 股票（2026-09-15 第二批）：價格由 LINE 小秘書那台雲端小程式每天收盤後寫進 prices/，
+   輸入代號時也會問它一次（證交所的資料沒開跨網域，網頁不能自己抓） */
+const STOCK_API = 'https://dora-line-secretary.zhuer0323.workers.dev/stock';
+const CODE_RE   = /^[0-9A-Z]{4,6}$/;
 /* 分類顏色。這十色是跑色盲模擬選出來的，兩兩之間在紅綠色弱與一般視覺下都分得開
    （全配對 CVD ΔE 8.4、一般視覺 ΔE 15.4，都在門檻之上）。
    原本那組有兩個綠、兩個紫、兩個橘，紅綠色弱的人看「醫療」跟「人情」幾乎一樣。
@@ -779,6 +885,10 @@ let items = {};    // id -> {d,amt,cat,note,kind,inv,ts,acc}／轉帳是 {kind:'
                    // 校正餘額是 {kind:'adj',acc,amt}，amt 可正可負，不算收入也不算支出
 let settings = defSettings();
 let allocs = {};   // 'YYYY-MM' -> {inc:[{id,cat,amt,on,booked}], cat:[{k,v}], save:[{k,v}], done, ts}
+let lots = {};     // 股票買進紀錄 id -> {acc,code,sh,amt,d,src:'manual'|'dca',est,px,plan}
+                   // 定期定額那一期的 id 是 dca_{計畫}_{YYYY-MM}，跟那筆轉帳同一個 id
+let prices = {};   // 代號 -> {name,mkt:'tse'|'otc',close,d,t}
+let dcaSkip = {};  // 她刪掉的定期定額那一期留記號，雲端就不會再補回來
 let alMon = ymNow();                 // 分配頁正在看哪個月
 let pending = [];
 let _db=null,_ref=null,_set=null,_remove=null,_ready=false;
@@ -838,14 +948,18 @@ function defAccId(){
 function itemAcc(it){ return it.acc || defAccId(); }
 
 /* 每個帳戶現在有多少錢。
-   起始餘額 = 建立帳戶那天當下的餘額，所以那天之前的帳不再重複扣 */
-function accBalances(){
+   起始餘額 = 建立帳戶那天當下的餘額，所以那天之前的帳不再重複扣。
+   before：只算這一天之前的帳（存款目標要看「上個月底」的餘額）。
+   股票帳戶填了持股就改看市值、轉進去的錢不算；還沒填持股的照舊用轉進去的金額（2026-09-15）。
+   ⚠️ 「朱兒的獨自升級」的 mnBalances() 抄這一段，改算法那邊要跟著改 */
+function accBalances(before){
   const accs = accList();
   const bal = {};
   accs.forEach(a => bal[a.id] = Number(a.open) || 0);
   const hit = (id, v, d) => {
     const a = accById(id); if(!a) return;
     if(a.openD && d && d < a.openD) return;
+    if(before && d >= before) return;
     bal[id] += v;
   };
   Object.values(items).forEach(it => {
@@ -855,6 +969,7 @@ function accBalances(){
     else if(it.kind === 'in') hit(itemAcc(it), n, d);
     else hit(itemAcc(it), -n, d);
   });
+  if(!before) accs.forEach(a => { if(a.type === 'stock' && hasLots(a.id)) bal[a.id] = stockTotals(a.id).mv; });
   return bal;
 }
 /* 淨資產＝全部加總；負債只算信用卡欠的，其他都算資產 */
@@ -866,6 +981,61 @@ function netWorth(){
     if(a.type === 'card' && v < 0) debt += -v; else asset += v;
   });
   return { bal, asset, debt, net: asset - debt };
+}
+
+/* ---------- 股票：持股、價格、定期定額（2026-09-15） ---------- */
+function lotsOf(accId){
+  return Object.entries(lots).filter(([,l]) => l && l.acc === accId).map(([id,l]) => ({ id, ...l }));
+}
+function hasLots(accId){ return Object.values(lots).some(l => l && l.acc === accId); }
+/* 每一檔：股數、成本、均價、收盤價、市值、賺賠。還沒抓到價格的，市值先用成本、賺賠不算 */
+function holdingsOf(accId){
+  const by = {};
+  lotsOf(accId).forEach(l => {
+    const h = by[l.code] = by[l.code] || { code:l.code, sh:0, amt:0, est:false, lots:[] };
+    h.sh += Number(l.sh)||0; h.amt += Number(l.amt)||0; h.est = h.est || !!l.est; h.lots.push(l);
+  });
+  return Object.values(by).map(h => {
+    const p = prices[h.code], px = p ? Number(p.close)||0 : 0, mv = px ? h.sh * px : h.amt;
+    h.lots.sort((a,b) => (b.d||'').localeCompare(a.d||'') || (b.ts||0) - (a.ts||0));
+    return { ...h, name:(p && p.name) || h.code, avg: h.sh ? h.amt / h.sh : 0, px, pxD: p ? p.d : '',
+             mv, pl: px ? mv - h.amt : null };
+  }).sort((a,b) => b.mv - a.mv);
+}
+function stockTotals(accId){
+  const hs = holdingsOf(accId), priced = hs.filter(h => h.px);
+  const pl = priced.reduce((s,h) => s + h.pl, 0), pcost = priced.reduce((s,h) => s + h.amt, 0);
+  return { hs, mv: hs.reduce((s,h) => s + h.mv, 0), cost: hs.reduce((s,h) => s + h.amt, 0),
+           pl: priced.length ? pl : null, pct: pcost ? pl / pcost * 100 : 0,
+           pxD: priced.map(h => h.pxD).filter(Boolean).sort()[0] || '',     // 最舊的那個價格日期
+           missing: hs.length - priced.length };
+}
+function dcaList(){ return arr(settings.dca); }
+/* 某個股票帳戶在某個月定期定額會扣多少（沒暫停、已經開始的） */
+function dcaMonthly(accId, ym){
+  return dcaList().filter(p => p.acc === accId && !p.off && p.start && p.start <= ym)
+    .reduce((s,p) => s + (Number(p.amt)||0), 0);
+}
+function mdOf(d){ return d ? `${Number(d.slice(5,7))}/${Number(d.slice(8,10))}` : ''; }
+function fmtPx(n){ return Number(n||0).toLocaleString('en-US', { maximumFractionDigits:2 }); }
+function plTx(pl, pct){
+  return `${pl >= 0 ? '賺' : '賠'} ${money(Math.abs(pl))}（${pl >= 0 ? '+' : '−'}${Math.abs(pct).toFixed(1)}%）`;
+}
+
+/* 存款目標（一個存款銀行一個目標，2026-09-15）。進度只看帳戶餘額，永遠跟銀行對得起來。
+   這個月該存多少 ＝（目標 − 上個月底餘額）÷ 到完成月份還有幾個月（兩頭都算），無條件進位到百位。
+   用上個月底的餘額算，同一個月內數字才不會因為今天存了一筆就跳來跳去 */
+function goalInfo(a, ym){
+  const goal = Number(a && a.goal) || 0;
+  if(!goal) return null;
+  ym = ym || ymNow();
+  const bal = accBalances()[a.id] || 0, start = accBalances(`${ym}-01`)[a.id] || 0;
+  const due = /^\d{4}-\d{2}$/.test(a.goalDue || '') ? a.goalDue : '';
+  const months = due ? monthDiff(ym, due) + 1 : 0;
+  const reached = bal >= goal;
+  return { goal, bal, start, due, months, reached, overdue: !!due && months <= 0 && !reached,
+           need: due && months > 0 ? Math.max(0, Math.ceil((goal - start) / months / 100) * 100) : 0,
+           saved: bal - start, pct: Math.max(0, Math.min(100, bal / goal * 100)) };
 }
 
 function catColor(name){
@@ -890,7 +1060,7 @@ function setSync(s,msg){
 /* ---------- 本機存檔 ---------- */
 function saveLocal(){
   try{
-    localStorage.setItem(LS_KEY, JSON.stringify({ items, settings, allocs }));
+    localStorage.setItem(LS_KEY, JSON.stringify({ items, settings, allocs, lots, prices, dcaSkip }));
     localStorage.setItem(PQ_KEY, JSON.stringify(pending));
   }catch(e){ console.warn('存本機失敗', e); }
 }
@@ -900,6 +1070,9 @@ function loadLocal(){
     if(d.items) items = d.items;
     if(d.settings) settings = Object.assign(settings, d.settings);
     if(d.allocs) allocs = d.allocs;
+    if(d.lots) lots = d.lots;
+    if(d.prices) prices = d.prices;
+    if(d.dcaSkip) dcaSkip = d.dcaSkip;
     pending = JSON.parse(localStorage.getItem(PQ_KEY) || '[]');
     // 分類搬家只存本機、不排進待補：登入後會先補寫再讀雲端，排了會拿舊的設定蓋掉雲端。
     // 要等 pending 讀進來才存，不然會把待補清單洗成空的
@@ -926,6 +1099,21 @@ function cloudAlloc(ym){
   if(!_ready){ queue({op:'alloc',ym}); return; }
   _set(_ref(_db, `${ROOM}/alloc/${ym}`), allocs[ym] || null).catch(e=>{ console.warn(e); queue({op:'alloc',ym}); });
 }
+/* 買進紀錄：刪掉也排進待補時要記得是刪除，不然補寫時找不到那筆會以為要刪 */
+function cloudLot(id){
+  const del = !lots[id];
+  if(!_ready){ queue({op:'lot',id,del}); return; }
+  const p = _ref(_db, `${ROOM}/lots/${id}`);
+  (del ? _remove(p) : _set(p, lots[id])).catch(e=>{ console.warn(e); queue({op:'lot',id,del}); });
+}
+function cloudPrice(code){
+  if(!_ready){ queue({op:'price',code}); return; }
+  _set(_ref(_db, `${ROOM}/prices/${code}`), prices[code] || null).catch(e=>{ console.warn(e); queue({op:'price',code}); });
+}
+function cloudSkip(id){
+  if(!_ready){ queue({op:'skip',id}); return; }
+  _set(_ref(_db, `${ROOM}/dcaSkip/${id}`), true).catch(e=>{ console.warn(e); queue({op:'skip',id}); });
+}
 async function flushPending(){
   if(!_ready || !pending.length) return;
   const q = pending.slice(); pending = [];
@@ -935,6 +1123,10 @@ async function flushPending(){
       else if(o.op==='del')            await _remove(_ref(_db, `${ROOM}/items/${o.id}`));
       else if(o.op==='settings')       await _set(_ref(_db, `${ROOM}/settings`), settings);
       else if(o.op==='alloc')          await _set(_ref(_db, `${ROOM}/alloc/${o.ym}`), allocs[o.ym] || null);
+      else if(o.op==='lot' && o.del)   await _remove(_ref(_db, `${ROOM}/lots/${o.id}`));
+      else if(o.op==='lot' && lots[o.id]) await _set(_ref(_db, `${ROOM}/lots/${o.id}`), lots[o.id]);
+      else if(o.op==='price' && prices[o.code]) await _set(_ref(_db, `${ROOM}/prices/${o.code}`), prices[o.code]);
+      else if(o.op==='skip')           await _set(_ref(_db, `${ROOM}/dcaSkip/${o.id}`), true);
     }catch(e){ console.warn(e); pending.push(o); }
   }
   saveLocal(); setSync(pending.length ? 'wait' : 'ok');
@@ -1427,6 +1619,7 @@ function esc(s){ return String(s??'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&
 
 function renderAll(){
   renderCats(); renderAmt(); renderBudget(); renderSum(); renderList(); renderAccPage();
+  if($('#mStock').classList.contains('on')) renderStock();
   if(!allocBusy()) renderAlloc();      // 正在打分配金額時不重畫，免得雲端同步把打到一半的字洗掉
 }
 // renderCats 裡面就會叫 renderAccs，所以這裡不用另外再叫一次
@@ -1565,6 +1758,7 @@ function openEdit(id){
   $('#eAmt').value = it.amt;
   $('#eDate').value = it.d;
   $('#eNote').value = it.note || '';
+  $('#eAmt').readOnly = $('#eDate').readOnly = !!it.dca;      // 定期定額那筆到持股畫面改
   const isTr = it.kind === 'tr', isAdj = it.kind === 'adj';
   $('#eCatFld').style.display = (isTr || isAdj) ? 'none' : '';
   $('#eSubFld').style.display = 'none';
@@ -1578,7 +1772,9 @@ function openEdit(id){
     $('#eAcc').innerHTML = accList().map(a =>
       `<option value="${esc(a.id)}" ${a.id===cur?'selected':''}>${esc(a.name)}</option>`).join('');
   }
-  $('#eInv').textContent = isTr
+  $('#eInv').textContent = it.dca
+    ? '這筆是定期定額自動記的。金額或股數要改，到帳戶頁點股票帳戶改那一期；刪掉這筆會連買進紀錄一起拿掉，雲端也不會再補回來。'
+    : isTr
     ? `轉帳：${accName(it.from)||'?'} → ${accName(it.to)||'?'}（帳戶要改請刪掉重記）`
     : isAdj ? `校正 ${accName(it.acc)||'?'} 的餘額。金額可以是負的（帳面比實際多就是負的）`
     : it.inv ? `發票號碼 ${it.inv}` : '';
@@ -1617,7 +1813,11 @@ $('#eSave').onclick = () => {
 };
 $('#eDel').onclick = () => {
   const id = editingId; if(!id) return;
-  delete items[id]; saveLocal(); cloudDelItem(id);
+  if(items[id] && items[id].dca){
+    // 定期定額那一期：轉帳、買進紀錄一起拿掉，並留記號免得雲端又補回來
+    if(lots[id]) deleteLot(id);
+    else { delete items[id]; cloudDelItem(id); dcaSkip[id] = true; cloudSkip(id); saveLocal(); }
+  }else{ delete items[id]; saveLocal(); cloudDelItem(id); }
   closeM('#mEdit'); renderAll(); toast('刪掉了');
 };
 
@@ -1781,7 +1981,6 @@ function fixSpent(ym){ return subSpent(ym, FIXED_CAT); }
 /* ---------- 設定 ---------- */
 $('#btnSet').onclick = () => {
   $('#setBudget').value = settings.budget || '';
-  $('#setGoal').value   = settings.goal || '';
   renderSetDefAcc(); renderSetCats(); openM('#mSet');
 };
 /* 帳戶的新增、改名、校正都搬到「帳戶」頁了，設定只留這一格 */
@@ -1796,7 +1995,8 @@ $('#setDefAcc').onchange = () => {
 };
 
 function accUsed(id){
-  return Object.values(items).some(it => it.acc === id || it.from === id || it.to === id);
+  return Object.values(items).some(it => it.acc === id || it.from === id || it.to === id) ||
+    Object.values(lots).some(l => l && l.acc === id) || dcaList().some(p => p.acc === id || p.from === id);
 }
 
 function renderSetCats(){
@@ -1838,11 +2038,11 @@ $('#mSet').addEventListener('click', e => {
   }
 });
 
-['setBudget','setGoal'].forEach(id => $('#'+id).onchange = () => {
+// 「存錢目標」欄位 2026-09-15 拿掉了：settings.goal 留在資料裡，沒排分配的舊月份照舊讀它
+$('#setBudget').onchange = () => {
   settings.budget = Number($('#setBudget').value) || 0;
-  settings.goal   = Number($('#setGoal').value) || 0;
   saveLocal(); cloudSettings(); renderAll();
-});
+};
 
 /* ---------- 帳戶頁 ---------- */
 function renderAccPage(){
@@ -1854,28 +2054,49 @@ function renderAccPage(){
   const EMPTY = {
     daily:'還沒有現金、一般銀行或電子支付。',
     save:'還沒有存款銀行。按「＋ 新帳戶」加一個（類型選存款銀行），存錢時用「＋ 存入」把錢搬進去。',
-    stock:'還沒有股票帳戶。持股與自動抓股價是第二批的功能。',
+    stock:'還沒有股票帳戶。按「＋ 新帳戶」加一個（類型選股票），再點進去填持股和定期定額。',
     card:'還沒有信用卡帳戶。',
   };
   $('#nGroups').innerHTML = ACC_GROUPS.map(g => {
     const list = accList().filter(a => g.types.includes(a.type));
     const sub = list.reduce((s,a) => s + (n.bal[a.id]||0), 0);
     const hint = !list.length ? EMPTY[g.key]
-      : g.key==='stock' ? '現在先照轉進去的金額算，第二批改成照持股市值自動更新。' : '';
+      : g.key==='stock' && list.some(a => !hasLots(a.id)) ? '還沒填持股的帳戶先照轉進去的金額算，點進去填了持股就改看市值。'
+      : g.key==='save' && !list.some(a => Number(a.goal)) ? '點存款銀行可以設目標，會算出每個月該存多少。' : '';
     const subTx = !list.length ? '' : g.key==='card' && sub<0 ? '未付 ' + money(-sub) : money(sub);
     return `<div class="card agrp">
       <h2>${g.name}<span class="sub">${subTx}</span></h2>
       ${list.map(a => {
         const v = n.bal[a.id]||0, debt = a.type==='card' && v<0;
+        const t = a.type==='stock' && hasLots(a.id) ? stockTotals(a.id) : null;
+        const n2 = !t ? '' : t.pl === null ? '還沒抓到價格，市值先用成本算'
+          : `<b class="${t.pl >= 0 ? 'gain' : 'loss'}">${plTx(t.pl, t.pct)}</b>　價格 ${mdOf(t.pxD)}`;
         return `<div class="arow" data-acc="${esc(a.id)}">
           <span class="ic">${ACC_ICON[a.type]||'💰'}</span>
-          <span class="nm">${esc(a.name)}</span>
+          <span class="nm">${esc(a.name)}${n2 ? `<span class="n2">${n2}</span>` : ''}</span>
           <b class="${debt?'debt':''}">${debt ? '未付 ' + money(-v) : money(v)}</b><span class="chev">›</span>
-        </div>`;
+        </div>${a.type === 'save' ? goalLine(a) : ''}`;
       }).join('')}
       ${hint ? `<div class="hint">${hint}</div>` : ''}
     </div>`;
   }).join('');
+}
+/* 存款銀行底下那條目標進度 */
+function goalLine(a){
+  const g = goalInfo(a); if(!g) return '';
+  let tx;
+  if(g.reached) tx = '<span class="good">達成目標了 ✓</span>';
+  else if(g.overdue) tx = `<span class="todo">過了期限，還差 ${money(g.goal - g.bal)}</span>`;
+  else if(g.due){
+    const when = g.due.slice(0,4) === ymNow().slice(0,4) ? `${Number(g.due.slice(5,7))} 月前` : `${ymLabel(g.due)}前`;
+    const got = Math.max(0, g.saved), left = Math.max(0, g.need - got);
+    tx = `${when}存到　·　這個月該存 ${money(g.need)}，已存 ${money(got)}` + (left ? `，還差 <b>${money(left)}</b>` : ' ✓');
+  }else tx = `還差 ${money(g.goal - g.bal)}（沒設期限，不算每月該存多少）`;
+  return `<div class="agoal" data-acc="${esc(a.id)}">
+    <div class="track"><i class="${g.reached ? 'ok' : ''}" style="width:${g.pct}%"></i></div>
+    <div class="gl"><span>已存 ${money(g.bal)}／目標 ${money(g.goal)}</span><b>${g.pct.toFixed(0)}%</b></div>
+    <div class="gl2">${tx}</div>
+  </div>`;
 }
 
 let editingAcc = null;     // null＝新增帳戶
@@ -1887,6 +2108,8 @@ function openAcc(id){
   $('#acType').innerHTML = Object.entries(ACC_TYPES).map(([k,t]) =>
     `<option value="${k}" ${(a ? k===a.type : k==='save') ? 'selected' : ''}>${ACC_ICON[k]} ${t}</option>`).join('');
   $('#acBal').value = '';
+  $('#acGoal').value = a && Number(a.goal) ? a.goal : '';
+  $('#acGoalDue').value = a && a.goalDue ? a.goalDue : '';
   syncAccTip();
   $('#acDel').style.display = a ? '' : 'none';
   const list = a ? Object.entries(items).map(([iid,it]) => ({ id:iid, ...it }))
@@ -1899,10 +2122,17 @@ function openAcc(id){
 }
 function syncAccTip(){
   const a = editingAcc ? accById(editingAcc) : null;
-  const isCard = $('#acType').value === 'card';
+  const ty = $('#acType').value, isCard = ty === 'card';
+  $('#acBalFld').style.display = ty === 'stock' ? 'none' : '';
+  $('#acGoalWrap').style.display = ty === 'save' ? '' : 'none';
   $('#acBalLab').textContent = (a ? '目前實際' : '目前') + (isCard ? '未付金額' : '餘額');
   $('#acBal').placeholder = a ? '不改就留空' : '0';
-  if(a){
+  if(ty === 'save') syncGoalTip(a);
+  if(ty === 'stock'){
+    $('#acBalTip').textContent = a
+      ? '股票帳戶的餘額看持股市值（還沒填持股時照轉進去的金額），不用校正。持股在帳戶頁點這個帳戶就能改。'
+      : '建好之後，在帳戶頁點這個帳戶填持股和定期定額。';
+  }else if(a){
     const v = accBalances()[a.id]||0;
     const now = a.type==='card' && v<0 ? '未付 ' + money(-v) : money(v);
     $('#acBalTip').textContent =
@@ -1914,6 +2144,23 @@ function syncAccTip(){
   }
 }
 $('#acType').onchange = syncAccTip;
+/* 存款目標的試算：這個月該存多少（新帳戶用填的起始餘額算） */
+function syncGoalTip(a){
+  const goal = Number($('#acGoal').value)||0, due = $('#acGoalDue').value;
+  let tip = '設了目標，帳戶頁會顯示進度；再填月份，會算出每個月該存多少，分配頁也會自動帶。';
+  if(goal && /^\d{4}-\d{2}$/.test(due)){
+    const ym = ymNow(), months = monthDiff(ym, due) + 1;
+    const start = a ? (accBalances(`${ym}-01`)[a.id]||0) : (Number($('#acBal').value)||0);
+    const bal = a ? (accBalances()[a.id]||0) : start;
+    if(bal >= goal) tip = '已經存到這個目標了。';
+    else if(months <= 0) tip = '這個月份已經過了，選這個月或之後的月份。';
+    else tip = `到 ${ymLabel(due)} 還有 ${months} 個月（含這個月），這個月該存 ${money(Math.max(0, Math.ceil((goal - start) / months / 100) * 100))}。`;
+  }
+  $('#acGoalTip').textContent = tip;
+}
+['acGoal','acGoalDue','acBal'].forEach(id => $('#'+id).addEventListener('input', () => {
+  if($('#acType').value === 'save') syncGoalTip(editingAcc ? accById(editingAcc) : null);
+}));
 $('#acRecent').onclick = e => {
   const row = e.target.closest('.item[data-id]'); if(!row) return;
   closeM('#mAcc');           // 先收起這一層，兩層視窗才不會疊在一起
@@ -1923,18 +2170,31 @@ $('#acSave').onclick = () => {
   const nm = $('#acName').value.trim(), ty = $('#acType').value;
   if(!nm){ toast('帳戶要有名字'); return; }
   if(accList().some(x => x.name === nm && x.id !== editingAcc)){ toast('已經有同名的帳戶'); return; }
-  const raw = $('#acBal').value.trim();
+  const raw = ty === 'stock' ? '' : $('#acBal').value.trim();       // 股票帳戶不校正餘額
   let target = raw === '' ? null : Number(raw);
   if(target !== null && isNaN(target)){ toast('餘額要填數字'); return; }
   if(target !== null && ty === 'card') target = -Math.abs(target);   // 信用卡填的是未付金額，存成負數
+  const goal = Math.round(Number($('#acGoal').value)||0), goalDue = $('#acGoalDue').value;
+  if(ty === 'save' && goalDue && !(goal > 0)){ toast('填了月份，也要填目標金額'); return; }
+  // 存款目標只有存款銀行有；換成別的類型就拿掉
+  const setGoal = x => {
+    if(ty === 'save' && goal > 0){ x.goal = goal; if(/^\d{4}-\d{2}$/.test(goalDue)) x.goalDue = goalDue; else delete x.goalDue; }
+    else { delete x.goal; delete x.goalDue; }
+  };
   if(!editingAcc){
     const id = 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2,5);
-    settings.accs = accList().concat({ id, name:nm, type:ty, open: target || 0, openD: today() });
+    const rec = { id, name:nm, type:ty, open: target || 0, openD: today() };
+    setGoal(rec);
+    settings.accs = accList().concat(rec);
+    refillSaveRows();
     saveLocal(); cloudSettings(); closeM('#mAcc'); renderAll(); toast(`加好了　${nm}`);
     return;
   }
   const a = accById(editingAcc); if(!a) return;
-  a.name = nm; a.type = ty;
+  if(a.type === 'stock' && ty !== 'stock' && (hasLots(a.id) || dcaList().some(p => p.acc === a.id))){
+    toast('這個帳戶還有持股或定期定額，不能改成別的類型'); return;
+  }
+  a.name = nm; a.type = ty; setGoal(a);
   if(target !== null){
     const diff = Math.round(target - (accBalances()[a.id]||0));
     if(diff){
@@ -1943,6 +2203,7 @@ $('#acSave').onclick = () => {
       cloudSetItem(id);
     }
   }
+  refillSaveRows();
   saveLocal(); cloudSettings(); closeM('#mAcc'); renderAll(); toast('改好了');
 };
 $('#acDel').onclick = () => {
@@ -1952,13 +2213,244 @@ $('#acDel').onclick = () => {
   settings.accs = accList().filter(a => a.id !== id);
   saveLocal(); cloudSettings(); closeM('#mAcc'); renderAll(); toast('刪掉了');
 };
-$('#nGroups').onclick = e => { const r = e.target.closest('.arow[data-acc]'); if(r) openAcc(r.dataset.acc); };
+$('#nGroups').onclick = e => {
+  const r = e.target.closest('[data-acc]'); if(!r) return;
+  const a = accById(r.dataset.acc); if(!a) return;
+  if(a.type === 'stock') openStock(a.id); else openAcc(a.id);
+};
 $('#nNew').onclick = () => openAcc(null);
 $('#nTr').onclick  = () => startTransfer('');
 $('#nSave').onclick = () => {
   const s = accList().find(a => a.type === 'save');
   if(!s){ toast('先按「＋ 新帳戶」加一個存款銀行'); return; }
   startTransfer(s.id);
+};
+
+/* ---------- 股票帳戶：持股與定期定額（2026-09-15） ----------
+   帳戶頁點股票帳戶打開。買進紀錄存在 lots/，一筆一筆加起來就是持股；
+   定期定額由雲端小程式每天收盤後自動記（轉帳＋買進紀錄，id 都是 dca_{計畫}_{YYYY-MM}） */
+let stockAcc = null, openCode = '';
+function openStock(id){ stockAcc = id; openCode = ''; renderStock(); openM('#mStock'); }
+function renderStock(){
+  const a = accById(stockAcc); if(!a) return;
+  $('#skTitle').textContent = a.name;
+  const t = stockTotals(a.id);
+  $('#skHead').innerHTML = t.hs.length ? `<div class="skhead">
+      <div class="k">總市值</div><div class="big">${money(t.mv)}</div>
+      <div class="subline">${t.pl === null ? '' : `<b class="${t.pl >= 0 ? 'gain' : 'loss'}">${plTx(t.pl, t.pct)}</b>　·　`}成本 ${money(t.cost)}${t.pxD ? `　·　價格 ${mdOf(t.pxD)}` : ''}</div>
+      ${t.missing ? `<div class="tiny">有 ${t.missing} 檔還沒抓到價格，市值先用成本算</div>` : ''}
+    </div>`
+    : '<div class="aempty">還沒有持股。已經買的按「＋ 目前持股」填進來；每個月自動扣款的按「＋ 定期定額」，之後每一期會自己記。</div>';
+  $('#skHolds').innerHTML = t.hs.map(h => {
+    const on = openCode === h.code;
+    return `<div class="hold" data-code="${esc(h.code)}">
+      <div class="h1"><b>${esc(h.name)}</b>${h.name !== h.code ? `<span class="cd">${esc(h.code)}</span>` : ''}${h.est ? '<span class="est">估</span>' : ''}<span class="mv">${money(h.mv)}</span></div>
+      <div class="h2"><span>${h.sh.toLocaleString('en-US')} 股　均價 ${fmtPx(h.avg)}${h.px ? `　收盤 ${fmtPx(h.px)}` : ''}</span>
+        ${h.pl === null ? '<span>還沒有價格</span>' : `<b class="${h.pl >= 0 ? 'gain' : 'loss'}">${plTx(h.pl, h.amt ? h.pl / h.amt * 100 : 0)}</b>`}</div>
+      ${on ? `<div class="lots">${h.lots.map(l => `<div class="lot" data-lot="${esc(l.id)}">
+          <span>${esc((l.d || '').replace(/-/g, '/'))}${l.src === 'dca' ? '　定期定額' : ''}</span>
+          <span>${(Number(l.sh)||0).toLocaleString('en-US')} 股</span><span>${money(l.amt)}</span>
+          <span class="est" style="${l.est ? '' : 'visibility:hidden'}">估</span></div>`).join('')}
+        <div class="tiny">點一筆可以改成對帳單上的實際股數與金額</div></div>` : ''}
+    </div>`;
+  }).join('');
+  const plans = dcaList().filter(p => p.acc === a.id);
+  $('#skDca').innerHTML = plans.length ? plans.map(p => `<div class="aline">
+      <div class="nm"><b>${esc((prices[p.code] || {}).name || p.code)}${(prices[p.code] || {}).name ? ` <span class="cd">${esc(p.code)}</span>` : ''}${p.off ? ' <span class="est">暫停</span>' : ''}</b>
+        <span class="n2 wrap">每月 ${p.day} 號扣 ${money(p.amt)}　·　從${esc(accName(p.from) || '?')}　·　${ymLabel(p.start)}起</span></div>
+      <button class="mini set" data-dcaedit="${esc(p.id)}" title="改這組定期定額">⚙</button></div>`).join('')
+    : '<div class="tiny">還沒有定期定額</div>';
+}
+$('#mStock').addEventListener('click', e => {
+  const t = e.target;
+  const lot = t.closest('[data-lot]'); if(lot){ openLot(lot.dataset.lot); return; }
+  const de = t.closest('[data-dcaedit]'); if(de){ openDca(de.dataset.dcaedit); return; }
+  if(t.closest('#skAddLot')){ openLot(null); return; }
+  if(t.closest('#skAddDca')){ openDca(null); return; }
+  if(t.closest('#skAcc')){ const id = stockAcc; closeM('#mStock'); openAcc(id); return; }
+  const h = t.closest('.hold[data-code]');
+  if(h){ openCode = openCode === h.dataset.code ? '' : h.dataset.code; renderStock(); }
+});
+
+/* 問雲端小程式某個代號的名稱與最近價格；問到就存進 prices（比手上那份新才寫） */
+async function lookupStock(code){
+  code = String(code || '').trim().toUpperCase();
+  if(!CODE_RE.test(code)) return { error:'代號是 4 到 6 碼的數字或英文' };
+  try{
+    const r = await fetch(`${STOCK_API}?code=${encodeURIComponent(code)}`);
+    const j = await r.json().catch(() => ({}));
+    if(!r.ok) return { error: j.error || '查不到這個代號' };
+    const old = prices[code];
+    if(!old || `${j.d} ${j.t||''}` > `${old.d} ${old.t||''}` || old.name !== j.name){
+      prices[code] = { name:j.name, mkt:j.mkt, close:j.close, d:j.d, t:j.t||'', ts:Date.now() };
+      saveLocal(); cloudPrice(code);
+    }
+    return { code, ...prices[code] };
+  }catch(e){
+    return prices[code] ? { code, ...prices[code] } : { error:'沒連上網路，查不到價格' };
+  }
+}
+/* 登入後：持股或定期定額用到、卻還沒有價格的代號補問一次（雲端小程式只在平日收盤後跑） */
+async function refreshMissingPrices(){
+  const codes = [...new Set([...Object.values(lots).map(l => l && l.code), ...dcaList().map(p => p.code)])]
+    .filter(c => c && !prices[c]).slice(0, 5);
+  for(const c of codes) await lookupStock(c);
+  if(codes.length) renderAll();
+}
+function nameTx(code){
+  const p = prices[code];
+  return p ? `${p.name}　最近價格 ${fmtPx(p.close)}（${mdOf(p.d)}）` : '還沒有價格';
+}
+async function doLook(inp, out){
+  const code = $(inp).value.trim().toUpperCase(); $(inp).value = code;
+  if(!code) return;
+  $(out).textContent = '查詢中…';
+  const r = await lookupStock(code);
+  $(out).textContent = r.error ? r.error : nameTx(code);
+}
+
+let editingLot = null;
+function openLot(id){
+  const l = id ? lots[id] : null, isDca = !!(l && l.src === 'dca');
+  editingLot = l ? id : null;
+  $('#ltTitle').textContent = !l ? '新增目前持股' : isDca ? '定期定額這一期' : '改持股';
+  $('#ltCode').value = l ? l.code : '';
+  $('#ltCode').readOnly = !!l;
+  $('#ltLook').style.display = l ? 'none' : '';
+  $('#ltName').textContent = l ? nameTx(l.code) : '輸入代號後按「查」，會帶出名稱與最近價格';
+  $('#ltSh').value = l ? l.sh : '';
+  $('#ltAmt').value = l ? l.amt : '';
+  $('#ltAvg').value = l && Number(l.sh) ? (l.amt / l.sh).toFixed(2) : '';
+  $('#ltDate').value = l ? (l.d || today()) : today();
+  $('#ltDate').readOnly = isDca;
+  $('#ltAmtLab').textContent = isDca ? '扣款金額（含手續費）' : '總成本（含手續費）';
+  $('#ltTip').textContent = isDca
+    ? `這筆是定期定額自動記的${l.est && l.px ? `，股數是用 ${mdOf(l.d)} 收盤價 ${fmtPx(l.px)} 估的` : ''}。照對帳單改好按儲存，「估」就會拿掉；金額改了，扣款那筆轉帳會一起改。`
+    : l ? '' : '已經持有的股票填這裡，不會記轉帳。之後每個月自動扣款的，另外設定定期定額。';
+  const del = $('#ltDel');
+  del.style.display = l ? '' : 'none'; del.textContent = '🗑'; del.style.flex = ''; delete del.dataset.arm;
+  openM('#mLot');
+}
+$('#ltLook').onclick = () => doLook('#ltCode', '#ltName');
+$('#ltCode').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); doLook('#ltCode', '#ltName'); } });
+// 均價跟總成本二選一填：填均價幫忙算總成本，填股數或總成本就回頭算均價
+$('#ltAvg').addEventListener('input', () => {
+  const sh = Number($('#ltSh').value)||0, av = Number($('#ltAvg').value)||0;
+  if(sh && av) $('#ltAmt').value = Math.round(sh * av);
+});
+['ltSh','ltAmt'].forEach(id => $('#'+id).addEventListener('input', () => {
+  const sh = Number($('#ltSh').value)||0, am = Number($('#ltAmt').value)||0;
+  $('#ltAvg').value = sh && am ? (am / sh).toFixed(2) : '';
+}));
+$('#ltSave').onclick = () => {
+  const old = editingLot ? lots[editingLot] : null;
+  const code = old ? old.code : $('#ltCode').value.trim().toUpperCase();
+  const sh = Math.round(Number($('#ltSh').value)||0), amt = Math.round(Number($('#ltAmt').value)||0);
+  if(!old && !prices[code]){ toast('先按「查」確認代號'); return; }
+  if(!(sh > 0)){ toast('股數要填'); return; }
+  if(!(amt > 0)){ toast(old && old.src === 'dca' ? '扣款金額要填' : '總成本要填'); return; }
+  if(old){
+    const rec = { ...old, sh, amt, d: old.src === 'dca' ? old.d : ($('#ltDate').value || old.d) };
+    delete rec.est;                   // 照對帳單改過了
+    lots[editingLot] = rec; cloudLot(editingLot);
+    const it = items[editingLot];
+    if(old.src === 'dca' && it && Number(it.amt) !== amt){ it.amt = amt; cloudSetItem(editingLot); }
+  }else{
+    const id = 'l' + uid();
+    lots[id] = { acc:stockAcc, code, sh, amt, d: $('#ltDate').value || today(), src:'manual', ts:Date.now() };
+    cloudLot(id);
+  }
+  saveLocal(); closeM('#mLot'); renderAll();
+  toast(old ? '改好了' : `加好了　${(prices[code] || {}).name || code}`);
+};
+/* 刪一筆買進紀錄。定期定額那一期連同轉帳一起拿掉，並留記號免得雲端又補回來 */
+function deleteLot(id){
+  const l = lots[id]; if(!l) return;
+  delete lots[id]; cloudLot(id);
+  if(l.src === 'dca'){
+    if(items[id]){ delete items[id]; cloudDelItem(id); }
+    dcaSkip[id] = true; cloudSkip(id);
+  }
+  saveLocal();
+}
+$('#ltDel').onclick = () => {
+  const l = lots[editingLot]; if(!l) return;
+  const b = $('#ltDel');
+  if(!b.dataset.arm){
+    b.dataset.arm = '1'; b.textContent = '確定刪除'; b.style.flex = '0 0 auto';
+    toast(l.src === 'dca' ? '再按一次：這期的轉帳一起拿掉，雲端不會再補回來' : '再按一次就刪掉'); return;
+  }
+  deleteLot(editingLot);
+  closeM('#mLot'); renderAll(); toast('刪掉了');
+};
+
+let editingDca = null;
+/* 開始月份預設「下一次扣款的那個月」：今天已經過了扣款日就從下個月開始 */
+function dcaStartDefault(day){
+  const d = Math.round(Number(day)||0);
+  return d && d < Number(today().slice(8,10)) ? ymShift(ymNow(), 1) : ymNow();
+}
+function openDca(id){
+  const p = id ? dcaList().find(x => x.id === id) : null;
+  editingDca = p ? p.id : null;
+  $('#dcTitle').textContent = p ? '定期定額' : '新增定期定額';
+  $('#dcCode').value = p ? p.code : '';
+  $('#dcName').textContent = p ? nameTx(p.code) : '輸入代號後按「查」，會帶出名稱與最近價格';
+  $('#dcDay').value = p ? p.day : '';
+  $('#dcAmt').value = p ? p.amt : '';
+  const from = p ? p.from : defAccId();
+  $('#dcFrom').innerHTML = accList().filter(a => ['bank','cash','epay'].includes(a.type)).map(a =>
+    `<option value="${esc(a.id)}" ${a.id === from ? 'selected' : ''}>${esc(a.name)}（${ACC_TYPES[a.type]}）</option>`).join('');
+  $('#dcStart').value = p ? p.start : ymNow();
+  delete $('#dcStart').dataset.touched;
+  $('#dcOffWrap').style.display = p ? '' : 'none';
+  $('#dcOff').checked = !!(p && p.off);
+  const del = $('#dcDel');
+  del.style.display = p ? '' : 'none'; del.textContent = '🗑'; del.style.flex = ''; delete del.dataset.arm;
+  syncDcaTip();
+  openM('#mDca');
+}
+function syncDcaTip(){
+  const day = Math.round(Number($('#dcDay').value)||0), amt = Math.round(Number($('#dcAmt').value)||0);
+  if(!editingDca && day >= 1 && day <= 31 && !$('#dcStart').dataset.touched) $('#dcStart').value = dcaStartDefault(day);
+  $('#dcTip').textContent = day >= 1 && day <= 31 && amt > 0
+    ? `每個月 ${day} 號（沒開盤就往後找第一個開盤日）收盤後，雲端會記一筆 ${money(amt)} 的轉帳，並用那天的收盤價估算買到幾股，標「估」。對帳單出來後點那一筆改成實際的就好。`
+    : '填好之後，每一期會自動記轉帳和買進股數，不用每個月自己算均價。';
+}
+['dcDay','dcAmt'].forEach(id => $('#'+id).addEventListener('input', syncDcaTip));
+$('#dcStart').addEventListener('input', () => { $('#dcStart').dataset.touched = '1'; });
+$('#dcLook').onclick = () => doLook('#dcCode', '#dcName');
+$('#dcCode').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); doLook('#dcCode', '#dcName'); } });
+$('#dcSave').onclick = () => {
+  const old = editingDca ? dcaList().find(p => p.id === editingDca) : null;
+  const code = $('#dcCode').value.trim().toUpperCase();
+  const day = Math.round(Number($('#dcDay').value)||0), amt = Math.round(Number($('#dcAmt').value)||0);
+  const from = $('#dcFrom').value, start = $('#dcStart').value;
+  if(!prices[code]){ toast('先按「查」確認代號'); return; }
+  if(!(day >= 1 && day <= 31)){ toast('幾號要填 1 到 31'); return; }
+  if(!(amt > 0)){ toast('每次扣多少要填'); return; }
+  if(!from){ toast('先加一個一般銀行當扣款帳戶'); return; }
+  if(!/^\d{4}-\d{2}$/.test(start)){ toast('從哪個月開始要選'); return; }
+  if(start < ymNow() && !(old && start === old.start)){ toast('開始月份不能早於這個月，之前買的填在「目前持股」'); return; }
+  if(old && old.code !== code && Object.values(lots).some(l => l && l.plan === old.id)){
+    toast('這組已經記過帳，代號不能改；要換股票請另外新增一組'); return;
+  }
+  const rec = { id: old ? old.id : 'd' + uid(), acc: old ? old.acc : stockAcc, code, day, amt, from, start,
+                off: !!(old && $('#dcOff').checked) };
+  settings.dca = old ? dcaList().map(p => p.id === old.id ? rec : p) : dcaList().concat(rec);
+  refillSaveRows();
+  saveLocal(); cloudSettings(); closeM('#mDca'); renderAll();
+  toast(old ? '改好了' : `加好了　${prices[code].name} 每月 ${day} 號`);
+};
+$('#dcDel').onclick = () => {
+  const old = dcaList().find(p => p.id === editingDca); if(!old) return;
+  const b = $('#dcDel');
+  if(!b.dataset.arm){
+    b.dataset.arm = '1'; b.textContent = '確定刪除'; b.style.flex = '0 0 auto';
+    toast('再按一次就刪掉，已經記過的那幾期會留著'); return;
+  }
+  settings.dca = dcaList().filter(p => p.id !== old.id);
+  saveLocal(); cloudSettings(); closeM('#mDca'); renderAll(); toast('刪掉了，記過的那幾期還在');
 };
 
 /* ---------- 掃發票 ----------
@@ -2073,6 +2565,23 @@ function saveInto(accId, ym){
   return monthItems(ym).filter(it => it.kind==='tr' && it.to===accId).reduce((s,it) => s + (Number(it.amt)||0), 0);
 }
 /* 儲蓄投資那組：每個存款銀行、股票帳戶各一行，加「不指定帳戶」 */
+/* 存款目標或定期定額改了：這個月起已經排過的分配，儲蓄投資那一行還沒有的補上建議值；
+   還沒排的草稿丟掉重算（草稿在打開網頁時就先算好了，不丟會一直是舊的） */
+function refillSaveRows(){
+  Object.keys(allocs).filter(m => m >= ymNow()).forEach(m => {
+    const a = allocs[m], was = JSON.stringify(arr(a.save));
+    fillPlans(a, m);
+    if(JSON.stringify(a.save) !== was) cloudAlloc(m);
+  });
+  _draft = null;
+}
+/* 儲蓄投資那一行的小字：存款目標這個月該存多少、股票帳戶每月定期定額多少 */
+function saveHint(r, ym){
+  const ac = accById(r.k); if(!ac) return '';
+  if(ac.type === 'save'){ const g = goalInfo(ac, ym); return g && g.due && !g.reached ? `　·　目標建議 ${plain(g.need)}` : ''; }
+  const d = ac.type === 'stock' ? dcaMonthly(ac.id, ym) : 0;
+  return d ? `　·　定期定額 ${plain(d)}` : '';
+}
 function saveRows(){
   return accList().filter(a => a.type==='save' || a.type==='stock').map(a => ({ k:a.id, name:a.name, type:a.type }))
     .concat({ k:SAVE_ANY, name:'存起來（不指定帳戶）' });
@@ -2126,6 +2635,15 @@ function fillPlans(a, ym){
     if(a.pre.some(r => r.k === p.name)) return;
     const s = preInfo(p, ym, a).sug;
     if(s) a.pre.push({ k:p.name, v:s });
+  });
+  // 儲蓄投資：有期限的存款目標帶「這個月該存多少」、股票帳戶帶定期定額的合計（2026-09-15）
+  a.save = arr(a.save);
+  accList().forEach(ac => {
+    if(a.save.some(r => r.k === ac.id)) return;
+    let v = 0;
+    if(ac.type === 'save'){ const g = goalInfo(ac, ym); v = g && g.due && !g.reached ? g.need : 0; }
+    else if(ac.type === 'stock') v = dcaMonthly(ac.id, ym);
+    if(v) a.save.push({ k:ac.id, v });
   });
 }
 /* 分期繳完（或期數改少）的月份，把那一行拿掉——不然畫面上看不到，卻還算在總額裡 */
@@ -2228,7 +2746,7 @@ function renderAlloc(){
         <span class="n2">還沒有專用的帳戶也可以先排</span></div>${av('save', r.k, v, 0, { ov:false, tx:'—' })}${noX}</div>`;
     return `<div class="aline"><div class="nm">
         <div class="nmrow">${ACC_ICON[r.type]||'🐷'} ${nameBox('acc', r.k, r.name, 8)}</div>
-        <span class="n2">上月轉入 ${plain(saveInto(r.k,pm))}</span></div>
+        <span class="n2">上月轉入 ${plain(saveInto(r.k,pm))}${saveHint(r, ym)}</span></div>
       ${av('save', r.k, v, 0, { ov:false, tx:'實際 ' + plain(saveInto(r.k,ym)) })}${noX}</div>`;
   };
   const addRow = (type, ph, max) =>
@@ -2593,6 +3111,7 @@ async function initFirebase(interactive){
   const d = snap.exists() ? snap.val() : {};
   if(d.items) items = d.items;
   allocs = d.alloc || {};
+  lots = d.lots || {}; prices = d.prices || {}; dcaSkip = d.dcaSkip || {};
   if(d.settings){
     settings = Object.assign(defSettings(), d.settings);
     if(migrateCats()) cloudSettings();           // 舊的七類換成十類，只跑一次
@@ -2618,6 +3137,15 @@ async function initFirebase(interactive){
     if(migrateCats()) cloudSettings();           // 舊版頁面寫回沒有「預存資金」的清單時補回來
     saveLocal(); renderAll();
   });
+  // 股票：雲端小程式每天收盤後會寫價格與定期定額，這三個也要即時聽
+  const cur = { lots: () => lots, prices: () => prices, dcaSkip: () => dcaSkip };
+  const put = { lots: v => lots = v, prices: v => prices = v, dcaSkip: v => dcaSkip = v };
+  Object.keys(cur).forEach(k => onValue(ref(_db, `${ROOM}/${k}`), s => {
+    const v = s.exists() ? s.val() : {};
+    if(JSON.stringify(v) === JSON.stringify(cur[k]())) return;
+    put[k](v); saveLocal(); renderAll();
+  }));
+  refreshMissingPrices();
   return true;
 }
 $('#setOut').onclick = () => { if(window._signOut) window._signOut(); else location.reload(); };

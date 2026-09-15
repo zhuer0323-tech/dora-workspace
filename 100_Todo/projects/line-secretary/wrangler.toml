@@ -9,6 +9,11 @@ WS_DB_URL = "https://busan-trip-2026-201f8-default-rtdb.asia-southeast1.firebase
 WS_ROOM = "ws_k7m2q9xr4t"
 MN_ROOM = "mn_x3f9b6qz"          # 記帳（個人開銷），跟工作台不同節點
 
+# 每天收盤後更新持股價格、定期定額自動記帳（src/stock.js）。
+# 時間是 UTC，對應台灣週一到週五 15:30／18:00／21:00；收盤資料什麼時候出來不一定，所以跑三次
+[triggers]
+crons = ["30 7 * * 1-5", "0 10 * * 1-5", "0 13 * * 1-5"]
+
 # 需要另外設定的機密（wrangler secret put <名稱>）：
 #   LINE_CHANNEL_SECRET  驗證訊息真的來自 LINE
 #   LINE_ACCESS_TOKEN    回訊息用（跟 8:30 早報同一組）

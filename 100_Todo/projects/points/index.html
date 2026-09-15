@@ -1052,6 +1052,15 @@ function mnBalances(mn){
     else if(it.kind === 'in') hit(it.acc || defAcc, n, d);
     else hit(it.acc || defAcc, -n, d);
   });
+  // 股票帳戶填了持股就改看市值（股數 × 雲端存的收盤價，還沒有價格的那檔用成本），轉進去的錢不算；
+  // 還沒填持股的照舊用轉進去的金額（2026-09-15 理財導航第二批，已跟 accBalances 對齊）
+  const px = mn?.prices || {}, mv = {};
+  vals(mn?.lots).forEach(l => {
+    if(!l || !l.acc) return;
+    const c = Number(px[l.code]?.close) || 0;
+    mv[l.acc] = (mv[l.acc] || 0) + (c ? (Number(l.sh) || 0) * c : (Number(l.amt) || 0));
+  });
+  accs.forEach(a => { if(a.type === 'stock' && a.id in mv) bal[a.id] = mv[a.id]; });
   return { accs, bal };
 }
 function wsRuns(c){
@@ -2347,11 +2356,15 @@ async function refreshSources(manual){
   if(refreshSources._busy) return;
   refreshSources._busy = true;
   try{
-    const [it, st, cl] = await Promise.allSettled([
-      _get(_ref(_db, `${MN_ROOM}/items`)), _get(_ref(_db, `${MN_ROOM}/settings`)), _get(_ref(_db, `${WS_ROOM}/clients`)) ]);
-    [it, st, cl].forEach(r => { if(r.status === 'rejected') console.warn('source', r.reason); });
+    const [it, st, cl, lt, px] = await Promise.allSettled([
+      _get(_ref(_db, `${MN_ROOM}/items`)), _get(_ref(_db, `${MN_ROOM}/settings`)), _get(_ref(_db, `${WS_ROOM}/clients`)),
+      _get(_ref(_db, `${MN_ROOM}/lots`)), _get(_ref(_db, `${MN_ROOM}/prices`)) ]);
+    [it, st, cl, lt, px].forEach(r => { if(r.status === 'rejected') console.warn('source', r.reason); });
     const miss = [];
-    const mn = it.status === 'fulfilled' && st.status === 'fulfilled' ? { items:it.value.val() || {}, settings:st.value.val() || {} } : (miss.push('理財導航'), SRC.mn);
+    // 持股與股價（理財導航第二批）讀不到就當沒有，股票帳戶照舊用轉進去的金額
+    const val = r => r.status === 'fulfilled' ? r.value.val() || {} : {};
+    const mn = it.status === 'fulfilled' && st.status === 'fulfilled'
+      ? { items:it.value.val() || {}, settings:st.value.val() || {}, lots:val(lt), prices:val(px) } : (miss.push('理財導航'), SRC.mn);
     const ws = cl.status === 'fulfilled' ? { clients:cl.value.val() || {} } : (miss.push('工作台'), SRC.ws);
     SRC = { mn, ws, at: miss.length === 2 ? SRC.at : Date.now(), err: miss.length ? `${miss.join('、')}沒讀到` : '' };
     cacheAuto(); renderAll();

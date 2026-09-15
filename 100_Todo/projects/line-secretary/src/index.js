@@ -14,6 +14,7 @@ import { classify } from './classify.js';
 import { parseDue, todayStr } from './date.js';
 import { addMoney, isMoneyText } from './money.js';
 import { queueReport } from './report.js';
+import { handleStock, runStockJob } from './stock.js';
 
 export default {
   async fetch(request, env, ctx){
@@ -22,6 +23,9 @@ export default {
     // iPhone 捷徑走這條：POST /money，帶 x-dora-token
     // 走自己的路徑，跟 LINE 的 webhook（根目錄）完全分開，改這裡不會影響排任務
     if (url.pathname === '/money') return handleShortcut(request, env, url);
+
+    // 記帳網頁輸入股票代號時查名稱與價格（公開資料，不用密碼）
+    if (url.pathname === '/stock') return handleStock(request, env, url);
 
     if (request.method === 'GET') return new Response('OK');           // 給自己確認有活著用
     if (request.method !== 'POST') return new Response('Not found', { status: 404 });
@@ -38,6 +42,13 @@ export default {
     // LINE 規定 10 秒內要回 200，實際處理丟到背景做
     for (const ev of body.events || []) ctx.waitUntil(handleEvent(ev, env));
     return new Response('OK');
+  },
+
+  // 每天收盤後定時跑（wrangler.toml 的 crons）：更新持股價格、定期定額自動記帳
+  async scheduled(event, env, ctx){
+    ctx.waitUntil(runStockJob(env)
+      .then(log => console.log('stock job', JSON.stringify(log)))
+      .catch(e => console.error('stock job failed', e)));
   }
 };
 
