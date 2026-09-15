@@ -22,7 +22,8 @@
   --line:#F6DCE4;
   --ok:#6FC79A; --warn:#F0A24B; --bad:#E05263;
   --bar:#D95C86; --bar-on:#B03A63;   /* 柱狀圖：對白底 3.6:1，跟粉色系同一家 */
-  --gain:#2A7F53; --loss:#C93A4D;    /* 股票賺賠：對白底都 4.9:1，另外有「賺／賠」字與正負號，色弱也分得出來 */
+  --gain:#C93A4D; --loss:#2A7F53;    /* 股票賺賠照台股習慣紅漲綠跌（2026-09-15 她要求）：對白底都 4.9:1，另外有「賺／賠」字與正負號，色弱也分得出來 */
+  --good:#2A7F53;                    /* 存款目標「達成了」用綠色，不跟著股票的紅漲綠跌走 */
   --shadow:0 2px 10px rgba(232,150,178,.13);
   --shadow-l:0 6px 22px rgba(232,150,178,.20);
   --r:18px;
@@ -303,7 +304,7 @@ header.top h1 .sub{font-size:12px;color:var(--ink3);font-weight:400;margin-left:
 .agoal .gl b{font-weight:800}
 .agoal .gl2{font-size:11.5px;color:var(--ink3);line-height:1.6}
 .agoal .gl2 b{color:var(--ink)}
-.agoal .good{color:var(--gain);font-weight:700}
+.agoal .good{color:var(--good);font-weight:700}
 .agoal .todo{color:var(--warn);font-weight:700}
 /* 股票帳戶：持股畫面 */
 .skhead{padding:2px 2px 10px}
