@@ -3,7 +3,7 @@
    反過來（快取優先）會讓你改完版還一直看到舊畫面。
    帳本資料走 Firebase 與 localStorage，不經過這裡。 */
 
-const CACHE = 'dora-money-v5';   // 2026-09-15 存款目標、股票持股與定期定額，換號才不會一直開到舊畫面
+const CACHE = 'dora-money-v6';   // 2026-09-16 進階標記與月底診斷，換號才不會一直開到舊畫面
 const SHELL = ['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
 
 self.addEventListener('install', e => {

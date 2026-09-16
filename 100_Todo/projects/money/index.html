@@ -112,6 +112,14 @@ header.top h1 .sub{font-size:12px;color:var(--ink3);font-weight:400;margin-left:
 .subs{flex-wrap:nowrap;overflow-x:auto;margin-top:5px;padding-bottom:2px;scrollbar-width:none}
 .subs::-webkit-scrollbar{display:none}
 .subs button{flex:none;padding:5px 11px;font-size:12.5px}
+/* 進階標記（2026-09-16 第三批）：平常收起來，那顆「＋」擠在日期備註那一排，不佔高度 */
+.advtog{flex:none;width:42px;border-radius:12px;background:var(--pink-xl);color:var(--ink2);
+  font-size:15px;font-weight:700}
+.advtog.on{background:var(--ink);color:#fff}
+#advBox{margin-top:4px}
+.tag{display:inline-block;font-size:10.5px;font-weight:700;border-radius:6px;padding:0 5px;
+  margin-left:5px;background:var(--pink-xl);color:var(--ink2);vertical-align:1px}
+.tag.hot{background:#FFF1DD;color:#A15C00}
 
 /* 總覽的帳戶餘額清單 */
 .acclist{display:flex;flex-direction:column;gap:2px;margin-top:10px}
@@ -200,6 +208,22 @@ header.top h1 .sub{font-size:12px;color:var(--ink3);font-weight:400;margin-left:
 .splitlab .k i{width:8px;height:8px;border-radius:2px;display:inline-block}
 
 .empty{color:var(--ink3);font-size:13px;text-align:center;padding:16px 0}
+/* 月底診斷（2026-09-16 第三批） */
+.dg{display:flex;gap:7px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--line);
+  font-size:13.5px;line-height:1.65}
+.dg:first-child{border-top:0}
+.dg .ic{flex:none;color:var(--pink-d);font-weight:800}
+.dg b{font-weight:700}
+.dg .bad{color:var(--bad)}
+.dghd{font-size:12px;color:var(--ink3);font-weight:700;margin-top:12px}
+.dgsug{display:flex;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line);
+  font-size:13px;line-height:1.6}
+.dgsug span{flex:1}
+.dgsug button{flex:none;padding:7px 11px;border-radius:11px;background:var(--pink);color:#fff;
+  font-weight:700;font-size:12.5px}
+.dgwhy{margin-top:12px}
+.dgwhy summary{font-size:12px;color:var(--ink3);cursor:pointer}
+.dgwhy .in{font-size:11.5px;color:var(--ink3);line-height:1.85;margin-top:6px}
 
 /* ---------- 明細 ---------- */
 .daygrp{margin-bottom:14px}
@@ -461,6 +485,14 @@ body.on-alloc #toast{bottom:160px}
     <div class="metarow">
       <input type="date" id="fDate">
       <input class="note" id="fNote" placeholder="備註（選填）" maxlength="40">
+      <button class="advtog" id="advBtn" title="需要／想要、心情、衝動、臨時">＋</button>
+    </div>
+    <div id="advBox" style="display:none">
+      <div class="acclab">這筆是</div>
+      <div class="accs" id="advNeed"></div>
+      <div class="acclab">花錢當下的心情</div>
+      <div class="accs subs" id="advMood"></div>
+      <div class="accs" id="advFlag" style="margin-top:6px"></div>
     </div>
 
     <div class="pad">
@@ -498,6 +530,11 @@ body.on-alloc #toast{bottom:160px}
     <div class="big" id="sLeft">—</div>
     <div class="subline" id="sLeftSub"></div>
     <div class="track" style="height:10px;margin-top:10px"><i id="sLeftFill" style="width:0"></i></div>
+  </div>
+
+  <div class="card" id="cardDiag" style="display:none">
+    <h2 id="diagTitle">月底診斷</h2>
+    <div id="diagBox"></div>
   </div>
 
   <div class="card" id="cardBars">
@@ -610,6 +647,12 @@ body.on-alloc #toast{bottom:160px}
     <div class="fld" id="eAccFld"><label>帳戶</label><select id="eAcc"></select></div>
     <div class="fld"><label>日期</label><input id="eDate" type="date"></div>
     <div class="fld"><label>備註</label><input id="eNote" maxlength="40"></div>
+    <div class="fld" id="eMarkFld" style="display:none">
+      <label>進階標記（選填，月底診斷會用到）</label>
+      <div class="accs" id="eNeed"></div>
+      <div class="accs subs" id="eMood" style="margin-top:5px"></div>
+      <div class="accs" id="eFlag" style="margin-top:5px"></div>
+    </div>
     <div class="tiny" id="eInv"></div>
     <div class="btns">
       <button class="del" id="eDel">🗑</button>
@@ -861,6 +904,12 @@ const SYS_CATS  = [FIXED_CAT, PRE_CAT];
 const SUB_CATS  = [FIXED_CAT, PRE_CAT]; // 選了會多一排細項的分類
 const CAT_SHORT = { 固定支出:'固定', 預存資金:'預存' };   // 記一筆按鈕上的短名
 const SAVE_ANY  = '_';               // 存錢那組「不指定帳戶」那一行的 key
+/* 進階標記（2026-09-16 第三批）：月底診斷靠這些判斷「超支是亂花，還是預算本來就抓錯」。
+   只有支出才有；LINE 與手機捷徑記的帳沒有標記，之後可以從明細點進去補 */
+const NEEDS = [['need','需要'],['want','想要']];
+const MOODS = ['開心','普通','難過','興奮','壓力','無聊'];
+const FLAGS = [['imp','衝動消費'],['tmp','臨時性支出']];
+const blankMarks = () => ({ need:'', mood:'', imp:false, tmp:false });
 /* 股票（2026-09-15 第二批）：價格由 LINE 小秘書那台雲端小程式每天收盤後寫進 prices/，
    輸入代號時也會問它一次（證交所的資料沒開跨網域，網頁不能自己抓） */
 const STOCK_API = 'https://dora-line-secretary.zhuer0323.workers.dev/stock';
@@ -899,6 +948,8 @@ let _db=null,_ref=null,_set=null,_remove=null,_ready=false;
 let kind='out', amt='', cat='', tab='add';
 let sub='';                          // 記一筆選到的固定支出細項，沒選就是空的
 let acc='', trFrom='', trTo='';
+let mk = blankMarks();               // 記一筆頁正在標的；emk 是改帳視窗那一筆的
+let emk = blankMarks();
 let rg = 'm', rgCur = today();        // 總覽的區間：w 週／m 月／y 年，rgCur 是游標日期
 let listMon = ymNow();
 let editingId = null, catModalKey = null;
@@ -1250,6 +1301,10 @@ function renderCats(){
   }
   renderSubs();
   renderAccs();
+  // 進階標記只有支出有；換成收入或轉帳時收起來並清掉
+  $('#advBtn').style.display = kind === 'out' ? '' : 'none';
+  if(kind !== 'out'){ $('#advBox').style.display = 'none'; mk = blankMarks(); }
+  $('#advBtn').classList.toggle('on', kind === 'out' && (hasMark(mk) || $('#advBox').style.display !== 'none'));
 }
 function fixList(){ return Array.isArray(settings.fixItems) ? settings.fixItems : []; }
 function preList(){ return arr(settings.preItems); }
@@ -1289,6 +1344,37 @@ function renderSubs(){
 }
 /* 明細上顯示的分類名：固定支出有細項就接在後面 */
 function catLabel(it){ return (it.cat || '其他') + (it.sub ? '・' + it.sub : ''); }
+
+/* ---------- 進階標記 ---------- */
+function markBoxes(pre, m){
+  const chip = (attr, val, label, on) => `<button data-${attr}="${esc(val)}" class="${on ? 'on' : ''}">${esc(label)}</button>`;
+  $(`#${pre}Need`).innerHTML = NEEDS.map(([k,l]) => chip('need', k, l, m.need === k)).join('');
+  $(`#${pre}Mood`).innerHTML = MOODS.map(x => chip('mood', x, x, m.mood === x)).join('');
+  $(`#${pre}Flag`).innerHTML = FLAGS.map(([k,l]) => chip('flag', k, l, !!m[k])).join('');
+}
+/* 點一下選起來，再點一次取消 */
+function markClick(e, m, redraw){
+  const b = e.target.closest('button[data-need],button[data-mood],button[data-flag]');
+  if(!b) return false;
+  if(b.dataset.need !== undefined) m.need = m.need === b.dataset.need ? '' : b.dataset.need;
+  else if(b.dataset.mood !== undefined) m.mood = m.mood === b.dataset.mood ? '' : b.dataset.mood;
+  else m[b.dataset.flag] = !m[b.dataset.flag];
+  redraw();
+  return true;
+}
+const markFields = m => ({ ...(m.need ? { need:m.need } : {}), ...(m.mood ? { mood:m.mood } : {}),
+                           ...(m.imp ? { imp:true } : {}), ...(m.tmp ? { tmp:true } : {}) });
+const marksOf = it => ({ need: it.need || '', mood: it.mood || '', imp: !!it.imp, tmp: !!it.tmp });
+const hasMark = m => !!(m.need || m.mood || m.imp || m.tmp);
+/* 明細上的小標籤 */
+function markTags(it){
+  const t = [];
+  if(it.need) t.push(`<span class="tag">${it.need === 'need' ? '需要' : '想要'}</span>`);
+  if(it.imp)  t.push('<span class="tag hot">衝動</span>');
+  if(it.tmp)  t.push('<span class="tag">臨時</span>');
+  if(it.mood) t.push(`<span class="tag">${esc(it.mood)}</span>`);
+  return t.join('');
+}
 
 function accChips(sel, chosen, attr, only){
   const accs = accList().filter(a => !only || only(a));
@@ -1386,6 +1472,7 @@ function renderSum(){
     f.className = left<0 ? 'over' : pct>=80 ? 'warn' : '';
   }
 
+  renderDiag(rg === 'm' ? p.a.slice(0,7) : '');     // 診斷只在月檢視出現
   renderBars(p);
 
   // 2 錢花到哪去
@@ -1546,6 +1633,175 @@ function monthsCounted(p){
   return set.size;
 }
 
+/* ---------- 月底診斷（2026-09-16 第三批） ----------
+   全部照固定規則算，不叫 AI：不吃額度、Mac 沒開也看得到。
+   口徑跟「還能花多少」一致，只講變動支出；固定支出與預存資金另外說。
+   每一條結論都要能在「判斷依據」裡攤開怎麼算的，建議一律要按了才套用 */
+const DIAG_DAY = 25;          // 當月要到 25 號才看得到（太早看資料不夠，講不出東西）
+function diagnose(ym){
+  const s = monthSum(ym), t = allocTotals(ym);
+  const bud = t && t.has ? t.byCat : null;
+  const outs = monthItems(ym).filter(it => isOut(it) && !SYS_CATS.includes(it.cat || ''));
+  const vary = outs.reduce((a,it) => a + (Number(it.amt)||0), 0);
+  const cats = settings.cats.filter(c => !SYS_CATS.includes(c));
+  const pts = [], sug = [], why = [];
+  const mNo = m => Number(m.slice(5,7));
+
+  // 1 每一類：預算 vs 實際
+  const over = !bud ? [] : cats.map(c => ({ c, b:Number(bud[c])||0, a:s.byCat[c]||0 }))
+    .filter(x => x.b > 0 && x.a > x.b).map(x => ({ ...x, diff:x.a - x.b }))
+    .sort((x,y) => y.diff - x.diff);
+  if(!bud) why.push('這個月沒有排分配，所以不判斷超支。到「分配」排好預算，診斷才看得出哪一類爆掉。');
+  over.forEach(x => pts.push({ p:10 + x.diff / 1000,
+    tx:`<b>${esc(x.c)}</b>超支 <b class="bad">${money(x.diff)}</b>（預算 ${plain(x.b)}，花了 ${plain(x.a)}）` }));
+  if(bud && !over.length) pts.push({ p:4, tx:'每一類都在預算內 ✓' });
+
+  // 2 預算抓錯：同一類連續 3 個月超過一成 → 建議改成近 3 個月平均
+  //   3 偶爾超支：只有這個月超，扣掉標「衝動」「臨時」的就回到預算內 → 不建議調預算
+  over.forEach(x => {
+    const rec = [0,1,2].map(i => ymShift(ym, -i)).map(m => {
+      const tt = allocTotals(m);
+      return { m, b: tt && tt.has ? Number(tt.byCat[x.c])||0 : 0, a: monthSum(m).byCat[x.c]||0 };
+    });
+    if(rec.every(r => r.b > 0 && r.a > r.b * 1.1)){
+      const avg = round100(rec.reduce((a,r) => a + r.a, 0) / 3);
+      sug.push({ kind:'budget', cat:x.c, v:avg,
+        tx:`「${esc(x.c)}」連續 3 個月超過預算一成以上，預算可能抓太低。下個月改成近 3 個月的平均 ${money(avg)}` });
+      why.push(`預算抓錯：${x.c} 近三個月「預算→實際」＝ ${rec.map(r => `${mNo(r.m)} 月 ${plain(r.b)}→${plain(r.a)}`).join('、')}，每個月都超過一成。`);
+      return;
+    }
+    const once = outs.filter(it => it.cat === x.c && (it.imp || it.tmp))
+      .reduce((a,it) => a + (Number(it.amt)||0), 0);
+    if(once && x.a - once <= x.b){
+      pts.push({ p:9, tx:`「${esc(x.c)}」超支主要是標了衝動或臨時的那幾筆（${money(once)}），扣掉就在預算內，這次先不用調預算` });
+      why.push(`偶爾超支：${x.c} 標了衝動／臨時的共 ${plain(once)}，扣掉之後 ${plain(x.a - once)} 沒超過預算 ${plain(x.b)}。`);
+    }
+  });
+
+  // 4 週期性大筆支出：單筆超過該類預算一半，而且半年或一年前出現過差不多的金額
+  outs.forEach(it => {
+    const b = bud ? Number(bud[it.cat])||0 : 0, n = Number(it.amt)||0;
+    if(!b || n <= b / 2) return;
+    const hit = [5,6,7,11,12,13].map(k => ymShift(ym, -k)).find(m =>
+      monthItems(m).some(x => isOut(x) && x.cat === it.cat && Math.abs((Number(x.amt)||0) - n) <= n * 0.1));
+    if(!hit) return;
+    const name = String(it.sub || it.note || it.cat).slice(0, 8);
+    if(preList().some(pp => pp.name === name) || sug.some(x => x.kind === 'pre' && x.name === name)) return;
+    const every = monthDiff(hit, ym) <= 8 ? 6 : 12;
+    sug.push({ kind:'pre', name, amt:n, every, next: ymShift(ym, every),
+      tx:`${money(n)} 的「${esc(name)}」大約 ${every} 個月出現一次，建議設成預存資金，每個月先存一點，繳的那個月就不會爆預算` });
+    why.push(`週期性：${name} 這個月 ${plain(n)}，${mNo(hit)} 月也有金額相近的同類支出（差 10% 以內）。`);
+  });
+
+  // 5 存錢：排的儲蓄投資 vs 實際轉進去；存款目標有沒有跟上
+  if(t && t.has && t.save){
+    const real = saveRows().reduce((a,r) => a + (r.k === SAVE_ANY ? 0 : saveInto(r.k, ym)), 0);
+    const diff = t.save - real;
+    pts.push({ p: diff > 0 ? 8 : 5, tx: diff > 0
+      ? `儲蓄投資排了 ${money(t.save)}，實際轉進去 ${money(real)}，還差 <b class="bad">${money(diff)}</b>`
+      : `儲蓄投資排了 ${money(t.save)}，實際轉進去 ${money(real)} ✓` });
+    why.push(`存錢：分配的儲蓄投資 ${plain(t.save)}，實際轉進存款或股票帳戶 ${plain(real)}。`);
+  }
+  if(ym === ymNow()) accList().filter(a => a.type === 'save' && Number(a.goal)).forEach(a => {
+    const g = goalInfo(a, ym);
+    if(!g || !g.due || g.reached) return;
+    const left = Math.max(0, g.need - Math.max(0, g.saved));
+    if(left > 0) pts.push({ p:7, tx:`存款目標「${esc(a.name)}」這個月還差 <b>${money(left)}</b> 才跟上進度` });
+  });
+
+  // 6 衝動消費：筆數、金額、最常星期幾、最常什麼心情
+  const imp = outs.filter(it => it.imp);
+  if(imp.length){
+    const amt = imp.reduce((a,it) => a + (Number(it.amt)||0), 0);
+    const WD = ['日','一','二','三','四','五','六'], byW = {}, byM = {};
+    imp.forEach(it => {
+      const w = new Date((it.d||today()) + 'T00:00:00').getDay();
+      byW[w] = (byW[w]||0) + 1;
+      if(it.mood) byM[it.mood] = (byM[it.mood]||0) + 1;
+    });
+    const tw = Object.entries(byW).sort((a,b) => b[1]-a[1])[0];
+    const tm = Object.entries(byM).sort((a,b) => b[1]-a[1])[0];
+    pts.push({ p:8.5, tx:`標了衝動消費 ${imp.length} 筆、共 <b>${money(amt)}</b>` +
+      (tw && tw[1] > 1 ? `，最常發生在星期${WD[tw[0]]}` : '') +
+      (tm && tm[1] > 1 ? `，當下心情多半是「${esc(tm[0])}」` : '') });
+    why.push(`衝動消費：${imp.length} 筆共 ${plain(amt)}，只算你自己標過的那幾筆。`);
+  }
+
+  // 7 標記夠不夠：標了需要／想要的不到一半就不下結論
+  const marked = outs.filter(it => it.need).reduce((a,it) => a + (Number(it.amt)||0), 0);
+  if(vary && marked < vary / 2){
+    why.push(`標記不夠：標了需要／想要的只有 ${plain(marked)}，不到變動支出 ${plain(vary)} 的一半，所以先不判斷是不是亂花。`);
+  }else if(marked){
+    const want = outs.filter(it => it.need === 'want').reduce((a,it) => a + (Number(it.amt)||0), 0);
+    pts.push({ p:6, tx:`標了「想要」的花費 ${money(want)}，佔變動支出 ${(vary ? want/vary*100 : 0).toFixed(0)}%` });
+  }
+
+  // 8 跟上個月比
+  const pm = ymShift(ym, -1);
+  const pvOuts = monthItems(pm).filter(it => isOut(it) && !SYS_CATS.includes(it.cat || ''));
+  const pv = pvOuts.reduce((a,it) => a + (Number(it.amt)||0), 0);
+  if(pv){
+    const byC = {}, pvC = {};
+    outs.forEach(it => byC[it.cat] = (byC[it.cat]||0) + (Number(it.amt)||0));
+    pvOuts.forEach(it => pvC[it.cat] = (pvC[it.cat]||0) + (Number(it.amt)||0));
+    const up = Object.keys(byC).map(c => ({ c, d:byC[c] - (pvC[c]||0) })).sort((a,b) => b.d - a.d)[0];
+    const diff = vary - pv;
+    pts.push({ p:3, tx:`變動支出 ${money(vary)}，比上個月${diff >= 0 ? '多' : '少'} ${money(Math.abs(diff))}` +
+      (up && up.d > 0 ? `，增加最多的是「${esc(up.c)}」（多 ${money(up.d)}）` : '') });
+  }
+
+  return { pts: pts.sort((a,b) => b.p - a.p), sug, why, has: outs.length > 0 };
+}
+
+let diagSug = [];
+function renderDiag(ym){
+  const card = $('#cardDiag');
+  if(!ym){ card.style.display = 'none'; diagSug = []; return; }
+  card.style.display = '';
+  const cur = ym === ymNow();
+  $('#diagTitle').textContent = cur ? '這個月的診斷' : `${ymLabel(ym)}的診斷`;
+  if(cur && Number(today().slice(8,10)) < DIAG_DAY){
+    diagSug = [];
+    $('#diagBox').innerHTML = `<div class="tiny">每個月 ${DIAG_DAY} 號之後才看這個月的診斷，現在資料還不夠。` +
+      '月份往前翻可以看過去的月份。</div>';
+    return;
+  }
+  const d = diagnose(ym);
+  diagSug = d.sug;
+  if(!d.has){ $('#diagBox').innerHTML = '<div class="empty">這個月還沒有變動支出</div>'; return; }
+  $('#diagBox').innerHTML =
+    d.pts.slice(0, 3).map(x => `<div class="dg"><span class="ic">·</span><span>${x.tx}</span></div>`).join('') +
+    (d.sug.length ? '<div class="dghd">下個月建議</div>' + d.sug.map((x,i) =>
+      `<div class="dgsug"><span>${x.tx}</span><button data-diag="${i}">${x.kind === 'budget' ? '套用到下月分配' : '設成預存'}</button></div>`).join('') : '') +
+    (d.why.length ? `<details class="dgwhy"><summary>判斷依據（點開看怎麼算的）</summary>
+      <div class="in">${d.why.map(w => '· ' + w).join('<br>')}</div></details>` : '');
+}
+/* 建議一律按了才套用，不會自動改預算 */
+function applyBudget(cat, v){
+  const nm = ymShift(ymNow(), 1);
+  if(!allocOf(nm)) allocs[nm] = blankAlloc(nm);
+  setLine(allocs[nm], 'cat', cat, v);
+  allocs[nm].ts = Date.now();
+  _draft = null;
+  saveLocal(); cloudAlloc(nm); renderAll();
+  toast(`${Number(nm.slice(5,7))} 月的「${cat}」預算改成 ${money(v)}`);
+}
+function applyPre(name, amt, every, next){
+  openPlan('pre', null);
+  $('#plName').value = name;
+  $('#plAmt').value = amt;
+  $('#plEvery').value = every;
+  $('#plNext').value = next;
+  $('#plOpen').value = 0;
+  syncPlanTip();
+}
+$('#diagBox').onclick = e => {
+  const b = e.target.closest('button[data-diag]'); if(!b) return;
+  const x = diagSug[+b.dataset.diag]; if(!x) return;
+  if(x.kind === 'budget') applyBudget(x.cat, x.v);
+  else applyPre(x.name, x.amt, x.every, x.next);
+};
+
 /* 淨資產下面的分項金額（2026-09-16 她要求分開看）：現金、一般銀行、電子支付、存款、股票，
    有信用卡再加一格未付。沒有那種帳戶的就不出現，一排三格，剛好四項改一排兩格 */
 function netCells(n){
@@ -1634,7 +1890,7 @@ function itemRow(it){
   const sub = [it.note || (it.inv ? '發票 '+it.inv : ''), accName(itemAcc(it))].filter(Boolean).join('　·　');
   return `<div class="item" data-id="${it.id}">
     <i class="cdot" style="background:${catColor(it.cat)}"></i>
-    <div class="nm"><b>${esc(catLabel(it))}</b>
+    <div class="nm"><b>${esc(catLabel(it))}</b>${markTags(it)}
       ${sub ? `<span class="n2">${esc(sub)}</span>` : ''}</div>
     <div class="amt ${isIn?'in':''}">${isIn?'+':''}${money(it.amt)}</div>
   </div>`;
@@ -1659,14 +1915,16 @@ function addItem(){
   items[id] = kind==='tr'
     ? { ...base, from: trFrom, to: trTo }
     : { ...base, cat: cat || '其他', acc, inv: pendingInv || '',
-        ...(kind === 'out' && SUB_CATS.includes(cat) && sub ? { sub } : {}) };
+        ...(kind === 'out' && SUB_CATS.includes(cat) && sub ? { sub } : {}),
+        ...(kind === 'out' ? markFields(mk) : {}) };
   pendingInv = '';
   saveLocal(); cloudSetItem(id);
   localStorage.setItem('dora_money_lastacc', acc);      // 下次預設用同一個帳戶
   toast(kind==='tr'
     ? `轉好了　${money(n)}　${accName(trFrom)} → ${accName(trTo)}`
     : `記好了　${kind==='in'?'+':''}${money(n)}　${cat}${kind==='out' && SUB_CATS.includes(cat) && sub ? '・' + sub : ''}`);
-  amt=''; sub=''; $('#fNote').value=''; $('#fDate').value = today();
+  amt=''; sub=''; mk = blankMarks(); $('#fNote').value=''; $('#fDate').value = today();
+  $('#advBox').style.display = 'none';
   renderAll();
 }
 let pendingInv = '';
@@ -1687,6 +1945,16 @@ $('#subBox').onclick = e => {
   sub = sub === b.dataset.sub ? '' : b.dataset.sub;      // 再點一次取消
   renderSubs();
 };
+$('#advBtn').onclick = () => {
+  const box = $('#advBox'), show = box.style.display === 'none';
+  box.style.display = show ? '' : 'none';
+  if(show) markBoxes('adv', mk);
+  $('#advBtn').classList.toggle('on', show || hasMark(mk));
+};
+$('#advBox').onclick = e => markClick(e, mk, () => {
+  markBoxes('adv', mk);
+  $('#advBtn').classList.toggle('on', true);
+});
 $('#accBox').onclick = e => {
   const b = e.target.closest('button[data-acc]'); if(!b) return;
   acc = b.dataset.acc; renderAccs(); renderAmt();
@@ -1796,6 +2064,10 @@ function openEdit(id){
     $('#eAcc').innerHTML = accList().map(a =>
       `<option value="${esc(a.id)}" ${a.id===cur?'selected':''}>${esc(a.name)}</option>`).join('');
   }
+  // 進階標記只有支出有（收入、轉帳、校正都沒有）
+  const isSpend = !isTr && !isAdj && it.kind !== 'in';
+  $('#eMarkFld').style.display = isSpend ? '' : 'none';
+  if(isSpend){ emk = marksOf(it); markBoxes('e', emk); }
   $('#eInv').textContent = it.dca
     ? '這筆是定期定額自動記的。金額或股數要改，到帳戶頁點股票帳戶改那一期；刪掉這筆會連買進紀錄一起拿掉，雲端也不會再補回來。'
     : isTr
@@ -1816,6 +2088,7 @@ function syncEditSub(cur){
   $('#eSub').innerHTML = `<option value="">${c === PRE_CAT ? '不分項目' : '不分細項'}</option>` +
     opts.map(s => `<option ${s===cur?'selected':''}>${esc(s)}</option>`).join('');
 }
+$('#eMarkFld').onclick = e => markClick(e, emk, () => markBoxes('e', emk));
 $('#eCat').onchange = () => {
   const it = items[editingId];
   // 換了分類，原本的細項如果不屬於新分類就清掉
@@ -1831,6 +2104,10 @@ $('#eSave').onclick = () => {
     it.cat = $('#eCat').value;
     if(it.kind !== 'in' && SUB_CATS.includes(it.cat) && $('#eSub').value) it.sub = $('#eSub').value;
     else delete it.sub;
+    if(it.kind !== 'in'){    // 進階標記：先清掉再寫回，取消掉的才不會留著
+      ['need','mood','imp','tmp'].forEach(k => delete it[k]);
+      Object.assign(it, markFields(emk));
+    }
     if(accList().length) it.acc = $('#eAcc').value || it.acc;
   }
   saveLocal(); cloudSetItem(editingId); closeM('#mEdit'); renderAll(); toast('改好了');
