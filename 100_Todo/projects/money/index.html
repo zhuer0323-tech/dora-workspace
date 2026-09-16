@@ -276,11 +276,14 @@ header.top h1 .sub{font-size:12px;color:var(--ink3);font-weight:400;margin-left:
 #scanMsg{font-size:12.5px;color:var(--ink2);text-align:center;margin-top:10px;line-height:1.7}
 
 /* ---------- 帳戶頁 ---------- */
-.netrow{display:flex;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
-.netrow>div{flex:1}
-.netrow .k{font-size:12px;color:var(--ink3);font-weight:600}
-.netrow b{font-size:17px;font-weight:800}
-.netrow b.ok{color:var(--ok)}.netrow b.bad{color:var(--bad)}
+/* 淨資產下面的分項金額：小灰標籤＋粗體數值，一排三格；
+   六欄網格是為了讓最後一排不足時自動撐開，不會留孤兒格 */
+.netcells{display:grid;grid-template-columns:repeat(6,1fr);gap:10px 8px;
+  margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.netcells .k{font-size:11.5px;color:var(--ink3);font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.netcells b{display:block;margin-top:1px;font-size:15.5px;font-weight:800}
+.netcells b.bad{color:var(--bad)}
 .accact{display:flex;gap:8px;margin-bottom:11px}
 .accact button{flex:1;padding:11px 0;border-radius:14px;background:#fff;box-shadow:var(--shadow);
   font-size:14px;font-weight:700;color:var(--ink2)}
@@ -477,6 +480,7 @@ body.on-alloc #toast{bottom:160px}
     <h2>淨資產<span class="tiny">看每個帳戶 ›</span></h2>
     <div class="big" id="sNet">—</div>
     <div class="subline" id="sNetSub"></div>
+    <div id="sCells"></div>
   </div>
 
   <div class="seg" id="rgSeg" style="margin-bottom:10px">
@@ -555,10 +559,8 @@ body.on-alloc #toast{bottom:160px}
   <div class="card">
     <h2>淨資產</h2>
     <div class="big" id="nNet">—</div>
-    <div class="netrow">
-      <div><div class="k">總資產</div><b class="ok" id="nAsset">—</b></div>
-      <div><div class="k">負債（信用卡未付）</div><b class="bad" id="nDebt">—</b></div>
-    </div>
+    <div class="subline" id="nNetSub"></div>
+    <div id="nCells"></div>
   </div>
   <div class="accact">
     <button class="go" id="nSave">＋ 存入</button>
@@ -1544,12 +1546,33 @@ function monthsCounted(p){
   return set.size;
 }
 
+/* 淨資產下面的分項金額（2026-09-16 她要求分開看）：現金、一般銀行、電子支付、存款、股票，
+   有信用卡再加一格未付。沒有那種帳戶的就不出現，一排三格，剛好四項改一排兩格 */
+function netCells(n){
+  const sum = t => accList().filter(a => a.type === t).reduce((s,a) => s + (n.bal[a.id]||0), 0);
+  const cells = [['cash','現金'],['bank','一般銀行'],['epay','電子支付'],['save','存款'],['stock','股票']]
+    .filter(([t]) => accList().some(a => a.type === t))
+    .map(([t,name]) => ({ name, v: sum(t) }));
+  if(accList().some(a => a.type === 'card')){
+    const v = sum('card');
+    cells.push(v < 0 ? { name:'信用卡未付', v:-v, debt:true } : { name:'信用卡', v });
+  }
+  if(!cells.length) return '';
+  const per = cells.length === 4 ? 2 : 3;
+  return `<div class="netcells">${cells.map((c,i) => {
+    const rest = cells.length - Math.floor(i/per) * per;     // 這一排還剩幾格，不滿就撐開
+    return `<div style="grid-column:span ${6 / Math.min(per, rest)}">
+      <div class="k">${c.name}</div><b class="${c.debt ? 'bad' : ''}">${money(c.v)}</b></div>`;
+  }).join('')}</div>`;
+}
+
 /* 總覽最上面那張：只放淨資產，每個帳戶的細節在「帳戶」頁 */
 function renderNet(){
   const n = netWorth();
   $('#sNet').textContent = money(n.net);
   $('#sNet').className = 'big' + (n.net<0 ? ' bad' : '');
   $('#sNetSub').textContent = `總資產 ${money(n.asset)}　·　負債 ${money(n.debt)}`;
+  $('#sCells').innerHTML = netCells(n);
 }
 
 function daysLeft(ym){
@@ -2050,8 +2073,8 @@ function renderAccPage(){
   const n = netWorth();
   $('#nNet').textContent = money(n.net);
   $('#nNet').className = 'big' + (n.net<0 ? ' bad' : '');
-  $('#nAsset').textContent = money(n.asset);
-  $('#nDebt').textContent = money(n.debt);
+  $('#nNetSub').textContent = `總資產 ${money(n.asset)}　·　負債 ${money(n.debt)}`;
+  $('#nCells').innerHTML = netCells(n);
   const EMPTY = {
     daily:'還沒有現金、一般銀行或電子支付。',
     save:'還沒有存款銀行。按「＋ 新帳戶」加一個（類型選存款銀行），存錢時用「＋ 存入」把錢搬進去。',
