@@ -274,6 +274,20 @@ td.editing{background:#fff !important}
         <button class="copy" id="forClaudeBtn">複製這篇給 Claude</button></div>
       <textarea id="fIg"></textarea>
     </div>
+    <div>
+      <div class="fieldhd"><label style="margin:0">圖卡形式</label></div>
+      <select id="fCardType">
+        <option value="carousel">輪播（4～6 頁）</option>
+        <option value="single">單張（一張圖就好）</option>
+      </select>
+      <div class="tiny" style="margin-top:4px;opacity:.7">
+        節慶類預設單張；日常那種有趣的廣告話題想做成輪播，改這裡就好</div>
+    </div>
+    <div>
+      <div class="fieldhd"><label style="margin:0">圖卡文字（印在圖上的字）</label>
+        <button class="copy" data-copy="cardText">複製</button></div>
+      <textarea id="fCardText" placeholder="文案審閱通過後會自動帶入，小蝶做圖時以這裡為準。改了這裡，圖上的字就會跟著改"></textarea>
+    </div>
     <details class="more">
       <summary>圖文表的其他欄位（素材編號、素材圖、貼文連結…）</summary>
       <div class="morebox">
@@ -1131,6 +1145,18 @@ function renderList(){
 
 /* 圖文表：照朱兒 Google 試算表「禾言社群規劃」的圖文模板排的，
    一篇貼文一欄，左邊 13 個欄位名固定住。深色底那幾列跟她表單一致。 */
+/* 圖卡形式（2026-09-18 朱兒要求）：節慶那種一張圖就夠，不用做整套輪播。
+   下面只是預設值，她可以在圖文表或編輯視窗自己點選改掉。
+   ⚠️ 這組設定跟 scripts/dora-agent-hub-runner.py 的 CARD_TYPE_DEFAULT 是同一份規則，
+   改這裡要記得改那邊（跟分類規則一樣不會自動同步）。 */
+const CARD_TYPE_DEFAULT = { '日常/節慶':'single' };
+const CARD_TYPE_LABEL   = { single:'單張', carousel:'輪播' };
+function cardTypeOf(p){
+  const v = p && p.cardType;
+  if(v === 'single' || v === 'carousel') return v;
+  return CARD_TYPE_DEFAULT[(p && p.type) || ''] || 'carousel';
+}
+
 const SHEET_ROWS = [
   { k:'code',  n:'素材編號<br>(⭐ 成效佳)', cls:'dark' },
   { k:'name',  n:'素材名稱' },
@@ -1143,6 +1169,8 @@ const SHEET_ROWS = [
   { k:'format',n:'廣告格式' },
   { k:'copyCode', n:'文案編號' },
   { k:'copy',  n:'文案' },
+  { k:'cardType', n:'圖卡形式', cls:'tint' },
+  { k:'cardText', n:'圖卡文字<br>(印在圖上的字)' },
   { k:'headline', n:'標題' },
   { k:'faq',   n:'歡迎語/<br>常見問題' }
 ];
@@ -1190,6 +1218,15 @@ function sheetCell(k, id, p){
       return p.image
         ? `<div class="imgbox"><img src="${esc(p.image)}" alt=""></div>`
         : `<div class="imgbox">還沒放素材圖</div>`;
+    case 'cardType': {
+      const ct = cardTypeOf(p);
+      return `<span class="chip" style="background:${ct==='single'?'var(--ink3)':'var(--ink2)'}">
+                ${CARD_TYPE_LABEL[ct]}</span>
+              <div class="tiny" style="margin-top:4px;opacity:.7">
+                ${ct==='single' ? '一張圖就好' : '4～6 頁'}</div>`;
+    }
+    case 'cardText':
+      return `<div class="copytxt">${esc(p.cardText) || '<span class="none">文案審閱通過後自動帶入，也可以自己寫</span>'}</div>`;
     case 'copy':
       return `<div class="copytxt">${esc(p.copyText) || '點一下開始寫'}</div>
               <div class="rowact">
@@ -1206,7 +1243,8 @@ function sheetCell(k, id, p){
 const CELL_EDIT = {
   name:'text', type:'select', title:'text', media:'text',   /* code 是自動算的，不給手改 */
   date:'date', link:'text', image:'text', format:'text', copyCode:'text',
-  copy:'textarea', headline:'text', faq:'textarea'
+  copy:'textarea', headline:'text', faq:'textarea',
+  cardType:'select', cardText:'textarea'
 };
 
 function renderSheet(){
@@ -1253,12 +1291,22 @@ function openCellEdit(td){
   }else if(kind === 'select'){
     el = document.createElement('select');
     el.className = 'cellinput';
-    Object.keys(SLUG).forEach(t => {
-      const o = document.createElement('option');
-      o.value = o.textContent = t;
-      if(t === p.type) o.selected = true;
-      el.appendChild(o);
-    });
+    if(key === 'cardType'){
+      const now = cardTypeOf(p);
+      Object.keys(CARD_TYPE_LABEL).forEach(v => {
+        const o = document.createElement('option');
+        o.value = v; o.textContent = CARD_TYPE_LABEL[v];
+        if(v === now) o.selected = true;
+        el.appendChild(o);
+      });
+    }else{
+      Object.keys(SLUG).forEach(t => {
+        const o = document.createElement('option');
+        o.value = o.textContent = t;
+        if(t === p.type) o.selected = true;
+        el.appendChild(o);
+      });
+    }
   }else{
     el = document.createElement('input');
     el.type = kind === 'date' ? 'date' : 'text';
@@ -1363,6 +1411,8 @@ function openEdit(id){
   $('#fTitle').value = p.title || '';
   $('#fGoal').value = p.goal || '';
   $('#fIg').value = p.ig || '';
+  $('#fCardType').value = cardTypeOf(p);
+  $('#fCardText').value = p.cardText || '';
   $('#fCode').value     = autoCode(p, id) || '（存檔後自動編）';
   $('#fCopyCode').value = p.copyCode || '';
   $('#fName').value     = p.name || '';
@@ -1382,6 +1432,9 @@ function closeEdit(){ $('#mask').classList.remove('on'); editId = null; }
 $('#saveBtn').onclick = () => {
   if(!editId) return;
   posts[editId] = {
+    // 2026-09-18 改：先攤開既有資料再覆蓋。原本是整個物件重建，
+    // 介面上沒有的欄位（agentTaskId、agentStage、cardPlan…）存一次就被清掉了
+    ...(posts[editId] || {}),
     date : $('#fDate').value || ymd(cur.y,cur.m,1),
     type : $('#fType').value,
     title: $('#fTitle').value.trim(),
@@ -1400,7 +1453,9 @@ $('#saveBtn').onclick = () => {
     image    : $('#fImage').value.trim(),
     link     : $('#fLink').value.trim(),
     faq      : $('#fFaq').value,
-    star     : $('#fStar').classList.contains('on')
+    star     : $('#fStar').classList.contains('on'),
+    cardType : $('#fCardType').value,
+    cardText : $('#fCardText').value
   };
   const d = posts[editId].date;
   cur = { y:+d.slice(0,4), m:+d.slice(5,7) };   // 存到別的月份就跟著跳過去
@@ -1423,26 +1478,34 @@ $('#forClaudeBtn').onclick = () => copyForClaude({
 }, $('#forClaudeBtn'), '複製這篇給 Claude', editId);
 
 $$('.copy[data-copy]').forEach(b => b.onclick = async () => {
-  const txt = $('#fIg').value;
+  const box = b.dataset.copy === 'cardText' ? $('#fCardText') : $('#fIg');
+  const txt = box.value;
   try{ await navigator.clipboard.writeText(txt); }
-  catch(e){ $('#fIg').select(); document.execCommand('copy'); }
+  catch(e){ box.select(); document.execCommand('copy'); }
   b.textContent = '已複製'; b.classList.add('ok');
   setTimeout(() => { b.textContent = '複製'; b.classList.remove('ok'); }, 1400);
 });
 
-/* 把一篇整理成貼給 Claude 的格式，讓它直接做成六頁圖卡 */
+/* 把一篇整理成貼給 Claude 的格式，讓它直接做圖卡。
+   2026-09-18 起頁數看「圖卡形式」，不再一律寫六頁；有圖卡文字的話一起帶過去 */
 function briefForClaude(p, id){
   if(!p) return '';
   const wd = p.date ? ['日','一','二','三','四','五','六'][new Date(p.date+'T00:00:00').getDay()] : '';
-  const L = ['請把這篇禾言貼文做成六頁 IG 圖卡（柔和版模板，最後匯入 Canva 給我可編輯的連結）。',''];
+  const ct = cardTypeOf(p);
+  const spec = ct === 'single' ? '一張 IG 圖卡（單張，不要做輪播）' : '4～6 頁 IG 圖卡（依內容決定頁數）';
+  const L = [`請把這篇禾言貼文做成${spec}（柔和版模板，最後匯入 Canva 給我可編輯的連結）。`,''];
   L.push('上線時間：' + (p.date ? `${p.date}（${wd}）` : '未定'));
   L.push('內容類型：' + (p.type || '未定'));
+  L.push('圖卡形式：' + CARD_TYPE_LABEL[ct]);
   L.push('議題標題：' + (p.title || ''));
   if(p.goal)     L.push('這篇的目的：' + p.goal);
   const code = autoCode(p, id);
   if(code)       L.push('素材編號：' + code);
   if(p.headline) L.push('標題：' + p.headline);
-  L.push('', '文案：', (p.ig || '（還沒寫）'));
+  if(p.cardText){
+    L.push('', '要印在圖上的文字（以這份為準，這是我確認過的）：', p.cardText);
+  }
+  L.push('', '貼文文案（背景參考，不要整段搬到圖上）：', (p.ig || '（還沒寫）'));
   return L.join('\n');
 }
 async function copyForClaude(p, btn, label, id){

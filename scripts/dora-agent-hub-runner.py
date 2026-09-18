@@ -47,6 +47,12 @@ ROOM    = 'ah_4j2ppkn8rq'     # 改名要同步改 Firebase 規則
 HY_ROOM = 'hy_social_r7n3k8'  # 禾言社群規劃網頁的節點，定稿後直接寫進這裡
 MAX_ROUNDS = 3                 # 製作/審閱最多來回幾輪（2026-09-18 從 2 加到 3：
                                # 小狐改成五項都要 4 分才過，退件率上升，2 輪常態不夠用）
+# 圖卡形式（2026-09-18 她要求）：節慶那種不用做整套輪播，一張圖就夠了。
+# 預設值只是預設，她可以在禾言規劃表上自己點選改掉。
+CARD_TYPE_DEFAULT = {'日常/節慶': 'single'}   # 沒列到的類型一律 carousel
+CARD_TYPE_LABEL = {'single': '單張', 'carousel': '輪播'}
+CAROUSEL_MIN, CAROUSEL_MAX = 4, 6
+
 DESIGN_WINDOW_DAYS = 3          # 審閱通過後不馬上做圖，等到離發布日剩這幾天才交給小蝶（2026-08-26 她要求）
 PROPOSAL_DAY_START, PROPOSAL_DAY_END = 15, 21   # 每月第三週（大致），小梟排下個月建議
 AUDIT_INTERVAL_SEC = 7 * 86400  # 小梟定期掃描已排程內容，一週一次就好，不用每天掃
@@ -104,9 +110,11 @@ PLANNER_PROMPT = """你是「小梟」，禾言數位行銷社群規劃團隊的
    （發現重疊就換角度或換更具體的子題目，不要硬寫一樣的）
 3. 上網搜尋 Meta／Google／LINE 廣告平台最近的更新、新功能或政策變化，
    找出跟「{type_label}」相關、值得跟客戶分享的重點
-4. 讀 `200_Reference/clients/` 底下的客戶檔找廣告投放實際遇到的問題；
-   禾言自己的品牌檔 `200_Reference/clients/禾言數位行銷.md` 裡的**精選案例庫標示為對外可公開**
-   （含品牌名與實際數據），可以直接當依據引用
+4. 讀 `200_Reference/clients/` 底下的客戶檔找廣告投放實際遇到的問題。
+   ⚠️ **社群貼文不可以出現客戶名稱，也不可以引用客戶的成效數字**（2026-09-18 朱兒定）。
+   案例只能當背景，寫進「依據／真實情境」時**只留做法、拿掉身分與數字**
+   （例如「素材上直接寫出價格，可以先擋掉只是好奇的人」，不是「某某公司寫了價格帶進 230 筆訊息」）。
+   也不要用「我們有一個客戶」這種化名寫法，那等於換個方式點名
 
 然後照下面的欄位輸出，**欄位名稱一字不改、順序不變**（小兔與小狐都靠這些欄位工作）：
 
@@ -123,8 +131,9 @@ PLANNER_PROMPT = """你是「小梟」，禾言數位行銷社群規劃團隊的
 - **「這篇唯一主張」18 個中文字左右，一篇只能有一個**。想講兩件事就挑一件，
   另一件寫進「這篇不要寫什麼」，留給下一篇
 - 「禾言的判斷」要是明確立場。寫「因人而異」「各有優缺點」「看情況」等於沒講，不算數
-- 「依據／真實情境」必須來自可用資料、公開案例、平台更新或客戶常見問題，**要寫得出出處**。
-  找不到就在這一欄寫「缺少具體依據」——**不要自己編數字、趨勢、故事或客戶對話**
+- 「依據／真實情境」必須來自可用資料、平台更新、公開報導或客戶常見問題，**要寫得出出處**。
+  找不到就在這一欄寫「缺少具體依據」——**不要自己編數字、趨勢、故事或客戶對話**。
+  **不可以寫客戶名稱或客戶的成效數字**，投放的實際做法與判斷原則本身就夠有價值，不需要案例背書
 - 「適合的圖卡視覺」從這七種挑**一種**，並說明為什麼這篇適合它：
   前後對比／流程／試算／錯誤示範／檢查清單／放大數字／單一觀點
 - 「這篇不要寫什麼」要具體寫出容易失焦的支線，不是寫「不要寫太複雜」
@@ -161,7 +170,8 @@ MAKER_PROMPT = """你是「小兔」，禾言數位行銷社群規劃團隊的�
    （前面的一般客戶模式是給其他客戶用的，不要套到禾言身上）
 3. `200_Reference/writing-samples/禾言社群文案-朱兒改寫範例.md`
    ——朱兒親手把你的稿子改過一輪的真實對照，**照那份的手法寫，不是只看規則條文**
-4. `200_Reference/clients/禾言數位行銷.md` ——品牌調性，以及**標示為對外可公開的案例庫**
+4. `200_Reference/clients/禾言數位行銷.md` ——品牌調性
+   （⚠️ 裡面的案例庫**只能當背景理解禾言怎麼做事，不可以寫進貼文**，見下面的案例規則）
 5. `200_Reference/writing-samples/廣告文案/語氣風格分析.md` ——朱兒本人的語言習慣統計。
    ⚠️ 那是她幫客戶寫的**廣告文案**習慣，**只帶結構與節奏（直接敘述開頭、【】標題式、✅✦ 條列），
    不要帶情緒強度**（一律驚嘆號、每則 4.6 個 emoji、❗❓ 符號標點、限時急迫感都不要）。
@@ -173,16 +183,27 @@ MAKER_PROMPT = """你是「小兔」，禾言數位行銷社群規劃團隊的�
 - 第一段直接進入讀者的問題、具體情境或結論，**不暖場、不鋪陳**
 - 讀者是完全沒有廣告投放背景的老闆與行銷窗口：白話、好懂，
   術語第一次出現要用一句話解釋（例如「頻率」要順便講白話是什麼意思）
-- **至少要有一個具體元素**：數字、場景、操作步驟、實際問題或明確判斷
+- **至少要有一個具體元素**：後台會看到的畫面、操作步驟、實際遇到的問題或明確判斷
 - 要有禾言自己的判斷。把「禾言」換成別家行銷公司之後還完全成立，代表這篇太通用，重寫
-- 案例只能用品牌檔裡標示可公開的內容。**不得自行補品牌名稱、成效數字或客戶故事**，
-  也不得為了吸睛編造數字、趨勢或客戶對話。小梟寫「缺少具體依據」時就不要硬掰一個
+- ⚠️ **不可以寫客戶名稱，也不可以引用客戶的成效數字**（曝光、CTR、CPC、ROAS、訊息數、名單數）。
+  品牌檔的案例庫是提案用的，社群是公開發布的場合，標準不一樣。
+  案例只留做法、拿掉身分與數字（「素材上直接寫出價格可以擋掉只是好奇的人」✓／
+  「某某公司寫了價格帶進 230 筆訊息」✗）。
+  **也不要用「我們有一個客戶」「曾經有老闆跟我們說」這種化名寫法**，那等於換個方式點名，
+  而且容易滑成編故事。沒有出處的成效一律不提
+- **全篇 350～450 字**。超過就是太繁瑣、重點被稀釋。壓字數要**整段刪掉在講同一件事的段落**，
+  不是把每句話都縮短：收尾清單只留正文沒講的「接下來怎麼做」、解釋性的補充句丟給圖卡講、
+  同類的例子只留最有力的一個
 - CTA 依這篇的目的決定，**不是每篇都要叫讀者留言**
 - 【禾言觀點】／【禾言怎麼做】／【禾言建議】**只有真的有禾言判斷時才用**，依內容挑一種；
   行動型內容可以直接給下一步，節慶類直接用行動呼籲收尾。**不強制每篇都有這一段**
 - **不強制三點、不強制問句開場、不強制金句結尾**。只有兩個項目就寫兩個
 - 標點跟著語氣走，不要一律套驚嘆號
-- AI 趨勢類主題不要寫死平台功能名稱（後台改版快，寫死會過期）
+- **平台功能名稱看這篇要不要讀者去操作**（2026-09-18 改）：
+  小梟寫的「讀者看完能做什麼」是一串後台操作 → **寫出功能全名一次**
+  （例如「Advantage+ 素材優化」），老闆在後台看到什麼字就寫什麼字，不然對不起來；
+  純觀念、趨勢判斷、不需要動後台的 → 避開名稱只講原則，寫死會過期。
+  這跟貼文掛在哪個類型無關，觀點/趨勢類也可能是要人去後台照做的
 - 不用加「— 禾言數位行銷」署名行，hashtag 裡已經有
 
 寫完第一版之後，**用 Skill 工具實際執行一次 `speak-human-tw`**，把 Caption 交給它去 AI 味
@@ -193,7 +214,7 @@ MAKER_PROMPT = """你是「小兔」，禾言數位行銷社群規劃團隊的�
 
 ## Card Plan 的規則
 
-- **依內容決定 4～6 頁**，不固定六頁。內容只夠 4 頁就寫 4 頁，不要為了補滿硬湊
+{card_type_note}
 - **一頁只講一件事**，每頁不得重複上一頁的結論
 - 每頁都要寫「任務」與「視覺」，不能只列要放的文字
 - 圖卡文字要比 Caption **更短**，不是把 Caption 分段貼上
@@ -225,8 +246,12 @@ P2｜（頁名）
 內容：
 視覺：
 
-（依此類推，共 4～6 頁）
+（依此類推，頁數照上面「這篇要做幾頁」那段）
 </CARD_PLAN>
+
+⚠️ 「任務」與「視覺」是寫給小蝶看的工作說明，**不會印在圖上**；
+「主標」「補充」「內容」「底部句」才是真的會印上去的字，朱兒會在規劃表上直接改這幾行，
+所以那幾行要寫成**可以直接印的最終文字**，不要寫成描述（「這裡放一句結論」✗）。
 
 兩個區塊以外不要寫任何字。如果判斷不出怎麼下筆，在回覆最開頭寫一行：
 NEED_HUMAN: <原因>，然後結束。"""
@@ -234,6 +259,9 @@ NEED_HUMAN: <原因>，然後結束。"""
 REVIEWER_PROMPT = """你是「小狐」，禾言數位行銷社群規劃團隊的審閱小幫手，
 負責幫這篇「{type_label}」貼文把關。你是內容策略角度的審閱者，不是校對機。
 **這次要同時審 Caption 與 Card Plan 兩份**，只審其中一份不算數。
+
+這篇的圖卡形式：{card_spec}
+（形式是朱兒在規劃表上指定的，不要質疑該不該做輪播，只檢查頁數對不對）
 
 {transcript_block}
 審之前先讀 `200_Reference/writing-samples/禾言社群語氣與圖卡規範.md`，
@@ -263,17 +291,23 @@ REVIEWER_PROMPT = """你是「小狐」，禾言數位行銷社群規劃團隊�
 
 - **三秒理解**：封面主標三秒內看得出這篇在講什麼；看得出問題、結果、衝突或具體利益，
   不是只有一個大主題
-- **具體程度**：有沒有數字、場景、操作步驟、實際問題或明確判斷。全是形容詞就是低分
+- **具體程度**：有沒有後台會看到的畫面、操作步驟、實際遇到的問題或明確判斷。
+  全是形容詞就是低分。⚠️ **不要因為「沒有客戶案例或成效數字」而扣分**——
+  那些不准寫進社群貼文，具體程度要看做法講得夠不夠清楚
 - **禾言人味**：有沒有禾言自己的判斷。**把「禾言」換成別家行銷公司還完全成立 → 過度通用，最多 2 分**
-- **新手易懂**：完全沒有廣告背景的老闆看不看得懂，術語有沒有解釋
-- **圖卡可讀性**：一頁一件事、頁與頁不重複、封面沒有超過三層資訊
+- **新手易懂**：完全沒有廣告背景的老闆看不看得懂，術語有沒有解釋。
+  ⚠️ **要讀者去後台照做的貼文，反而要寫出後台看得到的功能名稱**（例如「Advantage+ 素材優化」），
+  只寫通稱會讓人在後台找不到，這種要扣分；純觀念、不用動後台的才避開名稱
+- **圖卡可讀性**：一頁一件事、頁與頁不重複、封面沒有超過三層資訊、頁數符合指定的圖卡形式。
+  單張圖的話看它能不能自己成立（不能寫成「往下滑看更多」）
 
 ## 通過條件（全部達成才能寫「通過」）
 
 1. 五項**都至少 4 分**
 2. 沒有硬性問題
-3. Card Plan 存在，而且是 **4～6 頁**
-4. 至少有一個具體依據、場景、數字或可執行方法
+3. Card Plan 存在，而且頁數符合這篇指定的圖卡形式（單張＝1 頁／輪播＝4～6 頁）
+4. 至少有一個具體的做法、場景或可執行方法
+5. **Caption 全篇 350～450 字**（超過就是太繁瑣，退回）
 
 ## 一定要退回的情況（這些是硬性問題，不是小瑕疵）
 
@@ -283,8 +317,11 @@ REVIEWER_PROMPT = """你是「小狐」，禾言數位行銷社群規劃團隊�
 - 同一個意思換句話說兩三次、底部摘要跟正文講同一件事
 - 圖卡各頁重複同一個意思
 - **有無來源的數字、編造的案例，或把推測寫成事實**
+- ⚠️ **出現客戶名稱，或引用客戶的成效數字**（曝光、CTR、CPC、ROAS、訊息數、名單數）——
+  這是硬性問題，一定退回。「我們有一個客戶」這種化名寫法同樣不行
 - 內容過度通用，換掉品牌名還完全成立
-- Card Plan 缺漏、頁數不在 4～6 之間，或每頁沒寫「任務」與「視覺」
+- **Caption 超過 450 字**，或明顯有段落在講正文已經講過的事
+- Card Plan 缺漏、頁數跟指定的圖卡形式對不上，或每頁沒寫「任務」與「視覺」
 
 ⚠️ **AI 味在這一版是正式的通過條件，不是次要參考項。**
 
@@ -299,15 +336,18 @@ REVIEWER_PROMPT = """你是「小狐」，禾言數位行銷社群規劃團隊�
 
 DESIGNER_PROMPT = """你是「小蝶」，禾言數位行銷社群規劃團隊的製圖小幫手，
 負責把這篇已經審閱通過的貼文做成 IG 圖卡的 Canva 可編輯檔。
-**頁數依內容 4～6 頁，不是固定六頁。**
 
 標題：{title}
 類型：{type_label}
+**圖卡形式：{card_spec}**（朱兒在規劃表上指定的，照做，不要自己改頁數）
 
-定稿文案（Caption）：
+定稿文案（Caption，只是背景參考，不要整段搬到圖上）：
 {final_copy}
 
-小兔寫的圖卡腳本（Card Plan，小狐已經連這份一起審過）：
+**要印在圖上的文字（以這份為準）**：
+{card_text}
+
+圖卡腳本（Card Plan，含每頁的任務與視覺指示）：
 {card_plan}
 
 請先讀這兩份：
@@ -317,15 +357,20 @@ DESIGNER_PROMPT = """你是「小蝶」，禾言數位行銷社群規劃團隊�
 不用做 skill 的 Step 1（取文案，上面已經給你）跟 Step 2（等朱兒確認——
 這篇小狐已經審過，等同確認，不用再問一次）。
 
-## 怎麼用 Card Plan
+## 怎麼用這兩份
 
-- **有 Card Plan 就照它做**，一頁一個任務，不要自己重新拆頁
-- **Card Plan 缺漏或看不懂時**：不要把 Caption 硬塞進固定六頁。
-  先自己依 Caption 重整一份 4～6 頁腳本，照規範檔的圖卡規則自我檢查一遍，再開始做圖。
-  真的整理不出四頁（內容太少）才在最開頭寫 NEED_HUMAN
+- **圖上的字一律以「要印在圖上的文字」那份為準**——朱兒會在規劃表上直接改那一欄，
+  它跟 Card Plan 不一致時，**以它為準**（她改過的才是最新的）
+- **Card Plan 看「任務」與「視覺」就好**，那是每頁要達成什麼、要畫什麼
+- 一頁一個任務，不要自己重新拆頁
+- **兩份都缺漏或看不懂時**：不要把 Caption 硬塞進固定頁數。
+  先自己依 Caption 重整一份符合指定形式的腳本，照規範檔的圖卡規則自我檢查一遍，再開始做圖。
+  單張圖的話只做一張；輪播真的整理不出四頁（內容太少）才在最開頭寫 NEED_HUMAN
 
 ## 圖卡規則
 
+- **單張圖**：只做一張，它要能自己成立，不要寫成「往下滑看更多」。
+  節慶類就是祝賀本身，不用硬塞廣告知識或行動呼籲
 - 一頁只講一件事，每頁不得重複上一頁的結論
 - **封面最多三層**：類型小標／核心主標（兩行內）／一句補充**或**一個視覺證據（二選一）。
   不要同時放三顆以上膠囊、引言、副標、「閱讀全文」、底部重複摘要
@@ -606,6 +651,75 @@ def parse_maker_output(out):
 
 PAGE_LINE_RE = re.compile(r'^\s*P\s*(\d+)\s*[｜|]', re.M)
 
+# 「任務」「視覺」是給小蝶看的工作說明，不是要印在圖上的字。
+# 朱兒要在規劃表上直接改圖卡文字，所以另外抽一份乾淨的出來給她看（2026-09-18）。
+PLAN_WORK_FIELDS = ('任務', '視覺')
+
+
+def card_plan_text(card_plan):
+    """把 Card Plan 抽成「只有要印上去的字」，給規劃表顯示與編輯用。
+
+    去掉「任務：」「視覺：」這兩種工作說明行（含它們的續行），
+    頁標題的全形直線換成空格，讀起來就是一頁一頁的圖卡文字。
+    """
+    if not card_plan:
+        return ''
+    out, skipping = [], False
+    for raw in card_plan.splitlines():
+        line = raw.rstrip()
+        stripped = line.strip()
+        if PAGE_LINE_RE.match(line):
+            skipping = False
+            out.append(re.sub(r'^\s*(P\s*\d+)\s*[｜|]\s*', r'\1 ', stripped))
+            continue
+        if re.match(r'^頁數[：:]', stripped):
+            continue
+        m = re.match(r'^([^：:]{1,6})[：:]', stripped)
+        if m:
+            skipping = m.group(1).strip() in PLAN_WORK_FIELDS
+            if skipping:
+                continue
+        elif skipping and stripped:
+            continue          # 工作說明的續行
+        if not stripped:
+            skipping = False
+        out.append(line)
+    text = '\n'.join(out)
+    text = re.sub(r'\n{3,}', '\n\n', text)
+    return text.strip()
+
+
+CARD_NOTE_CAROUSEL = """- **這篇做輪播，依內容決定 {lo}～{hi} 頁**，不固定六頁。內容只夠 {lo} 頁就寫 {lo} 頁，不要為了補滿硬湊"""
+
+CARD_NOTE_SINGLE = """- **這篇只做一張圖，不做輪播**（朱兒指定）。Card Plan 只寫 P1 一頁，`頁數：1`
+- 一張圖要自己成立，沒有下一頁可以接：把主張講完，不要寫成「往下滑看更多」
+- 一樣最多三層：類型小標／主標（兩行內）／一句補充**或**一個視覺證據（二選一）
+- 節慶類就是祝賀本身，不用硬塞廣告知識或行動呼籲，也不要為了湊內容加清單"""
+
+
+def card_type_note(card_type):
+    if card_type == 'single':
+        return CARD_NOTE_SINGLE
+    return CARD_NOTE_CAROUSEL.format(lo=CAROUSEL_MIN, hi=CAROUSEL_MAX)
+
+
+def expected_pages(card_type):
+    """這種圖卡形式該有幾頁，用來組提示詞與檢查。"""
+    if card_type == 'single':
+        return '1 頁（單張圖，不做輪播）'
+    return '%d～%d 頁' % (CAROUSEL_MIN, CAROUSEL_MAX)
+
+
+def card_type_of(post, task=None):
+    """這篇要做單張還是輪播：規劃表她點選的優先，沒點過就照類型給預設。"""
+    for src in (post or {}), (task or {}):
+        v = (src or {}).get('cardType')
+        if v in CARD_TYPE_LABEL:
+            return v
+    t = ((post or {}).get('type') or (task or {}).get('type') or '').strip()
+    return CARD_TYPE_DEFAULT.get(t, 'carousel')
+
+
 
 def card_plan_pages(card_plan):
     """Card Plan 有幾頁（「P1｜封面」這種行算一頁，同一頁碼只算一次）。
@@ -779,6 +893,15 @@ def process_task(cfg, tok, task):
 
     task = ensure_hy_social(cfg, tok, task)  # 一進來就確保禾言那邊有對應的卡、狀態是最新的
 
+    # 規劃表那張卡讀一次就好，小兔、小狐、小蝶都要用（圖卡形式、她手改過的文案與圖卡文字）
+    hy_post = {}
+    if task.get('hySocialId'):
+        try:
+            hy_post = db_get(cfg, tok, HY_ROOM, f'posts/{task["hySocialId"]}') or {}
+        except Exception:
+            hy_post = {}
+    card_type = card_type_of(hy_post, task)
+
     if stage == 'planning':
         role, allowed, timeout = 'planner', PLANNER_ALLOWED, TIMEOUT
         prompt = PLANNER_PROMPT.format(
@@ -797,33 +920,34 @@ def process_task(cfg, tok, task):
             type_label=type_label, title=task.get('title') or '（還沒定，你可以自己下一個貼合內容的標題）',
             post_date=task.get('postDate') or '（沒填）',
             transcript_block=transcript_block, revision_note=revision_note,
+            card_type_note=card_type_note(card_type),
             edit_samples=recent_human_edits(cfg, tok, skip_tid=tid))
     elif stage == 'reviewing':
         role, allowed, timeout = 'reviewer', BASE_ALLOWED, TIMEOUT
-        prompt = REVIEWER_PROMPT.format(type_label=type_label, transcript_block=transcript_block)
+        prompt = REVIEWER_PROMPT.format(
+            type_label=type_label, transcript_block=transcript_block,
+            card_spec='%s，Card Plan 應該是 %s' % (
+                CARD_TYPE_LABEL[card_type], expected_pages(card_type)))
     elif stage == 'designing':
         role, allowed, timeout = 'designer', DESIGNER_ALLOWED, DESIGN_TIMEOUT
         # 文案以禾言規劃表「現在」的內容為準，不要用 ah 任務裡小兔那則舊訊息——
         # 她可能直接在禾言規劃表網頁上手改過文案，那個才是最新版（2026-08-26 踩過這個坑）
-        final_copy, card_plan = '', ''
-        if task.get('hySocialId'):
-            try:
-                hy_post = db_get(cfg, tok, HY_ROOM, f'posts/{task["hySocialId"]}') or {}
-                final_copy = hy_post.get('ig', '') or ''
-                card_plan = hy_post.get('cardPlan', '') or ''
-            except Exception:
-                final_copy, card_plan = '', ''
-        if not card_plan:
-            card_plan = task.get('cardPlan', '') or ''
+        final_copy = hy_post.get('ig', '') or ''
+        card_plan = hy_post.get('cardPlan', '') or task.get('cardPlan', '') or ''
+        card_text = hy_post.get('cardText', '') or ''
         if not final_copy or not card_plan:
             # 舊任務（沒有雙區塊格式）或雲端讀不到時，退回任務訊息裡小兔最後那則
             fb_caption, fb_plan = parse_maker_output(last_message_text(cfg, tok, tid, 'maker'))
             final_copy = final_copy or fb_caption
             card_plan = card_plan or fb_plan
+        if not card_text:
+            card_text = card_plan_text(card_plan)
         prompt = DESIGNER_PROMPT.format(
             title=task.get('title') or '', type_label=type_label,
+            card_spec='%s（%s）' % (CARD_TYPE_LABEL[card_type], expected_pages(card_type)),
             final_copy=final_copy,
-            card_plan=card_plan or '（這篇沒有圖卡腳本，照 prompt 裡「Card Plan 缺漏」那段自己重整 4～6 頁）')
+            card_text=card_text or '（沒有圖卡文字，照下面「Card Plan 缺漏」那段處理）',
+            card_plan=card_plan or '（這篇沒有圖卡腳本，照下面「Card Plan 缺漏」那段自己重整）')
     else:
         return False
 
@@ -871,9 +995,11 @@ def process_task(cfg, tok, task):
             patch['cardPlanPages'] = card_plan_pages(card_plan)
         set_stage(cfg, tok, task, patch)
         if task.get('hySocialId'):
-            hy_patch = {'ig': caption}
+            # cardText 是「只有要印上去的字」，規劃表上她可以直接改，小蝶以她改過的為準
+            hy_patch = {'ig': caption, 'cardType': card_type}
             if card_plan:
                 hy_patch['cardPlan'] = card_plan
+                hy_patch['cardText'] = card_plan_text(card_plan)
             db_patch(cfg, tok, HY_ROOM, f'posts/{task["hySocialId"]}', hy_patch)
     elif role == 'reviewer':
         verdict = parse_verdict(out)

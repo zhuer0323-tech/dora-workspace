@@ -151,22 +151,36 @@ check('沒有要求六頁的句子', _six, [])
 check('沒有強制三點', '3-4 點' in allp or '三點式' in allp, False)
 check('沒有「案例先不寫」', '案例先不寫' in allp, False)
 check('沒有「結尾一定要有」禾言觀點', '結尾一定要有' in allp, False)
-check('小蝶不會沒腳本就直接做六頁', '硬塞進固定六頁' in ah.DESIGNER_PROMPT, True)
+check('小蝶不會沒腳本就硬塞固定頁數', '硬塞進固定頁數' in ah.DESIGNER_PROMPT, True)
 check('小兔要輸出 CAPTION 標記', '<CAPTION>' in ah.MAKER_PROMPT, True)
 check('小兔要輸出 CARD_PLAN 標記', '<CARD_PLAN>' in ah.MAKER_PROMPT, True)
 check('小蝶收得到 card_plan 參數', '{card_plan}' in ah.DESIGNER_PROMPT, True)
 check('小兔收得到 edit_samples 參數', '{edit_samples}' in ah.MAKER_PROMPT, True)
+check('小兔收得到 card_type_note 參數', '{card_type_note}' in ah.MAKER_PROMPT, True)
+check('小蝶收得到 card_text 參數', '{card_text}' in ah.DESIGNER_PROMPT, True)
+check('小狐知道圖卡形式', '{card_spec}' in ah.REVIEWER_PROMPT, True)
+check('沒有殘留「可公開案例可引用」', '標示為對外可公開的案例庫' in allp, False)
+for kw in ['客戶名稱', '成效數字']:
+    check('小兔被告知不能寫%s' % kw, kw in ah.MAKER_PROMPT, True)
+    check('小狐會擋%s' % kw, kw in ah.REVIEWER_PROMPT, True)
+check('小兔知道字數上限', '350～450 字' in ah.MAKER_PROMPT, True)
+check('小狐會擋超過 450 字', '450 字' in ah.REVIEWER_PROMPT, True)
+# 2026-09-18 方案 A：要讀者去後台照做的就寫功能名稱，純觀念的才避開
+check('小兔知道功能名稱的新規則', 'Advantage+' in ah.MAKER_PROMPT, True)
+check('小狐知道功能名稱的新規則', 'Advantage+' in ah.REVIEWER_PROMPT, True)
+check('舊的「一律不寫死」已移除', 'AI 趨勢類主題不要寫死' in allp, False)
 
 print('\n[13] prompt 的 format 參數對得起來（少一個會在正式跑的時候才爆）')
 try:
     ah.MAKER_PROMPT.format(type_label='教學/新手', title='T', post_date='2026-09-22',
-                           transcript_block='', revision_note='', edit_samples='')
+                           transcript_block='', revision_note='', edit_samples='',
+                           card_type_note=ah.card_type_note('carousel'))
     check('MAKER_PROMPT 可格式化', True, True)
 except KeyError as e:
     check('MAKER_PROMPT 可格式化', 'KeyError %s' % e, True)
 try:
     ah.DESIGNER_PROMPT.format(title='T', type_label='教學/新手', final_copy='文案',
-                              card_plan='腳本')
+                              card_plan='腳本', card_text='圖上的字', card_spec='輪播（4～6 頁）')
     check('DESIGNER_PROMPT 可格式化', True, True)
 except KeyError as e:
     check('DESIGNER_PROMPT 可格式化', 'KeyError %s' % e, True)
@@ -178,7 +192,8 @@ try:
 except KeyError as e:
     check('PLANNER_PROMPT 可格式化', 'KeyError %s' % e, True)
 try:
-    ah.REVIEWER_PROMPT.format(type_label='教學/新手', transcript_block='')
+    ah.REVIEWER_PROMPT.format(type_label='教學/新手', transcript_block='',
+                              card_spec='輪播，Card Plan 應該是 4～6 頁')
     check('REVIEWER_PROMPT 可格式化', True, True)
 except KeyError as e:
     check('REVIEWER_PROMPT 可格式化', 'KeyError %s' % e, True)
@@ -237,6 +252,51 @@ check('最多 3 組', ah.EDIT_SAMPLE_MAX, 3)
 check('掃描筆數有上限', ah.EDIT_SAMPLE_SCAN <= 20, True)
 check('單篇字數有上限', ah.EDIT_SAMPLE_CHARS <= 1000, True)
 check('MAX_ROUNDS 已提高到 3', ah.MAX_ROUNDS, 3)
+
+print('\n[17] 圖卡形式：節慶預設單張，其他預設輪播，她點選的優先')
+check('節慶預設單張', ah.card_type_of({'type': '日常/節慶'}), 'single')
+check('觀點預設輪播', ah.card_type_of({'type': '觀點/趨勢'}), 'carousel')
+check('教學預設輪播', ah.card_type_of({'type': '教學/新手'}), 'carousel')
+check('沒有類型也不會爆', ah.card_type_of({}), 'carousel')
+check('她點選輪播就蓋過節慶預設',
+      ah.card_type_of({'type': '日常/節慶', 'cardType': 'carousel'}), 'carousel')
+check('她點選單張就蓋過預設',
+      ah.card_type_of({'type': '觀點/趨勢', 'cardType': 'single'}), 'single')
+check('亂值退回類型預設', ah.card_type_of({'type': '日常/節慶', 'cardType': 'xx'}), 'single')
+check('規劃表沒設時看任務', ah.card_type_of({}, {'cardType': 'single'}), 'single')
+check('單張的頁數說明', '1 頁' in ah.expected_pages('single'), True)
+check('輪播的頁數說明', '4～6 頁' in ah.expected_pages('carousel'), True)
+check('單張的提示詞說不做輪播', '不做輪播' in ah.card_type_note('single'), True)
+check('輪播的提示詞說 4～6 頁', '4～6 頁' in ah.card_type_note('carousel'), True)
+
+print('\n[18] 圖卡文字：只留要印上去的字，去掉任務與視覺')
+plan_sample = """頁數：2
+
+P1｜封面
+任務：讓老闆三秒內知道這篇在講什麼
+主標：後台叫你開自動化？
+補充：（不放補充句，用視覺證據）
+視覺：主標下方畫三顆綠色開關、一顆灰色開關
+
+P2｜為什麼現在要管
+任務：交代預設值變了
+主標：現在預設先幫你勾好
+內容：
+以前 ➤ 先問手動還是自動
+現在 ➤ 先勾好，要關自己點
+視覺：左右對比卡，左卡畫二選一選單
+底部句：每個新廣告都要面對這一步"""
+txt = ah.card_plan_text(plan_sample)
+check('拿掉「任務」行', '任務：' in txt, False)
+check('拿掉「視覺」行', '視覺：' in txt, False)
+check('拿掉「頁數」行', txt.startswith('頁數'), False)
+check('留下主標', '主標：後台叫你開自動化？' in txt, True)
+check('留下內容的續行', '以前 ➤ 先問手動還是自動' in txt, True)
+check('留下底部句', '底部句：每個新廣告都要面對這一步' in txt, True)
+check('頁標題的全形直線換成空格', 'P1 封面' in txt, True)
+check('視覺的續行也要拿掉', '左右對比卡' in txt, False)
+check('空字串不爆', ah.card_plan_text(''), '')
+check('None 不爆', ah.card_plan_text(None), '')
 
 print('\n' + '=' * 46)
 if FAILS:
