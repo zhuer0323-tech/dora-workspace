@@ -25,8 +25,8 @@
 網頁上還有「私聊」——朱兒可以不透過任務、直接跟某個角色聊天。
 每輪一樣只挑「最舊的一件待處理事」動手，任務推進跟私聊回覆一起排隊，不會搶額度。
 """
-import base64, json, os, re, subprocess, sys, tempfile, time
-from datetime import date
+import base64, json, os, re, socket, subprocess, sys, tempfile, time
+from datetime import date, timedelta
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
@@ -45,6 +45,22 @@ MAX_ROUNDS = 2                 # 製作/審閱最多來回幾輪
 DESIGN_WINDOW_DAYS = 3          # 審閱通過後不馬上做圖，等到離發布日剩這幾天才交給小蝶（2026-08-26 她要求）
 PROPOSAL_DAY_START, PROPOSAL_DAY_END = 15, 21   # 每月第三週（大致），小梟排下個月建議
 AUDIT_INTERVAL_SEC = 7 * 86400  # 小梟定期掃描已排程內容，一週一次就好，不用每天掃
+
+# 2026-09-09 加：規劃表上排好的貼文自動開工＋防漏發提醒
+STATE_DIR = os.path.expanduser('~/Library/Scripts/.dora-ah-state')
+REMIND_HOUR_START, REMIND_HOUR_END = 9, 11   # 提醒只在早上這段推，不要半夜洗版
+OVERDUE_REMIND_DAYS = 3         # 過了發布日還沒打勾，最多追這幾天就安靜
+NET_WAIT_SEC = 10               # Mac 剛醒時最多等網路這麼久（每分鐘還會再跑，不要卡太久）
+TOKEN_RETRY, TOKEN_RETRY_GAP = 3, 20   # 換 token 失敗重試次數與間隔
+
+# 2026-09-09 加：聊天回覆加速
+CHAT_MODEL = 'claude-sonnet-5'  # 私聊／工作群用快一點的腦袋（實測 16 秒 vs 預設 27 秒，答得一樣好；
+                                # Haiku 一樣 16 秒但會回「我幫你查一下」這種空話，不能用）
+SCAN_MIN_GAP = 55               # launchd 改成 20 秒一次是為了讓聊天快點被接到；
+                                # 但讀整份禾言規劃表比較重，維持約一分鐘掃一次就好，省雲端讀取量
+AUDIT_MIN_GAP = 600             # 兩次定期稽核至少隔 10 分鐘。2026-09-09 踩到：七篇同時到期時
+                                # 連續一小時都在稽核，她在工作群講話要排隊等 1.5 分鐘才有人理
+QUOTA_FALLBACK_SEC = 1800       # 額度用完又看不懂恢復時間時，先退避半小時
 
 ROLE_LABEL = {'planner': '規劃', 'maker': '製作', 'reviewer': '審閱', 'designer': '製圖',
               'human': '你', 'system': '系統'}
@@ -202,7 +218,20 @@ GROUP_CHAT_PROMPT = """你是「小梟」，禾言數位行銷社群規劃團隊
 {transcript}
 
 用你的角色口吻自然回覆，讓她知道你聽到了、記住了；如果她是在催進度，簡短說明目前狀況，
-不確定的事不要不懂裝懂掰數字。只輸出你要回的話本身，不要加開場白。"""
+不確定的事不要不懂裝懂掰數字。只輸出你要回的話本身，不要加開場白。
+
+【真的要派工的時候】
+如果她這次講的話是**明確要團隊產出一篇貼文**（要你們新寫一篇、重寫某篇、換方向改寫），
+在你的回覆最後另起一行，照這個格式輸出一行派工指令（前面不要加任何符號或說明）：
+
+PARTY_TASK: {{"title": "這篇的標題", "type": "四類其中之一", "brief": "要寫什麼、方向是什麼、要避開什麼，寫清楚一點讓小兔看得懂"}}
+
+規則：
+- type 只能是：觀點/趨勢、教學/新手、日常/節慶、廣告顧問陪跑
+- **只有她明確要求產出貼文才輸出這一行**。她只是在交代原則、講方向、問進度、聊天、
+  或說「以後排到這類再照這樣走」，都不要輸出——寧可不派，也不要冒出她沒要的任務。
+- 一次最多派一篇。
+- 這一行不會出現在她看到的訊息裡，所以你回覆的正文要自己把「我來安排」講清楚。"""
 
 
 def load_env():
@@ -297,10 +326,59 @@ def build_transcript(messages):
     return '\n'.join(lines) + '\n'
 
 
-def run_claude(prompt, allowed=BASE_ALLOWED, timeout=TIMEOUT):
-    p = subprocess.run(
-        [CLAUDE, '-p', prompt, '--allowedTools', allowed],
-        cwd=WORKDIR, capture_output=True, text=True, timeout=timeout)
+class QuotaExhausted(RuntimeError):
+    """Claude 額度用完。跟一般失敗要分開處理：整套系統暫停到恢復時間，
+    不要把任務標成錯誤、也不要每分鐘再叫一次 claude 空轉。"""
+
+
+def quota_block(msg):
+    """把「暫停到什麼時候」寫進標記檔。訊息長這樣：
+    You've hit your session limit · resets 1:30pm (Asia/Taipei)"""
+    until = time.time() + QUOTA_FALLBACK_SEC
+    m = re.search(r'resets\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)', msg, re.I)
+    if m:
+        h = int(m.group(1)) % 12
+        if m.group(3).lower() == 'pm':
+            h += 12
+        lt = time.localtime()
+        cand = time.mktime((lt.tm_year, lt.tm_mon, lt.tm_mday, h, int(m.group(2) or 0), 0, 0, 0, -1))
+        if cand < time.time():
+            cand += 86400
+        until = cand + 60          # 多等一分鐘，免得剛好卡在恢復的那一秒
+    with open(state_path('quota-blocked'), 'w') as f:
+        f.write(str(int(until)))
+    return until
+
+
+def quota_blocked_until():
+    """還在暫停中就回傳恢復時間，已經可以動了回 0。"""
+    try:
+        with open(state_path('quota-blocked')) as f:
+            until = int(f.read().strip())
+    except (OSError, ValueError):
+        return 0
+    return until if until > time.time() else 0
+
+
+def audit_gap_ok():
+    """兩次稽核之間留 AUDIT_MIN_GAP 秒，別讓背景維護連續霸佔，害聊天排隊。"""
+    fp = state_path('last-audit')
+    try:
+        return time.time() - os.path.getmtime(fp) >= AUDIT_MIN_GAP
+    except OSError:
+        return True
+
+
+def audit_mark():
+    with open(state_path('last-audit'), 'w') as f:
+        f.write(str(int(time.time())))
+
+
+def run_claude(prompt, allowed=BASE_ALLOWED, timeout=TIMEOUT, model=None):
+    cmd = [CLAUDE, '-p', prompt, '--allowedTools', allowed]
+    if model:
+        cmd += ['--model', model]
+    p = subprocess.run(cmd, cwd=WORKDIR, capture_output=True, text=True, timeout=timeout)
     out = (p.stdout or '').strip()
     if p.returncode != 0 and not out:
         raise RuntimeError((p.stderr or '').strip()[:300] or f'claude 回傳 {p.returncode}')
@@ -308,7 +386,9 @@ def run_claude(prompt, allowed=BASE_ALLOWED, timeout=TIMEOUT):
     # 結果被當成正常回覆寫進任務訊息裡，規劃/製作/審閱三個角色被污染了一輪都沒人發現。
     # 這句訊息很固定，直接抓字串當成失敗處理。
     if "hit your session limit" in out or "hit your weekly limit" in out or "usage limit" in out.lower():
-        raise RuntimeError(f'Claude 額度用完了：{out[:200]}')
+        # 2026-09-09 改成專屬例外：額度用完是「整套系統都不能動」，不是「這件事失敗了」。
+        # 之前用一般的 RuntimeError，結果任務被標成錯誤、稽核每分鐘重試（那天空轉了 50 次）。
+        raise QuotaExhausted(out[:200])
     return out
 
 
@@ -478,6 +558,10 @@ def process_task(cfg, tok, task):
     db_patch(cfg, tok, ROOM, f'tasks/{tid}', {'processingRole': role, 'processingStartedAt': now_ms})
     try:
         out = run_claude(prompt, allowed=allowed, timeout=timeout)
+    except QuotaExhausted:
+        # 額度用完不是這件任務的錯，把處理中標記清掉、階段留著，等額度恢復自然會再跑
+        db_patch(cfg, tok, ROOM, f'tasks/{tid}', {'processingRole': None, 'processingStartedAt': None})
+        raise
     except Exception as e:
         set_stage(cfg, tok, task, {
             'stage': 'waiting_human', 'waitingKind': 'error',
@@ -543,7 +627,7 @@ def process_task(cfg, tok, task):
         set_stage(cfg, tok, task, {'stage': 'done', 'canvaUrl': canva_url, 'updatedAt': now_ms})
         if task.get('hySocialId'):
             db_patch(cfg, tok, HY_ROOM, f'posts/{task["hySocialId"]}', {'link': canva_url})
-        line_push(cfg, f'🎨「{task.get("title","")}」的圖卡也做完了，全部四關都跑完啦\n\nCanva 編輯：{canva_url}')
+        line_push(cfg, f'🎨「{task.get("title","")}」的圖卡做好了\n\nCanva 編輯：{canva_url}')
     return True
 
 
@@ -560,12 +644,47 @@ def process_dm(cfg, tok, role, dm_msgs):
     print(f"{time.strftime('%F %T')} 開始跑私聊 / {role}")
     now_ms = int(time.time() * 1000)
     try:
-        out = run_claude(prompt)
+        out = run_claude(prompt, model=CHAT_MODEL)  # 聊天求快
+    except QuotaExhausted:
+        raise          # 額度用完就整體暫停，不要在對話裡留一句「跑失敗了」
     except Exception as e:
         db_post(cfg, tok, ROOM, f'dms/{role}', {
             'from': role, 'text': f'（這輪跑失敗了：{str(e)[:150]}，再傳一次看看）', 'createdAt': now_ms})
         return
     db_post(cfg, tok, ROOM, f'dms/{role}', {'from': role, 'text': out, 'createdAt': now_ms})
+
+
+def parse_group_task(out):
+    """從小梟的回覆裡把派工指令那行挑出來，回傳 (指令 dict 或 None, 清掉指令後的正文)。
+    2026-09-09 加：在這之前工作群只會回話不會派工，她 8/26 交代「讓小蝶重新製圖」、
+    9/9 交代「重寫一篇」，小梟都答應了但實際上一件事都沒發生。"""
+    m = re.search(r'^\s*PARTY_TASK:\s*(\{.*\})\s*$', out, re.M)
+    if not m:
+        return None, out
+    cleaned = (out[:m.start()] + out[m.end():]).strip()
+    try:
+        spec = json.loads(m.group(1))
+    except ValueError:
+        return None, cleaned
+    if not isinstance(spec, dict) or not (spec.get('title') or '').strip():
+        return None, cleaned
+    if spec.get('type') not in ('觀點/趨勢', '教學/新手', '日常/節慶', '廣告顧問陪跑'):
+        spec['type'] = '其他'
+    return spec, cleaned
+
+
+def next_free_tuesday(cfg, tok):
+    """找下一個還沒排貼文的週二（禾言固定一週一篇、週二發）。
+    日期交給程式算比較準——小梟在工作群裡看不到目前的排程表。"""
+    posts = db_get(cfg, tok, HY_ROOM, 'posts') or {}
+    taken = {p.get('date') for p in posts.values() if isinstance(p, dict)}
+    d = date.today()
+    d += timedelta(days=(1 - d.weekday()) % 7 or 7)   # 下一個週二（今天是週二就跳下週）
+    for _ in range(52):
+        if d.isoformat() not in taken:
+            return d.isoformat()
+        d += timedelta(days=7)
+    return d.isoformat()
 
 
 def process_group_chat(cfg, tok, msgs):
@@ -582,12 +701,34 @@ def process_group_chat(cfg, tok, msgs):
     print(f"{time.strftime('%F %T')} 開始跑工作群回覆")
     now_ms = int(time.time() * 1000)
     try:
-        out = run_claude(prompt)
+        out = run_claude(prompt, model=CHAT_MODEL)  # 聊天求快
+    except QuotaExhausted:
+        raise          # 同上，額度用完不要污染工作群
     except Exception as e:
         db_post(cfg, tok, ROOM, 'groupChat', {
             'from': 'planner', 'text': f'（這輪跑失敗了：{str(e)[:150]}，再說一次看看）', 'createdAt': now_ms})
         return
+    spec, out = parse_group_task(out)
     db_post(cfg, tok, ROOM, 'groupChat', {'from': 'planner', 'text': out, 'createdAt': now_ms})
+    if not spec:
+        return
+
+    # 她在工作群交代要產出一篇 → 真的把任務建起來，直接進「製作」讓小兔開寫
+    # （方向已經在對話裡講清楚了，不用再繞回「規劃」那一關）
+    post_date = (spec.get('postDate') or '').strip() or next_free_tuesday(cfg, tok)
+    task_id = db_post(cfg, tok, ROOM, 'tasks', {
+        'title': spec['title'], 'type': spec.get('type') or '其他',
+        'postDate': post_date, 'goal': spec.get('goal') or '',
+        'brief': f"（工作群交代）{spec.get('brief') or ''}",
+        'stage': 'making', 'round': 0,
+        'createdAt': now_ms, 'updatedAt': now_ms,
+    })
+    db_post(cfg, tok, ROOM, f'messages/{task_id}', {
+        'role': 'planner', 'text': f"從工作群接到的方向：\n{spec.get('brief') or ''}",
+        'createdAt': now_ms})
+    print(f"{time.strftime('%F %T')} 工作群派工 → 建任務 / {spec['title']} / {post_date}")
+    line_push(cfg, f'📋 小梟把你在工作群交代的「{spec["title"]}」建成任務了，'
+                   f'小兔開始寫，排在 {post_date}')
 
 
 def check_design_window(cfg, tok):
@@ -606,6 +747,175 @@ def check_design_window(cfg, tok):
             t = dict(t); t['id'] = tid
             set_stage(cfg, tok, t, {'stage': 'designing', 'updatedAt': int(time.time() * 1000)})
             print(f"{time.strftime('%F %T')} {tid} 進入製圖窗口，推進到 designing")
+
+
+# ---------------------------------------------------------------------------
+# 2026-09-09 加的三組東西：網路等待/重試、到期自動開工製圖、發布提醒
+# 起因：她問「本週為什麼沒有跑流程」，查出來排程是活的、只是沒東西可跑——
+# 規劃表上「有文案、沒圖卡」的貼文沒有任何機制會自動被接手，9/8 那篇因此漏掉。
+# ---------------------------------------------------------------------------
+
+def wait_network(host='oauth2.googleapis.com', max_sec=NET_WAIT_SEC):
+    """Mac 剛睡醒時網路還沒接上，DNS 會整批解析不到。等它通，最多等 max_sec 秒。
+    跟 dora-report-runner.py / dora-ads-anomaly.sh 同一個毛病、同一種修法：
+    探測的要是這支真正要連的主機（Google 換 token），不是隨便一個網站。"""
+    deadline = time.time() + max_sec
+    while time.time() < deadline:
+        try:
+            socket.getaddrinfo(host, 443)
+            return True
+        except OSError:
+            time.sleep(2)
+    try:
+        socket.getaddrinfo(host, 443)
+        return True
+    except OSError:
+        return False
+
+
+def ws_token_retry(cfg):
+    """換 token 重試幾次才放棄。網路抖一下不該讓整輪直接崩掉噴堆疊——
+    2026-09-09 之前沒有這層，err log 因此累積到 194KB 全是 URLError。"""
+    for i in range(TOKEN_RETRY):
+        try:
+            return ws_token(cfg['WS_SA_KEY'])
+        except Exception as e:
+            if i == TOKEN_RETRY - 1:
+                print(f"{time.strftime('%F %T')} 連不上網路，這輪跳過（{str(e)[:80]}）")
+                return None
+            time.sleep(TOKEN_RETRY_GAP)
+    return None
+
+
+def state_path(name):
+    os.makedirs(STATE_DIR, exist_ok=True)
+    return os.path.join(STATE_DIR, name)
+
+
+def state_seen(name):
+    return os.path.exists(state_path(name))
+
+
+def state_mark(name):
+    with open(state_path(name), 'w') as f:
+        f.write(str(int(time.time())))
+
+
+def state_cleanup(days=7):
+    """清掉舊的標記檔，不然這個資料夾會一直長大。"""
+    if not os.path.isdir(STATE_DIR):
+        return
+    cutoff = time.time() - days * 86400
+    for fn in os.listdir(STATE_DIR):
+        fp = os.path.join(STATE_DIR, fn)
+        try:
+            if os.path.getmtime(fp) < cutoff:
+                os.unlink(fp)
+        except OSError:
+            pass
+
+
+def should_scan():
+    """重的掃描（讀整份規劃表）至少隔 SCAN_MIN_GAP 秒才做一次。
+    用單一檔案記上次時間，不是一分鐘留一個標記檔（那樣一週會堆一萬個檔）。"""
+    os.makedirs(STATE_DIR, exist_ok=True)
+    fp = os.path.join(STATE_DIR, 'last-scan')
+    try:
+        if time.time() - os.path.getmtime(fp) < SCAN_MIN_GAP:
+            return False
+    except OSError:
+        pass
+    with open(fp, 'w') as f:
+        f.write(str(int(time.time())))
+    return True
+
+
+def check_design_due(cfg, tok):
+    """禾言規劃表上「有文案、還沒圖卡」的貼文，離發布日剩 DESIGN_WINDOW_DAYS 天
+    （含已經過期的）就自動建一筆製圖任務交給小蝶，並推 LINE 說一聲開工了。
+
+    為什麼要這一段（2026-09-09）：原本只有「任務從審閱通過走到 awaiting_window」
+    這一條路會進製圖，她自己直接在規劃表排的貼文沒有任何人接手。8/26 之後她沒建過
+    新任務，系統就閒置兩週，9/8 該發那篇文案有 607 字、圖卡沒做、也沒發。
+
+    一輪最多建一篇（挑最早該發的那篇），避免七篇同時開工把 Claude 額度燒光。
+    純資料庫操作，不吃額度，每輪都可以做。"""
+    posts = db_get(cfg, tok, HY_ROOM, 'posts') or {}
+    today = date.today()
+    cands = []
+    for pid, p in posts.items():
+        if not isinstance(p, dict) or p.get('done'):
+            continue
+        if not (p.get('ig') or '').strip():
+            continue                      # 沒文案不能做圖
+        if (p.get('link') or '').strip():
+            continue                      # 已經有圖卡了
+        stage = p.get('agentStage')
+        if stage and stage != 'done':
+            continue                      # 正在被處理中，別重複建（少了這條會每分鐘建一筆）
+        try:
+            pd = date.fromisoformat(p.get('date') or '')
+        except ValueError:
+            continue                      # 沒填發布日就不自動動它
+        left = (pd - today).days
+        if left > DESIGN_WINDOW_DAYS:
+            continue
+        cands.append((p.get('date'), pid, p, left))
+    if not cands:
+        return
+    cands.sort()
+    _, pid, p, left = cands[0]            # 最早該發的先做
+    now_ms = int(time.time() * 1000)
+    when = f'還有 {left} 天要發' if left > 0 else ('今天就要發' if left == 0 else f'已經過期 {-left} 天')
+    task_id = db_post(cfg, tok, ROOM, 'tasks', {
+        'title': p.get('title', ''), 'type': p.get('type', ''), 'postDate': p.get('date', ''),
+        'goal': p.get('goal', ''),
+        'brief': f'文案已經在規劃表上定稿，{when}，自動開工做圖卡。',
+        'stage': 'designing', 'round': 0, 'hySocialId': pid,
+        'createdAt': now_ms, 'updatedAt': now_ms,
+    })
+    db_post(cfg, tok, ROOM, f'messages/{task_id}', {
+        'role': 'system', 'text': f'{when}，自動開工做圖卡（文案以規劃表上的版本為準）。',
+        'createdAt': now_ms})
+    db_patch(cfg, tok, HY_ROOM, f'posts/{pid}', {'agentStage': 'designing', 'agentTaskId': task_id})
+    print(f"{time.strftime('%F %T')} 自動開工製圖 / {p.get('title','')} / {p.get('date','')}")
+    line_push(cfg, f'🦋 小蝶開工做「{p.get("title","")}」的圖卡了（{p.get("date","")} 要發，{when}）')
+
+
+def check_publish_reminder(cfg, tok):
+    """發布當天早上提醒她去發，過了發布日還沒打勾再追幾天。
+    只在早上 REMIND_HOUR_START–REMIND_HOUR_END 之間推，靠標記檔確保同一件事一天只推一次。"""
+    hour = time.localtime().tm_hour
+    if not (REMIND_HOUR_START <= hour < REMIND_HOUR_END):
+        return
+    posts = db_get(cfg, tok, HY_ROOM, 'posts') or {}
+    today = date.today()
+    for pid, p in posts.items():
+        if not isinstance(p, dict) or p.get('done'):
+            continue
+        try:
+            pd = date.fromisoformat(p.get('date') or '')
+        except ValueError:
+            continue
+        late = (today - pd).days
+        if late == 0:
+            kind = 'today'
+        elif 0 < late <= OVERDUE_REMIND_DAYS:
+            kind = 'overdue'
+        else:
+            continue
+        mark = f'{today.isoformat()}-{pid}-{kind}'
+        if state_seen(mark):
+            continue
+        link = (p.get('link') or '').strip()
+        card = f'\n圖卡：{link}' if link else '\n（圖卡還沒做好）'
+        if kind == 'today':
+            line_push(cfg, f'📌 今天要發「{p.get("title","")}」{card}\n\n發完記得到規劃表打勾')
+        else:
+            line_push(cfg, f'⚠️「{p.get("title","")}」原本 {p.get("date","")} 要發，還沒標成已發布{card}')
+        state_mark(mark)
+        print(f"{time.strftime('%F %T')} 推發布提醒 / {kind} / {p.get('title','')}")
+        return   # 一輪只推一則，避免一次七則洗版
 
 
 PROPOSAL_PROMPT = """你是「小梟」，禾言數位行銷社群規劃團隊的規劃小幫手。現在要規劃 {target_month} \
@@ -684,6 +994,8 @@ def run_monthly_proposal(cfg, tok, target_key):
     now_ms = int(time.time() * 1000)
     try:
         out = run_claude(prompt, allowed=PLANNER_ALLOWED, timeout=TIMEOUT)
+    except QuotaExhausted:
+        raise
     except Exception as e:
         print('月規劃建議失敗：', e)
         return
@@ -704,6 +1016,8 @@ def parse_audit_verdict(out):
 def check_audit_scan(cfg, tok):
     """挑一篇該定期稽核的已排程貼文（還沒發布、沒有正在被 agent-hub 處理、
     上次稽核是一週以前）。一次只挑最早發布日那篇，回傳 (post_id, post) 或 None。"""
+    if not audit_gap_ok():
+        return None          # 剛稽核過，先讓聊天與任務有機會插隊
     posts = db_get(cfg, tok, HY_ROOM, 'posts') or {}
     today_str = date.today().isoformat()
     now_ms = int(time.time() * 1000)
@@ -731,10 +1045,17 @@ def run_audit_one(cfg, tok, post_id, p):
         title=p.get('title', ''), ig=p.get('ig', ''))
     print(f"{time.strftime('%F %T')} 開始跑內容稽核 / {post_id}")
     now_ms = int(time.time() * 1000)
+    audit_mark()   # 不管結果如何都算「剛稽核過」，下一篇要隔 AUDIT_MIN_GAP 才輪到
     try:
         out = run_claude(prompt, allowed=PLANNER_ALLOWED, timeout=TIMEOUT)
+    except QuotaExhausted:
+        raise
     except Exception as e:
         print('稽核失敗：', e)
+        # 失敗也要記時間，往後推一小時再試。2026-09-09 之前沒記，額度用完那段
+        # 同一篇被重試了 50 次，整個系統一小時都在空轉。
+        db_patch(cfg, tok, HY_ROOM, f'posts/{post_id}',
+                 {'lastAuditAt': now_ms - AUDIT_INTERVAL_SEC * 1000 + 3600 * 1000})
         return
     db_patch(cfg, tok, HY_ROOM, f'posts/{post_id}', {'lastAuditAt': now_ms})
     if parse_audit_verdict(out) != '需要調整':
@@ -751,66 +1072,113 @@ def run_audit_one(cfg, tok, post_id, p):
     line_push(cfg, f'🦉 小梟稽核發現「{p.get("title","")}」需要調整，已經交給小兔改文案')
 
 
+def run_round(cfg, tok):
+    """一輪要做的事。網路出狀況由 main() 統一接住印一行就好，不要噴堆疊。"""
+    # 這幾項要讀整份禾言規劃表，比較重。launchd 改成 20 秒一次是為了讓聊天快點被接到，
+    # 掃描沒必要跟著變三倍，維持約一分鐘一次（2026-09-09）。
+    if should_scan():
+        check_design_window(cfg, tok)     # 純資料庫操作，不吃額度
+        check_design_due(cfg, tok)        # 規劃表上到期的貼文自動開工做圖卡
+        check_publish_reminder(cfg, tok)  # 發布當天／漏發提醒
+        state_cleanup()
+
+    jobs = []  # (時間戳, 種類, 資料)
+
+    tasks = db_get(cfg, tok, ROOM, 'tasks') or {}
+    for tid, t in tasks.items():
+        if isinstance(t, dict) and t.get('stage') in ('planning', 'making', 'reviewing', 'designing'):
+            t = dict(t); t['id'] = tid
+            jobs.append((t.get('updatedAt', t.get('createdAt', 0)), 'task', t))
+
+    all_dms = db_get(cfg, tok, ROOM, 'dms') or {}
+    for role in PERSONA:
+        dm_msgs = all_dms.get(role) or {}
+        if not dm_msgs:
+            continue
+        rows = sorted(dm_msgs.values(), key=lambda m: m.get('createdAt', 0))
+        last = rows[-1]
+        if last.get('from') == 'human':
+            jobs.append((last.get('createdAt', 0), 'dm', (role, dm_msgs)))
+
+    group_msgs = db_get(cfg, tok, ROOM, 'groupChat') or {}
+    if group_msgs:
+        rows = sorted(group_msgs.values(), key=lambda m: m.get('createdAt', 0))
+        if rows[-1].get('from') == 'human':
+            jobs.append((rows[-1].get('createdAt', 0), 'group', group_msgs))
+
+    tok2 = ws_token_retry(cfg)
+    if not tok2:
+        return
+
+    if jobs:
+        # 私聊／工作群優先於任務推進：她在等聊天回覆比任務多花一輪才推進更有感，
+        # 同一層級才照時間排序（2026-08-26 她實測發現私聊被任務卡住太久）
+        jobs.sort(key=lambda j: (0 if j[1] in ('dm', 'group') else 1, j[0]))
+        kind, payload = jobs[0][1], jobs[0][2]
+        if kind == 'task':
+            process_task(cfg, tok2, payload)
+        elif kind == 'dm':
+            role, dm_msgs = payload
+            process_dm(cfg, tok2, role, dm_msgs)
+        else:
+            process_group_chat(cfg, tok2, payload)
+        return
+
+    # 沒有任務/私聊要處理，這輪換去做背景維護：月規劃建議或定期稽核，一樣一次只做一件
+    target = check_monthly_proposal(cfg, tok)
+    if target:
+        run_monthly_proposal(cfg, tok2, target)
+        return
+    audit_candidate = check_audit_scan(cfg, tok)
+    if audit_candidate:
+        run_audit_one(cfg, tok2, *audit_candidate)
+
+
+def lock_is_alive():
+    """鎖檔裡存的是 pid，程序還在才算真的有人在跑。
+    2026-09-09 加：重啟排程（launchctl unload）會直接殺掉正在跑的程序，
+    finally 來不及刪鎖，整套系統就被一個沒有主人的鎖卡住 LOCK_STALE（17 分鐘）。"""
+    try:
+        pid = int(open(LOCK).read().strip())
+    except (OSError, ValueError):
+        return False
+    try:
+        os.kill(pid, 0)      # 只是探測，不會真的送訊號
+        return True
+    except OSError:
+        return False
+
+
 def main():
-    if os.path.exists(LOCK) and time.time() - os.path.getmtime(LOCK) < LOCK_STALE:
+    if (os.path.exists(LOCK) and time.time() - os.path.getmtime(LOCK) < LOCK_STALE
+            and lock_is_alive()):
         return
     open(LOCK, 'w').write(str(os.getpid()))
     try:
         cfg = load_env()
         if not all(cfg.get(k) for k in ('WS_SA_KEY', 'WS_DB_URL')):
             print('設定不全，跳過'); return
-        tok = ws_token(cfg['WS_SA_KEY'])
-
-        check_design_window(cfg, tok)  # 純資料庫操作，不吃額度，每輪都做
-
-        jobs = []  # (時間戳, 種類, 資料)
-
-        tasks = db_get(cfg, tok, ROOM, 'tasks') or {}
-        for tid, t in tasks.items():
-            if isinstance(t, dict) and t.get('stage') in ('planning', 'making', 'reviewing', 'designing'):
-                t = dict(t); t['id'] = tid
-                jobs.append((t.get('updatedAt', t.get('createdAt', 0)), 'task', t))
-
-        all_dms = db_get(cfg, tok, ROOM, 'dms') or {}
-        for role in PERSONA:
-            dm_msgs = all_dms.get(role) or {}
-            if not dm_msgs:
-                continue
-            rows = sorted(dm_msgs.values(), key=lambda m: m.get('createdAt', 0))
-            last = rows[-1]
-            if last.get('from') == 'human':
-                jobs.append((last.get('createdAt', 0), 'dm', (role, dm_msgs)))
-
-        group_msgs = db_get(cfg, tok, ROOM, 'groupChat') or {}
-        if group_msgs:
-            rows = sorted(group_msgs.values(), key=lambda m: m.get('createdAt', 0))
-            if rows[-1].get('from') == 'human':
-                jobs.append((rows[-1].get('createdAt', 0), 'group', group_msgs))
-
-        tok2 = ws_token(cfg['WS_SA_KEY'])
-
-        if jobs:
-            # 私聊／工作群優先於任務推進：她在等聊天回覆比任務多花一輪才推進更有感，
-            # 同一層級才照時間排序（2026-08-26 她實測發現私聊被任務卡住太久）
-            jobs.sort(key=lambda j: (0 if j[1] in ('dm', 'group') else 1, j[0]))
-            kind, payload = jobs[0][1], jobs[0][2]
-            if kind == 'task':
-                process_task(cfg, tok2, payload)
-            elif kind == 'dm':
-                role, dm_msgs = payload
-                process_dm(cfg, tok2, role, dm_msgs)
-            else:
-                process_group_chat(cfg, tok2, payload)
+        # Mac 剛睡醒網路還沒通時，以前這裡會整輪崩掉噴堆疊（err log 累積到 194KB）。
+        # 2026-09-09 改成先等網路、換 token 重試，真的不通就安靜結束等下一分鐘。
+        if not wait_network():
+            print(f"{time.strftime('%F %T')} 網路還沒通，這輪跳過")
             return
-
-        # 沒有任務/私聊要處理，這輪換去做背景維護：月規劃建議或定期稽核，一樣一次只做一件
-        target = check_monthly_proposal(cfg, tok)
-        if target:
-            run_monthly_proposal(cfg, tok2, target)
+        blocked = quota_blocked_until()
+        if blocked:
+            return          # Claude 額度還沒恢復，安靜等，不要每 20 秒叫一次空轉
+        tok = ws_token_retry(cfg)
+        if not tok:
             return
-        audit_candidate = check_audit_scan(cfg, tok)
-        if audit_candidate:
-            run_audit_one(cfg, tok2, *audit_candidate)
+        try:
+            run_round(cfg, tok)
+        except QuotaExhausted as e:
+            until = quota_block(str(e))
+            print(f"{time.strftime('%F %T')} Claude 額度用完，暫停到 "
+                  f"{time.strftime('%H:%M', time.localtime(until))} 再繼續")
+        except OSError as e:
+            # URLError / ConnectionResetError / 逾時都是 OSError 的子類，
+            # 網路中途斷掉就印一行，不要噴整串堆疊把 err log 灌爆
+            print(f"{time.strftime('%F %T')} 這輪中途連線出狀況，跳過（{type(e).__name__}: {str(e)[:100]}）")
     finally:
         if os.path.exists(LOCK):
             os.unlink(LOCK)
