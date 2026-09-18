@@ -1122,6 +1122,38 @@ HTML 覆蓋到 `100_Todo/projects/heyen-cards/index.html` → push → 等 Pages
 
 ---
 
+## 哪些資料夾不進這個公開倉庫（2026-09-18 起）
+
+`dora-workspace` 是 **PUBLIC** 倉庫。客戶資料與工作草稿改成**放在 OneDrive 的 Dora-Agent
+（私人 repo），工作區這邊只留 symlink**——跟 `000_Agent` 一樣的做法，
+所以程式、skill、提示詞裡寫死的路徑一行都不用改，Claude 也照樣讀得到。
+
+| 資料夾 | 實體位置 | 為什麼 |
+|:--|:--|:--|
+| `200_Reference/` | Dora-Agent | 客戶檔、報價單、廣告文案樣本 |
+| `100_Todo/plans/` | Dora-Agent | 計劃書會寫到客戶名與專案細節 |
+| `100_Todo/drafts/` | Dora-Agent | 客戶回報草稿、社群文案 |
+| `100_Todo/meetings/` | Dora-Agent | 會議逐字稿（本來就有 gitignore，但擋不住早就 commit 的） |
+| `100_Todo/projects/` | **留在這裡** | 六個網頁靠 GitHub Pages 發布，必須公開 |
+| `scripts/` | **留在這裡** | 只有程式，沒有客戶資料 |
+
+⚠️ **舊的 commit 歷史還在**（240 個 commit 裡有這些資料）。朱兒 2026-09-18 評估後
+決定只止血、不清歷史（清歷史要強制推送，被 deny 規則擋著，而且不保證處理掉別人的副本）。
+完整評估在私人倉庫的 `000_Agent/memory/2026-09-18-公開倉庫客戶資料評估.md`。
+
+⚠️ **要注意的地方**：
+- 新增客戶資料、計劃書、草稿時**照原本的路徑寫就好**，symlink 會把它導到私人倉庫
+- 這些檔案現在歸 Dora-Agent 版控，要備份是在**那邊** commit，不是這邊
+- `.gitignore` 的規則**不要加結尾斜線**（`100_Todo/meetings` 不是 `100_Todo/meetings/`）——
+  帶斜線只擋目錄，擋不住 symlink 本身，會被 `git add -A` 掃進來
+- 背景腳本（`dora-report-runner.py`、`dora-agent-hub-runner.py`）讀的是同一組路徑。
+  萬一 launchd 環境對 OneDrive 有 TCC 權限問題，`has_spec()` 會**靜默回 True 放行**
+  （不會崩潰，但會叫 AI 硬寫）。回報品質突然變差時，先查這裡
+
+---
+
+---
+
 ## 草稿輸出規則
 
 - 對話裡先給我：摘要、關鍵決策、需要我選的地方

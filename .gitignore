@@ -3,8 +3,15 @@
 .claude/settings.local.json
 
 # 會議錄音的逐字稿與筆記含客戶機密，絕不推上公開倉庫（網頁版走 Firebase，不經 git）
-100_Todo/meetings/
+100_Todo/meetings
 
 # Firebase 服務帳號金鑰（等同後門鑰匙，只放本機 ~/Library/Scripts/）
 *firebase-adminsdk*.json
 *-sa.json
+
+# 客戶資料與工作草稿不進這個公開倉庫（2026-09-18）
+# 實體放在 OneDrive 的 Dora-Agent（私人 repo），這邊只留 symlink，
+# 所以程式與 skill 裡寫死的路徑都不用改。跟 000_Agent 同一個做法。
+200_Reference
+100_Todo/plans
+100_Todo/drafts
