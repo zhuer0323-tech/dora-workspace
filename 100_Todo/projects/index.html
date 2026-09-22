@@ -343,6 +343,8 @@ nav.tabs .tb.dragging{position:fixed;z-index:60;pointer-events:none;opacity:.95;
 .tag.date.over{background:#FFE5E5;color:#D0455C}
 .tag.time{background:#FFF3E0;color:#A9682A}
 .tag.rep{background:#E7F6EE;color:#3C8A63}
+.tag.ended{background:#EFEFEF;color:#8A8A8A}
+.task.rended{opacity:.6}
 .pdot{width:8px;height:8px;border-radius:50%;flex:none}
 .task .prog{height:5px;border-radius:99px;background:var(--line);margin-top:7px;overflow:hidden}
 .task .prog i{display:block;height:100%;background:var(--doing);border-radius:99px}
@@ -1101,6 +1103,9 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
           <button data-d="0">日</button>
         </div></div>
       </div>
+      <div class="prop hide" id="tmRangeWrap"><span class="pl">🗓 期間</span>
+        <div class="pv" style="flex-wrap:wrap;gap:4px 8px"><input type="date" id="tmRStart" class="bare"><span style="display:flex;align-items:center;gap:8px"><span class="tiny">到</span><input type="date" id="tmREnd" class="bare"></span><span class="tiny" id="tmRangeHint" style="flex-basis:100%">留空＝不限</span></div>
+      </div>
       <div id="tmOnceFields">
         <div class="prop"><span class="pl">📅 開始日</span>
           <div class="pv"><input type="date" id="tmStart" class="bare"></div>
@@ -1532,6 +1537,9 @@ const clientByName = n => Object.values(clients).find(c => c.name === n || c.sho
 /* 重複任務：不複製成很多筆，而是一個樣板 + 每天的完成紀錄 doneDates */
 const isRepeat = t => t.repeat && t.repeat !== 'none';
 function repeatDueOn(t, dateStr){
+  // 有填期間就只在期間內輪到；兩個都留空＝沒有限制（舊資料一律是這種）
+  if (t.rstart && dateStr < t.rstart) return false;
+  if (t.rend   && dateStr > t.rend)   return false;
   const d = new Date(dateStr + 'T00:00:00').getDay();
   if (t.repeat === 'daily')    return true;
   if (t.repeat === 'weekdays') return d >= 1 && d <= 5;
@@ -1539,6 +1547,16 @@ function repeatDueOn(t, dateStr){
   return false;
 }
 const repeatDone = (t, dateStr) => !!(t.doneDates && t.doneDates[dateStr]);
+// 結束日已經過了：今日代辦不再出現，但清單裡還找得到（標「已結束」）
+const repeatEnded = t => isRepeat(t) && !!t.rend && t.rend < TODAY();
+// 期間的短標籤：10/01–10/31 ／ 到 10/31 ／ 10/01 起
+function repeatRangeLabel(t){
+  const md = d => d.slice(5).replace('-','/');
+  if (t.rstart && t.rend) return `${md(t.rstart)}–${md(t.rend)}`;
+  if (t.rend)   return `到 ${md(t.rend)}`;
+  if (t.rstart) return `${md(t.rstart)} 起`;
+  return '';
+}
 // 一般任務看 status；重複任務看「今天有沒有打勾」
 const isDone = (t, dateStr) => isRepeat(t) ? repeatDone(t, dateStr || TODAY()) : t.status === 'done';
 
@@ -1772,8 +1790,9 @@ function renderRoutine(){
   $('#routineCount').textContent = list.length ? `${doneN}/${list.length}` : '';
   $('#routineList').innerHTML = list.length ? list.map(t=>{
     const d = repeatDone(t, td);
-    const label = t.repeat==='daily' ? '每天' : t.repeat==='weekdays' ? '平日'
-      : '每週' + (t.wdays||[]).map(x=>WDAY[x]).join('');
+    const label = (t.repeat==='daily' ? '每天' : t.repeat==='weekdays' ? '平日'
+      : '每週' + (t.wdays||[]).map(x=>WDAY[x]).join(''))
+      + (repeatRangeLabel(t) ? ' · ' + repeatRangeLabel(t) : '');
     return `<div class="routine${d?' done':''}">
       <button class="box" data-routine="${t.id}">${d?'✓':''}</button>
       <span class="t" data-open="${t.id}">${esc(t.name)}</span>
@@ -1950,9 +1969,11 @@ function taskRow(t){
   // 「其他」不顯示：匯入的舊任務幾乎都是這個，每張卡都掛一個等於沒資訊
   if (t.type && t.type !== '其他') tags.push(`<span class="tag">${esc(t.type)}</span>`);
   if (isRepeat(t)){
-    const label = t.repeat==='daily' ? '每天' : t.repeat==='weekdays' ? '週一到五'
-      : '每週' + (t.wdays||[]).map(x=>WDAY[x]).join('');
+    const label = (t.repeat==='daily' ? '每天' : t.repeat==='weekdays' ? '週一到五'
+      : '每週' + (t.wdays||[]).map(x=>WDAY[x]).join(''))
+      + (repeatRangeLabel(t) ? ' · ' + repeatRangeLabel(t) : '');
     tags.push(`<span class="tag rep">🔁 ${esc(label)}</span>`);
+    if (repeatEnded(t)) tags.push(`<span class="tag ended">已結束</span>`);
   } else if (t.due){
     const over = t.due < td && t.status!=='done';
     tags.push(`<span class="tag date${over?' over':''}">${over?'逾期 ':''}${t.due.slice(5)}${t.due===td?' 今天':''}</span>`);
@@ -1967,7 +1988,7 @@ function taskRow(t){
       Object.entries(STATUS).map(([k,v])=>`<option value="${k}"${t.status===k?' selected':''}>${v}</option>`).join('') +
       `</select>`;
 
-  return `<div class="task${isRepeat(t)&&done?' rdone':''}${isOver?' over':''}" data-s="${isRepeat(t)?(done?'done':'todo'):t.status}">
+  return `<div class="task${isRepeat(t)&&done?' rdone':''}${repeatEnded(t)?' rended':''}${isOver?' over':''}" data-s="${isRepeat(t)?(done?'done':'todo'):t.status}">
     <div class="body" data-open="${t.id}">
       <div class="title">${esc(t.name)}</div>
       <div class="meta">
@@ -2751,6 +2772,8 @@ function openTask(id, preset){
   $('#tmType').value = t?.type || FALLBACK_TYPE();
   $('#tmRepeat').value = t?.repeat || preset?.repeat || 'none';
   $$('#tmWdays button').forEach(b=>b.classList.toggle('on', (t?.wdays||[]).includes(+b.dataset.d)));
+  $('#tmRStart').value = t?.rstart || '';
+  $('#tmREnd').value   = t?.rend   || '';
   $('#tmStart').value = t?.start || '';
   $('#tmDue').value = t?.due || (t ? '' : TODAY());
   $('#tmTime').value = t?.time || '';
@@ -2767,11 +2790,23 @@ function openTask(id, preset){
 function syncRepeatFields(){
   const r = $('#tmRepeat').value, rep = r !== 'none';
   $('#tmWdaysWrap').classList.toggle('hide', r !== 'weekly');
+  $('#tmRangeWrap').classList.toggle('hide', !rep);
+  updateRangeHint();
   // 重複任務沒有「這一次的截止日」與「整體進度」，改用每天打勾
   $('#tmOnceFields').classList.toggle('hide', rep);
   $('#tmStatus').closest('.prop').classList.toggle('hide', rep);
   syncProgVisibility();
 }
+/* 期間填反了（結束日早於開始日）會讓這件事永遠不出現，當場講出來 */
+function updateRangeHint(){
+  const a = $('#tmRStart').value, b = $('#tmREnd').value, bad = a && b && b < a;
+  const el = $('#tmRangeHint');
+  el.textContent = bad ? '⚠️ 結束日比開始日早，這樣不會出現' : '留空＝不限';
+  el.style.color = bad ? '#D9534F' : '';
+}
+$('#tmRStart').addEventListener('change', updateRangeHint);
+$('#tmREnd').addEventListener('change', updateRangeHint);
+
 /* 進度滑桿：重複任務用打勾取代進度，不用手動拉 */
 function syncProgVisibility(){
   const rep = $('#tmRepeat').value !== 'none';
@@ -2836,6 +2871,8 @@ function readTaskForm(){
     prio: segGet('tmPrio'), status,
     repeat, wdays: $$('#tmWdays button.on').map(b=>+b.dataset.d),
     doneDates: editingTask?.doneDates || {},
+    rstart: rep ? $('#tmRStart').value : '',
+    rend:   rep ? $('#tmREnd').value   : '',
     start: rep ? '' : $('#tmStart').value,
     due:   rep ? '' : $('#tmDue').value,
     time: $('#tmTime').value, mins: +$('#tmMins').value || 0,
