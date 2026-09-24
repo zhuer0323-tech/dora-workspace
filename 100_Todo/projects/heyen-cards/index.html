@@ -2,38 +2,27 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<title>禾言圖卡（柔和版 v2・Canva 匯入用）</title>
+<title>禾言圖卡・自動化投放到底該不該全開</title>
 <link rel="stylesheet" href="fonts/bold/GenJyuuGothic-Bold.css">
 <link rel="stylesheet" href="fonts/medium/GenJyuuGothic-Medium.css">
 <style>
 :root{
-  /* 全部取自 Canva 版型「廣告上線前」，不另外加色 */
-  --y:#FCD501;      /* 亮黃 */
-  --y2:#FFCA26;     /* 黃（紙張後層） */
-  --y3:#FFEDC5;     /* 淺黃 */
-  --g:#AED056;      /* 綠（標籤） */
-  --cream:#FFF9F6;  /* 米白（紙張） */
-  --mint:#C9E6E4;   /* 藍綠（對話框） */
-  --coral:#F8706F;  /* 珊瑚紅 */
-  --amber:#FFD36F;  /* 橘黃 */
-  --red:#FF3131;    /* 強調紅 */
-  --ink:#000;
+  --y:#FCD501; --y2:#FFCA26; --y3:#FFEDC5; --g:#AED056;
+  --cream:#FFF9F6; --mint:#C9E6E4; --coral:#F8706F; --amber:#FFD36F;
+  --red:#FF3131; --ink:#000;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#555;font-family:'GenJyuu Gothic','GenJyuuGothic','源柔ゴシック',"PingFang TC","Heiti TC","Noto Sans TC",sans-serif}
 
-/* 每張卡 1080×1350（IG 4:5） */
 .card{
   width:1080px;height:1350px;position:relative;overflow:hidden;
   background:#F0F0EE;
-  /* 格線背景 */
   background-image:
     linear-gradient(rgba(0,0,0,.09) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0,0,0,.09) 1px, transparent 1px);
   background-size:34px 34px;
   margin:0 auto;
 }
-/* 紙張 */
 .paper{
   position:absolute;left:66px;top:170px;right:66px;bottom:132px;
   background:var(--cream);border:none;border-radius:38px;
@@ -44,38 +33,30 @@ body{background:#555;font-family:'GenJyuu Gothic','GenJyuuGothic','源柔ゴシ�
 
 .readmore{display:inline-block;background:var(--y);border:none;
   border-radius:99px;padding:13px 34px;font-size:33px;font-weight:900}
-/* 網點 */
 .dots{position:absolute;width:132px;height:110px;z-index:0;opacity:.5;
   background-image:radial-gradient(var(--y2) 3.4px, transparent 3.6px);
   background-size:17px 17px}
 
-/* 黃色星形角落（禾言版型） */
 .corner{position:absolute;width:230px;height:230px;z-index:0}
 .corner.tl{left:-92px;top:-98px}
 .corner.br{right:-92px;bottom:-98px;transform:rotate(180deg)}
 .corner svg{width:100%;height:100%;display:block}
-/* 禾言 logo */
 .hylogo{position:absolute;left:50%;top:40px;transform:translateX(-50%);width:290px;z-index:6}
 .hylogo img{width:100%;display:block}
-/* 綠色箭頭標籤（禾言版型） */
 .flag{position:absolute;left:-14px;top:-24px;z-index:5;background:#AED056;
   padding:14px 40px 14px 26px;font-size:31px;font-weight:900;
   clip-path:polygon(0 0, 84% 0, 100% 50%, 84% 100%, 0 100%)}
-/* 底部藍綠膠囊 */
 .bpill{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);
   background:#C9E6E4;border-radius:20px;padding:14px 34px;
   font-size:30px;font-weight:900;white-space:nowrap;z-index:4}
 
-/* 頁首 */
 .brandbar{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;
   border-bottom:4px dashed rgba(17,17,17,.35);padding-bottom:26px;margin-bottom:38px}
 .brandbar .who{font-size:27px;font-weight:800;letter-spacing:.5px}
 .brandbar .who small{display:block;font-size:17px;font-weight:600;color:#6b6b6b;letter-spacing:2px;margin-top:3px}
 .brandbar .tag{font-size:23px;font-weight:800;background:var(--y);color:var(--ink);padding:9px 20px;border-radius:6px}
 
-/* 封面大標 */
 h1{position:relative;z-index:2;font-size:104px;line-height:1.22;font-weight:900;letter-spacing:-2px}
-/* 強調：黃底深字。用漸層畫而不是純色背景 —— 純色背景匯入 Canva 會變成獨立色塊蓋住文字 */
 h1 .hl{background:linear-gradient(transparent 7%, var(--y) 7%, var(--y) 93%, transparent 93%);
   color:var(--ink);padding:2px 14px;display:inline-block;margin:6px 0}
 h1 .u{background:linear-gradient(transparent 62%, var(--y) 62%)}
@@ -84,29 +65,24 @@ h1 .u{background:linear-gradient(transparent 62%, var(--y) 62%)}
 .quote .red{color:var(--red)}
 .sub{font-size:34px;font-weight:700;color:#333;margin-top:22px;line-height:1.65}
 
-/* 內頁標題 */
 h2{position:relative;z-index:2;font-size:66px;font-weight:900;line-height:1.32;letter-spacing:-1px}
 h2 .hl{background:linear-gradient(transparent 7%, var(--y) 7%, var(--y) 93%, transparent 93%);
   color:var(--ink);padding:4px 16px;display:inline-block}
 
-/* 條列卡 */
 .items{position:relative;z-index:2;display:flex;flex-direction:column;gap:26px;margin-top:38px}
 .item{position:relative;background:#fff;border:none;border-radius:22px;padding:26px 30px;box-shadow:0 4px 0 rgba(0,0,0,.07)}
 .item .t{font-size:40px;font-weight:900;margin-bottom:10px}
 .item .t.blue{color:var(--ink)} .item .t.red{color:var(--red)} .item .t.green{color:var(--ink)}
 .item .d{font-size:31px;font-weight:600;color:#222;line-height:1.6}
-/* 四角小方塊 */
 .item i{display:none}
-.item i:nth-child(1){left:-10px;top:-10px} .item i:nth-child(2){right:-10px;top:-10px}
-.item i:nth-child(3){left:-10px;bottom:-10px} .item i:nth-child(4){right:-10px;bottom:-10px}
 
-/* 只有標題、沒有說明文字的列表：卡片加高吃掉多餘空間，不然底紙下半會空一大塊 */
 .items.plain{flex:1;justify-content:center;gap:30px}
 .items.plain .item{padding:40px 34px}
 .items.plain .t{font-size:54px;margin-bottom:0}
+/* 內容卡要填滿底紙下半時用這個，不然黃紙下方會空一大塊 */
+.items.fill{flex:1;justify-content:center}
 
 .foot{position:relative;z-index:2;margin-top:auto;padding-top:30px;font-size:34px;font-weight:800;display:flex;align-items:center;gap:14px}
-/* 「適合」這種夾在句子裡的標籤：膠囊匯入 Canva 會被擠成兩行，改用螢光筆底線 */
 .pill{display:inline;
   background:linear-gradient(transparent 52%, var(--y) 52%);
   color:var(--ink);font-size:34px;font-weight:900;padding:0 6px}
@@ -117,85 +93,238 @@ h2 .hl{background:linear-gradient(transparent 7%, var(--y) 7%, var(--y) 93%, tra
   box-shadow:9px 9px 0 var(--ink)}
 .cta .l1{font-size:38px;font-weight:900} .cta .l2{font-size:31px;font-weight:700;color:#444;margin-top:10px}
 
-/* 膠囊標籤（用文字當圖案） */
 .chips{position:relative;z-index:2;display:flex;flex-wrap:nowrap;gap:10px;margin-top:38px}
 .chips .c{border:none;border-radius:99px;padding:11px 19px;
   font-size:27px;font-weight:800;background:#fff;line-height:1.2;white-space:nowrap}
 .chips .c.y{background:var(--y)} .chips .c.m{background:var(--mint)}
 .chips .c.g{background:var(--g)} .chips .c.a{background:var(--amber)}
-/* 原本是黑底白字，改成橘黃底深字：色塊萬一蓋住文字也不會變成一條黑槓 */
 .chips .c.k{background:var(--amber);color:var(--ink)}
 
-/* 黃色紙張那幾頁：黃底強調在黃紙上等於沒效果，白底匯入 Canva 又會多出白方塊，
-   所以這幾頁的強調一律不靠底色，改用深紅字 —— 純文字顏色匯入不會走樣 */
 .paper.yellow h1 .hl, .paper.yellow h2 .hl, .paper.yellow .big .hl,
 .paper.yellow .pill, .paper.yellow .mark-y, .paper.yellow .mark-m{
   background:none;color:#C7302F;padding:0}
 
-/* 螢光筆底線 */
 .mark-y{background:linear-gradient(transparent 58%, var(--y) 58%);padding:0 4px}
 .mark-m{background:linear-gradient(transparent 58%, var(--mint) 58%);padding:0 4px}
 
-/* 大序號 */
 .num{position:absolute;right:44px;top:-6px;font-size:132px;font-weight:900;
   color:rgba(0,0,0,.08);line-height:1;letter-spacing:-6px;z-index:1}
 
-/* 前後對比 */
 .vs{position:relative;z-index:2;display:flex;gap:20px;margin-top:auto}
 .vs>div{flex:1;border:none;border-radius:20px;padding:30px 28px;background:#fff}
-/* 這兩個標籤原本是色塊，匯入 Canva 會把字壓成一團，改成純色字加底線 */
 .vs .lab{font-size:28px;font-weight:900;display:block;margin-bottom:14px;
   padding-bottom:8px;border-bottom:4px solid currentColor}
 .vs .bad .lab{color:#E0524F}
 .vs .good .lab{color:#7FA52E}
+/* 代操／陪跑沒有好壞之分，不套紅綠（會讀成一個對一個錯）：
+   一邊用深紅字、一邊用黑字配黃底線，只做區分不帶褒貶 */
+.vs .opA .lab{color:#C7302F}
+.vs .opB .lab{color:var(--ink);border-bottom-color:var(--y)}
 .vs .txt{font-size:30px;font-weight:700;line-height:1.6}
 
-/* 頁碼與品牌 */
+/* 內容專屬示意圖（inline SVG，不用 Canva 素材） */
+.viz{position:relative;z-index:2;display:block;width:100%;margin:36px 0 6px}
+/* 封面只有三層（類型小標／主標／引言），靠垂直置中把留白平均分到上下，
+   不要讓底紙下半空一大塊，也不為了填版面加第四層 */
+.paper.cover{justify-content:center}
+.paper.cover h1{font-size:112px}
+.paper.cover .quote{font-size:38px;margin-top:52px}
+
 .logo{position:absolute;left:96px;bottom:70px;font-size:28px;font-weight:900;color:#000;letter-spacing:1px}
 .logo small{display:block;font-size:17px;font-weight:600;color:#8a8378;letter-spacing:3px}
+</style>
 
-/* 中秋單張：置中排版 */
-.paper.fest{align-items:center;justify-content:center;text-align:center;padding-top:40px}
-.moonwrap{position:relative;z-index:2;width:430px;height:430px}
-.moonwrap svg{width:100%;height:100%;display:block}
-.kicker{position:relative;z-index:2;margin-top:18px;font-size:38px;font-weight:900;letter-spacing:6px;color:#333}
-.paper.fest h1{margin-top:22px;font-size:100px;line-height:1.25}
-.fsub{position:relative;z-index:2;margin-top:34px;font-size:34px;font-weight:700;color:#555}
+<style>
+/* ── 這篇專用 ── */
+.paper.cover h1{font-size:74px;letter-spacing:-1px}
+.paper.cover h1 .l2{display:block;font-size:124px;margin-top:10px;letter-spacing:-2px}
+.paper.cover .sub{font-size:40px;font-weight:800;color:#222;margin-top:56px}
+
+/* 開關清單（P3 開、P4 關，排版一致） */
+.sw{position:relative;z-index:2;display:flex;flex-direction:column;gap:28px;margin-top:44px}
+.sw.big{flex:1;justify-content:center;gap:34px;margin-top:10px}
+.sw.big .row{padding:48px 34px}
+.sw.big .row .k{font-size:38px}
+.sw.big .row svg{width:128px;height:68px}
+.sw .row{display:flex;align-items:center;justify-content:space-between;gap:20px;
+  background:#fff;border-radius:22px;padding:34px 32px;box-shadow:0 4px 0 rgba(0,0,0,.07)}
+.sw .row .k{font-size:38px;font-weight:900;line-height:1.35}
+.sw .row .k b{font-weight:900}
+.sw .row .k span{font-weight:700;color:#333}
+.sw .row svg{flex:none;width:112px;height:60px}
+.note{position:relative;z-index:2;margin-top:auto;background:#fff;border-radius:22px;padding:34px 34px;font-size:40px;font-weight:800;line-height:1.6}
+.pre{position:relative;z-index:2;font-size:28px;font-weight:800;color:rgba(0,0,0,.62);margin-bottom:12px}
+
+/* P2 以前／現在 勾選框 */
+.ba{position:relative;z-index:2;flex:1;display:flex;align-items:stretch;gap:16px;margin-top:44px}
+.ba>.col{flex:1;background:#fff;border-radius:24px;padding:36px 30px;display:flex;flex-direction:column}
+.ba .lab{font-size:42px;font-weight:900;display:block;margin-bottom:28px;padding-bottom:10px;border-bottom:5px solid currentColor}
+.ba .before .lab{color:#6b6b6b}
+.ba .after .lab{color:var(--ink);border-bottom-color:#C7302F}
+.ba .cb{display:flex;align-items:center;gap:16px;font-size:38px;font-weight:800;margin-bottom:22px;flex-wrap:wrap}
+.ba .cb svg{flex:none;width:52px;height:52px}
+.ba .cb .tag{font-size:24px;font-weight:800;color:#C7302F;width:100%;padding-left:68px;margin-top:-12px}
+.ba .cap{font-size:32px;font-weight:700;line-height:1.55;margin-top:auto;padding-top:20px;border-top:3px dashed rgba(0,0,0,.2);color:#222}
+.ba .arr{flex:none;align-self:center;font-size:52px;font-weight:900}
+
+/* P5 兩支手機並排下的說明 */
+.two{position:relative;z-index:2;display:flex;gap:24px;margin-top:10px}
+.two>div{flex:1;background:#fff;border-radius:20px;padding:34px 26px}
+.two .t{font-size:32px;font-weight:900;line-height:1.4}
+.two .d{font-size:31px;font-weight:700;margin-top:8px;line-height:1.5}
+.two .ok .t{color:#4F7A12} .two .ng .t{color:#C7302F}
+
+/* P6 流程步驟 */
+.flow{position:relative;z-index:2;margin-top:56px}
+.flow+.flow{margin-top:70px}
+.flow .lab{font-size:38px;font-weight:900;display:inline-block;padding-bottom:6px;border-bottom:5px solid var(--y);margin-bottom:20px}
+.flow .steps{display:flex;align-items:center;gap:18px}
+.flow .st{background:#fff;border:3px solid #000;border-radius:20px;padding:30px 40px;font-size:46px;font-weight:900;box-shadow:0 4px 0 rgba(0,0,0,.08)}
+.flow .ar{font-size:48px;font-weight:900}
+.flow .or{font-size:36px;font-weight:800;margin-top:24px;color:#333}
+.paper .endline{position:relative;z-index:2;margin-top:auto;font-size:40px;font-weight:900}
+.endline .pill{font-size:40px}
 </style>
 </head>
 <body>
 
-<!-- 單張：中秋節祝賀 -->
-<div class="card" id="p1" data-document-role="page" data-label="中秋祝賀">
+<!-- 1 封面 -->
+<div class="card" id="p1" data-document-role="page" data-label="封面">
   <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
   <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
   <div class="hylogo"><img src="https://zhuer0323-tech.github.io/dora-workspace/heyen-cards/logo_use.png" alt="禾言數位行銷"></div>
-  <div class="paper fest">
-    <div class="moonwrap">
-      <svg viewBox="0 0 430 430">
-        <circle cx="200" cy="200" r="196" fill="#FCD501" opacity=".12"/>
-        <circle cx="200" cy="200" r="178" fill="#FCD501" opacity=".22"/>
-        <circle cx="200" cy="200" r="158" fill="#FCD501"/>
-        <circle cx="150" cy="150" r="22" fill="#FFCA26"/>
-        <circle cx="245" cy="120" r="13" fill="#FFCA26"/>
-        <circle cx="230" cy="245" r="28" fill="#FFCA26"/>
-        <circle cx="140" cy="260" r="12" fill="#FFCA26"/>
-        <!-- 月餅 -->
-        <g transform="translate(330 330)">
-          <circle cx="0" cy="-58" r="20" fill="#E9A43C"/><circle cx="41" cy="-41" r="20" fill="#E9A43C"/>
-          <circle cx="58" cy="0" r="20" fill="#E9A43C"/><circle cx="41" cy="41" r="20" fill="#E9A43C"/>
-          <circle cx="0" cy="58" r="20" fill="#E9A43C"/><circle cx="-41" cy="41" r="20" fill="#E9A43C"/>
-          <circle cx="-58" cy="0" r="20" fill="#E9A43C"/><circle cx="-41" cy="-41" r="20" fill="#E9A43C"/>
-          <circle cx="0" cy="0" r="60" fill="#E9A43C"/>
-          <circle cx="0" cy="0" r="44" fill="#F3BE63"/>
-          <circle cx="0" cy="0" r="30" fill="none" stroke="#C9832A" stroke-width="5"/>
-          <circle cx="0" cy="0" r="8" fill="#C9832A"/><circle cx="0" cy="-18" r="4.5" fill="#C9832A"/><circle cx="18" cy="0" r="4.5" fill="#C9832A"/><circle cx="0" cy="18" r="4.5" fill="#C9832A"/><circle cx="-18" cy="0" r="4.5" fill="#C9832A"/>
-        </g>
-      </svg>
+  <div class="paper cover">
+    <div class="flag">觀點・趨勢</div>
+    <h1>Meta 叫你全開自動化？<span class="l2"><span class="u">這一項</span>先關</span></h1>
+    <div class="sub">給誰看交給系統，說什麼自己顧</div>
+  </div>
+</div>
+
+<!-- 2 為什麼現在要談 -->
+<div class="card" id="p2" data-document-role="page" data-label="為什麼現在要談">
+  <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="hylogo"><img src="https://zhuer0323-tech.github.io/dora-workspace/heyen-cards/logo_use.png" alt="禾言數位行銷"></div>
+  <div class="paper yellow">
+    <div class="flag">為什麼現在談</div>
+    <div class="num">01</div>
+    <h2>以前問你，<span class="hl">現在幫你勾</span></h2>
+    <div class="ba">
+      <div class="col before"><span class="lab">以前</span>
+        <div class="cb"><svg viewBox="0 0 42 42"><rect x="3" y="3" width="36" height="36" rx="8" fill="#fff" stroke="#9A958F" stroke-width="4"/></svg>受眾</div>
+        <div class="cb"><svg viewBox="0 0 42 42"><rect x="3" y="3" width="36" height="36" rx="8" fill="#fff" stroke="#9A958F" stroke-width="4"/></svg>版位</div>
+        <div class="cb"><svg viewBox="0 0 42 42"><rect x="3" y="3" width="36" height="36" rx="8" fill="#fff" stroke="#9A958F" stroke-width="4"/></svg>素材優化</div>
+        <div class="cap">建活動時自己選</div></div>
+      <div class="arr">➤</div>
+      <div class="col after"><span class="lab">現在</span>
+        <div class="cb"><svg viewBox="0 0 42 42"><rect x="3" y="3" width="36" height="36" rx="8" fill="#FCD501" stroke="#000" stroke-width="4"/><path d="M11 21l7 7 13-15" fill="none" stroke="#000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>受眾</div>
+        <div class="cb"><svg viewBox="0 0 42 42"><rect x="3" y="3" width="36" height="36" rx="8" fill="#FCD501" stroke="#000" stroke-width="4"/><path d="M11 21l7 7 13-15" fill="none" stroke="#000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>版位</div>
+        <div class="cb"><svg viewBox="0 0 42 42"><rect x="3" y="3" width="36" height="36" rx="8" fill="#FCD501" stroke="#000" stroke-width="4"/><path d="M11 21l7 7 13-15" fill="none" stroke="#000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>素材優化 <span class="tag">銷售、名單類</span></div>
+        <div class="cap">受眾、版位預設打勾<br>銷售、名單類<br>連素材優化也勾好</div></div>
     </div>
-    <div class="kicker">中秋快樂</div>
-    <h1>月圓，人團圓<br>生意也<span class="hl">圓滿</span></h1>
-    <div class="fsub">團圓跟做品牌一樣，都要慢慢養</div>
+  </div>
+</div>
+
+<!-- 3 交給系統（開） -->
+<div class="card" id="p3" data-document-role="page" data-label="交給系統">
+  <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="hylogo"><img src="https://zhuer0323-tech.github.io/dora-workspace/heyen-cards/logo_use.png" alt="禾言數位行銷"></div>
+  <div class="paper">
+    <div class="flag">交給系統</div>
+    <div class="num">02</div>
+    <h2>受眾、版位<span class="hl">交給系統</span></h2>
+    <div class="sw big">
+      <div class="row"><div class="k">✅ <b>受眾：</b><span>廣告給誰看</span></div><svg viewBox="0 0 112 60"><rect x="2" y="2" width="108" height="56" rx="28" fill="#FCD501" stroke="#000" stroke-width="4"/><circle cx="82" cy="30" r="20" fill="#fff" stroke="#000" stroke-width="4"/></svg></div>
+      <div class="row"><div class="k">✅ <b>版位：</b><span>出現在 IG 限動、FB 動態</span></div><svg viewBox="0 0 112 60"><rect x="2" y="2" width="108" height="56" rx="28" fill="#FCD501" stroke="#000" stroke-width="4"/><circle cx="82" cy="30" r="20" fill="#fff" stroke="#000" stroke-width="4"/></svg></div>
+    </div>
+    <div class="note">系統的投遞資料比人多<br>圈人通常<span class="mark-y">比手動準</span></div>
+  </div>
+</div>
+
+<!-- 4 先關掉（關） -->
+<div class="card" id="p4" data-document-role="page" data-label="先關掉">
+  <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="hylogo"><img src="https://zhuer0323-tech.github.io/dora-workspace/heyen-cards/logo_use.png" alt="禾言數位行銷"></div>
+  <div class="paper yellow">
+    <div class="flag">先關掉</div>
+    <div class="num">03</div>
+    <div class="pre" style="margin-top:34px">後台名稱：Advantage+ 素材優化</div>
+    <h2>素材優化<span class="hl">這幾項先關</span></h2>
+    <div class="sw" style="flex:1;justify-content:center;margin-top:10px;gap:26px">
+      <div class="row"><div class="k"><b>文字改寫：</b><span>標題被換掉</span></div><svg viewBox="0 0 112 60"><rect x="2" y="2" width="108" height="56" rx="28" fill="#D6D3CF" stroke="#8A8580" stroke-width="4"/><circle cx="30" cy="30" r="20" fill="#fff" stroke="#8A8580" stroke-width="4"/></svg></div>
+      <div class="row"><div class="k"><b>圖片延伸：</b><span>AI 補畫圖邊</span></div><svg viewBox="0 0 112 60"><rect x="2" y="2" width="108" height="56" rx="28" fill="#D6D3CF" stroke="#8A8580" stroke-width="4"/><circle cx="30" cy="30" r="20" fill="#fff" stroke="#8A8580" stroke-width="4"/></svg></div>
+      <div class="row"><div class="k"><b>自動配樂：</b><span>自己加上音樂</span></div><svg viewBox="0 0 112 60"><rect x="2" y="2" width="108" height="56" rx="28" fill="#D6D3CF" stroke="#8A8580" stroke-width="4"/><circle cx="30" cy="30" r="20" fill="#fff" stroke="#8A8580" stroke-width="4"/></svg></div>
+      <div class="row"><div class="k"><b>套模板：</b><span>加邊框與促銷標籤</span></div><svg viewBox="0 0 112 60"><rect x="2" y="2" width="108" height="56" rx="28" fill="#D6D3CF" stroke="#8A8580" stroke-width="4"/><circle cx="30" cy="30" r="20" fill="#fff" stroke="#8A8580" stroke-width="4"/></svg></div>
+    </div>
+  </div>
+  <div class="bpill">會改到客人看到的，就先關</div>
+</div>
+
+<!-- 5 為什麼要關 -->
+<div class="card" id="p5" data-document-role="page" data-label="為什麼要關">
+  <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="hylogo"><img src="https://zhuer0323-tech.github.io/dora-workspace/heyen-cards/logo_use.png" alt="禾言數位行銷"></div>
+  <div class="paper yellow">
+    <div class="flag">為什麼要關</div>
+    <div class="num">04</div>
+    <h2>寫上價格，<span class="hl">是在篩人</span></h2>
+    <svg class="viz" viewBox="0 0 832 530" xmlns="http://www.w3.org/2000/svg" style="margin:40px 0 30px">
+      
+      <rect x="20" y="20" width="360" height="500" rx="38" fill="#fff" stroke="#000" stroke-width="5"/>
+      <circle cx="64" cy="66" r="16" fill="#FCD501"/>
+      <rect x="90" y="56" width="120" height="10" rx="5" fill="#CFCAC4"/>
+      <rect x="90" y="72" width="80" height="8" rx="4" fill="#E2DED9"/>
+      <rect x="42" y="100" width="316" height="230" rx="14" fill="#FFEDC5"/>
+      <circle cx="150" cy="200" r="46" fill="#FFCA26"/>
+      <rect x="216" y="160" width="100" height="120" rx="14" fill="#AED056"/>
+      <rect x="42" y="344" width="316" height="84" rx="12" fill="#F0F0EE"/>
+      <text x="200" y="398" text-anchor="middle" font-size="30" font-weight="900" fill="#000">○○方案 $○○○ 起</text>
+      <rect x="42" y="444" width="316" height="52" rx="12" fill="#C9E6E4"/>
+      <text x="200" y="479" text-anchor="middle" font-size="24" font-weight="800" fill="#000">了解詳情</text>
+      <circle cx="360" cy="34" r="32" fill="#7FA52E"/><path d="M344 34l11 11 20-22" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+      
+      <rect x="452" y="20" width="360" height="500" rx="38" fill="#fff" stroke="#000" stroke-width="5"/>
+      <circle cx="496" cy="66" r="16" fill="#FCD501"/>
+      <rect x="522" y="56" width="120" height="10" rx="5" fill="#CFCAC4"/>
+      <rect x="522" y="72" width="80" height="8" rx="4" fill="#E2DED9"/>
+      <rect x="474" y="100" width="316" height="230" rx="14" fill="#FFEDC5"/>
+      <circle cx="582" cy="200" r="46" fill="#FFCA26"/>
+      <rect x="648" y="160" width="100" height="120" rx="14" fill="#AED056"/>
+      <rect x="474" y="344" width="316" height="84" rx="12" fill="#F0F0EE"/>
+      <text x="632" y="398" text-anchor="middle" font-size="30" font-weight="900" fill="#000">限時優惠，立即了解</text>
+      <rect x="474" y="444" width="316" height="52" rx="12" fill="#C9E6E4"/>
+      <text x="632" y="479" text-anchor="middle" font-size="24" font-weight="800" fill="#000">了解詳情</text>
+      <circle cx="792" cy="34" r="32" fill="#C7302F"/><path d="M779 21l26 26M805 21l-26 26" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+    </svg>
+    <div class="two">
+      <div class="ok"><div class="t">標題寫出方案與價格</div><div class="d">➤ 只是好奇的人先離開</div></div>
+      <div class="ng"><div class="t">標題被改寫成泛泛的話</div><div class="d">➤ 篩選效果就沒了</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 6 後台怎麼關 -->
+<div class="card" id="p6" data-document-role="page" data-label="後台怎麼關">
+  <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="hylogo"><img src="https://zhuer0323-tech.github.io/dora-workspace/heyen-cards/logo_use.png" alt="禾言數位行銷"></div>
+  <div class="paper">
+    <div class="flag">後台怎麼關</div>
+    <div class="num">05</div>
+    <h2>關掉的<span class="hl">路徑在這裡</span></h2>
+    <div class="flow">
+      <div class="lab">廣告層級</div>
+      <div class="steps"><div class="st">素材設定</div><div class="ar">➤</div><div class="st">逐項取消</div></div>
+      <div class="or">或直接選「不使用優化」</div>
+    </div>
+    <div class="flow">
+      <div class="lab">帳號預設</div>
+      <div class="steps"><div class="st">企業設定</div><div class="ar">➤</div><div class="st">廣告設定</div></div>
+    </div>
+    <div class="endline"><span class="pill">複製廣告後，再檢查一次</span></div>
   </div>
 </div>
 
