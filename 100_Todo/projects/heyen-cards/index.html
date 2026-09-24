@@ -162,7 +162,9 @@ h2 .hl{background:linear-gradient(transparent 7%, var(--y) 7%, var(--y) 93%, tra
 .ba .before .lab{color:#6b6b6b}
 .ba .after .lab{color:var(--ink);border-bottom-color:#C7302F}
 .ba .cb{display:flex;align-items:center;gap:16px;font-size:38px;font-weight:800;margin-bottom:22px;flex-wrap:wrap}
-.ba .cb svg{flex:none;width:52px;height:52px}
+.ba .cb .bx{flex:none;width:52px;height:52px}
+.ba .cb .bx svg{width:52px;height:52px;display:block}
+.ba .cb>span{display:block}
 .ba .cb .tag{font-size:24px;font-weight:800;color:#C7302F;width:100%;padding-left:68px;margin-top:-12px}
 .ba .cap{font-size:32px;font-weight:700;line-height:1.55;margin-top:auto;padding-top:20px;border-top:3px dashed rgba(0,0,0,.2);color:#222}
 .ba .arr{flex:none;align-self:center;font-size:52px;font-weight:900}
@@ -211,15 +213,15 @@ h2 .hl{background:linear-gradient(transparent 7%, var(--y) 7%, var(--y) 93%, tra
     <h2>以前問你，<span class="hl">現在幫你勾</span></h2>
     <div class="ba">
       <div class="col before"><span class="lab">以前</span>
-        <div class="cb"><svg viewBox="0 0 42 42"><rect x="3" y="3" width="36" height="36" rx="8" fill="#fff" stroke="#9A958F" stroke-width="4"/></svg>受眾</div>
-        <div class="cb"><svg viewBox="0 0 42 42"><rect x="3" y="3" width="36" height="36" rx="8" fill="#fff" stroke="#9A958F" stroke-width="4"/></svg>版位</div>
-        <div class="cb"><svg viewBox="0 0 42 42"><rect x="3" y="3" width="36" height="36" rx="8" fill="#fff" stroke="#9A958F" stroke-width="4"/></svg>素材優化</div>
+        <div class="cb"><div class="bx"><svg viewBox="0 0 42 42"><rect x="3" y="3" width="36" height="36" rx="8" fill="#fff" stroke="#9A958F" stroke-width="4"/></svg></div><span>受眾</span></div>
+        <div class="cb"><div class="bx"><svg viewBox="0 0 42 42"><rect x="3" y="3" width="36" height="36" rx="8" fill="#fff" stroke="#9A958F" stroke-width="4"/></svg></div><span>版位</span></div>
+        <div class="cb"><div class="bx"><svg viewBox="0 0 42 42"><rect x="3" y="3" width="36" height="36" rx="8" fill="#fff" stroke="#9A958F" stroke-width="4"/></svg></div><span>素材優化</span></div>
         <div class="cap">建活動時自己選</div></div>
       <div class="arr">➤</div>
       <div class="col after"><span class="lab">現在</span>
-        <div class="cb"><svg viewBox="0 0 42 42"><rect x="3" y="3" width="36" height="36" rx="8" fill="#FCD501" stroke="#000" stroke-width="4"/><path d="M11 21l7 7 13-15" fill="none" stroke="#000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>受眾</div>
-        <div class="cb"><svg viewBox="0 0 42 42"><rect x="3" y="3" width="36" height="36" rx="8" fill="#FCD501" stroke="#000" stroke-width="4"/><path d="M11 21l7 7 13-15" fill="none" stroke="#000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>版位</div>
-        <div class="cb"><svg viewBox="0 0 42 42"><rect x="3" y="3" width="36" height="36" rx="8" fill="#FCD501" stroke="#000" stroke-width="4"/><path d="M11 21l7 7 13-15" fill="none" stroke="#000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>素材優化 <span class="tag">銷售、名單類</span></div>
+        <div class="cb"><div class="bx"><svg viewBox="0 0 42 42"><rect x="3" y="3" width="36" height="36" rx="8" fill="#FCD501" stroke="#000" stroke-width="4"/><path d="M11 21l7 7 13-15" fill="none" stroke="#000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>受眾</span></div>
+        <div class="cb"><div class="bx"><svg viewBox="0 0 42 42"><rect x="3" y="3" width="36" height="36" rx="8" fill="#FCD501" stroke="#000" stroke-width="4"/><path d="M11 21l7 7 13-15" fill="none" stroke="#000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>版位</span></div>
+        <div class="cb"><div class="bx"><svg viewBox="0 0 42 42"><rect x="3" y="3" width="36" height="36" rx="8" fill="#FCD501" stroke="#000" stroke-width="4"/><path d="M11 21l7 7 13-15" fill="none" stroke="#000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>素材優化</span><span class="tag">銷售、名單類</span></div>
         <div class="cap">受眾、版位預設打勾<br>銷售、名單類<br>連素材優化也勾好</div></div>
     </div>
   </div>
@@ -271,7 +273,7 @@ h2 .hl{background:linear-gradient(transparent 7%, var(--y) 7%, var(--y) 93%, tra
     <div class="flag">為什麼要關</div>
     <div class="num">04</div>
     <h2>寫上價格，<span class="hl">是在篩人</span></h2>
-    <svg class="viz" viewBox="0 0 832 530" xmlns="http://www.w3.org/2000/svg" style="margin:40px 0 30px">
+    <svg class="viz" width="832" height="540" viewBox="0 0 832 540" xmlns="http://www.w3.org/2000/svg" style="margin:40px 0 30px">
       
       <rect x="20" y="20" width="360" height="500" rx="38" fill="#fff" stroke="#000" stroke-width="5"/>
       <circle cx="64" cy="66" r="16" fill="#FCD501"/>
