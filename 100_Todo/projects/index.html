@@ -47,6 +47,12 @@ a{color:var(--pink-d)}
 #gate .err{color:#E05263;font-size:13px;min-height:18px;max-width:340px;text-align:center;line-height:1.5}
 #gate .linkbtn{background:none;box-shadow:none;color:var(--ink3);font-size:12.5px;
   font-weight:500;text-decoration:underline;padding:4px}
+/* 密碼登入：主畫面 App 跳不出 Google 小視窗時用 */
+#gate .hint{font-size:12px;color:var(--ink3);max-width:300px;text-align:center;line-height:1.5}
+#gatePw{display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px}
+#gatePw[hidden]{display:none}
+#gatePw input{padding:12px 14px;border-radius:12px;border:1px solid #F5C6D3;background:#fff;
+  font-size:16px;width:100%;box-sizing:border-box}
 
 /* ---------- 版面 ---------- */
 .wrap{max-width:1240px;margin:0 auto;padding:0 14px 100px}
@@ -738,6 +744,13 @@ header.top .rn:focus{background:#fff;outline:1.5px solid var(--pink);cursor:text
   <h1>朱兒的工作台</h1>
   <p>任務裡有客戶資料，需要登入才能看</p>
   <button id="gateBtn">用 Google 登入</button>
+  <div class="hint" id="gateHint" hidden>從主畫面打開時 Google 登入可能會卡住，請改用下面的密碼登入</div>
+  <button id="gatePwToggle" class="linkbtn" type="button">用 email 與密碼登入</button>
+  <form id="gatePw" hidden>
+    <input id="gateEmail" type="email" name="username" autocomplete="username" placeholder="email" required>
+    <input id="gatePass" type="password" name="password" autocomplete="current-password" placeholder="密碼" required>
+    <button id="gatePwBtn" type="submit">登入</button>
+  </form>
   <div class="err" id="gateErr"></div>
   <button id="gateLocal" class="linkbtn">先不登入，只用這台裝置（不會同步）</button>
 </div>
@@ -1580,15 +1593,16 @@ function drop(path){
   _remove(_ref(_db, `${ROOM}/${path}`)).catch(e => console.warn(e));
 }
 
-async function initFirebase(interactive){
+// pw＝{email, password}：用密碼登入，不跳 Google 小視窗（iPhone 主畫面 App 用）
+async function initFirebase(interactive, pw){
   setSync('connecting');
   try{
-    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
-    const { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } =
+    const { initializeApp, getApps, getApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+    const { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, onAuthStateChanged, signOut } =
       await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
     const { getDatabase, ref, set, get, remove, onValue } =
       await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
-    const app = initializeApp(FIREBASE_CONFIG);
+    const app = getApps().length ? getApp() : initializeApp(FIREBASE_CONFIG);
     const auth = getAuth(app);
     _signOut = () => signOut(auth);
 
@@ -1597,7 +1611,8 @@ async function initFirebase(interactive){
     });
     if (!user){
       if (!interactive) return false;
-      user = (await signInWithPopup(auth, new GoogleAuthProvider())).user;
+      user = pw ? (await signInWithEmailAndPassword(auth, pw.email, pw.password)).user
+                : (await signInWithPopup(auth, new GoogleAuthProvider())).user;
     }
     if (user.email !== OWNER_EMAIL){
       await signOut(auth);
@@ -4148,13 +4163,33 @@ function gateError(e){
   : msg.includes('auth/operation-not-allowed') ? 'Firebase 還沒開啟 Google 登入，請照設定說明先開啟'
   : msg.includes('auth/unauthorized-domain')   ? '這個網域還沒授權，請到 Firebase 的 Authentication → Settings 加入'
   : msg.includes('Permission denied')          ? '資料庫規則還沒設定好，請照設定說明貼上規則'
+  : msg.includes('auth/invalid-credential') || msg.includes('auth/wrong-password') || msg.includes('auth/user-not-found')
+                                               ? 'email 或密碼不對，再試一次'
+  : msg.includes('auth/too-many-requests')     ? '密碼錯太多次，被暫時鎖住了，過幾分鐘再試'
+  : msg.includes('auth/network-request-failed')? '連不上網路，確認有網路再試一次'
+  : msg.includes('auth/invalid-email')         ? 'email 格式不對'
   : msg;
   $('#gateBtn').disabled = false; $('#gateBtn').textContent = '用 Google 登入';
+  $('#gatePwBtn').disabled = false; $('#gatePwBtn').textContent = '登入';
 }
 $('#gateBtn').onclick = async () => {
   $('#gateBtn').disabled = true; $('#gateBtn').textContent = '登入中…'; $('#gateErr').textContent = '';
   try { await initFirebase(true); localStorage.setItem(LS.mode,'cloud'); showApp(); }
   catch(e){ gateError(e); }
+};
+// 主畫面 App（iPhone 加入主畫面）直接展開密碼登入，並提示 Google 可能會卡
+const IS_STANDALONE = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+$('#gateEmail').value = OWNER_EMAIL;
+function showPwLogin(){ $('#gatePw').hidden = false; $('#gatePwToggle').hidden = true; }
+if (IS_STANDALONE){ showPwLogin(); $('#gateHint').hidden = false; }
+$('#gatePwToggle').onclick = () => { showPwLogin(); $('#gatePass').focus(); };
+$('#gatePw').onsubmit = async e => {
+  e.preventDefault();
+  $('#gatePwBtn').disabled = true; $('#gatePwBtn').textContent = '登入中…'; $('#gateErr').textContent = '';
+  try {
+    await initFirebase(true, { email: $('#gateEmail').value.trim(), password: $('#gatePass').value });
+    localStorage.setItem(LS.mode,'cloud'); showApp();
+  } catch(e){ gateError(e); }
 };
 $('#gateLocal').onclick = () => { localStorage.setItem(LS.mode,'local'); showApp(); setSync('offline'); };
 $('#syncBox').onclick = async () => {

@@ -3,7 +3,7 @@
    這個順序很重要 —— 反過來（快取優先）會讓你改完版還一直看到舊畫面。
    資料本身走 Firebase 與 localStorage，不經過這裡。 */
 
-const CACHE = 'dora-workspace-v1';
+const CACHE = 'dora-workspace-v2';   // 2026-09-28 加密碼登入，換號才不會一直開到舊登入畫面
 const SHELL = [
   './',
   './index.html',
