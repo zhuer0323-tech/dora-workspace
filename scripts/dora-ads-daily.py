@@ -231,10 +231,11 @@ def parse_budget(s):
 
 
 # ---------- 叫 Claude 抓數字 ----------
+ADS_SERVERS = ('claude_ai', 'claude_ai_2')
 ALLOWED = ','.join([
-    'mcp__claude_ai__ads_get_ad_accounts',
-    'mcp__claude_ai__ads_get_ad_entities',
-    'mcp__claude_ai__ads_get_field_context',
+    # claude.ai 的 Meta 連線改名過（2026-09 變成「禾言 (2)」，前綴從 claude_ai 變 claude_ai_2），
+    # 舊名字對不到就會回「找不到 Meta Ads 工具」，看起來像要重新授權。兩種前綴都列，只開讀取的工具
+    *[f'mcp__{srv}__{t}' for srv in ADS_SERVERS for t in ['ads_get_ad_accounts', 'ads_get_ad_entities', 'ads_get_field_context']],
     'Bash(python3:*)', 'Read', 'Write',
 ])
 

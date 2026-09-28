@@ -227,6 +227,10 @@ Node.js 透過 nvm 安裝，路徑：`/Users/angela/.nvm/versions/node/v24.15.0/
   `npx wrangler dev --remote` 跑完把 `.dev.vars` 丟垃圾桶
 - **並跑中（2026-09-28 起兩個工作天）**：Mac 版還沒關，她會同時收到兩則。對過沒問題就
   `launchctl unload ~/Library/LaunchAgents/com.dora.ads-anomaly.plist`（plist 與腳本留著，要退回去 `load` 就好）
+- ⚠️ **「找不到 Meta Ads 工具」不一定是要重新授權**（2026-09-28 查到）：claude.ai 的 Meta 連線改名成「禾言 (2)」，
+  工具前綴從 `mcp__claude_ai__` 變成 `mcp__claude_ai_2__`，`dora-ads-daily.py` 與 `dora-report-runner.py`
+  的 `--allowedTools` 還寫舊名字，連線其實是好的。已改成 `ADS_SERVERS` 兩種前綴都列（只開讀取工具）。
+  再出現同樣訊息，先在 Claude Code 裡直接叫一次 `ads_get_ad_accounts` 看前綴是什麼，再決定要不要重新授權
 - 下面 Mac 版的紀錄留著，規則說明（列誰、成果類型、走期切日、版面）兩邊通用
 
 ---
