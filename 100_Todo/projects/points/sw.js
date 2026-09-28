@@ -3,7 +3,7 @@
    反過來（快取優先）會讓改完版還一直看到舊畫面。
    積分資料走 Firebase 與 localStorage，不經過這裡。 */
 
-const CACHE = 'dora-points-v4';
+const CACHE = 'dora-points-v5';   // 2026-09-28 加密碼登入
 const SHELL = ['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./brand.png'];
 
 self.addEventListener('install', e => {

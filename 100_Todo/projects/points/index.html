@@ -114,6 +114,13 @@ svg.ic{width:18px;height:18px;flex:none}
 #gate .ttl h1{font-size:clamp(28px,8vw,36px);letter-spacing:1px}   /* 系統名稱七個字，窄框放得下 */
 #gate .btn{width:100%;padding:10px;margin-top:10px;font-size:15px}
 #gateErr{color:var(--loss);font-size:13px;min-height:18px;margin-top:8px}
+/* 密碼登入：主畫面 App 跳不出 Google 小視窗時用 */
+#gate .linkbtn{background:none;border:0;color:var(--ink);opacity:.7;font:inherit;font-size:12.5px;text-decoration:underline;margin-top:10px;cursor:pointer}
+#gate .hint{font-size:12px;opacity:.75;margin-top:8px;line-height:1.5}
+#gatePw{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+#gatePw[hidden],#gate [hidden]{display:none}
+#gatePw input{padding:10px 12px;border:2px solid var(--line);border-radius:8px;background:#fff;font-size:16px;width:100%;box-sizing:border-box}
+#gatePw .btn{margin-top:2px}
 
 /* ---------- 版面：電腦左側欄／平板頂部橫欄／手機底部分頁列 ---------- */
 #app{min-height:100vh}
@@ -412,6 +419,13 @@ body.night .remain .rbox b{color:var(--pri)}
     <div class="ttl"><h1>朱兒的獨自升級</h1><p>SOLO LEVELING</p></div>
     <div class="tiny">做事賺積分、娛樂花積分，剩下的存進基金。<br>用 Google 登入，電腦手機看到同一份。</div>
     <button class="btn blue" id="gateBtn">用 Google 登入</button>
+    <div class="hint" id="gateHint" hidden>從主畫面打開時 Google 登入可能會卡住，請改用下面的密碼登入</div>
+    <button id="gatePwToggle" class="linkbtn" type="button">用 email 與密碼登入</button>
+    <form id="gatePw" hidden>
+      <input id="gateEmail" type="email" name="username" autocomplete="username" placeholder="email" value="zhuer0323@gmail.com" required>
+      <input id="gatePass" type="password" name="password" autocomplete="current-password" placeholder="密碼" required>
+      <button id="gatePwBtn" type="submit" class="btn blue">登入</button>
+    </form>
     <button class="btn" id="gateLocal">先不登入，只用這台裝置</button>
     <div id="gateErr"></div>
   </div>
@@ -2396,9 +2410,10 @@ function renderAll(){
 $('#main').addEventListener('focusout', () => { if(_dirty) setTimeout(() => { if(!busy()) renderAll(); }, 0); });
 
 /* ---------- Firebase ---------- */
-async function initFirebase(interactive){
+// pw＝{email, password}：用密碼登入，不跳 Google 小視窗（iPhone 主畫面 App 用）
+async function initFirebase(interactive, pw){
   const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
-  const { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } =
+  const { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, onAuthStateChanged, signOut } =
     await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
   const { getDatabase, ref, set, get, onValue } =
     await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
@@ -2408,7 +2423,8 @@ async function initFirebase(interactive){
   let user = await new Promise(res => { const un = onAuthStateChanged(auth, u => { un(); res(u); }); });
   if(!user){
     if(!interactive) return false;
-    user = (await signInWithPopup(auth, new GoogleAuthProvider())).user;
+    user = pw ? (await signInWithEmailAndPassword(auth, pw.email, pw.password)).user
+              : (await signInWithPopup(auth, new GoogleAuthProvider())).user;
   }
   if(user.email !== OWNER_EMAIL){
     await signOut(auth);
@@ -2462,6 +2478,27 @@ $('#gateBtn').onclick = async () => {
   $('#gateErr').textContent = '';
   try{ await initFirebase(true); showApp(); }
   catch(e){ $('#gateErr').textContent = e.message || '登入失敗，再試一次'; }
+};
+// 密碼登入的錯誤翻成中文；其他照原本的訊息
+function pwErr(e){
+  const m = String(e?.message || e || '');
+  return m.includes('auth/invalid-credential') || m.includes('auth/wrong-password') || m.includes('auth/user-not-found') ? 'email 或密碼不對，再試一次'
+    : m.includes('auth/too-many-requests') ? '密碼錯太多次，被暫時鎖住了，過幾分鐘再試'
+    : m.includes('auth/network-request-failed') ? '連不上網路，確認有網路再試一次'
+    : m.includes('auth/invalid-email') ? 'email 格式不對'
+    : (m || '登入失敗，再試一次');
+}
+// 主畫面 App（iPhone 加入主畫面）跳 Google 小視窗會卡住，直接展開密碼登入
+const IS_STANDALONE = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+function showPwLogin(){ $('#gatePw').hidden = false; $('#gatePwToggle').hidden = true; }
+if (IS_STANDALONE){ showPwLogin(); $('#gateHint').hidden = false; }
+$('#gatePwToggle').onclick = () => { showPwLogin(); ($('#gateEmail').value ? $('#gatePass') : $('#gateEmail')).focus(); };
+$('#gatePw').onsubmit = async e => {
+  e.preventDefault();
+  $('#gatePwBtn').disabled = true; $('#gatePwBtn').textContent = '登入中…'; $('#gateErr').textContent = '';
+  try{ await initFirebase(true, { email: $('#gateEmail').value.trim(), password: $('#gatePass').value }); showApp(); }
+  catch(e){ $('#gateErr').textContent = pwErr(e); }
+  $('#gatePwBtn').disabled = false; $('#gatePwBtn').textContent = '登入';
 };
 $('#gateLocal').onclick = () => {
   mode = 'local'; try{ localStorage.setItem(MODE_KEY, 'local'); }catch(e){}
