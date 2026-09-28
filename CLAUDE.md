@@ -710,6 +710,17 @@ Graph API Explorer 與 App 後台都進不去，所以 `dora-meta-token-setup.sh
 - **資料**：Firebase `busan-trip-2026-201f8` → `ws_k7m2q9xr4t` 節點
 - **權限**：規則綁定 `zhuer0323@gmail.com`，沒登入讀不到任何一筆
   （因為任務裡有客戶名稱；設定說明在 `100_Todo/plans/2026-08-08-工作台-Firebase設定.md`）
+- **兩種登入**（2026-09-28 加）：Google（跳小視窗）＋ **email＋密碼**。iPhone 主畫面 App 跳 Google 小視窗會卡在「登入中…」，
+  所以主畫面模式（`IS_STANDALONE`）下密碼登入直接展開並提示；電腦與 Safari 預設收合。
+  密碼是加在**同一個帳號**上（不是另開帳號，會撞 email），規則只看 email 所以權限不變。
+  Email/Password 登入方式是用服務帳號金鑰呼叫 Identity Toolkit admin API 打開的，改之前的設定備份在
+  `~/Library/Scripts/firebase-auth-config-backup-20260928.json`。
+  **密碼是她點 Firebase 寄的「重設密碼」信自己設的**（`accounts:sendOobCode` PASSWORD_RESET，服務帳號呼叫）。
+  ⚠️ `!` 執行的指令沒有鍵盤輸入，`getpass` 會直接失敗，要她輸入東西不能走這條。
+  ⚠️ **用重設信設密碼的副作用**：帳號上的 `google.com` 登入方式被拿掉，而且**所有裝置、三個 App 的登入全部作廢**（`validSince` 更新）。
+  email 已驗證，下次 Google 登入應該會自動接回同一帳號。以後忘記密碼再重設一樣會把所有地方登出。
+  **記帳、獨自升級同日也加了同一套密碼登入**（因為上面那次作廢，它們主畫面 App 也要重登）；
+  記帳的登入畫面不預填 email（隱私守則），交給 iPhone 鑰匙圈自動填。計劃書 `100_Todo/plans/2026-09-28-工作台-手機主畫面登入.md`
 
 ### 內容
 > 分頁名稱：今日代辦／工作規劃／寶藏工具／專案客戶／復盤／設定
