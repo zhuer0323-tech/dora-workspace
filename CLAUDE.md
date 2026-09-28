@@ -208,6 +208,29 @@ Node.js 透過 nvm 安裝，路徑：`/Users/angela/.nvm/versions/node/v24.15.0/
 
 ### 廣告日報（2026-08-23 大改版）
 每天 9:00（昨日）與 17:00（今日截至目前）推的紫色卡片。
+
+#### ✅ 2026-09-28 起主場搬到雲端（Mac 蓋著也會送）
+- **為什麼搬**：她 9:00／17:00 的 Mac 都是蓋著的，只有 2~8 秒的 Power Nap 短暫喚醒，
+  9/25–9/28 早晚都漏送（`.dora-ads-state/` 那幾天沒有 evening.sent，早上那則拖到晚上開 Mac 才補）。
+  下面 8/31、9/1 那兩段「多排幾次去撞」的修法治標不治本，**只要還在 Mac 上跑就會一直漏**
+- **程式**：LINE 小秘書那支 Worker 的 `src/adsDaily.js`，照 `dora-ads-daily.py` 逐段搬，規則、版面完全一樣
+  （2026-09-28 同一天的昨日／今日兩則逐字比對過，只差一個四捨五入：184.5 Python 捨成 184、JS 進成 185）
+- **排程**：`wrangler.toml` 的 `0,15,30 1 * * *`／`0,15,30 9 * * *`（台灣 9:00/9:15/9:30、17:00/17:15/17:30，每天），
+  `scheduled()` 用 `adsSlotOf()` 分流，其他三個 cron 仍是股價。⚠️ **免費方案一支 Worker 最多 5 個 cron，現在剛好用滿**
+- **送過的記號**在工作台雲端 `ws_k7m2q9xr4t/adsDaily/{日期}-{morning|evening}`（服務帳號寫，不受規則限制）
+- **跟 Mac 版的差別**：沒有 Claude 備援（雲端跑不了 `claude -p`）；:30 那次還抓不到才推失敗通知；
+  **讀不到工作台算失敗、等下一次**（Mac 版會當成沒客戶、印 `NO_DATA` 安靜標成已送出，9/25 前後漏送過一次）
+- **token**：Cloudflare secret `META_TOKEN`，跟 `dora.env` 同一把。
+  `dora-meta-token-install.sh` 換 token 時會**順便換雲端那份**（2026-09-28 加；失敗會印手動指令）
+- **試跑不推播**：在暫存區做一支測試 Worker 呼叫 `runAdsDaily(env, {slot, lastTry:true, dry:true})`，
+  `.dev.vars` 放 `META_TOKEN`／`FIREBASE_SA`（**單引號包、JSON 壓成一行**，雙引號會解析失敗）／`WS_DB_URL`／`WS_ROOM`，
+  `npx wrangler dev --remote` 跑完把 `.dev.vars` 丟垃圾桶
+- **並跑中（2026-09-28 起兩個工作天）**：Mac 版還沒關，她會同時收到兩則。對過沒問題就
+  `launchctl unload ~/Library/LaunchAgents/com.dora.ads-anomaly.plist`（plist 與腳本留著，要退回去 `load` 就好）
+- 下面 Mac 版的紀錄留著，規則說明（列誰、成果類型、走期切日、版面）兩邊通用
+
+---
+**以下是 Mac 版（`dora-ads-daily.py`）的紀錄**
 進入點 `~/Library/Scripts/dora-ads-anomaly.sh`（launchd 指向的檔名不動），
 **程式在 `dora-ads-daily.py`**；repo 備份在 `scripts/`，兩邊要同步。
 舊版留在 `.bak-20260823`（只認四家的原版）與 `.bak-graph-20260823`（純 Graph 版）。

@@ -125,5 +125,24 @@ json.dump({'saved': time.strftime('%Y-%m-%d'),
           io.open(baseline, 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
 
 print(f"\n✅ 已寫進 {env_file}（舊的備份在同層 .bak-*）")
-print("   接著跑這個確認日報正常：bash ~/Library/Scripts/dora-ads-anomaly.sh --dry")
+
+# --- 4. 雲端那份也換掉 ---
+# 2026-09-28 起廣告日報在 LINE 小秘書的雲端小程式上跑（Mac 蓋著也會送），
+# 它讀的是 Cloudflare 上的 META_TOKEN，只換 Mac 這份的話日報會開始推失敗通知
+import glob, subprocess
+worker = '/Users/zhuer/Downloads/Dora專屬/100_Todo/projects/line-secretary'
+node_bin = sorted(glob.glob(os.path.expanduser('~/.nvm/versions/node/*/bin')))
+try:
+    envp = dict(os.environ, PATH=':'.join(node_bin[-1:] + [os.environ.get('PATH', '')]))
+    r = subprocess.run(['npx', 'wrangler', 'secret', 'put', 'META_TOKEN'], input=tok, text=True,
+                       cwd=worker, env=envp, capture_output=True, timeout=120)
+    if r.returncode != 0:
+        raise RuntimeError((r.stderr or r.stdout)[-300:])
+    print("✅ 雲端（廣告日報）的 META_TOKEN 也換好了")
+except Exception as e:
+    print(f"⚠️ 雲端那份沒換成功：{e}")
+    print(f"   手動換：cd {worker} && npx wrangler secret put META_TOKEN（貼上同一把 token）")
+    print("   沒登入的話先跑 npx wrangler login")
+
+print("   Mac 版要確認可以跑：bash ~/Library/Scripts/dora-ads-anomaly.sh --dry")
 PY

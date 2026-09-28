@@ -15,6 +15,7 @@ import { parseDue, todayStr } from './date.js';
 import { addMoney, isMoneyText } from './money.js';
 import { queueReport } from './report.js';
 import { handleStock, runStockJob } from './stock.js';
+import { runAdsDaily, adsSlotOf } from './adsDaily.js';
 
 export default {
   async fetch(request, env, ctx){
@@ -44,8 +45,15 @@ export default {
     return new Response('OK');
   },
 
-  // 每天收盤後定時跑（wrangler.toml 的 crons）：更新持股價格、定期定額自動記帳
+  // 定時跑（wrangler.toml 的 crons）：廣告日報那兩組看 adsSlotOf()，其餘是收盤後更新持股價格、定期定額自動記帳
   async scheduled(event, env, ctx){
+    const ads = adsSlotOf(event.cron, new Date(event.scheduledTime));
+    if (ads){
+      ctx.waitUntil(runAdsDaily(env, ads)
+        .then(r => console.log('ads daily', ads.slot, JSON.stringify(r)))
+        .catch(e => console.error('ads daily failed', ads.slot, e)));
+      return;
+    }
     ctx.waitUntil(runStockJob(env)
       .then(log => console.log('stock job', JSON.stringify(log)))
       .catch(e => console.error('stock job failed', e)));
