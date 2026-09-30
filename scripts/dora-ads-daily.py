@@ -45,8 +45,9 @@ alerts = []                   # 17:00 判斷要不要推的依據
 
 # 卡片顏色。進度條三色跑過 dataviz 的 validate_palette.js（最差 CVD ΔE 15.1）
 INK, INK_SOFT, CARD_BG = "#2E2740", "#6E6784", "#F7F5FB"
-STATE = {'ok': ("#7C5CBF", "#E5DDF5"), 'slow': ("#1FA08A", "#D3EFE8"), 'fast': ("#C0453B", "#F5DEDB")}
-STATE_LABEL = {'fast': '⚡ 燒太快', 'slow': '🐢 偏慢', 'ok': '✓ 正常'}
+STATE = {'ok': ("#7C5CBF", "#E5DDF5"), 'slow': ("#1FA08A", "#D3EFE8"), 'fast': ("#C0453B", "#F5DEDB"),
+         'over': ("#C0453B", "#F5DEDB")}   # 已超支沿用燒太快的紅
+STATE_LABEL = {'fast': '⚡ 燒太快', 'slow': '🐢 偏慢', 'ok': '✓ 正常', 'over': '⚡ 已超支'}
 BRAND_EMOJI = {'李老闆': '🛒', '漁三': '🎣', '優逸': '💬', 'TOTO': '🏆'}
 
 # results 的 indicator → 這家要看哪一種數字
@@ -666,10 +667,19 @@ def _main():
                     spent = spent_by_client.get(cid, 0.0)
                     pct = spent / budget * 100
                     gap = pct - time_pct
-                    state = 'fast' if gap > 10 else ('slow' if gap < -10 else 'ok')
+                    # 花超過預算一律算超支，優先於快慢判斷
+                    # （2026-09-30：走期尾端時間也過了九成多，只比差距的話超支會被判成正常）
+                    if spent > budget:
+                        state = 'over'
+                    else:
+                        state = 'fast' if gap > 10 else ('slow' if gap < -10 else 'ok')
                     budget_ui = budget_block(pct, time_pct, spent, budget, state)
-                    # 什麼算「要注意」：燒太快，或走期快收了預算還剩一大截
-                    if state == 'fast':
+                    # 什麼算「要注意」：超支、燒太快，或走期快收了預算還剩一大截
+                    if state == 'over':
+                        msg = f"{label} 已超支 {NTD}{spent - budget:,.0f}（{pct:.0f}%）"
+                        warnings.append(msg)
+                        alerts.append(msg)
+                    elif state == 'fast':
                         alerts.append(f"{label} 預算燒太快（已花 {pct:.0f}%、時間才過 {time_pct:.0f}%）")
                     elif time_pct >= 90 and pct < 80:
                         alerts.append(f"{label} 走期剩 {total_days - passed} 天，預算還有 {100 - pct:.0f}% 沒花")

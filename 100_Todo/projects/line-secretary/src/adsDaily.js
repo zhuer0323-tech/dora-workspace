@@ -26,8 +26,9 @@ const EVENING_QUIET = false;
 
 // 卡片顏色。進度條三色跑過 dataviz 的 validate_palette.js（最差 CVD ΔE 15.1）
 const INK = '#2E2740', INK_SOFT = '#6E6784', CARD_BG = '#F7F5FB';
-const STATE = { ok: ['#7C5CBF', '#E5DDF5'], slow: ['#1FA08A', '#D3EFE8'], fast: ['#C0453B', '#F5DEDB'] };
-const STATE_LABEL = { fast: '⚡ 燒太快', slow: '🐢 偏慢', ok: '✓ 正常' };
+const STATE = { ok: ['#7C5CBF', '#E5DDF5'], slow: ['#1FA08A', '#D3EFE8'], fast: ['#C0453B', '#F5DEDB'],
+  over: ['#C0453B', '#F5DEDB'] };   // 已超支沿用燒太快的紅
+const STATE_LABEL = { fast: '⚡ 燒太快', slow: '🐢 偏慢', ok: '✓ 正常', over: '⚡ 已超支' };
 const BRAND_EMOJI = { '李老闆': '🛒', '漁三': '🎣', '優逸': '💬', 'TOTO': '🏆' };
 
 const KIND_BY_INDICATOR = [
@@ -392,9 +393,15 @@ export async function runAdsDaily(env, { slot, lastTry = false, dry = false, now
         const spent = spentByClient[cid] || 0;
         const pct = spent / budget * 100;
         const gap = pct - timePct;
-        const state = gap > 10 ? 'fast' : (gap < -10 ? 'slow' : 'ok');
+        // 花超過預算一律算超支，優先於快慢判斷
+        // （2026-09-30：走期尾端時間也過了九成多，只比差距的話超支會被判成正常）
+        const state = spent > budget ? 'over' : gap > 10 ? 'fast' : (gap < -10 ? 'slow' : 'ok');
         budgetUi = budgetBlock(pct, timePct, spent, budget, state);
-        if (state === 'fast') alerts.push(`${label} 預算燒太快（已花 ${pct.toFixed(0)}%、時間才過 ${timePct.toFixed(0)}%）`);
+        if (state === 'over'){
+          const msg = `${label} 已超支 ${NTD}${fmt(spent - budget)}（${pct.toFixed(0)}%）`;
+          warnings.push(msg); alerts.push(msg);
+        }
+        else if (state === 'fast') alerts.push(`${label} 預算燒太快（已花 ${pct.toFixed(0)}%、時間才過 ${timePct.toFixed(0)}%）`);
         else if (timePct >= 90 && pct < 80) alerts.push(`${label} 走期剩 ${totalDays - passed} 天，預算還有 ${(100 - pct).toFixed(0)}% 沒花`);
       }
     }
