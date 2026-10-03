@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<title>禾言圖卡・受眾設定越細越準？剛好相反</title>
+<title>禾言圖卡・轉換追蹤沒裝好，廣告再會跑也是白花</title>
 <link rel="stylesheet" href="fonts/bold/GenJyuuGothic-Bold.css">
 <link rel="stylesheet" href="fonts/medium/GenJyuuGothic-Medium.css">
 <style>
@@ -43,22 +43,32 @@ body{background:#555;font-family:'GenJyuu Gothic','GenJyuuGothic','源柔ゴシ�
   background:#C9E6E4;border-radius:20px;padding:14px 34px;
   font-size:30px;font-weight:900;white-space:nowrap;z-index:4}
 
-h1{position:relative;z-index:2;font-size:96px;line-height:1.3;font-weight:900;letter-spacing:-2px}
+h1{position:relative;z-index:2;font-size:90px;line-height:1.3;font-weight:900;letter-spacing:-2px}
 h1 .u{background:linear-gradient(transparent 60%, var(--y) 60%)}
 h2{position:relative;z-index:2;font-size:66px;font-weight:900;line-height:1.32;letter-spacing:-1px;margin-top:30px}
 h2 .hl{background:linear-gradient(transparent 7%, var(--y) 7%, var(--y) 93%, transparent 93%);
   color:var(--ink);padding:4px 16px;display:inline-block}
 .paper.yellow h2 .hl{background:none;color:var(--red);padding:0}
 
-/* 封面：類型小標／主標／一個視覺證據 */
+/* 封面：類型小標／主標／一個視覺證據（數字對比） */
 .paper.cover{justify-content:center}
 .paper.cover h1{margin-top:20px}
+.cmp{position:relative;z-index:2;display:flex;align-items:center;gap:18px;margin-top:70px}
+.cmp .box{flex:1;background:#fff;border-radius:26px;padding:34px 20px 30px;text-align:center;box-shadow:0 4px 0 rgba(0,0,0,.07)}
+.cmp .lab{font-size:36px;font-weight:800;color:#555}
+.cmp .nr{display:flex;align-items:baseline;justify-content:center;gap:8px;margin-top:6px}
+.cmp .n{font-size:132px;font-weight:900;line-height:1.1;letter-spacing:-3px}
+.cmp .u2{font-size:48px;font-weight:900}
+.cmp .neq{flex:none;width:96px;height:96px}
+.cmp .neq svg{width:96px;height:96px;display:block}
+.eg{position:relative;z-index:2;text-align:center;font-size:28px;font-weight:700;color:#8a8378;margin-top:24px}
 
+/* 內容卡 */
 .viz{position:relative;z-index:2;display:block;flex:none}
 .note{position:relative;z-index:2;flex:none;background:#fff;border-radius:22px;padding:32px 36px;font-size:36px;font-weight:800;line-height:1.6}
 .note .s{font-weight:700;color:#333}
 
-/* 三件事 */
+/* P3 三件事 */
 .three{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;justify-content:center;gap:28px;margin-top:20px}
 .three .row{display:flex;align-items:center;gap:26px;background:#fff;border-radius:24px;padding:30px 30px;box-shadow:0 4px 0 rgba(0,0,0,.07)}
 .three .row .no{flex:none;width:84px;height:84px}
@@ -69,11 +79,13 @@ h2 .hl{background:linear-gradient(transparent 7%, var(--y) 7%, var(--y) 93%, tra
 .three .row .ic{flex:none;width:140px;height:110px}
 .three .row .ic svg{width:140px;height:110px;display:block}
 
-/* 檢查清單 */
+/* P4／P5 檢查清單（兩頁版型一樣） */
 .ck{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;justify-content:center;gap:20px;margin-top:24px}
 .ck .row{display:flex;align-items:center;gap:20px;background:#fff;border-radius:20px;padding:28px 30px}
 .ck .row svg{flex:none;width:46px;height:46px;display:block}
 .ck .row span{font-size:35px;font-weight:800;line-height:1.35}
+#p4 .ck{gap:16px}
+#p4 .ck .row{padding:22px 30px}
 </style>
 </head>
 <body>
@@ -85,165 +97,186 @@ h2 .hl{background:linear-gradient(transparent 7%, var(--y) 7%, var(--y) 93%, tra
   <div class="hylogo"><img src="https://zhuer0323-tech.github.io/dora-workspace/heyen-cards/logo_use.png" alt="禾言數位行銷"></div>
   <div class="paper cover">
     <div class="flag">教學/新手</div>
-    <h1>受眾設越細<br>成效反而<span class="u">越差</span></h1>
-    <div class="viz" style="width:832px;height:380px;margin-top:64px"><svg width="832" height="380" viewBox="0 0 832 380" xmlns="http://www.w3.org/2000/svg">
-      <rect x="0" y="0" width="832" height="380" rx="26" fill="#fff"/>
-      <!-- 勾選框 -->
-      <g font-size="28" font-weight="900" fill="#000">
-        <rect x="40" y="40" width="40" height="40" rx="8" fill="#FCD501" stroke="#000" stroke-width="4"/><path d="M48 60l9 9 16-18" fill="none" stroke="#000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><text x="96" y="70">興趣 A</text>
-        <rect x="40" y="102" width="40" height="40" rx="8" fill="#FCD501" stroke="#000" stroke-width="4"/><path d="M48 122l9 9 16-18" fill="none" stroke="#000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><text x="96" y="132">興趣 B</text>
-        <rect x="40" y="164" width="40" height="40" rx="8" fill="#FCD501" stroke="#000" stroke-width="4"/><path d="M48 184l9 9 16-18" fill="none" stroke="#000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><text x="96" y="194">興趣 C</text>
-        <rect x="40" y="226" width="40" height="40" rx="8" fill="#FCD501" stroke="#000" stroke-width="4"/><path d="M48 246l9 9 16-18" fill="none" stroke="#000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><text x="96" y="256">興趣 D</text>
-      </g>
-      <text x="130" y="338" text-anchor="middle" font-size="30" font-weight="900" fill="#555">勾越多</text>
-      <!-- 漏斗 -->
-      <path d="M260 52H560L452 200V262H368V200z" fill="#FFEDC5" stroke="#000" stroke-width="5" stroke-linejoin="round"/>
-      <path d="M570 157h52" stroke="#000" stroke-width="6" stroke-linecap="round"/>
-      <path d="M618 143l22 14-22 14z" fill="#000"/>
-      <!-- 剩下的小池子 -->
-      <circle cx="732" cy="157" r="64" fill="#fff" stroke="#C7302F" stroke-width="5" stroke-dasharray="12 9"/>
-      <circle cx="716" cy="144" r="11" fill="#AED056" stroke="#000" stroke-width="3"/>
-      <rect x="704" y="158" width="24" height="30" rx="10" fill="#AED056" stroke="#000" stroke-width="3"/>
-      <circle cx="750" cy="144" r="11" fill="#FFCA26" stroke="#000" stroke-width="3"/>
-      <rect x="738" y="158" width="24" height="30" rx="10" fill="#FFCA26" stroke="#000" stroke-width="3"/>
-      <text x="732" y="338" text-anchor="middle" font-size="30" font-weight="900" fill="#C7302F">池子越小</text>
-    </svg></div>
+    <h1>轉換追蹤沒裝好<br>廣告再會跑也是<span class="u">白花</span></h1>
+    <div class="cmp">
+      <div class="box"><div class="lab">後台</div><div class="nr"><div class="n">30</div><div class="u2">張</div></div></div>
+      <div class="neq"><svg viewBox="0 0 96 96"><path d="M14 36h68M14 62h68" stroke="#000" stroke-width="9" stroke-linecap="round"/><path d="M62 12L34 86" stroke="#C7302F" stroke-width="9" stroke-linecap="round"/></svg></div>
+      <div class="box"><div class="lab">帳上</div><div class="nr"><div class="n">12</div><div class="u2">張</div></div></div>
+    </div>
+    <div class="eg">（數字舉例）</div>
   </div>
 </div>
 
-<!-- 2 設太窄的三件事 -->
-<div class="card" id="p2" data-document-role="page" data-label="設太窄的三件事">
+<!-- 2 追蹤是什麼 -->
+<div class="card" id="p2" data-document-role="page" data-label="追蹤是什麼">
+  <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="hylogo"><img src="https://zhuer0323-tech.github.io/dora-workspace/heyen-cards/logo_use.png" alt="禾言數位行銷"></div>
+  <div class="paper yellow">
+    <div class="flag">追蹤是什麼</div>
+    <h2>追蹤＝廣告的<span class="hl">收銀機</span></h2>
+    <div class="viz" style="width:832px;height:400px;margin:34px 0 30px"><svg width="832" height="400" viewBox="0 0 832 400" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="832" height="400" rx="26" fill="#fff"/>
+      <!-- 地面 -->
+      <path d="M24 362H808" stroke="#000" stroke-width="5" stroke-linecap="round"/>
+      <!-- 門口走過的人 -->
+      <circle cx="70" cy="252" r="18" fill="#AED056" stroke="#000" stroke-width="4"/>
+      <rect x="50" y="276" width="40" height="80" rx="18" fill="#AED056" stroke="#000" stroke-width="4"/>
+      <circle cx="146" cy="252" r="18" fill="#FFCA26" stroke="#000" stroke-width="4"/>
+      <rect x="126" y="276" width="40" height="80" rx="18" fill="#FFCA26" stroke="#000" stroke-width="4"/>
+      <circle cx="222" cy="252" r="18" fill="#C9E6E4" stroke="#000" stroke-width="4"/>
+      <rect x="202" y="276" width="40" height="80" rx="18" fill="#C9E6E4" stroke="#000" stroke-width="4"/>
+      <path d="M48 212H246" stroke="#9A958F" stroke-width="4" stroke-dasharray="10 10" stroke-linecap="round"/>
+      <path d="M246 200l20 12-20 12z" fill="#9A958F"/>
+      <!-- 店面 -->
+      <rect x="296" y="88" width="510" height="274" fill="#FFF9F6" stroke="#000" stroke-width="5"/>
+      <rect x="280" y="30" width="542" height="62" rx="16" fill="#FCD501" stroke="#000" stroke-width="5"/>
+      <rect x="312" y="196" width="88" height="166" fill="#FFEDC5" stroke="#000" stroke-width="4"/>
+      <!-- 空櫃台 -->
+      <rect x="452" y="282" width="330" height="80" rx="10" fill="#FFCA26" stroke="#000" stroke-width="5"/>
+      <rect x="616" y="196" width="128" height="80" rx="12" fill="none" stroke="#C7302F" stroke-width="4" stroke-dasharray="12 9"/>
+      <text x="680" y="176" text-anchor="middle" font-size="96" font-weight="900" fill="#000">?</text>
+      <text x="602" y="246" text-anchor="end" font-size="27" font-weight="900" fill="#C7302F">這裡少了一台</text>
+    </svg></div>
+    <div class="note"><div>沒有收銀機，你只知道<br>多少人經過門口<br><span class="s">➤ 誰真的買了？不知道<br>➤ 看哪支廣告來的？不知道</span></div></div>
+  </div>
+  <div class="bpill">追蹤就是幫廣告裝收銀機</div>
+</div>
+
+<!-- 3 沒設好的後果 -->
+<div class="card" id="p3" data-document-role="page" data-label="沒設好的後果">
   <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
   <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
   <div class="hylogo"><img src="https://zhuer0323-tech.github.io/dora-workspace/heyen-cards/logo_use.png" alt="禾言數位行銷"></div>
   <div class="paper">
-    <div class="flag">設太窄會怎樣</div>
-    <h2>受眾太窄的<span class="hl">三個後果</span></h2>
+    <div class="flag">沒設好的後果</div>
+    <h2>沒設好會發生<span class="hl">三件事</span></h2>
     <div class="three">
       <div class="row">
         <div class="no"><svg viewBox="0 0 84 84"><circle cx="42" cy="42" r="38" fill="#FCD501" stroke="#000" stroke-width="4"/><text x="42" y="57" text-anchor="middle" font-size="44" font-weight="900" fill="#000">1</text></svg></div>
-        <div class="tx"><div class="t">能觸及的人太少</div><div class="d">系統只能投給同一批人</div></div>
-        <div class="ic"><svg viewBox="0 0 140 110"><circle cx="70" cy="55" r="44" fill="#fff" stroke="#000" stroke-width="4" stroke-dasharray="10 8"/><circle cx="70" cy="44" r="10" fill="#AED056" stroke="#000" stroke-width="3"/><rect x="59" y="57" width="22" height="26" rx="9" fill="#AED056" stroke="#000" stroke-width="3"/></svg></div>
+        <div class="tx"><div class="t">數字對不起來</div><div class="d">一張訂單被算成兩張</div></div>
+        <div class="ic"><svg viewBox="0 0 140 110"><path d="M14 8h62v92l-10-8-10 8-10-8-10 8-10-8-12 8z" fill="#fff" stroke="#000" stroke-width="4" stroke-linejoin="round"/><path d="M26 30h38M26 46h38M26 62h24" stroke="#CFCAC4" stroke-width="6" stroke-linecap="round"/><text x="110" y="70" text-anchor="middle" font-size="44" font-weight="900" fill="#C7302F">×2</text></svg></div>
       </div>
       <div class="row">
         <div class="no"><svg viewBox="0 0 84 84"><circle cx="42" cy="42" r="38" fill="#FCD501" stroke="#000" stroke-width="4"/><text x="42" y="57" text-anchor="middle" font-size="44" font-weight="900" fill="#000">2</text></svg></div>
-        <div class="tx"><div class="t">頻率飆高</div><div class="d">看到第七次，只會滑掉</div></div>
-        <div class="ic"><svg viewBox="0 0 140 110"><path d="M4 55c14-26 42-34 64-26" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round"/><path d="M4 55c14 26 42 34 64 26" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round"/><circle cx="38" cy="55" r="13" fill="#000"/><text x="106" y="70" text-anchor="middle" font-size="40" font-weight="900" fill="#C7302F">×7</text></svg></div>
+        <div class="tx"><div class="t">關錯廣告</div><div class="d">有帶生意的那支被關掉</div></div>
+        <div class="ic"><svg viewBox="0 0 140 110"><rect x="24" y="8" width="92" height="94" rx="14" fill="#fff" stroke="#000" stroke-width="4"/><rect x="36" y="20" width="68" height="52" rx="8" fill="#FFEDC5"/><path d="M70 30l16 18H76v16H64V48H54z" fill="#7FA52E"/><rect x="36" y="80" width="46" height="8" rx="4" fill="#CFCAC4"/><path d="M22 14l96 82M118 14L22 96" stroke="#C7302F" stroke-width="9" stroke-linecap="round"/></svg></div>
       </div>
       <div class="row">
         <div class="no"><svg viewBox="0 0 84 84"><circle cx="42" cy="42" r="38" fill="#FCD501" stroke="#000" stroke-width="4"/><text x="42" y="57" text-anchor="middle" font-size="44" font-weight="900" fill="#000">3</text></svg></div>
-        <div class="tx"><div class="t">成本被推高</div><div class="d">池子小，競價自然貴</div></div>
-        <div class="ic"><svg viewBox="0 0 140 110"><circle cx="46" cy="62" r="34" fill="#FFCA26" stroke="#000" stroke-width="4"/><text x="46" y="76" text-anchor="middle" font-size="38" font-weight="900" fill="#000">$</text><path d="M110 96V24" stroke="#C7302F" stroke-width="8" stroke-linecap="round"/><path d="M92 40l18-24 18 24z" fill="#C7302F"/></svg></div>
+        <div class="tx"><div class="t">說不出成果</div><div class="d">答不出帶來幾筆生意</div></div>
+        <div class="ic"><svg viewBox="0 0 140 110"><path d="M22 12h96a14 14 0 0 1 14 14v42a14 14 0 0 1-14 14H58l-24 20 4-20H22A14 14 0 0 1 8 68V26a14 14 0 0 1 14-14z" fill="#fff" stroke="#000" stroke-width="4" stroke-linejoin="round"/><circle cx="46" cy="47" r="7" fill="#000"/><circle cx="70" cy="47" r="7" fill="#000"/><circle cx="94" cy="47" r="7" fill="#000"/></svg></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- 3 讓素材去篩人 -->
-<div class="card" id="p3" data-document-role="page" data-label="讓素材去篩人">
+<!-- 4 路線 A：網站下單 -->
+<div class="card" id="p4" data-document-role="page" data-label="路線A 網站下單">
   <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
   <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
   <div class="hylogo"><img src="https://zhuer0323-tech.github.io/dora-workspace/heyen-cards/logo_use.png" alt="禾言數位行銷"></div>
   <div class="paper yellow">
-    <div class="flag">那要怎麼設</div>
-    <h2>讓<span class="hl">素材</span>去篩人</h2>
-    <div class="viz" style="width:832px;height:360px;margin-top:30px"><svg width="832" height="360" viewBox="0 0 832 360" xmlns="http://www.w3.org/2000/svg">
-      <rect x="0" y="0" width="406" height="360" rx="24" fill="#fff"/>
-      <rect x="426" y="0" width="406" height="360" rx="24" fill="#fff"/>
-      <!-- 左：設定去篩 -->
-      <text x="203" y="58" text-anchor="middle" font-size="32" font-weight="900" fill="#C7302F">✕ 用設定篩</text>
-      <path d="M103 74H303" stroke="#C7302F" stroke-width="5" stroke-linecap="round"/>
-      <path d="M60 112H346L246 216V270H160V216z" fill="#FFEDC5" stroke="#000" stroke-width="4" stroke-linejoin="round"/>
-      <text x="203" y="160" text-anchor="middle" font-size="26" font-weight="900" fill="#000">興趣層層勾</text>
-      <text x="203" y="326" text-anchor="middle" font-size="28" font-weight="900" fill="#000">剩沒幾人可投</text>
-      <!-- 右：素材去篩 -->
-      <text x="629" y="58" text-anchor="middle" font-size="32" font-weight="900" fill="#3E7A1F">✓ 用素材篩</text>
-      <path d="M529 74H729" stroke="#3E7A1F" stroke-width="5" stroke-linecap="round"/>
-      <g stroke="#000" stroke-width="3">
-        <circle cx="486" cy="128" r="11" fill="#D6D3CF"/><circle cx="526" cy="128" r="11" fill="#D6D3CF"/><circle cx="566" cy="128" r="11" fill="#AED056"/><circle cx="606" cy="128" r="11" fill="#D6D3CF"/><circle cx="646" cy="128" r="11" fill="#D6D3CF"/><circle cx="686" cy="128" r="11" fill="#AED056"/><circle cx="726" cy="128" r="11" fill="#D6D3CF"/><circle cx="766" cy="128" r="11" fill="#D6D3CF"/>
-        <circle cx="506" cy="166" r="11" fill="#D6D3CF"/><circle cx="546" cy="166" r="11" fill="#D6D3CF"/><circle cx="586" cy="166" r="11" fill="#D6D3CF"/><circle cx="626" cy="166" r="11" fill="#AED056"/><circle cx="666" cy="166" r="11" fill="#D6D3CF"/><circle cx="706" cy="166" r="11" fill="#D6D3CF"/><circle cx="746" cy="166" r="11" fill="#AED056"/>
-      </g>
-      <text x="629" y="216" text-anchor="middle" font-size="24" font-weight="800" fill="#555">受眾開寬</text>
-      <rect x="470" y="236" width="318" height="56" rx="14" fill="#FCD501" stroke="#000" stroke-width="4"/>
-      <text x="629" y="274" text-anchor="middle" font-size="26" font-weight="900" fill="#000">文案講清楚找誰</text>
-      <text x="629" y="334" text-anchor="middle" font-size="28" font-weight="900" fill="#000">對的人自己停下</text>
+    <div class="flag">檢查路線 A</div>
+    <h2>網站下單：<span class="hl">自己下一單</span></h2>
+    <div class="viz" style="width:832px;height:250px;margin-top:30px"><svg width="832" height="250" viewBox="0 0 832 250" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="832" height="250" rx="24" fill="#fff"/>
+      <rect x="21" y="36" width="160" height="84" rx="16" fill="#fff" stroke="#000" stroke-width="4"/>
+      <text x="101" y="89" text-anchor="middle" font-size="32" font-weight="900" fill="#000">廣告</text>
+      <path d="M190 66l24 12-24 12z" fill="#000"/>
+      <rect x="221" y="36" width="160" height="84" rx="16" fill="#fff" stroke="#000" stroke-width="4"/>
+      <text x="301" y="89" text-anchor="middle" font-size="32" font-weight="900" fill="#000">商品頁</text>
+      <path d="M390 66l24 12-24 12z" fill="#000"/>
+      <rect x="421" y="36" width="160" height="84" rx="16" fill="#fff" stroke="#000" stroke-width="4"/>
+      <text x="501" y="89" text-anchor="middle" font-size="32" font-weight="900" fill="#000">結帳</text>
+      <path d="M590 66l24 12-24 12z" fill="#000"/>
+      <rect x="621" y="34" width="190" height="88" rx="16" fill="#FCD501" stroke="#000" stroke-width="7"/>
+      <text x="716" y="89" text-anchor="middle" font-size="32" font-weight="900" fill="#000">完成頁</text>
+      <text x="716" y="158" text-anchor="middle" font-size="22" font-weight="800" fill="#000">訂購成功的那一頁</text>
+      <!-- 卡在刷卡就離開 -->
+      <path d="M501 122V182" stroke="#C7302F" stroke-width="4" stroke-dasharray="9 8" stroke-linecap="round"/>
+      <path d="M490 180l11 16 11-16z" fill="#C7302F"/>
+      <text x="501" y="228" text-anchor="middle" font-size="24" font-weight="900" fill="#C7302F">卡在刷卡就走了</text>
     </svg></div>
     <div class="ck">
-      <div class="row"><svg viewBox="0 0 46 46"><rect x="3" y="3" width="40" height="40" rx="9" fill="#fff" stroke="#000" stroke-width="4"/><path d="M12 23l8 8 14-16" fill="none" stroke="#000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>受眾給寬一點</span></div>
-      <div class="row"><svg viewBox="0 0 46 46"><rect x="3" y="3" width="40" height="40" rx="9" fill="#fff" stroke="#000" stroke-width="4"/><path d="M12 23l8 8 14-16" fill="none" stroke="#000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>把訊息寫清楚</span></div>
-      <div class="row"><svg viewBox="0 0 46 46"><rect x="3" y="3" width="40" height="40" rx="9" fill="#fff" stroke="#000" stroke-width="4"/><path d="M12 23l8 8 14-16" fill="none" stroke="#000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>想找誰，文案第一行就講</span></div>
+      <div class="row"><svg viewBox="0 0 46 46"><rect x="3" y="3" width="40" height="40" rx="9" fill="#fff" stroke="#000" stroke-width="4"/></svg><span>用手機從廣告點進去</span></div>
+      <div class="row"><svg viewBox="0 0 46 46"><rect x="3" y="3" width="40" height="40" rx="9" fill="#fff" stroke="#000" stroke-width="4"/></svg><span>走到完成頁，到「事件管理工具」<br>看有沒有記到</span></div>
+      <div class="row"><svg viewBox="0 0 46 46"><rect x="3" y="3" width="40" height="40" rx="9" fill="#fff" stroke="#000" stroke-width="4"/></svg><span>同一筆有沒有被算兩次</span></div>
+      <div class="row"><svg viewBox="0 0 46 46"><rect x="3" y="3" width="40" height="40" rx="9" fill="#fff" stroke="#000" stroke-width="4"/></svg><span>算成功要設在付款完成頁</span></div>
     </div>
   </div>
+  <div class="bpill">按下購買，不等於付款成功</div>
 </div>
 
-<!-- 4 舉個例 -->
-<div class="card" id="p4" data-document-role="page" data-label="舉個例">
+<!-- 5 路線 B：私訊詢問 -->
+<div class="card" id="p5" data-document-role="page" data-label="路線B 私訊詢問">
+  <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="hylogo"><img src="https://zhuer0323-tech.github.io/dora-workspace/heyen-cards/logo_use.png" alt="禾言數位行銷"></div>
+  <div class="paper yellow">
+    <div class="flag">檢查路線 B</div>
+    <h2>私訊：<span class="hl">換個帳號傳一次</span></h2>
+    <div class="viz" style="width:832px;height:340px;margin-top:30px"><svg width="832" height="340" viewBox="0 0 832 340" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="832" height="340" rx="24" fill="#fff"/>
+      <!-- 手機對話 -->
+      <rect x="36" y="18" width="300" height="304" rx="34" fill="#fff" stroke="#000" stroke-width="5"/>
+      <rect x="152" y="32" width="68" height="10" rx="5" fill="#000"/>
+      <rect x="200" y="62" width="114" height="52" rx="26" fill="#C9E6E4"/>
+      <text x="257" y="98" text-anchor="middle" font-size="28" font-weight="900" fill="#000">你好</text>
+      <rect x="56" y="132" width="230" height="104" rx="22" fill="#F0F0EE"/>
+      <text x="76" y="166" font-size="22" font-weight="800" fill="#555">自動回覆</text>
+      <rect x="76" y="182" width="180" height="12" rx="6" fill="#CFCAC4"/>
+      <rect x="76" y="206" width="132" height="12" rx="6" fill="#CFCAC4"/>
+      <rect x="56" y="270" width="178" height="24" fill="#FCD501"/>
+      <text x="60" y="290" font-size="24" font-weight="900" fill="#000">新客人才看得到</text>
+      <!-- 對話數（不等於生意） -->
+      <rect x="420" y="20" width="370" height="56" rx="12" fill="#D6D3CF"/>
+      <text x="605" y="58" text-anchor="middle" font-size="28" font-weight="900" fill="#555">對話數</text>
+      <text x="605" y="106" text-anchor="middle" font-size="23" font-weight="800" fill="#666">＝有人傳了第一句話</text>
+      <!-- 漏斗 -->
+      <path d="M420 124H790L755 182H455z" fill="#FFEDC5" stroke="#000" stroke-width="4" stroke-linejoin="round"/>
+      <text x="605" y="164" text-anchor="middle" font-size="28" font-weight="900" fill="#000">詢價</text>
+      <path d="M455 188H755L720 246H490z" fill="#FFD36F" stroke="#000" stroke-width="4" stroke-linejoin="round"/>
+      <text x="605" y="228" text-anchor="middle" font-size="28" font-weight="900" fill="#000">報價</text>
+      <path d="M490 252H720L685 310H525z" fill="#FCD501" stroke="#000" stroke-width="4" stroke-linejoin="round"/>
+      <text x="605" y="292" text-anchor="middle" font-size="28" font-weight="900" fill="#000">成交</text>
+    </svg></div>
+    <div class="ck">
+      <div class="row"><svg viewBox="0 0 46 46"><rect x="3" y="3" width="40" height="40" rx="9" fill="#fff" stroke="#000" stroke-width="4"/></svg><span>用另一個帳號點廣告傳訊息</span></div>
+      <div class="row"><svg viewBox="0 0 46 46"><rect x="3" y="3" width="40" height="40" rx="9" fill="#fff" stroke="#000" stroke-width="4"/></svg><span>訊息進到有人在看的收件匣？</span></div>
+      <div class="row"><svg viewBox="0 0 46 46"><rect x="3" y="3" width="40" height="40" rx="9" fill="#fff" stroke="#000" stroke-width="4"/></svg><span>歡迎語、自動回覆有跳出來？</span></div>
+    </div>
+  </div>
+  <div class="bpill">每天記：詢價 ➤ 報價 ➤ 成交</div>
+</div>
+
+<!-- 6 禾言觀點 -->
+<div class="card" id="p6" data-document-role="page" data-label="禾言觀點">
   <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
   <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
   <div class="hylogo"><img src="https://zhuer0323-tech.github.io/dora-workspace/heyen-cards/logo_use.png" alt="禾言數位行銷"></div>
   <div class="paper">
-    <div class="flag">舉個例</div>
-    <h2>第一行就點名<span class="hl">要找誰</span></h2>
-    <div class="viz" style="width:832px;height:300px;margin-top:34px"><svg width="832" height="300" viewBox="0 0 832 300" xmlns="http://www.w3.org/2000/svg">
-      <!-- 貼文 -->
-      <rect x="4" y="4" width="824" height="292" rx="26" fill="#fff" stroke="#000" stroke-width="5"/>
-      <circle cx="64" cy="64" r="28" fill="#FCD501" stroke="#000" stroke-width="4"/>
-      <rect x="108" y="46" width="180" height="16" rx="8" fill="#000"/>
-      <rect x="108" y="72" width="110" height="12" rx="6" fill="#CFCAC4"/>
-      <text x="42" y="164" font-size="46" font-weight="900" fill="#000">開餐廳的老闆看過來</text>
-      <path d="M40 178H452" stroke="#FCD501" stroke-width="16" stroke-linecap="round" opacity=".9"/>
-      <rect x="42" y="208" width="640" height="16" rx="8" fill="#CFCAC4"/>
-      <rect x="42" y="242" width="480" height="16" rx="8" fill="#CFCAC4"/>
-      <!-- 標註 -->
-      <path d="M600 150H492" stroke="#C7302F" stroke-width="5" stroke-linecap="round"/>
-      <path d="M498 136l-22 14 22 14z" fill="#C7302F"/>
-      <text x="616" y="161" font-size="30" font-weight="900" fill="#C7302F">講出要找誰</text>
-    </svg></div>
-    <div class="viz" style="width:832px;height:300px;margin:auto 0"><svg width="832" height="300" viewBox="0 0 832 300" xmlns="http://www.w3.org/2000/svg">
-      <!-- 對號入座 -->
-      <rect x="0" y="0" width="406" height="300" rx="24" fill="#FFF3B0"/>
-      <circle cx="203" cy="100" r="34" fill="#AED056" stroke="#000" stroke-width="4"/>
-      <rect x="166" y="140" width="74" height="80" rx="28" fill="#AED056" stroke="#000" stroke-width="4"/>
-      <path d="M244 120l40-46" stroke="#000" stroke-width="10" stroke-linecap="round"/>
-      <text x="203" y="270" text-anchor="middle" font-size="32" font-weight="900" fill="#000">老闆：在說我</text>
-      <!-- 滑掉 -->
-      <rect x="426" y="0" width="406" height="300" rx="24" fill="#F0F0EE"/>
-      <circle cx="600" cy="100" r="34" fill="#D6D3CF" stroke="#000" stroke-width="4"/>
-      <rect x="563" y="140" width="74" height="80" rx="28" fill="#D6D3CF" stroke="#000" stroke-width="4"/>
-      <path d="M672 120H760" stroke="#555" stroke-width="7" stroke-linecap="round"/>
-      <path d="M754 104l22 16-22 16z" fill="#555"/>
-      <text x="629" y="270" text-anchor="middle" font-size="32" font-weight="900" fill="#555">不是你的人：滑掉</text>
+    <div class="flag">禾言觀點</div>
+    <h2><span class="hl">數字對</span>，才談得上優化</h2>
+    <div class="note" style="margin-top:40px"><div>報表數字一錯<br>加預算、關廣告都跟著歪</div></div>
+    <div class="viz" style="width:832px;height:400px;margin:auto 0"><svg width="832" height="400" viewBox="0 0 832 400" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="150" width="240" height="100" rx="20" fill="#fff" stroke="#000" stroke-width="5"/>
+      <text x="130" y="216" text-anchor="middle" font-size="46" font-weight="900" fill="#C7302F">數字錯</text>
+      <path d="M256 186C330 186 370 108 446 100" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round"/>
+      <path d="M440 84l28 14-26 18z" fill="#000"/>
+      <path d="M256 214C330 214 370 292 446 300" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round"/>
+      <path d="M442 284l26 18-28 14z" fill="#000"/>
+      <g transform="rotate(-6 640 95)">
+        <rect x="490" y="45" width="300" height="100" rx="20" fill="#fff" stroke="#000" stroke-width="5"/>
+        <text x="640" y="111" text-anchor="middle" font-size="42" font-weight="900" fill="#000">加錯預算</text>
+      </g>
+      <g transform="rotate(7 640 305)">
+        <rect x="490" y="255" width="300" height="100" rx="20" fill="#fff" stroke="#000" stroke-width="5"/>
+        <text x="640" y="321" text-anchor="middle" font-size="42" font-weight="900" fill="#000">關錯廣告</text>
+      </g>
     </svg></div>
   </div>
-  <div class="bpill">與其鎖到只剩三萬人，不如開寬點名</div>
-</div>
-
-<!-- 5 禾言怎麼做 -->
-<div class="card" id="p5" data-document-role="page" data-label="禾言怎麼做">
-  <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
-  <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
-  <div class="hylogo"><img src="https://zhuer0323-tech.github.io/dora-workspace/heyen-cards/logo_use.png" alt="禾言數位行銷"></div>
-  <div class="paper yellow">
-    <div class="flag">禾言怎麼做</div>
-    <h2>精準從<span class="hl">內容</span>來<br>不是勾選框</h2>
-    <div class="note" style="margin-top:36px"><div>接手帳戶，我們常先把受眾放寬<br><span class="s">➤ 省下的力氣，全花回素材上</span></div></div>
-    <div class="viz" style="width:832px;height:420px;margin:auto 0 0"><svg width="832" height="420" viewBox="0 0 832 420" xmlns="http://www.w3.org/2000/svg">
-      <rect x="0" y="0" width="832" height="420" rx="24" fill="#fff"/>
-      <path d="M60 360H772" stroke="#000" stroke-width="5" stroke-linecap="round"/>
-      <!-- 設定：有天花板 -->
-      <path d="M140 210H360" stroke="#C7302F" stroke-width="5" stroke-dasharray="14 10" stroke-linecap="round"/>
-      <text x="250" y="190" text-anchor="middle" font-size="26" font-weight="900" fill="#C7302F">能做的就這麼多</text>
-      <rect x="190" y="220" width="120" height="140" rx="12" fill="#D6D3CF" stroke="#000" stroke-width="4"/>
-      <text x="250" y="402" text-anchor="middle" font-size="32" font-weight="900" fill="#000">設定</text>
-      <!-- 內容：往上沒有上限 -->
-      <rect x="522" y="90" width="120" height="270" rx="12" fill="#FCD501" stroke="#000" stroke-width="4"/>
-      <path d="M582 84V36" stroke="#000" stroke-width="7" stroke-linecap="round" stroke-dasharray="4 14"/>
-      <path d="M562 44l20-28 20 28z" fill="#000"/>
-      <text x="700" y="64" font-size="26" font-weight="900" fill="#000">沒有上限</text>
-      <text x="582" y="402" text-anchor="middle" font-size="32" font-weight="900" fill="#000">內容</text>
-    </svg></div>
-  </div>
-  <div class="bpill">你的受眾設多窄？留言我們幫你看</div>
+  <div class="bpill">雙11、雙12 加預算前先檢查</div>
 </div>
 
 </body>
