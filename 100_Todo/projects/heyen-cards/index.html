@@ -56,15 +56,16 @@ h2 .hl{background:linear-gradient(transparent 7%, var(--y) 7%, var(--y) 93%, tra
 .cmp{position:relative;z-index:2;display:flex;align-items:center;gap:18px;margin-top:70px}
 .cmp .box{flex:1;background:#fff;border-radius:26px;padding:34px 20px 30px;text-align:center;box-shadow:0 4px 0 rgba(0,0,0,.07)}
 .cmp .lab{font-size:36px;font-weight:800;color:#555}
-.cmp .n{font-size:132px;font-weight:900;line-height:1.1;letter-spacing:-3px;margin-top:6px}
-.cmp .n small{font-size:48px;font-weight:900;letter-spacing:0;margin-left:6px}
+.cmp .nr{display:flex;align-items:baseline;justify-content:center;gap:8px;margin-top:6px}
+.cmp .n{font-size:132px;font-weight:900;line-height:1.1;letter-spacing:-3px}
+.cmp .u2{font-size:48px;font-weight:900}
 .cmp .neq{flex:none;width:96px;height:96px}
 .cmp .neq svg{width:96px;height:96px;display:block}
 .eg{position:relative;z-index:2;text-align:center;font-size:28px;font-weight:700;color:#8a8378;margin-top:24px}
 
 /* 內容卡 */
-.viz{position:relative;z-index:2;display:block}
-.note{position:relative;z-index:2;background:#fff;border-radius:22px;padding:32px 36px;font-size:36px;font-weight:800;line-height:1.6}
+.viz{position:relative;z-index:2;display:block;flex:none}
+.note{position:relative;z-index:2;flex:none;background:#fff;border-radius:22px;padding:32px 36px;font-size:36px;font-weight:800;line-height:1.6}
 .note .s{font-weight:700;color:#333}
 
 /* P3 三件事 */
@@ -96,9 +97,9 @@ h2 .hl{background:linear-gradient(transparent 7%, var(--y) 7%, var(--y) 93%, tra
     <div class="flag">教學/新手</div>
     <h1>轉換追蹤沒裝好<br>廣告再會跑也是<span class="u">白花</span></h1>
     <div class="cmp">
-      <div class="box"><div class="lab">後台</div><div class="n">30<small>張</small></div></div>
+      <div class="box"><div class="lab">後台</div><div class="nr"><div class="n">30</div><div class="u2">張</div></div></div>
       <div class="neq"><svg viewBox="0 0 96 96"><path d="M14 36h68M14 62h68" stroke="#000" stroke-width="9" stroke-linecap="round"/><path d="M62 12L34 86" stroke="#C7302F" stroke-width="9" stroke-linecap="round"/></svg></div>
-      <div class="box"><div class="lab">帳上</div><div class="n">12<small>張</small></div></div>
+      <div class="box"><div class="lab">帳上</div><div class="nr"><div class="n">12</div><div class="u2">張</div></div></div>
     </div>
     <div class="eg">（數字舉例）</div>
   </div>
