@@ -1173,8 +1173,7 @@ HTML 覆蓋到 `100_Todo/projects/heyen-cards/index.html` → push → 等 Pages
 
 ## Brandloom 品牌製圖工具（2026-10-04 從 Codex 接手）
 
-品牌廣告圖／社群圖的製圖工作台：建 Brand Kit → 填活動 → 複製製圖任務貼到 ChatGPT（Images 2.5）出圖，
-或用「品牌智慧排版」直接排出可編輯的 A／B／C 版型、改字、下載 PNG。
+品牌廣告圖／社群圖的製圖工作台：建 Brand Kit → 填活動 → 複製製圖任務出圖，或用「品牌智慧排版」排出可編輯的 A／B／C 版型、下載 PNG。
 
 - **網址**：<https://brandloom-studio.pages.dev>（Cloudflare Pages，整站密碼登入，帳號隨便填）
 - **原始檔**：`~/Documents/Codex/2026-10-03/referenced-chatgpt-conversation-this-is-an`（**不在這個工作區、不進 dora-workspace**，
@@ -1183,15 +1182,12 @@ HTML 覆蓋到 `100_Todo/projects/heyen-cards/index.html` → push → 等 Pages
 - **部署**：專案根目錄 `npm run check && npm run build` → `npx wrangler pages deploy dist --project-name brandloom-studio --branch main`
   （要在根目錄跑，`functions/` 才會一起上去）
 - **密碼**：Cloudflare Pages secret `SITE_PASSWORD`，本機備份 `~/Library/Scripts/brandloom-password.txt`（600）。不寫進任何檔案或 repo
-- `functions/drive-image.ts` 代抓 Google Drive 圖片（同網域，下載 PNG 才不會被瀏覽器擋）；`functions/_middleware.ts` 是密碼門
-- **出圖不接付費 API**：Claude 不能生圖，複製出來的任務是貼給 ChatGPT
-- **主標一律聳動吸睛、可以一直要更多**（她要求）：`src/copyIdeas.ts` 句型公式，不捏造數字、優惠、功效，會濾品牌「不可使用的詞」
-- 保留粉色風格與預設品牌資料；**影片功能維持隱藏**（`VIDEO_FEATURE_ENABLED = false`）
-- 不碰 `node_modules`、`dist`（只由 build 產生）、`.sites-checkout`
-- 本機測試：Codex 的 dev server 常佔 4173，改用 `npx vite --port 4180`
-- 舊的 Codex 網址已放掉（2026-10-04 查過裡面只有未改過的預設品牌、0 組設計）。
-  搬資料用品牌資料庫頁底部「資料備份與搬家」；那個網址擋書籤小工具，主控台貼程式碼應該可以
-- **還沒做**：重複程式抽共用元件、上傳圖片在設計記錄裡存三份（要改資料結構）、16MB 字體換子集
+- `functions/drive-image.ts` 代抓 Google Drive 圖片；`functions/_middleware.ts` 是密碼門
+- ⚠️ **2026-10-05 她要求整個工具退回 Codex 第一版**（覺得第一版出圖比較好）：線上版程式＝Codex 原版，只多了上面兩支 `functions/`。
+  10/4 做過的修改（吸睛主標產生器、成品加 Logo、資料備份搬家、Brand Kit 完整度、兩批修正）都在 git 歷史
+  （退回前最後一版 `5780a7e`），要拿回個別功能從那裡取，**不要整包還原**
+- 第一版的好圖是 Codex 在本機直接用 `work/feebees-*` 原檔產的；之後要改出圖流程，先跟她確認在哪個環境出圖，拿第一版成品當基準比對
+- 不碰 `node_modules`、`dist`（只由 build 產生）、`.sites-checkout`；本機測試用 `npx vite --port 4180`（Codex 的 dev server 常佔 4173）
 
 ---
 
