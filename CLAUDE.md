@@ -437,6 +437,8 @@ Graph API Explorer 與 App 後台都進不去，所以 `dora-meta-token-setup.sh
   **新客戶要能在 LINE 叫回報，就是先建客戶檔＋寫規格＋跑 sync-report-spec.py**，
   三步缺一就會被擋（目前 TOTO、李享家直播集團 有客戶檔但沒寫規格，一樣會被擋）。
   **帶日期的句子一律當任務**，不會誤觸發
+  **2026-10-05 改版**：數字行統一 `▶️曝光數：約4,900次`（不用「近約」）、分析最多 3 句且要接上一份；
+  **每次回報都存** `100_Todo/drafts/client-reports/YYYY-MM-DD_客戶名.md`（runner 推完自己存，下次把上一份路徑塞進 prompt）
   ⚠️ **2026-08-27 撞過：macOS 權限擋住這個檢查，整支 `dora-report-runner.py` 當機**
   （不是單一客戶的問題，是共用背景程式全部壞掉，LINE 打任何客戶的回報都沒反應）。
   原因是 `has_spec()` 讀 `200_Reference/clients` 這個在 Downloads 底下的資料夾時被 TCC 擋，

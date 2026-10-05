@@ -18,6 +18,8 @@ TIMEOUT = 900              # 一筆最多跑 15 分鐘
 MAX_AGE = 6 * 3600         # 超過 6 小時就不補跑了（電腦關太久，那天的數字她也不要了）
 LOCK    = '/tmp/dora-report-runner.lock'
 CLIENTS = os.path.join(WORKDIR, '200_Reference', 'clients')
+# 每次回報留一份底，下次回報先讀上一份才接得上（2026-10-05 加；在私人雲端，不進公開倉庫）
+REPORTS = os.path.join(WORKDIR, '100_Todo', 'drafts', 'client-reports')
 
 # 只開跑回報會用到的：讀檔、查廣告數字、跑讀工作台的腳本。
 # 不給寫檔與推播的權限——推播由這支自己做，才不會被 AI 亂推
@@ -37,7 +39,7 @@ PROMPT = """跑「{client}」的廣告回報。
   不要「以下是…」這種開場白
 - 不要推 LINE、不要寫檔案、不要 git commit（推播由外層腳本處理）
 - 抓不到數字或認不出客戶，就只回一句話說明原因
-"""
+{prev}"""
 
 
 def load_env():
@@ -131,10 +133,56 @@ def has_spec(client):
     return False
 
 
+def _norm(name):
+    return ''.join(name.replace('_', ' ').split()).lower()
+
+
+def last_report(client):
+    """這家最近一份回報的路徑，沒有就回 None。檔名 YYYY-MM-DD_客戶名[週報].md，日期開頭所以排序就是新舊"""
+    try:
+        files = sorted(os.listdir(REPORTS))
+    except Exception:
+        return None
+    want = _norm(client)
+    for fn in reversed(files):
+        if not fn.endswith('.md') or '_' not in fn:
+            continue
+        name = fn[:-3].split('_', 1)[1]
+        if name.endswith('週報'):
+            name = name[:-2]
+        if _norm(name) == want:
+            return os.path.join(REPORTS, fn)
+    return None
+
+
+def save_report(client, text):
+    """推出去的那份存一份底。只存真的回報（【開頭），一句話的錯誤說明不存。
+    存失敗不擋推播：Mac 睡醒時 Downloads 偶爾會被 TCC 卡幾秒，重試 3 次就算了"""
+    if not text.lstrip().startswith('【'):
+        return
+    today = time.strftime('%F')
+    fn = os.path.join(REPORTS, f"{today}_{'_'.join(client.split())}.md")
+    body = (f'# {client} 廣告成效回報（{today} 產出，LINE 叫的）\n\n'
+            f'## 客戶版（已推 LINE）\n\n```\n{text.strip()}\n```\n')
+    for attempt in range(3):
+        try:
+            with open(fn, 'w', encoding='utf-8') as f:
+                f.write(body)
+            return
+        except Exception as e:
+            if attempt == 2:
+                print(f"{time.strftime('%F %T')} {client} 存檔失敗（不影響推播）：{e}")
+            else:
+                time.sleep(3)
+
+
 def run_claude(client):
     """叫 Claude Code 跑回報。工作目錄要在 Dora專屬，才讀得到 CLAUDE.md 與客戶檔"""
+    prev = last_report(client)
+    prev = (f'- 上一份回報在 `{os.path.relpath(prev, WORKDIR)}`，先讀它再寫，分析要接得上上一次\n'
+            if prev else '')
     p = subprocess.run(
-        [CLAUDE, '-p', PROMPT.format(client=client), '--allowedTools', ALLOWED],
+        [CLAUDE, '-p', PROMPT.format(client=client, prev=prev), '--allowedTools', ALLOWED],
         cwd=WORKDIR, capture_output=True, text=True, timeout=TIMEOUT)
     out = (p.stdout or '').strip()
     if p.returncode != 0 and not out:
@@ -226,6 +274,7 @@ def main():
                 if not out:
                     raise RuntimeError('沒有輸出')
                 line_push(cfg, out)
+                save_report(client, out)
                 db_patch(cfg, tok, f'reportJobs/{jid}',
                          {'status': 'done', 'doneAt': int(time.time() * 1000)})
                 print(f"{time.strftime('%F %T')} {client} 完成，{len(out)} 字")
