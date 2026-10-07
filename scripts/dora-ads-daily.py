@@ -9,10 +9,18 @@
 分工：**Claude 只負責搬數字**（呼叫 ads 工具、輸出原始 JSON），
       卡片版面與推播由這支自己做，AI 不碰輸出格式。
 
+2026-10-07 改：**Mac 版只負責「客戶自己的廣告帳戶」**（目前只有 Feebees）。
+  完整日報 9/28 起由雲端（LINE 小秘書 Worker）送，雲端的系統使用者 token 看不到
+  客戶自己的帳戶，只有她本人的 claude.ai Meta 連線看得到，所以這幾家交給這裡用 Claude 抓。
+  名單＝工作台客戶有填 `adAcc`（廣告帳戶編號）且今天在走期內的；
+  該帳戶裡的活動**全部算那一家**（活動名稱裡不一定有客戶名）。
+  要退回原本的完整版：加 `--all-clients`（舊版備份 .bak-20261007）。
+
 用法：
-    python3 dora-ads-daily.py           # 正常跑
+    python3 dora-ads-daily.py           # 正常跑（只送客戶自有帳戶那幾家）
     python3 dora-ads-daily.py --dry     # 只印卡片內容，不推播
     python3 dora-ads-daily.py --raw     # 連 Claude 抓回來的原始數字也印出來（除錯用）
+    python3 dora-ads-daily.py --all-clients   # 原本的完整日報（全部客戶）
 """
 import base64, json, os, re, subprocess, sys, tempfile, time
 from datetime import datetime, timezone, timedelta
@@ -31,10 +39,13 @@ NTD = "NT$"
 # 靠很多次短暫喚醒去撞，撞到夠長的那次就會成功；用標記檔避免撞成功後還重複推播。
 # LOCK_FILE 要等 SLOT 算出來後才能定（見下面），這裡先留常數
 STATE_DIR = os.path.expanduser('~/Library/Scripts/.dora-ads-state')
-LOCK_STALE = 300   # 5 分鐘沒動代表鎖是死的（快速嘗試本身跑不了那麼久）
+# 鎖過期門檻要蓋過 Claude 最長的執行時間，不然它還在抓，下一次就誤判鎖是死的、又叫一份
+# （2026-10-07 從 300 改；agent-hub 2026-08-30 踩過同一個坑）
+LOCK_STALE = 600 + 120
 
 DRY = '--dry' in sys.argv
 RAW = '--raw' in sys.argv
+ALL_CLIENTS = '--all-clients' in sys.argv
 # 17:00 那則要不要「沒異常就安靜」。
 # 2026-08-25 早上因為 token 快死、只剩吃額度的 Claude 那條路，一度改成 True 省額度；
 # 同一天下午換到系統使用者 token、Graph API 活過來不吃額度，朱兒要求恢復每天照推。
@@ -157,7 +168,8 @@ def maybe_catchup_morning():
     open(attempted, 'w').close()
     print("CATCHUP: 今天早上那則好像完全沒送出，先補跑一次（用完整版）", file=sys.stderr)
     try:
-        subprocess.run([sys.executable, os.path.abspath(__file__), '--as-morning', '--as-last-try'],
+        subprocess.run([sys.executable, os.path.abspath(__file__), '--as-morning', '--as-last-try']
+                       + (['--all-clients'] if ALL_CLIENTS else []),
                        timeout=FETCH_TIMEOUT + 120)
     except Exception as e:
         print(f"CATCHUP failed: {e}", file=sys.stderr)
@@ -370,6 +382,54 @@ def fetch_via_claude(since):
     return data.get('day', []), data.get('range', [])
 
 
+FETCH_OWN_PROMPT = """抓廣告日報要的數字，**寫進檔案**，不要印在回覆裡。只看下面列的廣告帳戶，其他帳戶不要碰。
+
+帳戶與走期起日：
+{accounts}
+
+對**每一個**帳戶呼叫 `ads_get_ad_entities` 兩次：
+1. 當日：level="campaign"，`time_range={{"since":"{day}","until":"{day}"}}`，
+   fields=["id","name","objective","amount_spent","results","cost_per_result",
+           "reach","impressions","link_click","post_engagement","purchase_roas"]，
+   filtering=[{{"field":"campaign.amount_spent","operator":"GREATER_THAN","value":["0"]}}]
+2. 走期累計：level="ad_account"，fields=["amount_spent"]，
+   `time_range={{"since":"<那個帳戶的走期起日>","until":"{day}"}}`
+工具輸出太大被存成檔案時，用 python3 讀那個檔取值，不要整份讀進對話。
+
+把結果寫成 JSON 存到 `{out}`，格式：
+{{"<帳戶編號>": {{"range_spend": <走期累計花費數字>,
+                 "day": [{{"name":"<活動名>","objective":"...","spend":<數字>,
+                          "result_indicator":"<results.indicator，沒有就空字串>","result_value":<數字>,
+                          "reach":<數字>,"impressions":<數字>,"link_click":<數字>,
+                          "post_engagement":<數字>,"roas":<數字或 0>}}]}}}}
+**金額一律轉成純數字**（"NT$1,234 TWD" → 1234）。沒有的欄位填 0，當天沒花費 day 就是空陣列。
+寫完只回一行：`OK`。不要解釋、不要貼 JSON。
+"""
+
+
+def fetch_own_via_claude(targets):
+    """客戶自己的帳戶：雲端 token 看不到，只能叫 Claude 用她本人的 Meta 連線抓。
+    targets = [(帳戶編號, 走期起日), ...]；回傳 {帳戶編號: {'range_spend', 'day'}}"""
+    out = tempfile.mktemp(prefix='dora-ads-own-', suffix='.json')
+    accounts = "\n".join(f"- 帳戶編號 {acc}：走期起日 {st}" for acc, st in targets)
+    prompt = FETCH_OWN_PROMPT.format(accounts=accounts, day=report_date, out=out)
+    p = subprocess.run([CLAUDE, '-p', prompt, '--allowedTools', ALLOWED],
+                       cwd=WORKDIR, capture_output=True, text=True, timeout=FETCH_TIMEOUT)
+    if not os.path.exists(out):
+        raise RuntimeError((p.stdout or p.stderr or '')[-300:] or 'Claude 沒有產出檔案')
+    try:
+        data = json.load(open(out))
+    finally:
+        if not RAW:
+            os.unlink(out)
+        else:
+            print(f'原始數字留在 {out}', file=sys.stderr)
+    missing = [acc for acc, _ in targets if acc not in data]
+    if missing:
+        raise RuntimeError(f'少了帳戶 {", ".join(missing)} 的數字')
+    return data
+
+
 # ---------- 把活動歸給客戶 ----------
 def build_matcher(clients):
     keys, skipped = [], []
@@ -483,7 +543,7 @@ def chip(text):
         {"type": "filler"}]}
 
 
-def client_card(label, emoji, spend_total, run_line, budget, groups):
+def client_card(label, emoji, spend_total, run_line, budget, groups, always_chip=False):
     head = {"type": "box", "layout": "horizontal", "contents": [
         {"type": "text", "text": f"{emoji} {label}", "weight": "bold", "size": "md",
          "color": "#3D3357", "wrap": True, "flex": 4},
@@ -496,21 +556,38 @@ def client_card(label, emoji, spend_total, run_line, budget, groups):
     if budget:
         contents.append(budget)
     for gname, tiles in groups:
-        if len(groups) > 1 and gname:
+        if always_chip and gname:
+            # 活動名稱可能很長，標籤框不會換行，改用一行可換行的粗體字，上面隔一條細線
+            contents.append({"type": "separator", "margin": "lg", "color": "#E5DDF5"})
+            contents.append({"type": "text", "text": gname, "size": "xs", "weight": "bold",
+                             "color": "#6B4FA8", "wrap": True, "margin": "md"})
+        elif len(groups) > 1 and gname:
             contents.append(chip(gname))
         contents.extend(tile_rows(tiles))
     return {"type": "box", "layout": "vertical", "margin": "md", "backgroundColor": CARD_BG,
             "cornerRadius": "10px", "paddingAll": "14px", "contents": contents}
 
 
-def bubble(body_boxes, rd_str, suffix="", footer=True, alert=False):
+def spend_block(total, passed):
+    """沒有固定預算的客戶（打多少算多少）：不畫進度條，改顯示走期累計＋平均每天"""
+    head = {"type": "box", "layout": "baseline", "contents": [
+        {"type": "text", "text": "走期累計", "size": "xs", "color": INK_SOFT, "flex": 0},
+        {"type": "text", "text": f"  {NTD}{total:,.0f}", "size": "lg", "weight": "bold", "color": INK,
+         "flex": 0}]}
+    foot = {"type": "text", "text": f"已跑 {passed} 天　平均每天 {NTD}{total / max(1, passed):,.0f}",
+            "size": "xxs", "color": INK_SOFT, "margin": "sm"}
+    return {"type": "box", "layout": "vertical", "margin": "lg", "backgroundColor": "#FFFFFF",
+            "cornerRadius": "8px", "paddingAll": "12px", "contents": [head, foot]}
+
+
+def bubble(body_boxes, rd_str, suffix="", footer=True, alert=False, title="廣告日報"):
     # 異常提醒版換成橘紅底＋不一樣的標題，她才不會把它當成例行日報滑掉
     b = {"type": "bubble",
          "header": {"type": "box", "layout": "vertical",
                     "backgroundColor": "#C2603F" if alert else "#9C88CC",
                     "paddingAll": "20px", "contents": [
                         {"type": "text",
-                         "text": (f"⚠️ 廣告要注意{suffix}" if alert else f"📊 廣告日報{suffix}"),
+                         "text": (f"⚠️ 廣告要注意{suffix}" if alert else f"📊 {title}{suffix}"),
                          "weight": "bold",
                          "size": "xl", "color": "#FFFFFF", "align": "center"},
                         {"type": "text", "text": rd_str, "size": "sm",
@@ -549,10 +626,149 @@ def main():
         print("SKIP: 上一次嘗試還在跑，這次先跳過")
         return
     try:
-        _main()
+        _main() if ALL_CLIENTS else _main_own()
     finally:
         if not DRY:
             release_lock()
+
+
+def own_kind(r):
+    """成果類型**以活動目標為準**（跟 Graph 那條一樣），Meta 給的成果指標只當備用。
+    例：互動活動的成果指標可能是「影片看完」，照指標分會掉進「成果」那組"""
+    obj = r.get('objective') or ''
+    if obj in ('OUTCOME_SALES', 'CONVERSIONS', 'PRODUCT_CATALOG_SALES'):
+        return 'sales'
+    if obj in ('OUTCOME_LEADS', 'LEAD_GENERATION'):
+        return 'leads'
+    if obj in ('LINK_CLICKS', 'OUTCOME_TRAFFIC'):
+        return 'traffic'
+    kind = kind_of(r.get('result_indicator'))
+    if obj in ('OUTCOME_ENGAGEMENT', 'POST_ENGAGEMENT', 'MESSAGES'):
+        return 'messaging' if kind == 'messaging' or obj == 'MESSAGES' else 'engagement'
+    return kind
+
+
+def _main_own():
+    """只送客戶自有帳戶的那幾家（工作台有填 adAcc、今天在走期內）"""
+    clients = fetch_clients()
+    if not ws_ok:
+        if IS_LAST_TRY and not DRY:
+            line_push([{"type": "text", "text": f"⚠️ 客戶帳戶日報（{report_date} {report_label}）讀不到工作台，這次沒送"}])
+            mark_sent()
+        print("SKIP: 讀不到工作台")
+        return
+    targets = []
+    for c in clients:
+        acc = str(c.get('adAcc') or '').strip()
+        run = current_run(c, today_str)
+        if acc and run and run.get('start'):
+            targets.append((acc, run['start'], c, run))
+    if not targets:
+        print("NO_DATA: 沒有走期內、有填 adAcc 的客戶")
+        if not DRY:
+            mark_sent()
+        return
+    names = "、".join(c.get('short') or c.get('name') for _, _, c, _ in targets)
+
+    # 每一次都得叫 Claude（約 1 分鐘、吃額度），所以一個時段最多叫兩次：
+    # 第一次撞到就試，失敗了中間幾次安靜跳過，最後一次（:35）再試一次，還失敗才推通知
+    tried = _state_path('claude-tried')
+    if not IS_LAST_TRY and os.path.exists(tried) and not DRY:
+        print("SKIP: 這個時段已經叫過一次 Claude，留給最後一次再試")
+        return
+    if not DRY:
+        open(tried, 'w').close()
+    try:
+        data = fetch_own_via_claude([(acc, st) for acc, st, _, _ in targets])
+    except Exception as e:
+        err = str(e)[:200]
+        print(f"Warning: fetch own accounts failed: {err}", file=sys.stderr)
+        if not IS_LAST_TRY:
+            print("SKIP: 這次抓不到，等最後一次重試")
+            return
+        msg = f"⚠️ {names} 今天沒抓到數字（{report_date} {report_label}）\n{err}"
+        print(msg)
+        if not DRY:
+            line_push([{"type": "text", "text": msg}])
+            mark_sent()
+        return
+
+    if RAW:
+        print(json.dumps(data, ensure_ascii=False, indent=2))
+
+    boxes, idle = [], []
+    for acc, st, c, run in targets:
+        label = c.get('short') or c.get('name')
+        d = data.get(acc) or {}
+        kinds = {}
+        for r in d.get('day') or []:
+            spend = float(r.get('spend') or 0)
+            if spend <= 0:
+                continue
+            # 2026-10-07 她要求：照行銷活動一個一個列，不要同類型合在一起
+            # （同名活動才會併成一組；成果類型仍照活動目標決定要看哪些數字）
+            name = (r.get('name') or '（未命名活動）').strip()
+            a = kinds.setdefault(name, {'kind': own_kind(r), 'spend': 0.0, 'result': 0.0, 'reach': 0.0,
+                                        'imp': 0.0, 'click': 0.0, 'eng': 0.0, 'roas': 0.0, 'rev': 0.0, 'n': 0})
+            a['n'] += 1
+            for k, f in (('spend', 'spend'), ('result', 'result_value'), ('reach', 'reach'),
+                         ('imp', 'impressions'), ('click', 'link_click'), ('eng', 'post_engagement')):
+                a[k] += float(r.get(f) or 0)
+            # ROAS 照總營收÷總花費算（同名活動合併時才不會只取最高那個）
+            a['rev'] += float(r.get('roas') or 0) * spend
+            a['roas'] = a['rev'] / a['spend'] if a['spend'] else 0.0
+        if not kinds:
+            idle.append(label)
+            continue
+        day_spend = sum(k['spend'] for k in kinds.values())
+        main_kind = max(kinds.values(), key=lambda a: a['spend'])['kind']
+        emoji = BRAND_EMOJI.get(label, KIND_EMOJI.get(main_kind, '📌'))
+        sd = datetime.fromisoformat(st)
+        passed = max(1, (datetime.fromisoformat(report_date) - sd).days + 1)
+        run_line = f"第{run.get('no', '?')}期 {sd.strftime('%m/%d')}–"
+        if run.get('end'):
+            ed = datetime.fromisoformat(run['end'])
+            run_line += f"{ed.strftime('%m/%d')}　第 {passed}/{(ed - sd).days + 1} 天"
+        else:
+            run_line += f"　第 {passed} 天"
+        total = float(d.get('range_spend') or 0)
+        # 有填固定預算就照原本畫進度條；沒有（打多少算多少）就只寫累計與平均
+        budget = parse_budget(c.get('budget'))
+        if budget > 0 and run.get('end'):
+            time_pct = min(100.0, passed / ((ed - sd).days + 1) * 100)
+            pct = total / budget * 100
+            gap = pct - time_pct
+            state = 'over' if total > budget else ('fast' if gap > 10 else ('slow' if gap < -10 else 'ok'))
+            block = budget_block(pct, time_pct, total, budget, state)
+        else:
+            block = spend_block(total, passed)
+        groups = [(f"{KIND_EMOJI.get(a['kind'], '📌')} {name}", metric_tiles(a['kind'], a))
+                  for name, a in sorted(kinds.items(), key=lambda x: -x[1]['spend'])]
+        boxes.append(client_card(label, emoji, compact(day_spend, money=True), run_line, block, groups,
+                                 always_chip=True))
+
+    if idle:
+        warnings.append("走期內但這天沒有花費：" + "、".join(idle))
+    if not boxes:
+        msg = f"📊 {names}（{report_date} {report_label}）這天沒有花費"
+        print(msg)
+        if not DRY:
+            line_push([{"type": "text", "text": msg}])
+            mark_sent()
+        return
+
+    rd = datetime.fromisoformat(report_date)
+    days_zh = {0: "週一", 1: "週二", 2: "週三", 3: "週四", 4: "週五", 5: "週六", 6: "週日"}
+    rd_str = f"{rd.strftime('%Y/%m/%d')}（{days_zh[rd.weekday()]}）{report_label}"
+    title = f"{names} 日報" if len(targets) == 1 else "客戶帳戶日報"
+    messages = [{"type": "flex", "altText": f"{title} {report_date} {report_label}",
+                 "contents": bubble(boxes, rd_str, title=title)}]
+    if DRY:
+        print(json.dumps({'messages': messages}, ensure_ascii=False))
+    else:
+        print(line_push(messages))
+        print(f"LINE sent: own-account report ({len(boxes)} clients)")
+        mark_sent()
 
 
 def _main():

@@ -225,8 +225,21 @@ Node.js 透過 nvm 安裝，路徑：`/Users/angela/.nvm/versions/node/v24.15.0/
 - **試跑不推播**：在暫存區做一支測試 Worker 呼叫 `runAdsDaily(env, {slot, lastTry:true, dry:true})`，
   `.dev.vars` 放 `META_TOKEN`／`FIREBASE_SA`（**單引號包、JSON 壓成一行**，雙引號會解析失敗）／`WS_DB_URL`／`WS_ROOM`，
   `npx wrangler dev --remote` 跑完把 `.dev.vars` 丟垃圾桶
-- **並跑中（2026-09-28 起兩個工作天）**：Mac 版還沒關，她會同時收到兩則。對過沒問題就
-  `launchctl unload ~/Library/LaunchAgents/com.dora.ads-anomaly.plist`（plist 與腳本留著，要退回去 `load` 就好）
+- ~~並跑中~~ → **2026-10-07 起 Mac 版改成「客戶自有帳戶專送」**（見下一段），不再送完整日報，所以不會再收到兩則
+- **客戶自有帳戶（Feebees）走 Mac＋Claude**（2026-10-07 上線，計劃書 `100_Todo/plans/2026-10-07-廣告日報-Feebees.md`）：
+  - 雲端的系統使用者 token 掛在 Hayen Ads，**看不到客戶自己 BM 的帳戶**；她本人的 claude.ai Meta 連線看得到。
+    她選擇不請客戶分享帳戶給 Hayen Ads，改由 Mac 版 `dora-ads-daily.py` 叫 `claude -p` 抓（約 25 秒）
+  - **名單＝工作台客戶有填 `adAcc`（廣告帳戶編號）＋今天在走期內**。`adAcc` 網頁上沒有欄位，
+    是用服務帳號直接寫進去的；**該帳戶全部活動都算那一家**（Feebees 的活動名稱裡沒有客戶名）
+  - 獨立一則「📊 Feebees 日報」；沒填預算（打多少算多少）就不畫進度條，改顯示走期累計＋平均每天；
+    **照行銷活動一個一個列**（2026-10-07 她要求，不要同類型合在一起）：活動名稱一行粗體字＋上方細線，
+    要看哪些數字仍照活動目標決定（銷售看購買／ROAS／CPA、互動看互動／觸及／CPE）；ROAS＝總營收÷總花費
+  - 一個時段最多叫兩次 Claude（第一次撞到就試，失敗等 :35 最後一次）；記號 `{日期}-{時段}.claude-tried`
+  - 要退回原本 Mac 完整日報：加 `--all-clients`，舊版 `.bak-20261007`
+  - Mac 蓋著仍可能漏送（她選 B 時接受的代價）；下一期記得在工作台補走期，不然 10/31 後就不會出現
+  - 想改走穩的路：請阿飛國際把「Feebees 2023」用合作夥伴分享給 Hayen Ads → 指派給系統工作人員，雲端就看得到，
+    但雲端是靠活動名稱認客戶，要另外改成也認 `adAcc`
+- **工作台客戶存檔原本會清掉介面上沒有的欄位**（`rpt` 回報規格、`adAcc`），2026-10-07 改成先攤開既有資料再覆蓋
 - ⚠️ **「找不到 Meta Ads 工具」不一定是要重新授權**（2026-09-28 查到）：claude.ai 的 Meta 連線改名成「禾言 (2)」，
   工具前綴從 `mcp__claude_ai__` 變成 `mcp__claude_ai_2__`，`dora-ads-daily.py` 與 `dora-report-runner.py`
   的 `--allowedTools` 還寫舊名字，連線其實是好的。已改成 `ADS_SERVERS` 兩種前綴都列（只開讀取工具）。

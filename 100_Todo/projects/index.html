@@ -3129,7 +3129,9 @@ $('#cmWk').onclick = e => { const b = e.target.closest('button'); if (b) segSet(
 $('#cmSave').onclick = () => {
   const name = $('#cmName').value.trim();
   if (!name){ toast('客戶名稱要填喔'); return; }
+  // 先攤開既有資料再覆蓋：介面上沒有的欄位（rpt 回報規格、adAcc 廣告帳戶）存檔才不會被清掉
   const c = {
+    ...(editingClient ? clients[editingClient.id] || {} : {}),
     id: editingClient?.id || uid(), name,
     short: $('#cmShort').value.trim(), drive: $('#cmDrive').value.trim(),
     kw: $('#cmKw').value.trim(),
