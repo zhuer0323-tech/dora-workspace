@@ -64,6 +64,14 @@ FEEDS = {
         'prefix': ['耀聞'],
         'exclude': ['工研院_', 'of AZIKU_', '沐拾_', '漁三_'],
     },
+    # 2026-10-07：客戶自己的廣告帳戶，整個帳戶都是這家、活動名稱沒有客戶名，所以開頭留空。
+    # 帳戶編號不寫在這裡（公開倉庫），'adAcc' 代表讀工作台客戶的 adAcc 欄位
+    'Feebees': {
+        'file': 'Feebees.md',
+        'accounts': 'adAcc',
+        'prefix': [''],
+        'exclude': [],
+    },
 }
 
 
@@ -106,8 +114,14 @@ def main():
             missing.append(f"{key}：客戶檔 {feed['file']} 裡沒有「回報規格」段落")
             continue
 
+        accounts = feed['accounts']
+        if accounts == 'adAcc':
+            accounts = [str(hit.get('adAcc') or '').strip()]
+            if not accounts[0]:
+                missing.append(f'{key}：工作台這家沒有填 adAcc（廣告帳戶編號）')
+                continue
         rpt = {
-            'accounts': feed['accounts'],
+            'accounts': accounts,
             'prefix': feed['prefix'],
             'exclude': feed['exclude'],
             'spec': spec,

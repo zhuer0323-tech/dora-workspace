@@ -240,6 +240,11 @@ Node.js 透過 nvm 安裝，路徑：`/Users/angela/.nvm/versions/node/v24.15.0/
   - 想改走穩的路：請阿飛國際把「Feebees 2023」用合作夥伴分享給 Hayen Ads → 指派給系統工作人員，雲端就看得到，
     但雲端是靠活動名稱認客戶，要另外改成也認 `adAcc`
 - **工作台客戶存檔原本會清掉介面上沒有的欄位**（`rpt` 回報規格、`adAcc`），2026-10-07 改成先攤開既有資料再覆蓋
+  （修正上線前 Feebees 的 `adAcc` 真的被清掉過一次，已補回）
+- **Feebees 廣告回報**：客戶檔 `200_Reference/clients/Feebees.md`；`sync-report-spec.py` 的 Feebees 帳戶寫成 `'adAcc'`，
+  從工作台讀編號（公開倉庫不放客戶自有帳戶編號）
+- ⚠️ **GitHub Pages 部署會卡住**（2026-10-07）：一次部署卡在 waiting（github-pages 環境、沒有核准人）12 小時，
+  後面的 push 全部排隊沒上線。改完網頁要 `curl` 網址 grep 改動字串確認真的上線；卡住就 `gh run cancel` 舊的那次
 - ⚠️ **「找不到 Meta Ads 工具」不一定是要重新授權**（2026-09-28 查到）：claude.ai 的 Meta 連線改名成「禾言 (2)」，
   工具前綴從 `mcp__claude_ai__` 變成 `mcp__claude_ai_2__`，`dora-ads-daily.py` 與 `dora-report-runner.py`
   的 `--allowedTools` 還寫舊名字，連線其實是好的。已改成 `ADS_SERVERS` 兩種前綴都列（只開讀取工具）。
