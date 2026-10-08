@@ -1154,7 +1154,12 @@ def process_task(cfg, tok, task):
         if verdict == '通過':
             # 2026-10-08 改：小狐是代理人，通過後先請朱兒確認，她按確認才進 awaiting_window
             # （awaiting_window 那段照舊：等離發布日剩 DESIGN_WINDOW_DAYS 天才交給小蝶）
-            set_stage(cfg, tok, task, {'stage': 'awaiting_owner', 'ownerReminded': False, 'updatedAt': now_ms})
+            # 已經在提醒範圍內（快到期或過期）的稿，這則通知本身就是提醒，不要緊接著再推一則
+            try:
+                near = (date.fromisoformat(task.get('postDate') or '') - date.today()).days <= OWNER_REMIND_DAYS
+            except ValueError:
+                near = False
+            set_stage(cfg, tok, task, {'stage': 'awaiting_owner', 'ownerReminded': near, 'updatedAt': now_ms})
             line_push(cfg, f'🦊 小狐校稿通過「{task.get("title","")}」（{task.get("postDate","")} 發），請你確認：\n'
                            f'{AGENT_HUB_URL}?task={tid}\n\n想改字可以先到禾言社群規劃直接改，改完再按確認')
         else:
