@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<title>禾言圖卡・國慶連假快樂</title>
+<title>禾言圖卡・轉換追蹤沒裝好（後台 30 張 帳上 12 張）</title>
 <link rel="stylesheet" href="fonts/bold/GenJyuuGothic-Bold.css">
 <link rel="stylesheet" href="fonts/medium/GenJyuuGothic-Medium.css">
 <style>
@@ -50,37 +50,221 @@ h2 .hl{background:linear-gradient(transparent 7%, var(--y) 7%, var(--y) 93%, tra
   color:var(--ink);padding:4px 16px;display:inline-block}
 .paper.yellow h2 .hl{background:none;color:var(--red);padding:0}
 
-/* 單張：類型小標／主標／一個視覺（國慶 10/10 日曆＋煙火） */
-.paper.cover{justify-content:center;align-items:center;text-align:center}
-.paper.cover h1{font-size:132px;line-height:1.2;letter-spacing:-4px;margin-top:10px}
-.viz{position:relative;z-index:2;display:block;flex:none;margin-top:30px}
+
+/* 封面：類型小標／主標／插圖 */
+.paper.cover{justify-content:center}
+.paper.cover h1{font-size:78px;margin-top:10px}
+.viz{position:relative;z-index:2;display:block;flex:none}
+.note{position:relative;z-index:2;flex:none;background:#fff;border-radius:22px;padding:32px 36px;font-size:36px;font-weight:800;line-height:1.6}
+.note .s{font-weight:700;color:#333}
+/* P3 兩張編號卡 */
+.two{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;justify-content:center;gap:40px;margin-top:20px}
+.two .row{display:flex;align-items:center;gap:24px;background:#fff;border-radius:26px;padding:44px 30px;box-shadow:0 4px 0 rgba(0,0,0,.07)}
+.two .row .no{flex:none;width:84px;height:84px}
+.two .row .no svg{width:84px;height:84px;display:block}
+.two .row .tx{flex:1}
+.two .row .t{font-size:44px;font-weight:900;line-height:1.3}
+.two .row .d{font-size:33px;font-weight:700;color:#333;margin-top:10px}
+.two .row .ic{flex:none;width:200px;height:160px}
+.two .row .ic svg{width:200px;height:160px;display:block}
+/* P4／P5 檢查清單 */
+.ck{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;justify-content:center;gap:20px;margin-top:24px}
+.ck .row{display:flex;align-items:center;gap:20px;background:#fff;border-radius:20px;padding:28px 30px}
+.ck .row svg{flex:none;width:46px;height:46px;display:block}
+.ck .row span{font-size:35px;font-weight:800;line-height:1.35}
+.ck .row .sub{display:block;font-size:30px;font-weight:700;color:#555;margin-top:4px}
+/* P6 結論＋CTA */
+.lead{position:relative;z-index:2;text-align:center;font-size:38px;font-weight:800;margin-top:26px}
+.cta{position:relative;z-index:2;margin-top:auto;margin-bottom:auto;display:flex;flex-direction:column;align-items:center;gap:26px}
+.btn{background:linear-gradient(180deg,#FFE04A 0%,#FCD501 55%,#FFCA26 100%);border-radius:60px;padding:34px 60px;font-size:46px;font-weight:900;box-shadow:0 8px 0 #000;white-space:nowrap}
+.handle{display:flex;align-items:center;gap:14px;font-size:36px;font-weight:800}
+.handle .dm{width:48px;height:48px;flex:none}
+.handle .dm svg{width:48px;height:48px;display:block}
 </style>
 </head>
 <body>
 
-<!-- 單張 國慶祝賀 -->
-<div class="card" id="p1" data-document-role="page" data-label="國慶連假快樂">
+<!-- 1 封面 -->
+<div class="card" id="p1" data-document-role="page" data-label="封面">
   <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
   <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
   <div class="hylogo"><img src="https://zhuer0323-tech.github.io/dora-workspace/heyen-cards/logo_use.png" alt="禾言數位行銷"></div>
   <div class="paper cover">
-    <div class="flag">日常/節慶</div>
-    <h1>國慶連假<br><span class="u">快樂</span>！</h1>
-    <div class="viz" style="width:744px;height:500px"><svg width="744" height="500" viewBox="0 0 832 560" xmlns="http://www.w3.org/2000/svg">
-      <!-- 國慶煙火 -->
-      <g transform="translate(120 130)" stroke="#C7302F" stroke-width="7" stroke-linecap="round"><path d="M0 -38V-100" transform="rotate(0)"/><path d="M0 -38V-100" transform="rotate(30)"/><path d="M0 -38V-100" transform="rotate(60)"/><path d="M0 -38V-100" transform="rotate(90)"/><path d="M0 -38V-100" transform="rotate(120)"/><path d="M0 -38V-100" transform="rotate(150)"/><path d="M0 -38V-100" transform="rotate(180)"/><path d="M0 -38V-100" transform="rotate(210)"/><path d="M0 -38V-100" transform="rotate(240)"/><path d="M0 -38V-100" transform="rotate(270)"/><path d="M0 -38V-100" transform="rotate(300)"/><path d="M0 -38V-100" transform="rotate(330)"/></g><circle cx="120" cy="130" r="16" fill="#C7302F"/>
-      <g transform="translate(712 110)" stroke="#FFCA26" stroke-width="8" stroke-linecap="round"><path d="M0 -34V-90" transform="rotate(0)"/><path d="M0 -34V-90" transform="rotate(30)"/><path d="M0 -34V-90" transform="rotate(60)"/><path d="M0 -34V-90" transform="rotate(90)"/><path d="M0 -34V-90" transform="rotate(120)"/><path d="M0 -34V-90" transform="rotate(150)"/><path d="M0 -34V-90" transform="rotate(180)"/><path d="M0 -34V-90" transform="rotate(210)"/><path d="M0 -34V-90" transform="rotate(240)"/><path d="M0 -34V-90" transform="rotate(270)"/><path d="M0 -34V-90" transform="rotate(300)"/><path d="M0 -34V-90" transform="rotate(330)"/></g><circle cx="712" cy="110" r="14" fill="#FFCA26"/>
-      <g transform="translate(740 330)" stroke="#AED056" stroke-width="7" stroke-linecap="round"><path d="M0 -22V-60" transform="rotate(0)"/><path d="M0 -22V-60" transform="rotate(36)"/><path d="M0 -22V-60" transform="rotate(72)"/><path d="M0 -22V-60" transform="rotate(108)"/><path d="M0 -22V-60" transform="rotate(144)"/><path d="M0 -22V-60" transform="rotate(180)"/><path d="M0 -22V-60" transform="rotate(216)"/><path d="M0 -22V-60" transform="rotate(252)"/><path d="M0 -22V-60" transform="rotate(288)"/><path d="M0 -22V-60" transform="rotate(324)"/></g><circle cx="740" cy="330" r="9" fill="#AED056"/>
-      <g transform="translate(96 370)" stroke="#7BBDB8" stroke-width="7" stroke-linecap="round"><path d="M0 -22V-58" transform="rotate(0)"/><path d="M0 -22V-58" transform="rotate(36)"/><path d="M0 -22V-58" transform="rotate(72)"/><path d="M0 -22V-58" transform="rotate(108)"/><path d="M0 -22V-58" transform="rotate(144)"/><path d="M0 -22V-58" transform="rotate(180)"/><path d="M0 -22V-58" transform="rotate(216)"/><path d="M0 -22V-58" transform="rotate(252)"/><path d="M0 -22V-58" transform="rotate(288)"/><path d="M0 -22V-58" transform="rotate(324)"/></g><circle cx="96" cy="370" r="9" fill="#7BBDB8"/>
-      <!-- 10/10 日曆 -->
-      <rect x="252" y="130" width="328" height="380" rx="30" fill="#fff" stroke="#000" stroke-width="6"/>
-      <path d="M252 222V160a30 30 0 0 1 30-30h268a30 30 0 0 1 30 30v62z" fill="#FCD501" stroke="#000" stroke-width="6" stroke-linejoin="round"/>
-      <rect x="318" y="100" width="20" height="64" rx="10" fill="#000"/>
-      <rect x="494" y="100" width="20" height="64" rx="10" fill="#000"/>
-      <text x="416" y="200" text-anchor="middle" font-size="46" font-weight="900" fill="#000">10月</text>
-      <text x="416" y="400" text-anchor="middle" font-size="190" font-weight="900" fill="#C7302F" letter-spacing="-6">10</text>
-      <text x="416" y="470" text-anchor="middle" font-size="40" font-weight="900" fill="#000">國慶日</text>
+    <div class="flag">教學／新手</div>
+    <h1>後台說有 30 張訂單<br>帳上只有 <span class="u">12 張？</span></h1>
+    <div class="viz" style="width:832px;height:600px;margin-top:46px"><svg width="832" height="600" viewBox="0 0 832 600" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="832" height="600" rx="28" fill="#fff"/>
+      <rect x="34" y="40" width="262" height="510" rx="40" fill="#fff" stroke="#000" stroke-width="6"/>
+      <rect x="128" y="56" width="74" height="12" rx="6" fill="#000"/>
+      <rect x="54" y="88" width="222" height="440" rx="18" fill="#FFF9F6"/>
+      <text x="165" y="140" text-anchor="middle" font-size="28" font-weight="800" fill="#555">廣告後台</text>
+      <rect x="84" y="162" width="162" height="5" rx="2" fill="#CFCAC4"/>
+      <text x="165" y="250" text-anchor="middle" font-size="46" font-weight="900" fill="#000">訂單</text>
+      <text x="165" y="410" text-anchor="middle" font-size="150" font-weight="900" fill="#000">30</text>
+      <rect x="92" y="450" width="40" height="50" rx="6" fill="#FFCA26"/><rect x="146" y="430" width="40" height="70" rx="6" fill="#FCD501"/><rect x="200" y="410" width="40" height="90" rx="6" fill="#AED056"/>
+      <rect x="306" y="296" width="14" height="6" rx="2" fill="#9A958F"/><rect x="329" y="296" width="14" height="6" rx="2" fill="#9A958F"/><rect x="352" y="296" width="2" height="6" rx="2" fill="#9A958F"/>
+      <rect x="420" y="296" width="14" height="6" rx="2" fill="#9A958F"/><rect x="443" y="296" width="14" height="6" rx="2" fill="#9A958F"/>
+      <text x="387" y="336" text-anchor="middle" font-size="120" font-weight="900" fill="#C7302F">?</text>
+      <path d="M476 140Q556 118 636 140V516Q556 494 476 516z" fill="#FFF9F6" stroke="#000" stroke-width="6" stroke-linejoin="round"/>
+      <path d="M636 140Q716 118 806 140V516Q716 494 636 516z" fill="#FFEDC5" stroke="#000" stroke-width="6" stroke-linejoin="round"/>
+      <text x="556" y="204" text-anchor="middle" font-size="34" font-weight="900" fill="#000">帳本</text>
+      <rect x="502" y="240" width="108" height="6" rx="3" fill="#CFCAC4"/><rect x="502" y="290" width="108" height="6" rx="3" fill="#CFCAC4"/><rect x="502" y="340" width="108" height="6" rx="3" fill="#CFCAC4"/><rect x="502" y="390" width="80" height="6" rx="3" fill="#CFCAC4"/><rect x="502" y="440" width="96" height="6" rx="3" fill="#CFCAC4"/>
+      <text x="721" y="380" text-anchor="middle" font-size="150" font-weight="900" fill="#000">12</text>
+      <text x="806" y="584" text-anchor="end" font-size="26" font-weight="700" fill="#8a8378">（數字舉例）</text>
     </svg></div>
+  </div>
+</div>
+<!-- 2 追蹤是什麼 -->
+<div class="card" id="p2" data-document-role="page" data-label="追蹤是什麼">
+  <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="hylogo"><img src="https://zhuer0323-tech.github.io/dora-workspace/heyen-cards/logo_use.png" alt="禾言數位行銷"></div>
+  <div class="paper yellow">
+    <div class="flag">追蹤是什麼</div>
+    <h2>追蹤＝店裡的<span class="hl">收銀機</span></h2>
+    <div class="viz" style="width:832px;height:400px;margin:40px 0 40px"><svg width="832" height="400" viewBox="0 0 832 400" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="832" height="400" rx="26" fill="#fff"/>
+      <circle cx="70" cy="252" r="18" fill="#AED056" stroke="#000" stroke-width="4"/>
+      <rect x="50" y="276" width="40" height="80" rx="18" fill="#AED056" stroke="#000" stroke-width="4"/>
+      <circle cx="146" cy="252" r="18" fill="#FFCA26" stroke="#000" stroke-width="4"/>
+      <rect x="126" y="276" width="40" height="80" rx="18" fill="#FFCA26" stroke="#000" stroke-width="4"/>
+      <circle cx="222" cy="252" r="18" fill="#C9E6E4" stroke="#000" stroke-width="4"/>
+      <rect x="202" y="276" width="40" height="80" rx="18" fill="#C9E6E4" stroke="#000" stroke-width="4"/>
+      <rect x="48" y="210" width="10" height="4" rx="2" fill="#9A958F"/><rect x="68" y="210" width="10" height="4" rx="2" fill="#9A958F"/><rect x="88" y="210" width="10" height="4" rx="2" fill="#9A958F"/><rect x="108" y="210" width="10" height="4" rx="2" fill="#9A958F"/><rect x="128" y="210" width="10" height="4" rx="2" fill="#9A958F"/><rect x="148" y="210" width="10" height="4" rx="2" fill="#9A958F"/><rect x="168" y="210" width="10" height="4" rx="2" fill="#9A958F"/><rect x="188" y="210" width="10" height="4" rx="2" fill="#9A958F"/><rect x="208" y="210" width="10" height="4" rx="2" fill="#9A958F"/><rect x="228" y="210" width="10" height="4" rx="2" fill="#9A958F"/>
+      <path d="M246 200l20 12-20 12z" fill="#9A958F"/>
+      <rect x="296" y="88" width="510" height="274" fill="#FFF9F6" stroke="#000" stroke-width="5"/>
+      <rect x="280" y="30" width="542" height="62" rx="16" fill="#FCD501" stroke="#000" stroke-width="5"/>
+      <rect x="312" y="196" width="88" height="166" fill="#FFEDC5" stroke="#000" stroke-width="4"/>
+      <rect x="452" y="282" width="330" height="80" rx="10" fill="#FFCA26" stroke="#000" stroke-width="5"/>
+      <rect x="616" y="196" width="128" height="80" rx="12" fill="none" stroke="#C7302F" stroke-width="4" stroke-dasharray="12 9"/>
+      <text x="680" y="176" text-anchor="middle" font-size="96" font-weight="900" fill="#000">?</text>
+      <text x="602" y="246" text-anchor="end" font-size="27" font-weight="900" fill="#C7302F">這裡少了一台</text>
+      <rect x="20" y="359" width="792" height="8" rx="4" fill="#000"/>
+    </svg></div>
+    <div class="note"><div>沒有它，你只看得到<br>多少人經過門口<br><span class="s">➤ 誰真的買了？不知道</span></div></div>
+  </div>
+</div>
+<!-- 3 沒設好會怎樣 -->
+<div class="card" id="p3" data-document-role="page" data-label="沒設好會怎樣">
+  <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="hylogo"><img src="https://zhuer0323-tech.github.io/dora-workspace/heyen-cards/logo_use.png" alt="禾言數位行銷"></div>
+  <div class="paper ">
+    <div class="flag">沒設好會怎樣</div>
+    <h2>數字錯，決定<span class="hl">就歪</span></h2>
+    <div class="two">
+      <div class="row">
+        <div class="no"><svg viewBox="0 0 84 84"><circle cx="42" cy="42" r="38" fill="#FCD501" stroke="#000" stroke-width="4"/><text x="42" y="57" text-anchor="middle" font-size="44" font-weight="900" fill="#000">1</text></svg></div>
+        <div class="tx"><div class="t">一張訂單記成兩張</div><div class="d">報表漂亮得不太真實</div></div>
+        <div class="ic"><svg viewBox="0 0 200 160"><path d="M44 8h84v124l-10-8-10 8-10-8-10 8-10-8-10 8-10-8-10 8z" fill="#F0F0EE" stroke="#000" stroke-width="4" stroke-linejoin="round"/><path d="M12 26h84v124l-10-8-10 8-10-8-10 8-10-8-10 8-10-8-10 8z" fill="#fff" stroke="#000" stroke-width="4" stroke-linejoin="round"/><rect x="26" y="52" width="56" height="7" rx="3" fill="#CFCAC4"/><rect x="26" y="74" width="56" height="7" rx="3" fill="#CFCAC4"/><rect x="26" y="96" width="34" height="7" rx="3" fill="#CFCAC4"/><text x="164" y="104" text-anchor="middle" font-size="50" font-weight="900" fill="#C7302F">×2</text></svg></div>
+      </div>
+      <div class="row">
+        <div class="no"><svg viewBox="0 0 84 84"><circle cx="42" cy="42" r="38" fill="#FCD501" stroke="#000" stroke-width="4"/><text x="42" y="57" text-anchor="middle" font-size="44" font-weight="900" fill="#000">2</text></svg></div>
+        <div class="tx"><div class="t">會帶生意的那支廣告</div><div class="d">數字很差，被你關掉</div></div>
+        <div class="ic"><svg viewBox="0 0 200 160"><rect x="40" y="18" width="120" height="126" rx="16" fill="#fff" stroke="#000" stroke-width="4"/><rect x="54" y="32" width="92" height="70" rx="10" fill="#FFEDC5"/><path d="M100 44l20 24H107v20H93V68H80z" fill="#7FA52E"/><rect x="54" y="114" width="60" height="9" rx="4" fill="#CFCAC4"/><path d="M38 24l124 114M162 24L38 138" stroke="#C7302F" stroke-width="10" stroke-linecap="round"/><circle cx="166" cy="30" r="24" fill="#FCD501" stroke="#000" stroke-width="4"/><text x="166" y="41" text-anchor="middle" font-size="30" font-weight="900" fill="#000">$</text></svg></div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- 4 路線A 網站下單 -->
+<div class="card" id="p4" data-document-role="page" data-label="路線A 網站下單">
+  <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="hylogo"><img src="https://zhuer0323-tech.github.io/dora-workspace/heyen-cards/logo_use.png" alt="禾言數位行銷"></div>
+  <div class="paper yellow">
+    <div class="flag">路線 A</div>
+    <h2>網站下單，查<span class="hl">這三件</span></h2>
+    <div class="viz" style="width:832px;height:250px;margin-top:34px"><svg width="832" height="250" viewBox="0 0 832 250" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="832" height="250" rx="24" fill="#fff"/>
+      <rect x="21" y="36" width="160" height="84" rx="16" fill="#fff" stroke="#000" stroke-width="4"/>
+      <text x="101" y="89" text-anchor="middle" font-size="32" font-weight="900" fill="#000">廣告</text>
+      <path d="M190 66l24 12-24 12z" fill="#000"/>
+      <rect x="221" y="36" width="160" height="84" rx="16" fill="#fff" stroke="#000" stroke-width="4"/>
+      <text x="301" y="89" text-anchor="middle" font-size="32" font-weight="900" fill="#000">商品頁</text>
+      <path d="M390 66l24 12-24 12z" fill="#000"/>
+      <rect x="421" y="36" width="160" height="84" rx="16" fill="#fff" stroke="#000" stroke-width="4"/>
+      <text x="501" y="89" text-anchor="middle" font-size="32" font-weight="900" fill="#000">結帳</text>
+      <path d="M590 66l24 12-24 12z" fill="#000"/>
+      <rect x="621" y="32" width="190" height="92" rx="16" fill="#FCD501" stroke="#000" stroke-width="8"/>
+      <text x="716" y="89" text-anchor="middle" font-size="34" font-weight="900" fill="#000">完成頁</text>
+      <rect x="499" y="124" width="4" height="10" rx="2" fill="#C7302F"/><rect x="499" y="142" width="4" height="10" rx="2" fill="#C7302F"/><rect x="499" y="160" width="4" height="10" rx="2" fill="#C7302F"/><rect x="499" y="178" width="4" height="2" rx="2" fill="#C7302F"/>
+      <path d="M489 180l12 16 12-16z" fill="#C7302F"/>
+      <text x="501" y="230" text-anchor="middle" font-size="26" font-weight="900" fill="#C7302F">卡在刷卡就走了</text>
+    </svg></div>
+    <div class="ck">
+      <div class="row"><svg viewBox="0 0 46 46"><rect x="3" y="3" width="40" height="40" rx="9" fill="#fff" stroke="#000" stroke-width="4"/></svg><span>從廣告點進去，自己下一單</span></div>
+      <div class="row"><svg viewBox="0 0 46 46"><rect x="3" y="3" width="40" height="40" rx="9" fill="#fff" stroke="#000" stroke-width="4"/></svg><span>「成果」記 1 筆還是 2 筆</span></div>
+      <div class="row"><svg viewBox="0 0 46 46"><rect x="3" y="3" width="40" height="40" rx="9" fill="#fff" stroke="#000" stroke-width="4"/></svg><span>問窗口：成功算在付款完成頁嗎</span></div>
+    </div>
+  </div>
+</div>
+<!-- 5 路線B 私訊來問 -->
+<div class="card" id="p5" data-document-role="page" data-label="路線B 私訊來問">
+  <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="hylogo"><img src="https://zhuer0323-tech.github.io/dora-workspace/heyen-cards/logo_use.png" alt="禾言數位行銷"></div>
+  <div class="paper yellow">
+    <div class="flag">路線 B</div>
+    <h2>私訊接單，查<span class="hl">這兩件</span></h2>
+    <div class="viz" style="width:832px;height:340px;margin-top:34px"><svg width="832" height="340" viewBox="0 0 832 340" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="832" height="340" rx="24" fill="#fff"/>
+      <rect x="36" y="18" width="300" height="304" rx="34" fill="#fff" stroke="#000" stroke-width="5"/>
+      <rect x="152" y="32" width="68" height="10" rx="5" fill="#000"/>
+      <rect x="200" y="62" width="114" height="52" rx="26" fill="#C9E6E4"/>
+      <text x="257" y="98" text-anchor="middle" font-size="28" font-weight="900" fill="#000">你好</text>
+      <rect x="56" y="132" width="230" height="104" rx="22" fill="#F0F0EE"/>
+      <text x="76" y="168" font-size="24" font-weight="800" fill="#555">歡迎語</text>
+      <rect x="76" y="184" width="180" height="12" rx="6" fill="#CFCAC4"/>
+      <rect x="76" y="208" width="132" height="12" rx="6" fill="#CFCAC4"/>
+      <rect x="58" y="280" width="176" height="16" rx="3" fill="#FCD501"/>
+      <text x="62" y="290" font-size="25" font-weight="900" fill="#000">新客人才看得到</text>
+      <rect x="420" y="18" width="370" height="66" rx="12" fill="#D6D3CF"/>
+      <text x="605" y="62" text-anchor="middle" font-size="30" font-weight="900" fill="#555">成果＝有人傳第一句</text>
+      <rect x="583" y="96" width="44" height="5" rx="2" fill="#000"/>
+      <rect x="583" y="110" width="44" height="5" rx="2" fill="#000"/>
+      <path d="M616 90L594 122" stroke="#C7302F" stroke-width="5" stroke-linecap="round"/>
+      <path d="M420 132H790L755 188H455z" fill="#FFEDC5" stroke="#000" stroke-width="4" stroke-linejoin="round"/>
+      <text x="605" y="171" text-anchor="middle" font-size="28" font-weight="900" fill="#000">詢價</text>
+      <path d="M455 194H755L720 250H490z" fill="#FFD36F" stroke="#000" stroke-width="4" stroke-linejoin="round"/>
+      <text x="605" y="233" text-anchor="middle" font-size="28" font-weight="900" fill="#000">報價</text>
+      <path d="M490 256H720L685 312H525z" fill="#FCD501" stroke="#000" stroke-width="4" stroke-linejoin="round"/>
+      <text x="605" y="295" text-anchor="middle" font-size="28" font-weight="900" fill="#000">成交</text>
+    </svg></div>
+    <div class="ck">
+      <div class="row"><svg viewBox="0 0 46 46"><rect x="3" y="3" width="40" height="40" rx="9" fill="#fff" stroke="#000" stroke-width="4"/></svg><span>用另一個帳號傳訊息<span class="sub">新客人才看得到歡迎語</span></span></div>
+      <div class="row"><svg viewBox="0 0 46 46"><rect x="3" y="3" width="40" height="40" rx="9" fill="#fff" stroke="#000" stroke-width="4"/></svg><span>小編每天記<span class="sub">詢價／報價／成交</span></span></div>
+    </div>
+  </div>
+</div>
+<!-- 6 結束頁 -->
+<div class="card" id="p6" data-document-role="page" data-label="結束頁">
+  <div class="corner tl"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="corner br"><svg viewBox="0 0 100 100"><path d="M50 0c4 26 20 42 46 46-26 4-42 20-46 46-4-26-20-42-46-46 26-4 42-20 46-46z" fill="#FCD501"/></svg></div>
+  <div class="hylogo"><img src="https://zhuer0323-tech.github.io/dora-workspace/heyen-cards/logo_use.png" alt="禾言數位行銷"></div>
+  <div class="paper ">
+    <h2><span class="hl">數字對了</span>，才能優化</h2>
+    <div class="viz" style="width:832px;height:300px;margin-top:40px"><svg width="832" height="300" viewBox="0 0 832 300" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="832" height="300" rx="26" fill="#fff"/>
+      <rect x="60" y="22" width="180" height="256" rx="30" fill="#fff" stroke="#000" stroke-width="5"/>
+      <rect x="120" y="34" width="60" height="9" rx="4" fill="#000"/>
+      <rect x="74" y="54" width="152" height="208" rx="14" fill="#FFF9F6"/>
+      <text x="150" y="104" text-anchor="middle" font-size="32" font-weight="900" fill="#000">訂單</text>
+      <text x="150" y="222" text-anchor="middle" font-size="104" font-weight="900" fill="#000">12</text>
+      <rect x="350" y="112" width="132" height="16" rx="8" fill="#000"/>
+      <rect x="350" y="152" width="132" height="16" rx="8" fill="#000"/>
+      <circle cx="416" cy="232" r="34" fill="#AED056" stroke="#000" stroke-width="4"/>
+      <path d="M399 232l12 12 22-24" fill="none" stroke="#000" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M566 58Q626 44 686 58V262Q626 248 566 262z" fill="#FFF9F6" stroke="#000" stroke-width="5" stroke-linejoin="round"/>
+      <path d="M686 58Q746 44 806 58V262Q746 248 686 262z" fill="#FFEDC5" stroke="#000" stroke-width="5" stroke-linejoin="round"/>
+      <text x="626" y="110" text-anchor="middle" font-size="28" font-weight="900" fill="#000">帳本</text>
+      <rect x="586" y="136" width="80" height="5" rx="2" fill="#CFCAC4"/><rect x="586" y="170" width="80" height="5" rx="2" fill="#CFCAC4"/><rect x="586" y="204" width="60" height="5" rx="2" fill="#CFCAC4"/>
+      <text x="746" y="200" text-anchor="middle" font-size="96" font-weight="900" fill="#000">12</text>
+    </svg></div>
+    <div class="lead">雙 11、雙 12 加預算前先檢查</div>
+    <div class="cta">
+      <div class="btn">追蹤沒把握？私訊禾言聊聊</div>
+      <div class="handle"><div class="dm"><svg viewBox="0 0 48 48"><path d="M24 4C12.4 4 4 12.6 4 23.4c0 5.8 2.4 10.8 6.4 14.2V44l6.2-3.4c2.3.7 4.8 1 7.4 1 11.6 0 20-8.6 20-19.2S35.6 4 24 4z" fill="#C9E6E4" stroke="#000" stroke-width="3.5" stroke-linejoin="round"/><path d="M12 28l9-9 5 5 10-6-9 9-5-5z" fill="#000"/></svg></div><div>@hayen.marketing</div></div>
+    </div>
   </div>
 </div>
 
