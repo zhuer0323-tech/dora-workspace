@@ -26,6 +26,17 @@
 - 任何角色判斷不出來會在回覆開頭寫 NEED_HUMAN，這支腳本看到就整件標記「需要你決定」並推播 LINE
   （其他時候不推播，不然天天洗版）
 
+2026-10-08 重新分工（計劃書 100_Todo/plans/2026-10-08-協作平台-角色重新分工.md）：
+她嫌文案冗長沒重點、不吸睛，小梟規劃方向太散。四隻動物照舊、換工作：
+- 小兔＝寫手：單篇規劃併給她，自己交主張卡 PLAN＋Caption＋Card Plan（新任務直接從 making 開始）
+- 小梟＝讀者代表：新增「試讀」階段 reading，只看封面圖卡字＋Caption 前三句，
+  用外行老闆的眼光判斷會不會停下來；每月內容建議照舊由牠排，多一條「每月一個主軸」
+- 小狐＝朱兒的代理人：校稿通過後進 awaiting_owner，推 LINE 請朱兒確認，
+  她在協作平台按確認才進 awaiting_window；發布前 2 天還沒確認再提醒一次
+- 小蝶＝美編：不變
+新流程：making → reading → reviewing → awaiting_owner →（朱兒確認）→ awaiting_window → designing
+試讀退回與校稿退回共用 MAX_ROUNDS。舊的 planning 階段不再使用，撞到就直接轉成 making。
+
 網頁上還有「私聊」——朱兒可以不透過任務、直接跟某個角色聊天。
 每輪一樣只挑「最舊的一件待處理事」動手，任務推進跟私聊回覆一起排隊，不會搶額度。
 """
@@ -53,6 +64,8 @@ CARD_TYPE_DEFAULT = {'日常/節慶': 'single'}   # 沒列到的類型一律 car
 CARD_TYPE_LABEL = {'single': '單張', 'carousel': '輪播'}
 CAROUSEL_MIN, CAROUSEL_MAX = 4, 6
 
+OWNER_REMIND_DAYS = 2           # 等朱兒確認的稿，離發布日剩這幾天還沒確認就再推一次 LINE（每篇一次）
+AGENT_HUB_URL = 'https://zhuer0323-tech.github.io/dora-workspace/agent-hub/'
 DESIGN_WINDOW_DAYS = 3          # 審閱通過後不馬上做圖，等到離發布日剩這幾天才交給小蝶（2026-08-26 她要求）
 PROPOSAL_DAY_START, PROPOSAL_DAY_END = 15, 21   # 每月第三週（大致），小梟排下個月建議
 AUDIT_INTERVAL_SEC = 7 * 86400  # 小梟定期掃描已排程內容，一週一次就好，不用每天掃
@@ -73,20 +86,20 @@ AUDIT_MIN_GAP = 600             # 兩次定期稽核至少隔 10 分鐘。2026-0
                                 # 連續一小時都在稽核，她在工作群講話要排隊等 1.5 分鐘才有人理
 QUOTA_FALLBACK_SEC = 1800       # 額度用完又看不懂恢復時間時，先退避半小時
 
-ROLE_LABEL = {'planner': '規劃', 'maker': '製作', 'reviewer': '審閱', 'designer': '製圖',
+ROLE_LABEL = {'planner': '試讀', 'maker': '撰寫', 'reviewer': '校稿', 'designer': '製圖',
               'human': '你', 'system': '系統'}
 
 # 私聊跟活動流用的人設。跟 100_Todo/projects/agent-hub/index.html 的 PERSONA 要對齊，改一邊要記得改另一邊
 PERSONA = {
-    'planner':  {'name': '小梟', 'desc': '規劃方向'},
-    'maker':    {'name': '小兔', 'desc': '製作初稿'},
-    'reviewer': {'name': '小狐', 'desc': '審閱把關'},
+    'planner':  {'name': '小梟', 'desc': '讀者代表（試讀＋每月內容建議）'},
+    'maker':    {'name': '小兔', 'desc': '寫手（定方向＋寫文案＋圖卡字）'},
+    'reviewer': {'name': '小狐', 'desc': '朱兒的代理人（校稿）'},
     'designer': {'name': '小蝶', 'desc': '製作圖卡'},
 }
 
 BASE_ALLOWED = 'Read,Glob,Grep'
 PLANNER_ALLOWED = BASE_ALLOWED + ',WebSearch'
-MAKER_ALLOWED = BASE_ALLOWED + ',Skill'   # 要真的呼叫 speak-human-tw，不是只憑印象模仿
+MAKER_ALLOWED = BASE_ALLOWED + ',Skill,WebSearch'   # 要真的呼叫 speak-human-tw；2026-10-08 起自己查平台更新
 DESIGNER_ALLOWED = 'Read,Write,Edit,Glob,Grep,Bash,Skill,' \
     'mcp__claude_ai_Canva__import-design-from-url,mcp__claude_ai_Canva__read-design'
 
@@ -154,18 +167,25 @@ TITLE_NOTE = """標題候選：
 三個候選要是不同切角，不是同一句話換字。最後一行「建議標題：」的格式不要改。）
 """
 
-MAKER_PROMPT = """你是「小兔」，禾言數位行銷社群規劃團隊的製作小幫手。
-這次要交**兩份東西**：一份正式貼文 Caption，一份給小蝶用的圖卡腳本 Card Plan。
-兩份都會被小狐審，缺一份就是退回。
+MAKER_PROMPT = """你是「小兔」，禾言數位行銷社群規劃團隊的寫手。
+2026-10-08 起你**自己定方向、自己寫**：原本小梟的單篇規劃併給你了，方向不會再在傳話中跑掉。
+這次要交**三份東西**：主張卡 PLAN、正式貼文 Caption、給小蝶用的圖卡腳本 Card Plan。
+交出去之後，小梟會用外行老闆的眼光試讀（只看封面和 Caption 前三句），再由小狐校稿。
 
 這篇的類型：{type_label}
 標題：{title}
 預計發布日：{post_date}
-{transcript_block}
+
+朱兒給的方向（這篇要寫什麼、這個月的主軸）：
+{brief}
+
+禾言規劃表這個月＋上個月已經排的貼文（**不要跟這些話題或切角撞在一起**）：
+{existing_posts}
+{group_notes}{transcript_block}
 {revision_note}
 動筆前先讀這五份（不能跳）：
 1. `200_Reference/writing-samples/禾言社群語氣與圖卡規範.md`
-   ——四個角色共用的標準，**這次的主要依據**，寫作規則與圖卡層級都在裡面
+   ——四個角色共用的標準，**這次的主要依據**，寫作規則、封面寫法、故事線拆頁都在裡面
 2. `000_Agent/skills/社群文案撰寫/SKILL.md` 的「禾言 agent-hub 模式」那一章
    （前面的一般客戶模式是給其他客戶用的，不要套到禾言身上）
 3. `200_Reference/writing-samples/禾言社群文案-朱兒改寫範例.md`
@@ -177,55 +197,73 @@ MAKER_PROMPT = """你是「小兔」，禾言數位行銷社群規劃團隊的�
    不要帶情緒強度**（一律驚嘆號、每則 4.6 個 emoji、❗❓ 符號標點、限時急迫感都不要）。
    那份最後一節「帶到禾言社群時的取捨」有逐項對照，照那個走
 {edit_samples}
+## 第一步：主張卡（第一輪才需要查資料，修改輪沿用上一版主張卡，除非意見要求換方向）
+
+- 上網搜尋 Meta／Google／LINE 廣告平台最近的更新、新功能或政策變化，找跟這篇方向相關、值得講的點
+- 可以讀 `200_Reference/clients/` 底下的客戶檔，找廣告投放實際遇到的問題，**只當背景**
+- **「這篇唯一主張」18 個中文字左右，一篇只能有一個**。想講兩件事就挑一件，另一件寫進「這篇不要寫什麼」
+- 「禾言的判斷」要是明確立場，「因人而異」「看情況」不算數
+- 「依據／真實情境」要寫得出出處（平台更新、公開報導、客戶常見問題）。
+  找不到就寫「缺少具體依據」，**不要自己編數字、趨勢、故事或客戶對話**
+- 「封面寫法」從規範檔的三種挑一種：戳痛點／跟直覺相反／前後對比。主題式標題不算
+- 標題（沒給的話）要讓人看見問題、結果、衝突或具體利益，不能只寫大主題
+
 ## Caption 的規則
 
-- **這篇只服務小梟定義的「這篇唯一主張」**。小梟寫進「這篇不要寫什麼」的支線一律不碰
-- 第一段直接進入讀者的問題、具體情境或結論，**不暖場、不鋪陳**
+- **全篇 250～350 字**（不算換行、空白、hashtag）。350 是硬上限，超過小狐一定退回。
+  壓字數要**整段刪掉在講同一件事的段落**，不是把每句話都縮短；同類的例子只留最有力的一個
+- **第一句就是重點**：直接講讀者的痛點或這篇的結論。不能是背景、定義或鋪陳。
+  小梟只看前三句，第一句沒抓住人就退回
+- **這篇只服務主張卡的「這篇唯一主張」**，「這篇不要寫什麼」的支線一律不碰
 - 讀者是完全沒有廣告投放背景的老闆與行銷窗口：白話、好懂，
   術語第一次出現要用一句話解釋（例如「頻率」要順便講白話是什麼意思）
 - **至少要有一個具體元素**：後台會看到的畫面、操作步驟、實際遇到的問題或明確判斷
 - 要有禾言自己的判斷。把「禾言」換成別家行銷公司之後還完全成立，代表這篇太通用，重寫
 - ⚠️ **不可以寫客戶名稱，也不可以引用客戶的成效數字**（曝光、CTR、CPC、ROAS、訊息數、名單數）。
-  品牌檔的案例庫是提案用的，社群是公開發布的場合，標準不一樣。
   案例只留做法、拿掉身分與數字（「素材上直接寫出價格可以擋掉只是好奇的人」✓／
   「某某公司寫了價格帶進 230 筆訊息」✗）。
-  **也不要用「我們有一個客戶」「曾經有老闆跟我們說」這種化名寫法**，那等於換個方式點名，
-  而且容易滑成編故事。沒有出處的成效一律不提
-- **全篇 350～450 字**。超過就是太繁瑣、重點被稀釋。壓字數要**整段刪掉在講同一件事的段落**，
-  不是把每句話都縮短：收尾清單只留正文沒講的「接下來怎麼做」、解釋性的補充句丟給圖卡講、
-  同類的例子只留最有力的一個
+  **也不要用「我們有一個客戶」「曾經有老闆跟我們說」這種化名寫法**。沒有出處的成效一律不提
 - CTA 依這篇的目的決定，**不是每篇都要叫讀者留言**
-- 【禾言觀點】／【禾言怎麼做】／【禾言建議】**只有真的有禾言判斷時才用**，依內容挑一種；
-  行動型內容可以直接給下一步，節慶類直接用行動呼籲收尾。**不強制每篇都有這一段**
+- 【禾言觀點】／【禾言怎麼做】／【禾言建議】**只有真的有禾言判斷時才用**，不強制每篇都有
 - **不強制三點、不強制問句開場、不強制金句結尾**。只有兩個項目就寫兩個
 - 標點跟著語氣走，不要一律套驚嘆號
-- **平台功能名稱看這篇要不要讀者去操作**（2026-09-18 改）：
-  小梟寫的「讀者看完能做什麼」是一串後台操作 → **寫出功能全名一次**
-  （例如「Advantage+ 素材優化」），老闆在後台看到什麼字就寫什麼字，不然對不起來；
-  純觀念、趨勢判斷、不需要動後台的 → 避開名稱只講原則，寫死會過期。
-  這跟貼文掛在哪個類型無關，觀點/趨勢類也可能是要人去後台照做的
+- **平台功能名稱看這篇要不要讀者去操作**：「讀者看完能做什麼」是一串後台操作 →
+  **寫出功能全名一次**（例如「Advantage+ 素材優化」）；純觀念、不需要動後台的 → 避開名稱只講原則
 - 不用加「— 禾言數位行銷」署名行，hashtag 裡已經有
 
 寫完第一版之後，**用 Skill 工具實際執行一次 `speak-human-tw`**，把 Caption 交給它去 AI 味
 （這是非互動環境，那個 skill 會自動跳過確認清單直接套用，不會卡住等回覆）。
 ⚠️ **它只能清掉 AI 痕跡，不能替禾言編出個性、案例或經驗**——
-它跑完你還是要自己對照規範檔第二段再檢查一次，不要把「跑過 skill」當成品質保證。
-它給你的修改摘要不要留在輸出裡。
+它跑完你還是要自己對照規範檔第二段再檢查一次。它給你的修改摘要不要留在輸出裡。
 
 ## Card Plan 的規則
 
 {card_type_note}
-- **一頁只講一件事**，每頁不得重複上一頁的結論
+- **封面照主張卡選的寫法寫**（戳痛點／跟直覺相反／前後對比），要讓人想往下滑，不只是看得懂主題
+- **輪播照故事線拆頁**：封面鉤子 → 痛點／後果 → 為什麼會這樣 → 怎麼做 → 一句收尾。
+  4 頁把痛點和為什麼合併、6 頁把怎麼做拆兩頁。**不要用「XX 是什麼」定義頁開場**
+- **每頁最後一句要讓人想翻下一頁**（最後一頁除外）：留一個問題或還沒講的答案，不是硬加「往下滑」
+- **一頁＝一句主標（10 字內）＋最多兩行補充（每行 14 字內）**。
+  清單最多 3 項、每項一行，超過就拆頁或只留最關鍵的一步
+- **全篇圖卡字總數不超過 Caption 的三分之一**。細節留給 Caption，圖卡只放重點
+- 一頁只講一件事，每頁不得重複上一頁的結論
 - 每頁都要寫「任務」與「視覺」，不能只列要放的文字
-- 圖卡文字要比 Caption **更短**，不是把 Caption 分段貼上
-- **封面最多三層**：類型小標／核心主標（兩行內、三秒看懂）／一句補充**或**一個視覺證據（二選一）。
-  不要同時放三顆以上膠囊、引言、副標、「閱讀全文」、底部重複摘要
 - 視覺要跟內容直接相關，從這幾種挑：數字放大／算式／前後對比／流程箭頭／
-  錯誤與正確示範／簡單資料圖／內容專屬 SVG。優先呼應小梟寫的「適合的圖卡視覺」
-- 不固定第 5 頁是禾言觀點，不固定最後一頁是互動 CTA，沒必要時停在最有力的結論
-- 字數上限（超過會爆版）：封面主標一行 12 字內、各頁主標 8–12 字、底部句 16 字內
+  錯誤與正確示範／簡單資料圖／內容專屬 SVG
+- 封面主標一行 12 字內、最多兩行；底部句 16 字內
 
-## 輸出格式（兩個區塊都要，標記一字不改）
+## 輸出格式（三個區塊都要，標記一字不改）
+
+<PLAN>
+受眾此刻的問題：
+這篇唯一主張：
+禾言的判斷：
+依據／真實情境：
+讀者看完能做什麼：
+這篇不要寫什麼：
+封面寫法：
+建議標題：
+</PLAN>
 
 <CAPTION>
 （這裡只放正式貼文本身，含 hashtag。不要加標籤、說明或初稿字樣）
@@ -253,12 +291,50 @@ P2｜（頁名）
 「主標」「補充」「內容」「底部句」才是真的會印上去的字，朱兒會在規劃表上直接改這幾行，
 所以那幾行要寫成**可以直接印的最終文字**，不要寫成描述（「這裡放一句結論」✗）。
 
-兩個區塊以外不要寫任何字。如果判斷不出怎麼下筆，在回覆最開頭寫一行：
+三個區塊以外不要寫任何字。如果方向不清楚、判斷不出怎麼下筆，在回覆最開頭寫一行：
 NEED_HUMAN: <原因>，然後結束。"""
 
-REVIEWER_PROMPT = """你是「小狐」，禾言數位行銷社群規劃團隊的審閱小幫手，
-負責幫這篇「{type_label}」貼文把關。你是內容策略角度的審閱者，不是校對機。
+READER_PROMPT = """你是「小梟」，禾言數位行銷社群規劃團隊的讀者代表。
+你這次**不是行銷人**，你是一個完全不懂廣告投放、每天很忙的中小企業老闆，
+正在滑 IG，一篇貼文只給它 2 秒。
+
+下面是這篇貼文的封面圖卡上的字，和文案的前三行。**你只看得到這些**，
+不要去讀別的檔案，也不要想像後面還寫了什麼。
+
+【封面圖卡】
+{cover}
+
+【文案前三行】
+{opening}
+
+用這個老闆的身分誠實回答，固定輸出這個格式（欄位名稱一字不改）：
+
+會不會停下來：會／不會
+為什麼：（一兩句，用老闆的口吻，例如「這不就是我上個月遇到的事」或「看不出跟我有什麼關係」）
+我看完以為這篇在講：（用自己的話講一遍。講不出來或講錯，就代表封面沒寫清楚）
+想跳過的地方：（哪一句讓你想滑走，沒有就寫「無」）
+給小兔的建議：（退回時才寫：封面或第一句具體要怎麼改，可以直接給一句改寫）
+
+最後一行單獨寫：
+決定：通過
+或
+決定：退回
+
+判斷標準：
+- 「會不會停下來」是「不會」→ 退回
+- 「我看完以為這篇在講」跟封面要講的明顯對不上 → 退回
+- 封面是主題式標題（「XX 是什麼」「認識 XX」）、第一句是背景或定義 → 退回
+- 罐頭鉤子（「九成人不知道」「你一定要知道」）讓你覺得被推銷 → 退回
+- 以上都沒有就通過，不要為了挑毛病而退回
+
+只輸出上面的格式，不要加開場白。"""
+
+REVIEWER_PROMPT = """你是「小狐」，朱兒的代理人，替她校稿把關這篇「{type_label}」禾言社群貼文。
+你是內容策略角度的審閱者，不是校對機。**你通過的稿會推 LINE 給朱兒本人確認**，
+所以要用她的標準審：她最在意的是**冗長、沒重點、不吸睛、拆頁像課本**。
 **這次要同時審 Caption 與 Card Plan 兩份**，只審其中一份不算數。
+小兔交的 PLAN 是這篇的方向，看 Caption 和 Card Plan 有沒有守住它；
+小梟已經用外行老闆的眼光試讀過封面和開頭，討論紀錄裡看得到他的意見。
 
 這篇的圖卡形式：{card_spec}
 （形式是朱兒在規劃表上指定的，不要質疑該不該做輪播，只檢查頁數對不對）
@@ -289,8 +365,8 @@ REVIEWER_PROMPT = """你是「小狐」，禾言數位行銷社群規劃團隊�
 
 ## 五項評分在看什麼
 
-- **三秒理解**：封面主標三秒內看得出這篇在講什麼；看得出問題、結果、衝突或具體利益，
-  不是只有一個大主題
+- **三秒理解**：封面主標三秒內看得出這篇在講什麼，而且**讓人想往下滑**；
+  有照規範檔三種封面寫法之一（戳痛點／跟直覺相反／前後對比），不是主題式標題
 - **具體程度**：有沒有後台會看到的畫面、操作步驟、實際遇到的問題或明確判斷。
   全是形容詞就是低分。⚠️ **不要因為「沒有客戶案例或成效數字」而扣分**——
   那些不准寫進社群貼文，具體程度要看做法講得夠不夠清楚
@@ -298,7 +374,9 @@ REVIEWER_PROMPT = """你是「小狐」，禾言數位行銷社群規劃團隊�
 - **新手易懂**：完全沒有廣告背景的老闆看不看得懂，術語有沒有解釋。
   ⚠️ **要讀者去後台照做的貼文，反而要寫出後台看得到的功能名稱**（例如「Advantage+ 素材優化」），
   只寫通稱會讓人在後台找不到，這種要扣分；純觀念、不用動後台的才避開名稱
-- **圖卡可讀性**：一頁一件事、頁與頁不重複、封面沒有超過三層資訊、頁數符合指定的圖卡形式。
+- **圖卡可讀性**：輪播有照故事線（封面鉤子 → 痛點 → 為什麼 → 怎麼做 → 收尾），
+  不是定義頁開場的課本拆法；每頁一句主標（10 字內）＋最多兩行補充、清單最多 3 項；
+  每頁最後一句讓人想翻下一頁；頁與頁不重複；頁數符合指定的圖卡形式。
   單張圖的話看它能不能自己成立（不能寫成「往下滑看更多」）
 
 ## 通過條件（全部達成才能寫「通過」）
@@ -307,7 +385,8 @@ REVIEWER_PROMPT = """你是「小狐」，禾言數位行銷社群規劃團隊�
 2. 沒有硬性問題
 3. Card Plan 存在，而且頁數符合這篇指定的圖卡形式（單張＝1 頁／輪播＝4～6 頁）
 4. 至少有一個具體的做法、場景或可執行方法
-5. **Caption 全篇 350～450 字**（超過就是太繁瑣，退回）
+5. **Caption 全篇 250～350 字**（不算換行、空白、hashtag；超過 350 就是太冗長，退回）
+6. **Caption 第一句就是痛點或結論**，不是背景或定義
 
 ## 一定要退回的情況（這些是硬性問題，不是小瑕疵）
 
@@ -320,7 +399,11 @@ REVIEWER_PROMPT = """你是「小狐」，禾言數位行銷社群規劃團隊�
 - ⚠️ **出現客戶名稱，或引用客戶的成效數字**（曝光、CTR、CPC、ROAS、訊息數、名單數）——
   這是硬性問題，一定退回。「我們有一個客戶」這種化名寫法同樣不行
 - 內容過度通用，換掉品牌名還完全成立
-- **Caption 超過 450 字**，或明顯有段落在講正文已經講過的事
+- **Caption 超過 350 字**，或明顯有段落在講正文已經講過的事
+- 第一句是背景、定義或鋪陳
+- 封面是主題式標題（「XX 是什麼」「認識 XX」），或輪播用定義頁開場
+- 圖卡某一頁超過「一句主標＋兩行補充」，或清單超過 3 項
+- Caption 偏離 PLAN 的唯一主張，或寫了「這篇不要寫什麼」裡的支線
 - Card Plan 缺漏、頁數跟指定的圖卡形式對不上，或每頁沒寫「任務」與「視覺」
 
 ⚠️ **AI 味在這一版是正式的通過條件，不是次要參考項。**
@@ -355,7 +438,7 @@ DESIGNER_PROMPT = """你是「小蝶」，禾言數位行銷社群規劃團隊�
 - `000_Agent/skills/禾言圖文/SKILL.md`，走「agent-hub 自動模式」
 
 不用做 skill 的 Step 1（取文案，上面已經給你）跟 Step 2（等朱兒確認——
-這篇小狐已經審過，等同確認，不用再問一次）。
+這篇小狐審過、朱兒本人也按過確認了，不用再問一次）。
 
 ## 怎麼用這兩份
 
@@ -372,6 +455,9 @@ DESIGNER_PROMPT = """你是「小蝶」，禾言數位行銷社群規劃團隊�
 - **單張圖**：只做一張，它要能自己成立，不要寫成「往下滑看更多」。
   節慶類就是祝賀本身，不用硬塞廣告知識或行動呼籲
 - 一頁只講一件事，每頁不得重複上一頁的結論
+- **一頁＝一句主標（10 字內）＋最多兩行補充**，清單最多 3 項。字是小兔寫、朱兒確認過的，
+  **超過也不要自己刪字或改寫**，照排，並在完成訊息裡寫一行「超字：P3 補充第二行 17 字」讓朱兒決定
+- 主標要是整頁最大、最先被看到的字；補充字級明顯小一階，不要兩者差不多大
 - **封面最多三層**：類型小標／核心主標（兩行內）／一句補充**或**一個視覺證據（二選一）。
   不要同時放三顆以上膠囊、引言、副標、「閱讀全文」、底部重複摘要
 - **移除純裝飾性的重複「閱讀全文」**；同一句話不得同時出現在正文、頁尾結論與底部膠囊
@@ -407,7 +493,7 @@ DM_PROMPT = """你是「{name}」，禾言社群規劃團隊裡負責{desc}，�
 用你這個角色的口吻自然回覆就好，不用太正式，也不用一直強調自己是規劃/製作/審閱/製圖小幫手。
 只輸出你要回的話本身，不要加開場白。"""
 
-GROUP_CHAT_PROMPT = """你是「小梟」，禾言數位行銷社群規劃團隊的規劃小幫手，也是團隊工作群裡
+GROUP_CHAT_PROMPT = """你是「小梟」，禾言數位行銷社群規劃團隊的讀者代表（也負責排每月內容建議），也是團隊工作群裡
 朱兒找得到的窗口——小兔、小狐、小蝶也在同一個群裡，但由你代表團隊回覆她。
 
 朱兒在這裡說的話你要記住，之後規劃方向、排下個月內容、定期稽核時都要納入判斷，
@@ -602,7 +688,7 @@ def parse_verdict(out):
 
 
 def parse_title(out):
-    m = re.search(r'建議標題[：:]\s*(.+)', out)
+    m = re.search(r'建議標題[：:][ \t]*(\S.*)', out)
     return m.group(1).strip() if m else None
 
 
@@ -625,7 +711,7 @@ def _tagged_block(text, tag):
     m = re.search(r'<%s>(.*)' % tag, text, re.S | re.I)
     if not m:
         return None
-    rest = re.split(r'</?(?:CAPTION|CARD_PLAN)>', m.group(1), flags=re.I)[0]
+    rest = re.split(r'</?(?:PLAN|CAPTION|CARD_PLAN)>', m.group(1), flags=re.I)[0]
     return rest.strip()
 
 
@@ -639,14 +725,36 @@ def parse_maker_output(out):
     caption = _tagged_block(text, 'CAPTION')
     card_plan = _tagged_block(text, 'CARD_PLAN')
     if caption is None and card_plan is None:
-        return text, ''
+        return re.sub(r'<PLAN>.*?</PLAN>', '', text, flags=re.S | re.I).strip(), ''
     if not caption:
         # 只有 CARD_PLAN 沒有 CAPTION：把標記以外的內容當 caption，
         # 不然規劃表的文案欄會整個空掉
         caption = re.sub(r'<CARD_PLAN>.*?(?:</CARD_PLAN>|$)', '', text,
                          flags=re.S | re.I).strip()
+        caption = re.sub(r'<PLAN>.*?</PLAN>', '', caption, flags=re.S | re.I).strip()
         caption = re.sub(r'</?CAPTION>', '', caption, flags=re.I).strip()
     return caption, (card_plan or '')
+
+
+def parse_plan(out):
+    """小兔的主張卡 <PLAN>…</PLAN>（2026-10-08 起）。沒有就回空字串。"""
+    return _tagged_block((out or '').strip(), 'PLAN') or ''
+
+
+def parse_reader_verdict(out):
+    m = re.search(r'決定[：:]\s*(通過|退回)\s*$', (out or '').strip())
+    return m.group(1) if m else None
+
+
+def reader_inputs(caption, card_plan):
+    """小梟試讀只拿得到兩樣東西：封面圖卡上的字、Caption 前三行。
+    刻意不給全文——讀者在動態上也只看得到這些，看完全文再判斷就不是外行人的眼光了。"""
+    text = card_plan_text(card_plan)
+    m = re.search(r'(?ms)^\s*P\s*1\b.*?(?=^\s*P\s*\d+\b|\Z)', text or '')
+    cover = m.group(0).strip() if m else ''
+    lines = [l.strip() for l in (caption or '').splitlines() if l.strip()]
+    opening = '\n'.join(lines[:3])
+    return cover or '（這篇沒有圖卡腳本）', opening or '（沒有文案）'
 
 
 PAGE_LINE_RE = re.compile(r'^\s*P\s*(\d+)\s*[｜|]', re.M)
@@ -884,6 +992,27 @@ def set_stage(cfg, tok, task, fields):
         db_patch(cfg, tok, HY_ROOM, f'posts/{hy_id}', hy_fields)
 
 
+def send_back(cfg, tok, task, now_ms, who, unclear_reason=None):
+    """試讀（小梟）或校稿（小狐）退回小兔。兩種退回共用 round 計數與 MAX_ROUNDS 上限。
+    unclear_reason 有值代表判斷不出結果，直接停下來問朱兒。"""
+    resume = 'reading' if who == '試讀' else 'reviewing'
+    if unclear_reason:
+        set_stage(cfg, tok, task, {
+            'stage': 'waiting_human', 'waitingKind': 'needHuman',
+            'waitingReason': unclear_reason, 'resumeStage': resume, 'updatedAt': now_ms})
+        line_push(cfg, f'🙋「{task.get("title","")}」的{who}結果我判斷不出來，到協作平台看一下')
+        return
+    round_no = task.get('round', 0) + 1
+    if round_no > MAX_ROUNDS:
+        set_stage(cfg, tok, task, {
+            'stage': 'waiting_human', 'waitingKind': 'maxRound',
+            'waitingReason': f'小兔跟試讀、校稿已經來回改了 {MAX_ROUNDS} 輪，我先停下來，你要用目前這版定稿，還是再給個方向？',
+            'resumeStage': 'making', 'round': round_no, 'updatedAt': now_ms})
+        line_push(cfg, f'🙋「{task.get("title","")}」來回改了 {MAX_ROUNDS} 輪還沒過，到協作平台看要不要直接定稿')
+        return
+    set_stage(cfg, tok, task, {'stage': 'making', 'round': round_no, 'updatedAt': now_ms})
+
+
 def process_task(cfg, tok, task):
     tid, stage = task['id'], task.get('stage')
     type_label = task.get('type') or '（沒指定類型）'
@@ -903,25 +1032,37 @@ def process_task(cfg, tok, task):
     card_type = card_type_of(hy_post, task)
 
     if stage == 'planning':
-        role, allowed, timeout = 'planner', PLANNER_ALLOWED, TIMEOUT
-        prompt = PLANNER_PROMPT.format(
-            type_label=type_label, post_date=task.get('postDate') or '（沒填）',
-            brief=task.get('brief', ''), transcript_block=transcript_block,
-            existing_posts=existing_hy_posts_summary(cfg, tok, task.get('postDate')),
-            group_notes=recent_group_chat_summary(cfg, tok),
-            title_note='' if task.get('title') else TITLE_NOTE)
-    elif stage == 'making':
+        # 2026-10-08 起單篇規劃併給小兔，舊的 planning 一律直接轉成 making（PLANNER_PROMPT 留著備查）
+        set_stage(cfg, tok, task, {'stage': 'making', 'updatedAt': now_ms})
+        return True
+    if stage == 'making':
         role, allowed, timeout = 'maker', MAKER_ALLOWED, TIMEOUT
         round_no = task.get('round', 0)
         revision_note = ''
         if round_no > 0:
-            revision_note = '\n審閱小幫手上一輪給了修改意見（看上面討論紀錄裡最新一則「審閱」），請照那個意見修改上一版初稿。\n'
+            revision_note = ('\n上一版被退回了：看上面討論紀錄裡最新一則「試讀」（小梟）或「校稿」（小狐）的意見，'
+                             '照那個意見修改上一版。主張卡沿用上一版，除非意見要求換方向；不用重新上網查資料。'
+                             '三個區塊一樣都要完整交出來。\n')
         prompt = MAKER_PROMPT.format(
-            type_label=type_label, title=task.get('title') or '（還沒定，你可以自己下一個貼合內容的標題）',
+            type_label=type_label, title=task.get('title') or '（還沒定，你自己下一個，寫在主張卡的「建議標題」）',
             post_date=task.get('postDate') or '（沒填）',
+            brief=task.get('brief') or '（朱兒沒給方向，照類型自己挑一個這個月值得講、沒跟規劃表撞題的主張）',
+            existing_posts=existing_hy_posts_summary(cfg, tok, task.get('postDate')),
+            group_notes=recent_group_chat_summary(cfg, tok),
             transcript_block=transcript_block, revision_note=revision_note,
             card_type_note=card_type_note(card_type),
             edit_samples=recent_human_edits(cfg, tok, skip_tid=tid))
+    elif stage == 'reading':
+        role, allowed, timeout = 'planner', BASE_ALLOWED, TIMEOUT
+        # 讀規劃表當下的版本（她可能已經手改過），讀不到才退回小兔最後那則訊息
+        caption = hy_post.get('ig', '') or ''
+        card_plan = hy_post.get('cardPlan', '') or task.get('cardPlan', '') or ''
+        if not caption or not card_plan:
+            fb_caption, fb_plan = parse_maker_output(last_message_text(cfg, tok, tid, 'maker'))
+            caption = caption or fb_caption
+            card_plan = card_plan or fb_plan
+        cover, opening = reader_inputs(caption, card_plan)
+        prompt = READER_PROMPT.format(cover=cover, opening=opening)
     elif stage == 'reviewing':
         role, allowed, timeout = 'reviewer', BASE_ALLOWED, TIMEOUT
         prompt = REVIEWER_PROMPT.format(
@@ -980,16 +1121,23 @@ def process_task(cfg, tok, task):
     db_post(cfg, tok, ROOM, f'messages/{tid}', {'role': role, 'text': out, 'createdAt': now_ms})
 
     if role == 'planner':
-        patch = {'stage': 'making', 'updatedAt': now_ms}
-        title = parse_title(out)
-        if title and not task.get('title'):
-            patch['title'] = title
-        set_stage(cfg, tok, task, patch)
+        verdict = parse_reader_verdict(out)
+        if verdict == '通過':
+            set_stage(cfg, tok, task, {'stage': 'reviewing', 'updatedAt': now_ms})
+        else:
+            send_back(cfg, tok, task, now_ms, '試讀',
+                      '小梟的試讀結果看不出通過還是退回，麻煩你看一下' if verdict is None else None)
     elif role == 'maker':
         # 2026-09-18 起小兔交兩份：Caption 進規劃表的 ig 欄，Card Plan 另存給小蝶。
         # 舊格式（沒有標記）整份會被當成 caption，行為跟以前一樣。
         caption, card_plan = parse_maker_output(out)
-        patch = {'stage': 'reviewing', 'updatedAt': now_ms}
+        patch = {'stage': 'reading', 'updatedAt': now_ms}
+        plan = parse_plan(out)
+        if plan:
+            patch['plan'] = plan
+            title = parse_title(plan)
+            if title and not task.get('title'):
+                patch['title'] = title
         if card_plan:
             patch['cardPlan'] = card_plan
             patch['cardPlanPages'] = card_plan_pages(card_plan)
@@ -1004,26 +1152,14 @@ def process_task(cfg, tok, task):
     elif role == 'reviewer':
         verdict = parse_verdict(out)
         if verdict == '通過':
-            # 2026-08-26 改：文案定稿不馬上做圖，等離發布日剩 DESIGN_WINDOW_DAYS 天才交給小蝶
-            # （她的原話：不要文案一過就馬上做圖，拖到接近發布日才做，圖不用整月一次做完）
-            set_stage(cfg, tok, task, {'stage': 'awaiting_window', 'updatedAt': now_ms})
-            line_push(cfg, f'✅「{task.get("title","")}」文案定稿了，已經寫進禾言社群規劃。離發布日還有一段時間，小蝶會在接近發布日前 {DESIGN_WINDOW_DAYS} 天開始做圖')
+            # 2026-10-08 改：小狐是代理人，通過後先請朱兒確認，她按確認才進 awaiting_window
+            # （awaiting_window 那段照舊：等離發布日剩 DESIGN_WINDOW_DAYS 天才交給小蝶）
+            set_stage(cfg, tok, task, {'stage': 'awaiting_owner', 'ownerReminded': False, 'updatedAt': now_ms})
+            line_push(cfg, f'🦊 小狐校稿通過「{task.get("title","")}」（{task.get("postDate","")} 發），請你確認：\n'
+                           f'{AGENT_HUB_URL}?task={tid}\n\n想改字可以先到禾言社群規劃直接改，改完再按確認')
         else:
-            round_no = task.get('round', 0) + 1
-            if verdict is None:
-                set_stage(cfg, tok, task, {
-                    'stage': 'waiting_human', 'waitingKind': 'needHuman',
-                    'waitingReason': '審閱小幫手的回覆看不出通過還是要改，麻煩你看一下',
-                    'resumeStage': 'reviewing', 'updatedAt': now_ms})
-                line_push(cfg, f'🙋「{task.get("title","")}」的審閱結果我判斷不出來，到協作平台看一下')
-            elif round_no > MAX_ROUNDS:
-                set_stage(cfg, tok, task, {
-                    'stage': 'waiting_human', 'waitingKind': 'maxRound',
-                    'waitingReason': f'製作跟審閱已經來回改了 {MAX_ROUNDS} 輪，我先停下來，你要用目前這版定稿，還是再給個方向？',
-                    'resumeStage': 'making', 'round': round_no, 'updatedAt': now_ms})
-                line_push(cfg, f'🙋「{task.get("title","")}」來回改了 {MAX_ROUNDS} 輪還沒過，到協作平台看要不要直接定稿')
-            else:
-                set_stage(cfg, tok, task, {'stage': 'making', 'round': round_no, 'updatedAt': now_ms})
+            send_back(cfg, tok, task, now_ms, '校稿',
+                      '小狐的校稿結果看不出通過還是要改，麻煩你看一下' if verdict is None else None)
     elif role == 'designer':
         canva_url = parse_canva_url(out)
         if not canva_url:
@@ -1156,6 +1292,30 @@ def check_design_window(cfg, tok):
             t = dict(t); t['id'] = tid
             set_stage(cfg, tok, t, {'stage': 'designing', 'updatedAt': int(time.time() * 1000)})
             print(f"{time.strftime('%F %T')} {tid} 進入製圖窗口，推進到 designing")
+
+
+def check_owner_reminder(cfg, tok):
+    """awaiting_owner（小狐通過、等朱兒確認）的稿，離發布日剩不到 OWNER_REMIND_DAYS 天還沒確認，
+    再推一次 LINE。每篇只提醒一次（記在任務的 ownerReminded），晚上不推。"""
+    hour = time.localtime().tm_hour
+    if not (9 <= hour < 21):
+        return
+    tasks = db_get(cfg, tok, ROOM, 'tasks') or {}
+    today = date.today()
+    for tid, t in tasks.items():
+        if not isinstance(t, dict) or t.get('stage') != 'awaiting_owner' or t.get('ownerReminded'):
+            continue
+        try:
+            left = (date.fromisoformat(t.get('postDate') or '') - today).days
+        except ValueError:
+            continue
+        if left > OWNER_REMIND_DAYS:
+            continue
+        db_patch(cfg, tok, ROOM, f'tasks/{tid}', {'ownerReminded': True})
+        when = f'還有 {left} 天要發' if left > 0 else ('今天就要發' if left == 0 else f'已經過了發布日 {-left} 天')
+        line_push(cfg, f'⏰「{t.get("title","")}」{when}，還在等你確認，確認後小蝶才會開始做圖：\n{AGENT_HUB_URL}?task={tid}')
+        print(f"{time.strftime('%F %T')} 推確認提醒 / {t.get('title','')}")
+        return   # 一輪只推一則
 
 
 # ---------------------------------------------------------------------------
@@ -1327,7 +1487,7 @@ def check_publish_reminder(cfg, tok):
         return   # 一輪只推一則，避免一次七則洗版
 
 
-PROPOSAL_PROMPT = """你是「小梟」，禾言數位行銷社群規劃團隊的規劃小幫手。現在要規劃 {target_month} \
+PROPOSAL_PROMPT = """你是「小梟」，禾言數位行銷社群規劃團隊的讀者代表，也負責排每月內容建議。現在要規劃 {target_month} \
 整個月的社群貼文主題建議（不是單篇，是一整個月的清單），先給朱兒確認過，她點頭才會正式建立任務。
 
 禾言的社群節奏規則：
@@ -1341,8 +1501,15 @@ PROPOSAL_PROMPT = """你是「小梟」，禾言數位行銷社群規劃團隊�
 這個月＋上個月已經在禾言規劃表裡的內容（**這個月要規劃的內容不要跟這些話題重複**）：
 {existing_posts}
 
-{group_notes}請規劃 {target_month} 這個月的貼文，抓 4-6 篇，{target_month}的週二日期你自己算出來。
-每篇輸出一行，格式固定（用全形｜分隔，不要換別的符號）：
+{group_notes}**先訂一個當月主軸**（2026-10-08 朱兒說方向太散、沒有重點）：
+一個中小企業老闆這個月最在意的廣告問題（例如「雙 11 前的廣告體檢」「年底預算怎麼花」），
+4-6 篇都要圍繞這個主軸，從不同角度切進去，不要每篇各講各的。
+節慶篇可以例外，但盡量也跟主軸扯得上關係。
+你是讀者代表，挑主軸跟題目時用老闆的眼光想：這個月他會不會想點進來看？
+
+請規劃 {target_month} 這個月的貼文，抓 4-6 篇，{target_month}的週二日期你自己算出來。
+第一行寫主軸，接著每篇輸出一行，格式固定（用全形｜分隔，不要換別的符號）：
+主軸=一句話
 N. 日期=YYYY-MM-DD｜類型=XXX｜標題=XXX｜方向=一句話說明這篇要寫什麼
 
 「方向」那欄要寫得出**這篇的單一主張**（一篇只講一件事），不是列一個大主題。
@@ -1370,6 +1537,11 @@ AUDIT_PROMPT = """你是「小梟」，禾言數位行銷社群規劃團隊的�
 決定：需要調整
 
 只輸出判斷內容本身，不要加開場白。"""
+
+
+def parse_proposal_theme(out):
+    m = re.search(r'^\s*主軸[=＝：:]\s*(.+)$', out or '', re.M)
+    return m.group(1).strip() if m else ''
 
 
 def parse_proposal_items(out):
@@ -1412,10 +1584,12 @@ def run_monthly_proposal(cfg, tok, target_key):
         print('月規劃建議失敗：', e)
         return
     items = parse_proposal_items(out)
+    theme = parse_proposal_theme(out)
     db_patch(cfg, tok, ROOM, f'proposals/{target_key}', {
-        'status': 'pending', 'items': items, 'rawText': out, 'createdAt': now_ms})
+        'status': 'pending', 'items': items, 'theme': theme, 'rawText': out, 'createdAt': now_ms})
     if items:
-        line_push(cfg, f'📅 小梟排好 {target_month_label} 的內容建議了（{len(items)} 篇），到 agent-hub 看要不要用')
+        line_push(cfg, f'📅 小梟排好 {target_month_label} 的內容建議了（{len(items)} 篇'
+                       + (f'，主軸「{theme}」' if theme else '') + '），到 agent-hub 看要不要用')
     else:
         line_push(cfg, f'⚠️ 小梟想排 {target_month_label} 的內容建議，但輸出格式解析不出來，到 agent-hub 看一下原始內容')
 
@@ -1490,6 +1664,7 @@ def run_round(cfg, tok):
     # 掃描沒必要跟著變三倍，維持約一分鐘一次（2026-09-09）。
     if should_scan():
         check_design_window(cfg, tok)     # 純資料庫操作，不吃額度
+        check_owner_reminder(cfg, tok)    # 等朱兒確認的稿快到發布日了，提醒一次
         check_design_due(cfg, tok)        # 規劃表上到期的貼文自動開工做圖卡
         check_publish_reminder(cfg, tok)  # 發布當天／漏發提醒
         state_cleanup()
@@ -1498,7 +1673,7 @@ def run_round(cfg, tok):
 
     tasks = db_get(cfg, tok, ROOM, 'tasks') or {}
     for tid, t in tasks.items():
-        if isinstance(t, dict) and t.get('stage') in ('planning', 'making', 'reviewing', 'designing'):
+        if isinstance(t, dict) and t.get('stage') in ('planning', 'making', 'reading', 'reviewing', 'designing'):
             t = dict(t); t['id'] = tid
             jobs.append((t.get('updatedAt', t.get('createdAt', 0)), 'task', t))
 

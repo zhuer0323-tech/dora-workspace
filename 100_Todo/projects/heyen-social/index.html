@@ -1076,17 +1076,18 @@ function renderCalStats(){
 /* 協作團隊（agent-hub）處理進度的小徽章。只有 agentTaskId 串起來、
    還沒完稿（agentStage !== 'done'）的貼文才顯示，完稿後就不佔版面了。
    點下去開 agent-hub 那篇任務的詳情頁看完整過程。 */
-const AGENT_STAGE_LABEL = {
-  planning:'🦉規劃中', making:'🐰製作中', reviewing:'🦊審閱中',
+const AGENT_STAGE_LABEL = {   // 2026-10-08 重新分工：小兔撰寫 → 小梟試讀 → 小狐校稿 → 你確認 → 小蝶製圖
+  planning:'🐰撰寫中', making:'🐰撰寫中', reading:'🦉試讀中', reviewing:'🦊校稿中',
+  awaiting_owner:'📝等你確認', awaiting_window:'⏳待製圖',
   designing:'🦋製圖中', waiting_human:'🙋待你確認',
 };
 function agentBadge(p){
   if(!p.agentTaskId || !p.agentStage || p.agentStage==='done') return '';
   const label = AGENT_STAGE_LABEL[p.agentStage] || p.agentStage;
-  const cls = p.agentStage==='waiting_human' ? 'agentbadge wait' : 'agentbadge';
+  const cls = (p.agentStage==='waiting_human'||p.agentStage==='awaiting_owner') ? 'agentbadge wait' : 'agentbadge';
   // 用 span 不用 a：.pc 卡片本身是 <button>，裡面不能合法再塞一個連結，改由委派的 click handler 處理跳轉
   return `<span class="${cls}" data-agentlink="../agent-hub/index.html?task=${encodeURIComponent(p.agentTaskId)}"
-             title="開 AI 協作平台看規劃/製作/審閱過程">${label}</span>`;
+             title="開 AI 協作平台看撰寫/試讀/校稿過程">${label}</span>`;
 }
 
 function renderCal(){

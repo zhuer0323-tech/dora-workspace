@@ -109,7 +109,7 @@ nav.tabs .tb.on .cnt{background:rgba(255,255,255,.3)}
 .col{background:var(--pink-xl);border-radius:14px;padding:10px;min-height:100px}
 .col h3{font-size:12.5px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;color:var(--ink2)}
 .col h3 .cdot{width:8px;height:8px;border-radius:99px}
-.cd-planning{background:var(--s-plan)} .cd-making{background:var(--s-make)}
+.cd-planning,.cd-reading{background:var(--s-plan)} .cd-making{background:var(--s-make)}
 .cd-reviewing{background:var(--s-review)} .cd-awaiting_window{background:var(--s-window)}
 .cd-designing{background:var(--s-design)}
 .cd-waiting_human{background:var(--s-wait)} .cd-done{background:var(--s-done)}
@@ -125,6 +125,7 @@ nav.tabs .tb.on .cnt{background:rgba(255,255,255,.3)}
 .card .ccode{font-size:10px;font-weight:700;color:var(--ink3);background:var(--bg);
   border-radius:6px;padding:1px 6px}
 .card .ccode.wait{color:#B4770B;background:#FFF7E0}
+.card .ccode.owner{color:#fff;background:var(--s-wait)}
 .card .tt{font-size:13px;font-weight:700;line-height:1.4;margin-bottom:5px}
 .card .meta{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink3)}
 .card .av{width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px}
@@ -135,7 +136,7 @@ nav.tabs .tb.on .cnt{background:rgba(255,255,255,.3)}
 .dhead h2{font-size:17px}
 .dhead .brief{font-size:12.5px;color:var(--ink2);margin-top:4px;white-space:pre-wrap}
 .badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap}
-.b-planning{background:var(--s-plan)} .b-making{background:var(--s-make)}
+.b-planning,.b-reading{background:var(--s-plan)} .b-making{background:var(--s-make)} .b-awaiting_owner{background:var(--s-wait)}
 .b-reviewing{background:var(--s-review)} .b-awaiting_window{background:var(--s-window)}
 .b-designing{background:var(--s-design)}
 .b-waiting_human{background:var(--s-wait)} .b-done{background:var(--s-done)}
@@ -160,6 +161,8 @@ nav.tabs .tb.on .cnt{background:rgba(255,255,255,.3)}
 .waitbox .wr{font-size:13px;color:#78350F;white-space:pre-wrap;margin-bottom:8px}
 .waitbox textarea{width:100%;border-radius:10px;background:#fff;border:1px solid #FDE68A;padding:8px;font-size:13px;min-height:56px;margin-bottom:8px}
 .waitbox .btns{display:flex;gap:8px;flex-wrap:wrap}
+.planbox{background:#fff;border:1px solid #FDE68A;border-radius:10px;padding:10px;font-size:12.5px;color:var(--ink2);white-space:pre-wrap;margin-bottom:8px}
+.waitbox a.lk{color:#92400E;font-weight:700}
 .wbtn{padding:8px 14px;border-radius:10px;font-size:12.5px;font-weight:700}
 .wbtn.p{background:var(--pink);color:#fff}
 .wbtn.g{background:#fff;color:var(--ink2);border:1px solid var(--line)}
@@ -235,7 +238,7 @@ nav.tabs .tb.on .cnt{background:rgba(255,255,255,.3)}
 
 <div id="gate">
   <h1>🤝 禾言社群規劃團隊</h1>
-  <p>小梟、小兔、小狐、小蝶四個 AI 小幫手接力處理禾言每個月的社群貼文——規劃方向、寫文案、審內容、做圖卡。資料只有你看得到，需要用 zhuer0323@gmail.com 登入。</p>
+  <p>小兔寫、小梟試讀、小狐校稿、你確認、小蝶做圖——四個 AI 小幫手接力處理禾言每個月的社群貼文。資料只有你看得到，需要用 zhuer0323@gmail.com 登入。</p>
   <button id="gateBtn">用 Google 登入</button>
   <div class="err" id="gateErr"></div>
 </div>
@@ -302,7 +305,7 @@ nav.tabs .tb.on .cnt{background:rgba(255,255,255,.3)}
     </div>
 
     <label>標題（選填）</label>
-    <input type="text" id="fTitle" placeholder="留白的話小梟規劃時會幫你想">
+    <input type="text" id="fTitle" placeholder="留白的話小兔會幫你想">
 
     <label>這個月客戶最想了解的內容／這篇的重點方向</label>
     <textarea id="fBrief" placeholder="例如：這個月客戶常問廣告成效變差要怎麼看、想多了解名單廣告怎麼設定…"></textarea>
@@ -355,19 +358,24 @@ let activeTab = 'tasks', selectedTask = null, selectedDM = 'planner';
 // 從禾言社群規劃的徽章點過來時帶 ?task=xxx，開頁直接跳到那筆任務的詳情
 { const p = new URLSearchParams(location.search).get('task'); if(p) selectedTask = p; }
 
-/* 禾言社群規劃團隊的四個角色，固定流程：規劃→製作→審閱→製圖 */
+/* 禾言社群規劃團隊的四個角色（2026-10-08 重新分工）：
+   小兔撰寫 → 小梟試讀 → 小狐校稿 → 你確認 → 小蝶製圖。
+   PERSONA 的 desc 要跟 dora-agent-hub-runner.py 的 PERSONA 對齊 */
 const PERSONA = {
-  planner:  {name:'小梟', avatar:'🦉', desc:'規劃方向', cls:'ws-planner'},
-  maker:    {name:'小兔', avatar:'🐰', desc:'製作初稿', cls:'ws-maker'},
-  reviewer: {name:'小狐', avatar:'🦊', desc:'審閱把關', cls:'ws-reviewer'},
-  designer: {name:'小蝶', avatar:'🦋', desc:'製作圖卡', cls:'ws-designer'},
+  planner:  {name:'小梟', avatar:'🦉', desc:'讀者代表・試讀', cls:'ws-planner'},
+  maker:    {name:'小兔', avatar:'🐰', desc:'寫手・定方向寫文案', cls:'ws-maker'},
+  reviewer: {name:'小狐', avatar:'🦊', desc:'你的代理人・校稿', cls:'ws-reviewer'},
+  designer: {name:'小蝶', avatar:'🦋', desc:'美編・製作圖卡', cls:'ws-designer'},
 };
-const ROLE_ORDER = ['planner','maker','reviewer','designer'];
-const STAGE_OF_ROLE = {planner:'planning', maker:'making', reviewer:'reviewing', designer:'designing'};
+const ROLE_ORDER = ['maker','planner','reviewer','designer'];
+const STAGE_OF_ROLE = {planner:'reading', maker:'making', reviewer:'reviewing', designer:'designing'};
 const DESIGN_WINDOW_DAYS = 3; // 跟 dora-agent-hub-runner.py 的 DESIGN_WINDOW_DAYS 對齊，純顯示用
-const STAGE_ORDER = ['planning','making','reviewing','designing','waiting_human','done'];
-// awaiting_window（待製圖窗口）不獨立開一欄，併進「製圖中」欄，卡片上用小標籤區分
-const STAGE_LABEL = {planning:'規劃中', making:'製作中', reviewing:'審閱中', awaiting_window:'待製圖窗口',
+const STAGE_ORDER = ['making','reading','reviewing','designing','waiting_human','done'];
+// awaiting_window（待製圖窗口）不獨立開一欄，併進「製圖中」欄；
+// awaiting_owner（小狐通過、等你確認定稿）併進「待你確認」欄。卡片上都用小標籤區分
+// planning 是 2026-10-08 以前的舊階段，引擎撞到會直接轉成 making
+const STAGE_LABEL = {planning:'規劃中', making:'撰寫中', reading:'試讀中', reviewing:'校稿中',
+  awaiting_owner:'等你確認定稿', awaiting_window:'待製圖窗口',
   designing:'製圖中', waiting_human:'待你確認', done:'已完成'};
 const ROLE_META = {
   planner:{label:'🦉 小梟', cls:'r-planner'}, maker:{label:'🐰 小兔', cls:'r-maker'},
@@ -512,6 +520,7 @@ function renderProposalBanner(){
   const items = p.items || [];
   return `<div class="proposalbox" data-key="${key}">
     <div class="pt">📅 小梟排好了 ${esc(key)} 的內容建議（${items.length} 篇），要採用嗎？</div>
+    ${p.theme?`<div class="pangle" style="margin-bottom:8px"><b>本月主軸：</b>${esc(p.theme)}</div>`:''}
     <div class="plist">${items.map(it=>`<div class="pitem">
         <span class="pdate">${esc(it.date)}</span><span class="chip">${esc(it.type)}</span>
         <b>${esc(it.title)}</b><div class="pangle">${esc(it.angle)}</div>
@@ -537,7 +546,7 @@ function wireProposalBanner(){
       const id = dbPush(dbRef(db, `${ROOM}/tasks`)).key;
       await dbSet(dbRef(db, `${ROOM}/tasks/${id}`), {
         title: it.title||'', type: it.type||'', postDate: it.date||'', goal: '',
-        brief: it.angle||'', stage: 'planning', round: 0, createdAt: now, updatedAt: now,
+        brief: (p.theme?`（本月主軸：${p.theme}）`:'') + (it.angle||''), stage: 'making', round: 0, createdAt: now, updatedAt: now,
       });
       await dbPush(dbRef(db, `${ROOM}/messages/${id}`), {role:'human', text: it.angle||it.title||'', createdAt: now});
     }
@@ -554,7 +563,8 @@ function renderBoard(){
   let html = renderProposalBanner();
   html += `<div class="boardhead"><h2 style="font-size:16px">任務看板</h2><button class="addbtn" id="newBtn2">＋ 新任務</button></div>`;
   html += '<div class="board">' + STAGE_ORDER.map(stage=>{
-    const items = rows.filter(t=> stage==='designing' ? (t.stage==='designing'||t.stage==='awaiting_window') : t.stage===stage)
+    const items = rows.filter(t=> stage==='designing' ? (t.stage==='designing'||t.stage==='awaiting_window')
+        : stage==='waiting_human' ? (t.stage==='waiting_human'||t.stage==='awaiting_owner') : t.stage===stage)
       .sort((a,b)=>(a.postDate||'').localeCompare(b.postDate||'') || (b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0));
     const respRole = Object.keys(STAGE_OF_ROLE).find(r=>STAGE_OF_ROLE[r]===stage);
     const dropOk = stage!=='waiting_human'; // 待你確認欄有自己的確認/定稿按鈕，不開放拖放進出
@@ -572,8 +582,9 @@ function renderBoard(){
             ${t.postDate?`<span class="cdate">${esc(dateShort(t.postDate))}</span>`:'<span class="cdate">未定日</span>'}
             ${code?`<span class="ccode">${esc(code)}</span>`:''}
             ${t.stage==='awaiting_window'?'<span class="ccode wait">⏳待窗口</span>':''}
+            ${t.stage==='awaiting_owner'?'<span class="ccode owner">📝等你確認定稿</span>':''}
           </div>
-          <div class="tt">${esc(t.title)||'（規劃中，還沒有標題）'}</div>
+          <div class="tt">${esc(t.title)||'（小兔撰寫中，還沒有標題）'}</div>
           <div class="meta">${p?`<span class="av" style="background:var(--pink-xl)">${p.avatar}</span>`:''}
             ${t.type?esc(t.type):''}</div>
         </div>`;
@@ -663,7 +674,7 @@ async function handleManualMove(tid, targetStage){
     resumeStage: targetStage, updatedAt: now,
   });
   await dbPush(dbRef(db, `${ROOM}/messages/${tid}`), {role:'system', text: reason, createdAt: now});
-  const respRole = Object.keys(STAGE_OF_ROLE).find(r=>STAGE_OF_ROLE[r]===targetStage) || 'planner';
+  const respRole = Object.keys(STAGE_OF_ROLE).find(r=>STAGE_OF_ROLE[r]===targetStage) || 'maker';
   const p = PERSONA[respRole];
   await dbPush(dbRef(db, `${ROOM}/groupChat`), {
     from: respRole,
@@ -679,15 +690,16 @@ function renderTaskDetail(){
   const msgs = Object.values(messages[selectedTask]||{}).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
 
   const stepsDef = [
-    {key:'planning', label:'規劃', role:'planner'},
-    {key:'making', label:'製作', role:'maker'},
-    {key:'reviewing', label:'審閱', role:'reviewer'},
+    {key:'making', label:'撰寫', role:'maker'},
+    {key:'reading', label:'試讀', role:'planner'},
+    {key:'reviewing', label:'校稿', role:'reviewer'},
+    {key:'awaiting_owner', label:'你確認', role:null, icon:'🙋'},
     {key:'designing', label:'製圖', role:'designer'},
     {key:'done', label:'完成', role:null},
   ];
-  const stepKeyOf = stage => stage==='awaiting_window' ? 'designing' : stage;
+  const stepKeyOf = stage => stage==='awaiting_window' ? 'designing' : stage==='planning' ? 'making' : stage;
   const curIdx = t.stage==='waiting_human'
-    ? stepsDef.findIndex(s=>s.key===stepKeyOf(t.resumeStage||'planning'))
+    ? stepsDef.findIndex(s=>s.key===stepKeyOf(t.resumeStage||'making'))
     : stepsDef.findIndex(s=>s.key===stepKeyOf(t.stage));
 
   let html = `<div class="backbtn" id="backBtn">← 返回任務看板</div>`;
@@ -701,18 +713,31 @@ function renderTaskDetail(){
     const cls = i<curIdx ? 'done' : i===curIdx ? 'now' : '';
     const line = i < stepsDef.length-1 ? '<div class="stepline"></div>' : '';
     return `<div class="step ${cls}">
-      <div class="circ">${i<curIdx ? '✓' : (p?p.avatar:'🏁')}</div>
+      <div class="circ">${i<curIdx ? '✓' : (p?p.avatar:(s.icon||'🏁'))}</div>
       <div class="sl">${s.label}</div>
     </div>${line}`;
   }).join('') + '</div>';
 
-  if(t.stage==='planning'||t.stage==='making'||t.stage==='reviewing'||t.stage==='designing'){
-    const roleName = PERSONA[Object.keys(STAGE_OF_ROLE).find(r=>STAGE_OF_ROLE[r]===t.stage)].name;
+  if(t.stage==='planning'||t.stage==='making'||t.stage==='reading'||t.stage==='reviewing'||t.stage==='designing'){
+    const roleName = PERSONA[Object.keys(STAGE_OF_ROLE).find(r=>STAGE_OF_ROLE[r]===stepKeyOf(t.stage))].name;
     const workingTxt = t.processingRole ? `${roleName}正在處理，已經進行 ${elapsedText(t.processingStartedAt)}`
       : `排隊中，等${roleName}輪到這篇（每分鐘檢查一次，一次只處理一件）`;
     html += `<div class="working"><span class="sp"></span>${workingTxt}</div>`;
   } else if(t.stage==='awaiting_window'){
     html += `<div class="working"><span class="sp"></span>文案已定稿，等接近發布日（${DESIGN_WINDOW_DAYS} 天內）小蝶會自動開始做圖，不用你操作</div>`;
+  }
+
+  if(t.stage==='awaiting_owner'){
+    html += `<div class="waitbox">
+      <div class="wt">📝 小狐校稿通過了，請你確認定稿</div>
+      <div class="wr">想改字可以先到 <a class="lk" href="../heyen-social/" target="_blank" rel="noopener">禾言社群規劃</a> 直接改文案或圖卡文字，改完再按確認，小蝶會照你改過的版本做圖。
+確認後會等到發布前 ${DESIGN_WINDOW_DAYS} 天內才開始做圖。</div>
+      ${t.plan?`<div class="planbox"><b>小兔的主張卡</b>\n${esc(t.plan)}</div>`:''}
+      <textarea id="replyText" placeholder="要退回重寫的話，在這裡寫想調整的方向"></textarea>
+      <div class="btns">
+        <button class="wbtn p" id="btnOwnerOk">確認，交給小蝶</button>
+        <button class="wbtn g" id="btnOwnerBack">退回小兔重寫</button>
+      </div></div>`;
   }
 
   if(t.stage==='waiting_human'){
@@ -776,22 +801,43 @@ function renderTaskDetail(){
     $('#btnFinalize').onclick = async () => {
       const rows = Object.values(messages[selectedTask]||{}).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
       const lastMaker = [...rows].reverse().find(m=>m.role==='maker');
-      const finalCopy = lastMaker ? lastMaker.text : '';
+      // 小兔的輸出有 <PLAN>／<CAPTION>／<CARD_PLAN> 三個區塊，文案欄只放 CAPTION（跟引擎的 parse_maker_output 同一套）
+      const raw = lastMaker ? lastMaker.text : '';
+      const cm = raw.match(/<CAPTION>([\s\S]*?)(?:<\/CAPTION>|<CARD_PLAN>|$)/i);
+      const finalCopy = cm ? cm[1].trim() : raw.replace(/<PLAN>[\s\S]*?<\/PLAN>/i,'').replace(/<CARD_PLAN>[\s\S]*$/i,'').trim();
       if(t.hySocialId){
         // 正常情況規劃階段就已經在禾言那邊開好卡了，這裡只是把定稿內容補上去
         await dbUpdate(dbRef(db, `hy_social_r7n3k8/posts/${t.hySocialId}`), {
-          ig: finalCopy, agentStage: 'designing'});
+          ig: finalCopy, agentStage: 'awaiting_window'});
       } else {
         // 防呆：萬一還沒串過（理論上不會發生，規劃一開始引擎就會開卡）才在這裡補開一張
         const postRef = await dbPush(dbRef(db, 'hy_social_r7n3k8/posts'), {
           date: t.postDate||'', type: t.type||'其他', title: t.title||'', goal: t.goal||'',
-          ig: finalCopy, fb: '', done: false, agentTaskId: selectedTask, agentStage: 'designing',
+          ig: finalCopy, fb: '', done: false, agentTaskId: selectedTask, agentStage: 'awaiting_window',
         });
         await dbUpdate(dbRef(db, `${ROOM}/tasks/${selectedTask}`), {hySocialId: postRef.key});
       }
-      await dbUpdate(dbRef(db, `${ROOM}/tasks/${selectedTask}`), {stage:'designing', round: 0, updatedAt: Date.now()});
+      // 她自己按定稿就等於確認過了，跟「確認，交給小蝶」一樣走製圖窗口（發布前幾天才做圖）
+      await dbUpdate(dbRef(db, `${ROOM}/tasks/${selectedTask}`), {stage:'awaiting_window', round: 0, updatedAt: Date.now()});
       await dbPush(dbRef(db, `${ROOM}/messages/${selectedTask}`), {
-        role:'system', text:'你選擇採用目前版本，定稿，已經寫進禾言社群規劃，接下來換小蝶做圖卡。', createdAt: Date.now()});
+        role:'system', text:`你選擇採用目前版本，定稿，已經寫進禾言社群規劃，發布前 ${DESIGN_WINDOW_DAYS} 天內小蝶會開始做圖卡。`, createdAt: Date.now()});
+    };
+  }
+  if($('#btnOwnerOk')){
+    $('#btnOwnerOk').onclick = async () => {
+      await dbUpdate(dbRef(db, `${ROOM}/tasks/${selectedTask}`), {stage:'awaiting_window', updatedAt: Date.now()});
+      await syncHyStage('awaiting_window');
+      await dbPush(dbRef(db, `${ROOM}/messages/${selectedTask}`), {
+        role:'human', text:`✅ 確認定稿，交給小蝶（發布前 ${DESIGN_WINDOW_DAYS} 天內開始做圖）`, createdAt: Date.now()});
+    };
+  }
+  if($('#btnOwnerBack')){
+    $('#btnOwnerBack').onclick = async () => {
+      const text = getReply();
+      if(!text){ replyEl.focus(); replyEl.placeholder = '請先寫一下想調整什麼，小兔才知道怎麼改'; return; }
+      await dbPush(dbRef(db, `${ROOM}/messages/${selectedTask}`), {role:'human', text, createdAt: Date.now()});
+      await dbUpdate(dbRef(db, `${ROOM}/tasks/${selectedTask}`), {stage:'making', round: 0, updatedAt: Date.now()});
+      await syncHyStage('making');
     };
   }
 }
@@ -879,7 +925,7 @@ $('#submitBtn').onclick = async () => {
   await dbSet(dbRef(db, `${ROOM}/tasks/${id}`), {
     title: $('#fTitle').value.trim(), type: newType,
     postDate: $('#fDate').value || '', goal: $('#fGoal').value.trim(), brief,
-    stage: 'planning', round: 0, createdAt: now, updatedAt: now,
+    stage: 'making', round: 0, createdAt: now, updatedAt: now,
   });
   await dbPush(dbRef(db, `${ROOM}/messages/${id}`), {role:'human', text: brief, createdAt: now});
   $('#modalBg').style.display='none'; resetForm();
