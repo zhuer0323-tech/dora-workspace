@@ -1189,7 +1189,7 @@ def process_task(cfg, tok, task):
             return True
         set_stage(cfg, tok, task, {'stage': 'done', 'canvaUrl': canva_url, 'updatedAt': now_ms})
         if task.get('hySocialId'):
-            db_patch(cfg, tok, HY_ROOM, f'posts/{task["hySocialId"]}', {'link': canva_url})
+            db_patch(cfg, tok, HY_ROOM, f'posts/{task["hySocialId"]}', {'link': canva_url, 'lastAuditAt': now_ms})
         line_push(cfg, f'🎨「{task.get("title","")}」的圖卡做好了\n\nCanva 編輯：{canva_url}')
     return True
 
@@ -1634,6 +1634,8 @@ def check_audit_scan(cfg, tok):
             continue  # 已經過期沒發的不在稽核範圍內，那是另一個問題
         if p.get('agentStage') and p.get('agentStage') != 'done':
             continue  # 正在被處理中的不要打斷
+        if (p.get('link') or '').strip():
+            continue  # 圖卡已經做好了，再改文案就跟圖對不起來（2026-10-09 撞過：剛做完圖就被稽核改寫）
         if now_ms - (p.get('lastAuditAt') or 0) < AUDIT_INTERVAL_SEC * 1000:
             continue  # 這週已經稽核過了
         candidates.append((pid, p))
