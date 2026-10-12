@@ -1187,9 +1187,11 @@ def process_task(cfg, tok, task):
                 'resumeStage': 'designing', 'updatedAt': now_ms})
             line_push(cfg, f'🙋「{task.get("title","")}」的圖卡沒拿到 Canva 連結，到協作平台看一下')
             return True
-        set_stage(cfg, tok, task, {'stage': 'done', 'canvaUrl': canva_url, 'updatedAt': now_ms})
+        # 先把連結寫進規劃表，再標完成。2026-10-10 撞過：標完成之後寫連結那一下剛好斷網，
+        # 規劃表變成「完成但沒圖卡」，check_design_due 又開一筆，同一篇做了兩次圖
         if task.get('hySocialId'):
             db_patch(cfg, tok, HY_ROOM, f'posts/{task["hySocialId"]}', {'link': canva_url, 'lastAuditAt': now_ms})
+        set_stage(cfg, tok, task, {'stage': 'done', 'canvaUrl': canva_url, 'updatedAt': now_ms})
         line_push(cfg, f'🎨「{task.get("title","")}」的圖卡做好了\n\nCanva 編輯：{canva_url}')
     return True
 
