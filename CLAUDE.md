@@ -1204,6 +1204,18 @@ HTML 覆蓋到 `100_Todo/projects/heyen-cards/index.html` → push → 等 Pages
 <!-- AI 分身起始助手紀錄:START -->
 <!-- AI 分身起始助手 by 雷小蒙 v1.0 · 2026-05-13 · by 雷蒙（Raymond Hou）· https://github.com/Raymondhou0917/claude-code-resources · CC BY-NC-SA 4.0 -->
 
+## Feebees 週報（Excel）（2026-10-12 上線）
+
+- **用法**：說「做 Feebees 週報 10/13-10/19」→ `Feebees週報` skill 用她的 Meta 連線抓數字（這個帳戶只有她本人的連線看得到，所以只能在對話裡做、不排程）
+  → `generate_weekly.py` 照 Google 試算表模板「Feebees廣告週報」的格式產 `~/Downloads/Feebees廣告週報_YYMMDD-YYMMDD.xlsx`，她自己拖進雲端硬碟
+- **程式**：`000_Agent/skills/Feebees週報/`（`uv run --with openpyxl`，系統 python3 沒有 openpyxl）；計劃書 `100_Todo/plans/2026-10-12-Feebees週報.md`
+- **她定的版型**：不放素材編號；觀察結論框 A–D 四欄×11 列；性別年齡頁左邊留空位給她自己貼圖、右邊放數字；
+  表格旁「素材狀態」欄標關閉日期，同表格顏色字體、不要紅字；花費照模板放
+- ⚠️ 雲端硬碟連線上傳要把整份檔案的 base64 貼進參數（3 萬多字元），轉貼易錯，所以改成放下載資料夾
+- **還沒做**：10 月結案 PPT（套李享家模板，沿用 `廣告結案報表/generate_pptx.py`），10/31 前另開計劃
+
+---
+
 ## Brandloom 品牌製圖工具（2026-10-04 從 Codex 接手）
 
 品牌廣告圖／社群圖的製圖工作台：建 Brand Kit → 填活動 → 複製製圖任務出圖，或用「品牌智慧排版」排出可編輯的 A／B／C 版型、下載 PNG。
