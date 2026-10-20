@@ -54,6 +54,10 @@ LOCK    = '/tmp/dora-agent-hub-runner.lock'
 LOCK_STALE = DESIGN_TIMEOUT + 120   # 鎖過期門檻要蓋過最長的角色逾時（製圖900s），
                                      # 不然做圖跑到10~15分鐘那段會被誤判成死鎖，讓下一輪同時搶同一個任務
 CLIENTS = os.path.join(WORKDIR, '200_Reference', 'clients')
+# 老闆關心清單（2026-10-20 朱兒要求選題先站在老闆角度）：小梟排月份、小兔寫單篇都先讀它。
+# 由 Python 讀進來塞進提示詞，不靠 claude 自己 Read（OneDrive 底下，launchd 可能被 TCC 擋）
+BOSS_LIST = os.path.join(WORKDIR, '200_Reference', 'writing-samples', '禾言社群-老闆關心清單.md')
+MEETINGS = os.path.join(WORKDIR, '100_Todo', 'meetings')
 ROOM    = 'ah_4j2ppkn8rq'     # 改名要同步改 Firebase 規則
 HY_ROOM = 'hy_social_r7n3k8'  # 禾言社群規劃網頁的節點，定稿後直接寫進這裡
 MAX_ROUNDS = 3                 # 製作/審閱最多來回幾輪（2026-09-18 從 2 加到 3：
@@ -181,6 +185,19 @@ MAKER_PROMPT = """你是「小兔」，禾言數位行銷社群規劃團隊的�
 
 禾言規劃表這個月＋上個月已經排的貼文（**不要跟這些話題或切角撞在一起**）：
 {existing_posts}
+
+## 老闆關心清單（2026-10-20 起，**動筆前先看這份**）
+
+朱兒說：老闆想看的是差異、新資訊、怎麼做這類東西，要先站在老闆的角度想他會不會停下來看，
+不是從「禾言想講什麼」或「平台出了什麼新功能」出發。下面是整理好的老闆真實問題：
+- 這篇要回答清單裡的**哪一個問題**，寫在主張卡「回答老闆的哪個問題」那一欄（貼著老闆的口氣寫）。
+  朱兒給的方向如果已經寫了「老闆為什麼想看」，就照那個；方向跟清單都對不上，就挑最接近的那條，在那一欄說明怎麼接上
+- **標題與封面從老闆的問題出發**：用他的語言講出他的困擾、他會得到什麼、或一個他不知道的差異。
+  只寫大主題（「認識轉換追蹤」）、只有專業名詞、或從功能名稱開頭的標題都不行
+- 「朱兒拿掉的」那幾條**不要碰**
+- 清單裡標「客戶實際問過」的，是從朱兒的會議整理的，一樣不點名、不帶數字
+
+{boss_list}
 {group_notes}{transcript_block}
 {revision_note}
 動筆前先讀這五份（不能跳）：
@@ -199,7 +216,9 @@ MAKER_PROMPT = """你是「小兔」，禾言數位行銷社群規劃團隊的�
 {edit_samples}
 ## 第一步：主張卡（第一輪才需要查資料，修改輪沿用上一版主張卡，除非意見要求換方向）
 
-- 上網搜尋 Meta／Google／LINE 廣告平台最近的更新、新功能或政策變化，找跟這篇方向相關、值得講的點
+- **先想清楚老闆在問什麼，再去找答案**：從上面清單挑定這篇回答的問題後，
+  上網查 Meta／Google／LINE 廣告平台最近的更新、新功能或政策變化，找**能回答這個問題**的新東西。
+  不要倒過來：先看到一個新功能，再硬找理由叫老闆關心它
 - 可以讀 `200_Reference/clients/` 底下的客戶檔，找廣告投放實際遇到的問題，**只當背景**
 - **「這篇唯一主張」18 個中文字左右，一篇只能有一個**。想講兩件事就挑一件，另一件寫進「這篇不要寫什麼」
 - 「禾言的判斷」要是明確立場，「因人而異」「看情況」不算數
@@ -254,6 +273,7 @@ MAKER_PROMPT = """你是「小兔」，禾言數位行銷社群規劃團隊的�
 ## 輸出格式（三個區塊都要，標記一字不改）
 
 <PLAN>
+回答老闆的哪個問題：
 受眾此刻的問題：
 這篇唯一主張：
 禾言的判斷：
@@ -1061,6 +1081,7 @@ def process_task(cfg, tok, task):
             post_date=task.get('postDate') or '（沒填）',
             brief=task.get('brief') or '（朱兒沒給方向，照類型自己挑一個這個月值得講、沒跟規劃表撞題的主張）',
             existing_posts=existing_hy_posts_summary(cfg, tok, task.get('postDate')),
+            boss_list=boss_list_block(),
             group_notes=recent_group_chat_summary(cfg, tok),
             transcript_block=transcript_block, revision_note=revision_note,
             card_type_note=card_type_note(card_type),
@@ -1521,8 +1542,22 @@ PROPOSAL_PROMPT = """你是「小梟」，禾言數位行銷社群規劃團隊�
 這個月＋上個月已經在禾言規劃表裡的內容（**這個月要規劃的內容不要跟這些話題重複**）：
 {existing_posts}
 
+## 老闆關心清單（2026-10-20 起，**題目一律從這裡出發**）
+
+朱兒說：題目方向要先站在老闆、品牌經營者的角度想——他們想看差異、新資訊、怎麼做，
+也想看踩雷經驗、花錢前的判斷、破解迷思、同行在做什麼。什麼話題會讓他停下來看？
+不是從「禾言想講什麼」或「平台出了什麼新功能」出發。下面是整理好的老闆真實問題：
+
+{boss_list}
+
+用這份清單的規則：
+- 每一篇都要對應清單裡的**一條問題**，寫在「為什麼想看」那欄（老闆的困擾是什麼、看完他得到什麼）
+- **標「⭐ 朱兒點過頭」的優先用**；「朱兒拿掉的」那幾條不要排
+- 標「已寫過」的要照它建議的新切角，不要重講一次
+- 內容種類要混著用（差異、新資訊、怎麼做、踩雷、判斷、迷思……），不要整個月都是「怎麼做」
+
 {group_notes}**先訂一個當月主軸**（2026-10-08 朱兒說方向太散、沒有重點）：
-一個中小企業老闆這個月最在意的廣告問題（例如「雙 11 前的廣告體檢」「年底預算怎麼花」），
+從清單挑這個月最多老闆在意的那個焦慮（例如「錢有沒有白花」「有量沒生意」），
 4-6 篇都要圍繞這個主軸，從不同角度切進去，不要每篇各講各的。
 節慶篇可以例外，但盡量也跟主軸扯得上關係。
 你是讀者代表，挑主軸跟題目時用老闆的眼光想：這個月他會不會想點進來看？
@@ -1530,12 +1565,48 @@ PROPOSAL_PROMPT = """你是「小梟」，禾言數位行銷社群規劃團隊�
 請規劃 {target_month} 這個月的貼文，抓 4-6 篇，{target_month}的週二日期你自己算出來。
 第一行寫主軸，接著每篇輸出一行，格式固定（用全形｜分隔，不要換別的符號）：
 主軸=一句話
-N. 日期=YYYY-MM-DD｜類型=XXX｜標題=XXX｜方向=一句話說明這篇要寫什麼
+N. 日期=YYYY-MM-DD｜類型=XXX｜標題=XXX｜方向=一句話說明這篇要寫什麼｜為什麼想看=對應清單哪條問題、老闆看完得到什麼
 
 「方向」那欄要寫得出**這篇的單一主張**（一篇只講一件事），不是列一個大主題。
-標題也不能只寫大主題，要讓人看見問題、結果、衝突或具體利益。
+**標題用老闆的語言**：講出他的困擾、他會得到什麼、或一個他不知道的差異。
+只寫大主題（「認識轉換追蹤」）、只有專業名詞、從功能名稱開頭的標題都不行。
+可以參考清單裡「可以切的題目」，但不要照抄。
 
 只輸出這個清單，不要加開場白或其他說明文字，不要用 markdown。"""
+
+LIST_REFRESH_PROMPT = """你是「小梟」，禾言數位行銷社群規劃團隊的讀者代表。今天是 {today}。
+每個月排下個月題目之前，你要先更新一次「老闆關心清單」：台灣中小企業老闆、品牌經營者
+這陣子在廣告與行銷上真的在煩什麼、想知道什麼。清單是之後選題的起點。
+
+## 要做的事
+
+1. 上網看最近一兩個月老闆們在討論的廣告與行銷問題：老闆社團與論壇、Threads、Dcard、
+   商業媒體熱門文章、Meta／Google／LINE 平台的新規定與新功能（新功能要寫成「老闆會怎麼問」，不是功能介紹）
+2. 看下面的會議筆記，找客戶實際問過、卡關過的問題
+3. 照舊清單的格式更新：
+   - 新出現的問題加進對應分組（編號接著排，例如 A6）
+   - 已經沒人在講、或時效過了的，標題後面加「（已過時）」，不要刪
+   - 「已寫過」那一行照舊保留
+
+## 鐵則（違反任何一條，這次更新會整份作廢）
+
+- **標「⭐ 朱兒點過頭」的條目、標「朱兒補充」的條目，標題那一行一個字都不能改**，內容也不要刪
+- **「## 朱兒拿掉的」那一段原封不動保留**，裡面的問題不能再加回清單
+- 客戶的問題要改寫成一般老闆都會問的說法：**不寫客戶名稱、不寫店名、不寫成效數字**
+- 網路來源要真的找得到，在最下面「來源」補上連結；找不到依據的就不要寫，**不要自己編**
+- 檔案最上面的「第 N 版」那行改成今天的日期
+
+## 舊清單
+
+{old_list}
+
+## 最近的會議筆記（只取問題本身）
+
+{meeting_notes}
+
+## 輸出
+
+把**更新後的完整清單**放在 <LIST> 和 </LIST> 之間（整份 Markdown，不是只寫改了哪裡），標記以外不要寫任何字。"""
 
 AUDIT_PROMPT = """你是「小梟」，禾言數位行銷社群規劃團隊的規劃小幫手。定期回頭檢查已經排定、
 但還沒發布的貼文，看內容是不是還適合現在發、需不需要調整。
@@ -1567,11 +1638,117 @@ def parse_proposal_theme(out):
 def parse_proposal_items(out):
     items = []
     for line in out.splitlines():
-        m = re.match(r'^\d+\.\s*日期=([\d-]+)｜類型=([^｜]+)｜標題=([^｜]+)｜方向=(.+)$', line.strip())
+        # 「為什麼想看」是 2026-10-20 加的，舊格式（沒有這欄）照樣解析得出來
+        m = re.match(r'^\d+\.\s*日期=([\d-]+)｜類型=([^｜]+)｜標題=([^｜]+)｜方向=([^｜]+?)'
+                     r'(?:｜為什麼想看=(.+))?$', line.strip())
         if m:
-            items.append({'date': m.group(1), 'type': m.group(2).strip(),
-                          'title': m.group(3).strip(), 'angle': m.group(4).strip()})
+            item = {'date': m.group(1), 'type': m.group(2).strip(),
+                    'title': m.group(3).strip(), 'angle': m.group(4).strip()}
+            if m.group(5):
+                item['why'] = m.group(5).strip()
+            items.append(item)
     return items
+
+
+def boss_list_block():
+    """老闆關心清單的全文，塞進小梟、小兔的提示詞。讀不到（TCC 或檔案不見）就回一句說明，不讓任務卡住。"""
+    try:
+        with open(BOSS_LIST, encoding='utf-8') as f:
+            return f.read().strip()
+    except Exception as e:
+        print('讀不到老闆關心清單：', e)
+        return '（這次讀不到老闆關心清單，請自己站在中小企業老闆的角度想：他這陣子在煩什麼、看到什麼會停下來）'
+
+
+def recent_meeting_notes(days=45, per_file=1500, total=12000):
+    """最近幾場會議筆記的「結論」段落，給清單更新時找客戶實際問過的問題。
+    只取 notes.md 開頭到「待辦事項」之前（一句話總結＋重要結論），讀不到回 None。"""
+    try:
+        names = sorted(os.listdir(MEETINGS), reverse=True)
+    except Exception as e:
+        print('讀不到會議資料夾：', e)
+        return None
+    cutoff = (date.today() - timedelta(days=days)).isoformat()
+    out, size = [], 0
+    for name in names:
+        if name[:10] < cutoff:
+            break
+        try:
+            with open(os.path.join(MEETINGS, name, 'notes.md'), encoding='utf-8') as f:
+                text = f.read()
+        except Exception:
+            continue
+        text = text.split('## 待辦事項')[0].strip()[:per_file]
+        out.append(f'=== {name[:10]} 的會議 ===\n{text}')
+        size += len(text)
+        if size >= total:
+            break
+    return '\n\n'.join(out)
+
+
+def _list_locked_lines(text):
+    """清單裡朱兒定過的東西：⭐ 條目的標題行、「朱兒拿掉的」底下每一行、標「朱兒補充」的標題行。
+    更新後這些一行都不能少，少了就不寫入。"""
+    lines = text.splitlines()
+    locked = [l.strip() for l in lines if l.startswith('### ⭐') or ('朱兒補充' in l and l.startswith('###'))]
+    in_drop = False
+    for l in lines:
+        if l.startswith('## '):
+            in_drop = l.startswith('## 朱兒拿掉的')
+            continue
+        if in_drop and l.strip().startswith('- '):
+            locked.append(l.strip())
+    return locked
+
+
+def check_list_refresh(cfg, tok, target_key):
+    """排 target_key 那個月的題目之前，這個月的清單更新做過沒有（成功失敗都只試一次）。"""
+    return not db_get(cfg, tok, ROOM, f'listRefresh/{target_key}')
+
+
+def run_list_refresh(cfg, tok, target_key):
+    """每月排題目前，小梟先重看一輪網路與客戶會議，更新老闆關心清單。
+    失敗或改到朱兒定過的條目就不寫入，照舊用上一版排題目。"""
+    now_ms = int(time.time() * 1000)
+    db_patch(cfg, tok, ROOM, f'listRefresh/{target_key}', {'startedAt': now_ms})
+    try:
+        with open(BOSS_LIST, encoding='utf-8') as f:
+            old = f.read()
+    except Exception as e:
+        db_patch(cfg, tok, ROOM, f'listRefresh/{target_key}', {'status': 'noFile', 'error': str(e)[:300]})
+        line_push(cfg, '⚠️ 小梟想更新「老闆關心清單」但讀不到檔案，這個月先不更新，題目照樣排')
+        return
+    notes = recent_meeting_notes()
+    notes_block = notes if notes else '（這次讀不到會議筆記，只用網路資料更新）'
+    print(f"{time.strftime('%F %T')} 開始更新老闆關心清單 / {target_key}")
+    try:
+        out = run_claude(LIST_REFRESH_PROMPT.format(today=date.today().isoformat(), old_list=old,
+                                                    meeting_notes=notes_block),
+                         allowed=PLANNER_ALLOWED + ',WebFetch', timeout=TIMEOUT)
+    except QuotaExhausted:
+        raise
+    except Exception as e:
+        print('更新老闆關心清單失敗：', e)
+        db_patch(cfg, tok, ROOM, f'listRefresh/{target_key}', {'status': 'error', 'error': str(e)[:300]})
+        return
+    m = re.search(r'<LIST>\s*(.*?)\s*</LIST>', out or '', re.S)
+    new = m.group(1).strip() + '\n' if m else ''
+    missing = [l for l in _list_locked_lines(old) if l not in new]
+    if not new or '## 朱兒拿掉的' not in new or missing:
+        why = '格式不對' if not new or '## 朱兒拿掉的' not in new else f'動到朱兒定過的 {len(missing)} 條'
+        print('清單更新不寫入：', why, missing[:5])
+        db_patch(cfg, tok, ROOM, f'listRefresh/{target_key}', {'status': 'rejected', 'error': why})
+        line_push(cfg, f'⚠️ 小梟這個月更新「老闆關心清單」沒成功（{why}），先沿用上一版排題目')
+        return
+    backup = BOSS_LIST.replace('.md', f'.bak-{date.today():%Y%m%d}.md')
+    with open(backup, 'w', encoding='utf-8') as f:
+        f.write(old)
+    with open(BOSS_LIST, 'w', encoding='utf-8') as f:
+        f.write(new)
+    db_patch(cfg, tok, ROOM, f'listRefresh/{target_key}', {'status': 'done', 'doneAt': int(time.time() * 1000),
+                                                          'note': '' if notes else 'noMeetings'})
+    if not notes:
+        line_push(cfg, 'ℹ️ 小梟更新了「老闆關心清單」，但這次讀不到會議筆記（可能是 Mac 權限），只用了網路資料')
 
 
 def check_monthly_proposal(cfg, tok):
@@ -1593,6 +1770,7 @@ def run_monthly_proposal(cfg, tok, target_key):
     target_month_label = f'{ty} 年 {tm} 月'
     existing = existing_hy_posts_summary(cfg, tok, f'{target_key}-01')
     prompt = PROPOSAL_PROMPT.format(target_month=target_month_label, existing_posts=existing,
+                                     boss_list=boss_list_block(),
                                      group_notes=recent_group_chat_summary(cfg, tok))
     print(f"{time.strftime('%F %T')} 開始跑月規劃建議 / {target_key}")
     now_ms = int(time.time() * 1000)
@@ -1736,6 +1914,10 @@ def run_round(cfg, tok):
     # 沒有任務/私聊要處理，這輪換去做背景維護：月規劃建議或定期稽核，一樣一次只做一件
     target = check_monthly_proposal(cfg, tok)
     if target:
+        # 2026-10-20：排題目前先更新老闆關心清單（一輪只做一件，下一輪才排題目）
+        if check_list_refresh(cfg, tok, target):
+            run_list_refresh(cfg, tok2, target)
+            return
         run_monthly_proposal(cfg, tok2, target)
         return
     audit_candidate = check_audit_scan(cfg, tok)

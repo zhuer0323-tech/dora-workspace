@@ -163,8 +163,8 @@ check('沒有殘留「可公開案例可引用」', '標示為對外可公開的
 for kw in ['客戶名稱', '成效數字']:
     check('小兔被告知不能寫%s' % kw, kw in ah.MAKER_PROMPT, True)
     check('小狐會擋%s' % kw, kw in ah.REVIEWER_PROMPT, True)
-check('小兔知道字數上限', '350～450 字' in ah.MAKER_PROMPT, True)
-check('小狐會擋超過 450 字', '450 字' in ah.REVIEWER_PROMPT, True)
+check('小兔知道字數上限', '250～350 字' in ah.MAKER_PROMPT, True)   # 2026-10-08 從 350～450 收緊
+check('小狐會擋超過 350 字', '超過 350 字' in ah.REVIEWER_PROMPT, True)
 # 2026-09-18 方案 A：要讀者去後台照做的就寫功能名稱，純觀念的才避開
 check('小兔知道功能名稱的新規則', 'Advantage+' in ah.MAKER_PROMPT, True)
 check('小狐知道功能名稱的新規則', 'Advantage+' in ah.REVIEWER_PROMPT, True)
@@ -172,7 +172,8 @@ check('舊的「一律不寫死」已移除', 'AI 趨勢類主題不要寫死' i
 
 print('\n[13] prompt 的 format 參數對得起來（少一個會在正式跑的時候才爆）')
 try:
-    ah.MAKER_PROMPT.format(type_label='教學/新手', title='T', post_date='2026-09-22',
+    ah.MAKER_PROMPT.format(type_label='教學/新手', title='T', post_date='2026-09-22', brief='方向',
+                           existing_posts='', boss_list='清單', group_notes='',
                            transcript_block='', revision_note='', edit_samples='',
                            card_type_note=ah.card_type_note('carousel'))
     check('MAKER_PROMPT 可格式化', True, True)
@@ -265,9 +266,9 @@ check('她點選單張就蓋過預設',
 check('亂值退回類型預設', ah.card_type_of({'type': '日常/節慶', 'cardType': 'xx'}), 'single')
 check('規劃表沒設時看任務', ah.card_type_of({}, {'cardType': 'single'}), 'single')
 check('單張的頁數說明', '1 頁' in ah.expected_pages('single'), True)
-check('輪播的頁數說明', '4～6 頁' in ah.expected_pages('carousel'), True)
+check('輪播的頁數說明', '5～6 頁' in ah.expected_pages('carousel'), True)   # 2026-10-09 固定版型最少 5 頁
 check('單張的提示詞說不做輪播', '不做輪播' in ah.card_type_note('single'), True)
-check('輪播的提示詞說 4～6 頁', '4～6 頁' in ah.card_type_note('carousel'), True)
+check('輪播的提示詞說 5～6 頁', '5～6 頁' in ah.card_type_note('carousel'), True)
 
 print('\n[18] 圖卡文字：只留要印上去的字，去掉任務與視覺')
 plan_sample = """頁數：2
@@ -297,6 +298,56 @@ check('頁標題的全形直線換成空格', 'P1 封面' in txt, True)
 check('視覺的續行也要拿掉', '左右對比卡' in txt, False)
 check('空字串不爆', ah.card_plan_text(''), '')
 check('None 不爆', ah.card_plan_text(None), '')
+
+print('\n[20] 老闆關心清單（2026-10-20）：每月題目多一欄「為什麼想看」，舊格式照樣解析')
+out_new = """主軸=錢有沒有白花
+1. 日期=2026-11-03｜類型=教學/新手｜標題=詢問變多成交變少，先別怪廣告｜方向=分清楚是廣告還是業務的事｜為什麼想看=對應 A2，老闆最常怪錯對象
+2. 日期=2026-11-10｜類型=觀點/趨勢｜標題=T2｜方向=舊格式沒有理由"""
+its = ah.parse_proposal_items(out_new)
+check('新舊格式都解析到', len(its), 2)
+check('解析出為什麼想看', its[0].get('why'), '對應 A2，老闆最常怪錯對象')
+check('方向不會吃到為什麼想看', its[0]['angle'], '分清楚是廣告還是業務的事')
+check('舊格式沒有 why 欄', 'why' in its[1], False)
+check('主軸照舊', ah.parse_proposal_theme(out_new), '錢有沒有白花')
+check('PROPOSAL_PROMPT 有清單參數', '{boss_list}' in ah.PROPOSAL_PROMPT, True)
+check('PROPOSAL_PROMPT 要求為什麼想看', '為什麼想看=' in ah.PROPOSAL_PROMPT, True)
+try:
+    ah.PROPOSAL_PROMPT.format(target_month='2026 年 11 月', existing_posts='', boss_list='清單', group_notes='')
+    check('PROPOSAL_PROMPT 可格式化', True, True)
+except KeyError as e:
+    check('PROPOSAL_PROMPT 可格式化', 'KeyError %s' % e, True)
+try:
+    ah.LIST_REFRESH_PROMPT.format(today='2026-11-15', old_list='舊', meeting_notes='會議')
+    check('LIST_REFRESH_PROMPT 可格式化', True, True)
+except KeyError as e:
+    check('LIST_REFRESH_PROMPT 可格式化', 'KeyError %s' % e, True)
+check('小兔有清單參數', '{boss_list}' in ah.MAKER_PROMPT, True)
+check('小兔主張卡多一欄', '回答老闆的哪個問題：' in ah.MAKER_PROMPT, True)
+
+sample_list = """# 清單
+### ⭐ A2. 「詢問變多成交變少」
+- 朱兒點過頭
+### A3. 「要不要關廣告」
+### B9. 「我補的」（朱兒補充）
+---
+
+## 朱兒拿掉的（不要再排）
+
+- A1. 「轉換數字騙人」
+- D1. 「LINE 漲價」
+
+---
+
+## 來源
+- [某網站](https://example.com)
+"""
+locked = ah._list_locked_lines(sample_list)
+check('鎖住 ⭐ 條目', '### ⭐ A2. 「詢問變多成交變少」' in locked, True)
+check('鎖住朱兒補充', '### B9. 「我補的」（朱兒補充）' in locked, True)
+check('鎖住拿掉的每一行', '- D1. 「LINE 漲價」' in locked, True)
+check('一般條目不鎖', '### A3. 「要不要關廣告」' in locked, False)
+check('來源連結不算拿掉的', '- [某網站](https://example.com)' in locked, False)
+check('讀不到清單不爆', isinstance(ah.boss_list_block(), str), True)
 
 print('\n' + '=' * 46)
 if FAILS:

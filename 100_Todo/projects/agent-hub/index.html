@@ -100,6 +100,7 @@ nav.tabs .tb.on .cnt{background:rgba(255,255,255,.3)}
 .proposalbox .pitem{background:#fff;border-radius:10px;padding:9px 11px;font-size:12.5px}
 .proposalbox .pdate{font-size:11px;color:var(--ink3);font-weight:700;margin-right:6px}
 .proposalbox .pangle{font-size:12px;color:var(--ink2);margin-top:3px}
+.proposalbox .pwhy{font-size:11.5px;color:var(--ink2);margin-top:4px;padding-left:8px;border-left:2px solid #C7DEF5}
 .boardhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap}
 .addbtn{padding:9px 16px;border-radius:12px;background:var(--pink);color:#fff;
   font-size:13.5px;font-weight:700;box-shadow:var(--shadow)}
@@ -524,6 +525,7 @@ function renderProposalBanner(){
     <div class="plist">${items.map(it=>`<div class="pitem">
         <span class="pdate">${esc(it.date)}</span><span class="chip">${esc(it.type)}</span>
         <b>${esc(it.title)}</b><div class="pangle">${esc(it.angle)}</div>
+        ${it.why?`<div class="pwhy">老闆為什麼想看：${esc(it.why)}</div>`:''}
       </div>`).join('') || '<div class="pangle">（解析不出清單，到下面看原始內容）</div>'}
     </div>
     ${!items.length ? `<div class="pangle" style="white-space:pre-wrap;margin-bottom:8px">${esc(p.rawText||'')}</div>` : ''}
@@ -546,7 +548,7 @@ function wireProposalBanner(){
       const id = dbPush(dbRef(db, `${ROOM}/tasks`)).key;
       await dbSet(dbRef(db, `${ROOM}/tasks/${id}`), {
         title: it.title||'', type: it.type||'', postDate: it.date||'', goal: '',
-        brief: (p.theme?`（本月主軸：${p.theme}）`:'') + (it.angle||''), stage: 'making', round: 0, createdAt: now, updatedAt: now,
+        brief: (p.theme?`（本月主軸：${p.theme}）`:'') + (it.angle||'') + (it.why?`（老闆為什麼想看：${it.why}）`:''), stage: 'making', round: 0, createdAt: now, updatedAt: now,
       });
       await dbPush(dbRef(db, `${ROOM}/messages/${id}`), {role:'human', text: it.angle||it.title||'', createdAt: now});
     }
