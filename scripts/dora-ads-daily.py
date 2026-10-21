@@ -16,6 +16,10 @@
   該帳戶裡的活動**全部算那一家**（活動名稱裡不一定有客戶名）。
   要退回原本的完整版：加 `--all-clients`（舊版備份 .bak-20261007）。
 
+2026-10-21 改：**雲端那把 token 失效時，Mac 自動接手送完整日報**（用 Claude 抓，見 token_alive）。
+  token 還有效就跟以前一樣只送客戶帳戶那則，不會跟雲端重複；換好新 token 自動退回。
+  測試：`--dry --pretend-token-dead` 假裝 token 失效跑一次（舊版備份 .bak-20261021）。
+
 用法：
     python3 dora-ads-daily.py           # 正常跑（只送客戶自有帳戶那幾家）
     python3 dora-ads-daily.py --dry     # 只印卡片內容，不推播
@@ -26,6 +30,7 @@ import base64, json, os, re, subprocess, sys, tempfile, time
 from datetime import datetime, timezone, timedelta
 from urllib.parse import urlencode
 from urllib.request import urlopen, Request
+from urllib.error import HTTPError
 
 ENV     = os.path.expanduser('~/Library/Scripts/dora.env')
 CLAUDE  = '/Users/zhuer/.local/bin/claude'
@@ -118,12 +123,17 @@ def _state_path(kind):
     return os.path.join(STATE_DIR, f'{today_str}-{SLOT}.{kind}')
 
 
+# 送過的記號叫什麼。客戶帳戶日報用 'sent'；雲端 token 失效、Mac 接手送的完整日報用 'full.sent'，
+# 兩則各記各的，同一次執行先送客戶帳戶、再送完整日報（見 main()）
+MARK = 'sent'
+
+
 def already_sent():
-    return os.path.exists(_state_path('sent'))
+    return os.path.exists(_state_path(MARK))
 
 
 def mark_sent():
-    open(_state_path('sent'), 'w').close()
+    open(_state_path(MARK), 'w').close()
     # 順手清掉 3 天前的舊標記檔，不用另外排程清
     try:
         cutoff = time.time() - 3 * 86400
@@ -162,8 +172,12 @@ def maybe_catchup_morning():
         return
     os.makedirs(STATE_DIR, exist_ok=True)
     morning_sent = os.path.join(STATE_DIR, f'{today_str}-morning.sent')
+    full_sent = os.path.join(STATE_DIR, f'{today_str}-morning.full.sent')
     attempted = os.path.join(STATE_DIR, f'{today_str}-morning-catchup-attempted')
-    if os.path.exists(morning_sent) or os.path.exists(attempted):
+    if os.path.exists(attempted):
+        return
+    # 雲端 token 失效時早上要送兩則，兩則都送過才算送過
+    if os.path.exists(morning_sent) and (ALL_CLIENTS or token_alive() or os.path.exists(full_sent)):
         return
     open(attempted, 'w').close()
     print("CATCHUP: 今天早上那則好像完全沒送出，先補跑一次（用完整版）", file=sys.stderr)
@@ -255,25 +269,62 @@ ALLOWED = ','.join([
 FETCH_PROMPT = """抓廣告日報要的數字，**寫進檔案**，不要印在回覆裡。
 
 1. `ads_get_ad_accounts` 取得所有 `is_queryable` 為 true 的廣告帳戶。
-2. 對**每一個**帳戶呼叫 `ads_get_ad_entities`，兩次：
-   - 當日：`time_range={{"since":"{day}","until":"{day}"}}`
-   - 累計：`time_range={{"since":"{since}","until":"{day}"}}` 且 `time_increment="1"`
-     （要一天一列，之後才能照各家走期切）
-   兩次都用：
+2. 當日：對**每一個**帳戶呼叫 `ads_get_ad_entities`，`time_range={{"since":"{day}","until":"{day}"}}`。
+3. 累計：只對第 2 步**當天有花費**的帳戶，下面每一個起日各呼叫一次 `ads_get_ad_entities`，
+   `time_range={{"since":"<起日>","until":"{day}"}}`，**不要加 time_increment**（要的是整段加總）：
+   起日：{starts}
+   （帳戶數 × 起日數，一次都不能漏；回傳有 next_cursor 就要翻到最後一頁）
+   第 2、3 步都用：
      level="campaign"
      fields=["id","name","objective","amount_spent","results","cost_per_result",
              "reach","impressions","link_click","post_engagement","purchase_roas"]
      filtering=[{{"field":"campaign.amount_spent","operator":"GREATER_THAN","value":["0"]}}]
    工具輸出太大被存成檔案時，用 python3 讀那個檔取值，不要整份讀進對話。
-3. 把結果寫成 JSON 存到 `{out}`，格式：
+4. 把結果寫成 JSON 存到 `{out}`，格式：
    {{"day": [{{"account":"<帳戶名>","name":"<活動名>","objective":"...","spend":<數字>,
               "result_indicator":"<results.indicator，沒有就空字串>","result_value":<數字>,
               "reach":<數字>,"impressions":<數字>,"link_click":<數字>,
               "post_engagement":<數字>,"roas":<數字或 0>}}],
-    "range": [{{"name":"<活動名>","date":"<YYYY-MM-DD>","spend":<數字>}}]}}
+    "range": [{{"name":"<活動名>","since":"<那次查詢的起日>","spend":<數字>}}]}}
    **金額一律轉成純數字**（"NT$1,234 TWD" → 1234）。沒有的欄位填 0。
-4. 寫完只回一行：`OK <day 幾筆> <range 幾筆>`。不要解釋、不要貼 JSON。
+5. 寫完只回一行：`OK <day 幾筆> <range 幾筆>`。不要解釋、不要貼 JSON。
 """
+# 2026-10-21 改：累計原本叫 Claude 從最早起日一天一列抓（time_increment=1），十個帳戶的資料量太大，
+# 實測漏掉一大半（漁三少一半、優逸與 AZIKU 抓成 0）。改成每個走期起日各查一次整段加總，
+# 每一家只取自己起日那一組（見 _main 的走期累計）。起日清單由 _main 算好放這裡
+RANGE_STARTS = []
+
+
+_token_alive = None
+
+
+def token_alive():
+    """2026-10-21 加：雲端日報用的系統使用者 token（跟 dora.env 的 META_TOKEN 同一把）還有沒有效。
+    有效＝雲端照常送完整日報，Mac 只送客戶帳戶那則；失效＝Mac 接手、用 Claude 抓數字送完整日報。
+    換好新 token 就自動退回。**只有 Meta 明確說 token 失效（錯誤碼 190）才算失效**，
+    網路不通之類的一律當有效，免得網路抖一下就跟雲端重複送一則"""
+    global _token_alive
+    if '--pretend-token-dead' in sys.argv:
+        _token_alive = False
+    if _token_alive is not None:
+        return _token_alive
+    token = CFG.get('META_TOKEN')
+    _token_alive = bool(token)
+    if token:
+        try:
+            urlopen(Request(f"https://graph.facebook.com/v25.0/me?fields=id&access_token={token}",
+                            headers={"User-Agent": "DoraMonitor/1.0"}), timeout=15).read()
+        except HTTPError as e:
+            try:
+                code = json.loads(e.read()).get('error', {}).get('code')
+            except Exception:
+                code = None
+            _token_alive = code != 190
+        except Exception as e:
+            print(f"Warning: 檢查 token 時連不上 Meta（{e}），先當它有效", file=sys.stderr)
+    if not _token_alive:
+        print("INFO: 雲端那把 token 失效了，這次 Mac 接手送完整日報", file=sys.stderr)
+    return _token_alive
 
 
 def fetch_via_graph(since):
@@ -367,7 +418,7 @@ def fetch_via_graph(since):
 def fetch_via_claude(since):
     """叫 Claude 用 Meta Ads 連線把數字抓回來，寫成 JSON 檔"""
     out = tempfile.mktemp(prefix='dora-ads-', suffix='.json')
-    prompt = FETCH_PROMPT.format(day=report_date, since=since, out=out)
+    prompt = FETCH_PROMPT.format(day=report_date, starts="、".join(RANGE_STARTS or [since]), out=out)
     p = subprocess.run([CLAUDE, '-p', prompt, '--allowedTools', ALLOWED],
                        cwd=WORKDIR, capture_output=True, text=True, timeout=FETCH_TIMEOUT)
     if not os.path.exists(out):
@@ -617,16 +668,38 @@ def line_push(messages):
 def main():
     # 晚上這個時段先順手檢查早上那則有沒有完全沒送出，沒有就先補送（見函式說明）
     maybe_catchup_morning()
-    # 已經送過這個時段了（前面某次快速嘗試撞成功），這次直接跳過，不重複推播
-    if not DRY and already_sent():
-        print(f"SKIP: {SLOT} 這一則今天已經送過了")
-        return
+    global MARK
+    if ALL_CLIENTS:
+        jobs = [('sent', _main)]
+    else:
+        # 平常只送客戶帳戶那則；雲端 token 失效時多送一則完整日報（2026-10-21 加，見 token_alive）
+        jobs = [('sent', _main_own)]
+        if not token_alive():
+            jobs.append(('full.sent', _main))
+    # 已經送過的（前面某次快速嘗試撞成功）直接跳過，不重複推播
+    if not DRY:
+        todo = []
+        for mark, fn in jobs:
+            MARK = mark
+            if already_sent():
+                print(f"SKIP: {SLOT} 這一則（{mark}）今天已經送過了")
+            else:
+                todo.append((mark, fn))
+        jobs = todo
+        if not jobs:
+            return
     # 上一次嘗試還在跑（例如撞到 last-try 正在等 Claude 備援），這次先讓路
     if not DRY and not acquire_lock():
         print("SKIP: 上一次嘗試還在跑，這次先跳過")
         return
     try:
-        _main() if ALL_CLIENTS else _main_own()
+        for mark, fn in jobs:
+            MARK = mark
+            try:
+                fn()
+            except Exception as e:
+                # 一則出錯不要拖累另一則
+                print(f"Error: {fn.__name__} 失敗：{e}", file=sys.stderr)
     finally:
         if not DRY:
             release_lock()
@@ -772,6 +845,11 @@ def _main_own():
 
 
 def _main():
+    # 同一次執行可能先跑過客戶帳戶那則，它留下的提醒不要混進這一則
+    global ws_ok
+    warnings.clear()
+    alerts.clear()
+    ws_ok = True
     clients = fetch_clients()
     keys, skipped = build_matcher(clients)
 
@@ -779,13 +857,27 @@ def _main():
     starts = [r['start'] for c in clients for r in runs_of(c) if r.get('start') and r['start'] <= report_date]
     floor = (datetime.fromisoformat(report_date) - timedelta(days=120)).strftime("%Y-%m-%d")
     since = max(min(starts), floor) if starts else report_date
+    # Claude 那條按起日分組查累計，起日早於回看下限的一律從下限算
+    global RANGE_STARTS
+    cur = [(current_run(c, today_str) or {}).get('start') for c in clients]
+    RANGE_STARTS = sorted({max(s, since) for s in cur if s and s <= report_date} | {since})
 
     # 先用她自己的 token（快、不吃 Claude 額度），失敗才叫 Claude 抓（慢、吃額度）。
     # 2026-08-31 改：這個時段（9:00-9:35／17:00-17:35）會被排程叫很多次，
     # 前面幾次求快——只試 token、間隔縮短，不叫慢的 Claude 備援，失敗就安靜結束等下一次
     # （反正 Power Nap 給的清醒時間本來就短，硬等 60 秒、再叫 10 分鐘的 Claude 只會被系統打斷）。
     # 只有最後一次（IS_LAST_TRY）才動用完整版：token 3 次＋Claude 備援，這時還失敗才真的推失敗通知。
-    if IS_LAST_TRY:
+    if not ALL_CLIENTS and not token_alive():
+        # 2026-10-21 加：已經確定 token 失效（雲端也停了），不用再試 token，直接叫 Claude。
+        # 跟客戶帳戶那則一樣，一個時段最多叫兩次：第一次撞到就試，失敗等 :35 最後一次
+        tried = _state_path('full.claude-tried')
+        if not IS_LAST_TRY and os.path.exists(tried) and not DRY:
+            print("SKIP: 完整日報這個時段已經叫過一次 Claude，留給最後一次再試")
+            return
+        if not DRY:
+            open(tried, 'w').close()
+        plan = (('Claude', fetch_via_claude, 1, 0),)
+    elif IS_LAST_TRY:
         plan = (('token', fetch_via_graph, 3, 60), ('Claude', fetch_via_claude, 1, 0))
     else:
         plan = (('token', fetch_via_graph, 2, 10),)
@@ -830,9 +922,14 @@ def _main():
             continue
         run = current_run(c, today_str)
         st = (run or {}).get('start')
-        d = r.get('date')
-        if st and d and d < st:
-            continue
+        if 'since' in r:
+            # Claude 那條：每個起日一組整段加總，只取這一家自己起日那組
+            if r['since'] != max(st or since, since):
+                continue
+        else:
+            d = r.get('date')
+            if st and d and d < st:
+                continue
         cid = c.get('id') or (c.get('short') or c.get('name'))
         spent_by_client[cid] = spent_by_client.get(cid, 0.0) + float(r.get('spend') or 0)
 
