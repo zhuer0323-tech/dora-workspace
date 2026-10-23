@@ -18,6 +18,8 @@
 
 2026-10-21 改：**雲端那把 token 失效時，Mac 自動接手送完整日報**（用 Claude 抓，見 token_alive）。
   token 還有效就跟以前一樣只送客戶帳戶那則，不會跟雲端重複；換好新 token 自動退回。
+2026-10-23 改：新 token 看得到 Feebees，客戶帳戶那則也搬到雲端送，**token 有效時 Mac 什麼都不送**，
+  只有 token 失效才接手（客戶帳戶＋完整日報都用 Claude 抓）。
   測試：`--dry --pretend-token-dead` 假裝 token 失效跑一次（舊版備份 .bak-20261021）。
 
 用法：
@@ -671,11 +673,13 @@ def main():
     global MARK
     if ALL_CLIENTS:
         jobs = [('sent', _main)]
+    elif token_alive():
+        # 2026-10-23 起 Feebees 也由雲端送（她把帳戶指派給系統使用者了），token 還有效 Mac 就什麼都不用送
+        print("SKIP: token 有效，日報（含客戶帳戶）都由雲端送")
+        return
     else:
-        # 平常只送客戶帳戶那則；雲端 token 失效時多送一則完整日報（2026-10-21 加，見 token_alive）
-        jobs = [('sent', _main_own)]
-        if not token_alive():
-            jobs.append(('full.sent', _main))
+        # 雲端 token 失效：Mac 接手，客戶帳戶那則＋完整日報都用 Claude 抓（2026-10-21 加，見 token_alive）
+        jobs = [('sent', _main_own), ('full.sent', _main)]
     # 已經送過的（前面某次快速嘗試撞成功）直接跳過，不重複推播
     if not DRY:
         todo = []

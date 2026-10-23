@@ -10,6 +10,8 @@
      - 沒有 Claude 備援（雲端跑不了 claude -p），抓不到就推失敗通知
      - 「已經送過」的記號寫在工作台雲端 adsDaily/{日期}-{時段}，不是 Mac 上的檔案
      - 讀不到工作台算失敗、等下一次重試（Mac 版會當成沒客戶、安靜地標成已送出）
+     - 2026-10-23 起客戶自有帳戶（工作台有填 adAcc 的，例如 Feebees）也在這裡送（見 ownCards），
+       Mac 版只在 token 失效時才接手
 
    排程（wrangler.toml）：台灣 9:00／9:15／9:30、17:00／17:15／17:30，
    前兩次抓不到就安靜等下一次，:30 那次還抓不到才推失敗通知
@@ -149,7 +151,7 @@ async function fetchViaGraph(token, since, reportDate){
   for (const { acc, day, range } of perAccount){
     for (const r of range){
       const spend = parseFloat(r.spend) || 0;
-      if (spend > 0) rangeRows.push({ name: r.campaign_name || '', date: r.date_start, spend });
+      if (spend > 0) rangeRows.push({ account: acc, name: r.campaign_name || '', date: r.date_start, spend });
     }
     for (const r of day){
       const spend = parseFloat(r.spend) || 0;
@@ -243,25 +245,39 @@ const chip = text => ({ type: 'box', layout: 'horizontal', margin: 'md', content
     contents: [{ type: 'text', text, size: 'xxs', color: '#6B4FA8', weight: 'bold' }] },
   { type: 'filler' }] });
 
-function clientCard(label, emoji, spendTotal, runLine, budget, groups){
+// 沒有固定預算的客戶（打多少算多少）：不畫進度條，改顯示走期累計＋平均每天
+function spendBlock(total, passed){
+  const head = { type: 'box', layout: 'baseline', contents: [
+    { type: 'text', text: '走期累計', size: 'xs', color: INK_SOFT, flex: 0 },
+    { type: 'text', text: `  ${NTD}${fmt(total)}`, size: 'lg', weight: 'bold', color: INK, flex: 0 }] };
+  const foot = { type: 'text', text: `已跑 ${passed} 天　平均每天 ${NTD}${fmt(total / Math.max(1, passed))}`,
+    size: 'xxs', color: INK_SOFT, margin: 'sm' };
+  return { type: 'box', layout: 'vertical', margin: 'lg', backgroundColor: '#FFFFFF', cornerRadius: '8px', paddingAll: '12px', contents: [head, foot] };
+}
+
+function clientCard(label, emoji, spendTotal, runLine, budget, groups, alwaysChip = false){
   const contents = [{ type: 'box', layout: 'horizontal', contents: [
     { type: 'text', text: `${emoji} ${label}`, weight: 'bold', size: 'md', color: '#3D3357', wrap: true, flex: 4 },
     { type: 'text', text: spendTotal, weight: 'bold', size: 'md', color: '#6B4FA8', align: 'end', flex: 3 }] }];
   if (runLine) contents.push({ type: 'text', text: runLine, size: 'xxs', color: INK_SOFT, wrap: true, margin: 'sm' });
   if (budget) contents.push(budget);
   for (const [gname, tiles] of groups){
-    if (groups.length > 1 && gname) contents.push(chip(gname));
+    if (alwaysChip && gname){
+      // 活動名稱可能很長，標籤框不會換行，改用一行可換行的粗體字，上面隔一條細線
+      contents.push({ type: 'separator', margin: 'lg', color: '#E5DDF5' },
+        { type: 'text', text: gname, size: 'xs', weight: 'bold', color: '#6B4FA8', wrap: true, margin: 'md' });
+    } else if (groups.length > 1 && gname) contents.push(chip(gname));
     contents.push(...tileRows(tiles));
   }
   return { type: 'box', layout: 'vertical', margin: 'md', backgroundColor: CARD_BG, cornerRadius: '10px', paddingAll: '14px', contents };
 }
 
-function bubble(bodyBoxes, rdStr, warnings, suffix = '', footer = true, alert = false){
+function bubble(bodyBoxes, rdStr, warnings, suffix = '', footer = true, alert = false, title = '廣告日報'){
   // 異常提醒版換成橘紅底＋不一樣的標題，她才不會把它當成例行日報滑掉
   const b = {
     type: 'bubble',
     header: { type: 'box', layout: 'vertical', backgroundColor: alert ? '#C2603F' : '#9C88CC', paddingAll: '20px', contents: [
-      { type: 'text', text: alert ? `⚠️ 廣告要注意${suffix}` : `📊 廣告日報${suffix}`, weight: 'bold', size: 'xl', color: '#FFFFFF', align: 'center' },
+      { type: 'text', text: alert ? `⚠️ 廣告要注意${suffix}` : `📊 ${title}${suffix}`, weight: 'bold', size: 'xl', color: '#FFFFFF', align: 'center' },
       { type: 'text', text: rdStr, size: 'sm', color: alert ? '#F6E7E1' : '#EDE7F6', align: 'center', margin: 'sm' }] },
     body: { type: 'box', layout: 'vertical', spacing: 'none', paddingAll: '16px', contents: bodyBoxes }
   };
@@ -294,6 +310,70 @@ async function linePush(env, messages){
     signal: AbortSignal.timeout(25000)
   });
   if (!r.ok) throw new Error(`LINE 推播失敗 ${r.status}: ${await r.text()}`);
+}
+
+// ---------- 客戶自有帳戶（工作台有填 adAcc 的，例如 Feebees）----------
+// 2026-10-23 從 Mac 版（叫 Claude 抓）搬過來：她把 Feebees 的帳戶也指派給系統使用者了，token 看得到。
+// 該帳戶的活動**全部算那一家**（活動名稱裡沒有客戶名），另外送一則、照行銷活動一個一個列
+const accOf = c => String(c.adAcc || '').trim().replace(/^act_/, '');
+
+function ownKind(r){
+  const obj = r.objective || '';
+  if (['OUTCOME_SALES', 'CONVERSIONS', 'PRODUCT_CATALOG_SALES'].includes(obj)) return 'sales';
+  if (['OUTCOME_LEADS', 'LEAD_GENERATION'].includes(obj)) return 'leads';
+  if (['LINK_CLICKS', 'OUTCOME_TRAFFIC'].includes(obj)) return 'traffic';
+  if (obj === 'OUTCOME_AWARENESS') return 'other';   // 品牌知名度：成果＝觸及（Mac 版 Claude 抓的 results 就是觸及）
+  const kind = kindOf(r.result_indicator);
+  if (['OUTCOME_ENGAGEMENT', 'POST_ENGAGEMENT', 'MESSAGES'].includes(obj))
+    return kind === 'messaging' || obj === 'MESSAGES' ? 'messaging' : 'engagement';
+  return kind;
+}
+
+function ownCards(targets, dayRows, rangeRows, reportDate){
+  const boxes = [], idle = [];
+  for (const { acc, c, run } of targets){
+    const label = c.short || c.name;
+    const camps = {};
+    for (const r of dayRows){
+      if (r.account !== acc || !(r.spend > 0)) continue;
+      // 照行銷活動一個一個列，不要同類型合在一起（2026-10-07 她要求）；同名活動才併成一組
+      const name = (r.name || '（未命名活動）').trim();
+      const kind = ownKind(r);
+      const a = camps[name] ||= { kind, spend: 0, result: 0, reach: 0, imp: 0, click: 0, eng: 0, roas: 0, rev: 0, n: 0 };
+      a.n++;
+      a.spend += r.spend; a.reach += r.reach; a.imp += r.impressions;
+      a.click += r.link_click; a.eng += r.post_engagement;
+      a.result += kind === 'other' ? r.reach : r.result_value;
+      // ROAS 照總營收÷總花費算（同名活動合併時才不會只取最高那個）
+      a.rev += r.roas * r.spend;
+      a.roas = a.spend ? a.rev / a.spend : 0;
+    }
+    const list = Object.entries(camps).sort((x, y) => y[1].spend - x[1].spend);
+    if (!list.length){ idle.push(label); continue; }
+    const daySpend = list.reduce((s, [, a]) => s + a.spend, 0);
+    const emoji = BRAND_EMOJI[label] || KIND_EMOJI[list[0][1].kind] || '📌';
+    const st = run.start;
+    const passed = Math.max(1, dayDiff(reportDate, st) + 1);
+    const md = s => `${s.slice(5, 7)}/${s.slice(8, 10)}`;
+    let runLine = `第${run.no ?? '?'}期 ${md(st)}–`, totalDays = 0;
+    if (isYmd(run.end)){
+      totalDays = dayDiff(run.end, st) + 1;
+      runLine += `${md(run.end)}　第 ${passed}/${totalDays} 天`;
+    } else runLine += `　第 ${passed} 天`;
+    const total = rangeRows.filter(r => r.account === acc && r.date >= st).reduce((s, r) => s + r.spend, 0);
+    // 有填固定預算就照原本畫進度條；沒有（打多少算多少）就只寫累計與平均
+    const budget = parseBudget(c.budget);
+    let block;
+    if (budget > 0 && totalDays){
+      const timePct = Math.min(100, passed / totalDays * 100);
+      const pct = total / budget * 100, gap = pct - timePct;
+      const state = total > budget ? 'over' : gap > 10 ? 'fast' : (gap < -10 ? 'slow' : 'ok');
+      block = budgetBlock(pct, timePct, total, budget, state);
+    } else block = spendBlock(total, passed);
+    const groups = list.map(([name, a]) => [`${KIND_EMOJI[a.kind] || '📌'} ${name}`, metricTiles(a.kind, a)]);
+    boxes.push(clientCard(label, emoji, compact(daySpend, true), runLine, block, groups, true));
+  }
+  return { boxes, idle };
 }
 
 // ---------- 主流程 ----------
@@ -338,12 +418,17 @@ export async function runAdsDaily(env, { slot, lastTry = false, dry = false, now
     return { fail: msg };
   }
 
-  const { keys, skipped } = buildMatcher(clients);
+  // 有填 adAcc 的客戶整個帳戶算那一家、另外送一則，不參加下面靠活動名稱認客戶的那套
+  const ownAccs = new Set(clients.map(accOf).filter(Boolean));
+  const ownTargets = clients.map(c => ({ acc: accOf(c), c, run: currentRun(c, todayStr) }))
+    .filter(t => t.acc && isYmd(t.run?.start));
+  const { keys, skipped } = buildMatcher(clients.filter(c => !accOf(c)));
 
   // 走期累計：**每一家照自己的走期起日切**
   // 抓數字是從所有客戶最早的那天開始抓的，不切的話走期晚開始的那家會被多算好幾天
   const spentByClient = {};
   for (const r of rangeRows){
+    if (ownAccs.has(r.account)) continue;
     const c = matchClient(r.name, keys);
     if (!c) continue;
     const st = currentRun(c, todayStr)?.start;
@@ -355,7 +440,7 @@ export async function runAdsDaily(env, { slot, lastTry = false, dry = false, now
   // 當日數字，照客戶 → 成果類型分組
   const byClient = {};
   for (const r of dayRows){
-    if (!(r.spend > 0)) continue;
+    if (!(r.spend > 0) || ownAccs.has(r.account)) continue;
     const c = matchClient(r.name, keys);
     if (!c) continue;
     const cid = cidOf(c);
@@ -420,7 +505,11 @@ export async function runAdsDaily(env, { slot, lastTry = false, dry = false, now
   }
   if (skipped.length) warnings.push('關鍵字「' + [...new Set(skipped)].sort().join('、') + '」只有一個字，沒採用');
 
-  if (!boxes.length){
+  const own = ownCards(ownTargets, dayRows, rangeRows, reportDate);
+  const ownWarnings = own.idle.length ? ['走期內但這天沒有花費：' + own.idle.join('、')] : [];
+  if (own.idle.length && !own.boxes.length && boxes.length) warnings.push(...ownWarnings);
+
+  if (!boxes.length && !own.boxes.length){
     await markSent('nodata');
     return { nodata: true };
   }
@@ -435,7 +524,7 @@ export async function runAdsDaily(env, { slot, lastTry = false, dry = false, now
   const alertMode = EVENING_QUIET && isEvening && alerts.length > 0;
   if (alertMode) warnings.unshift(...alerts.filter(a => !warnings.includes(a)));
 
-  let chunks = [boxes];
+  let chunks = boxes.length ? [boxes] : [];
   if (pyJsonBytes(bubble(boxes, rdStr, warnings)) > 9000 && boxes.length > 1){
     const half = Math.max(1, Math.floor(boxes.length / 2));
     chunks = [boxes.slice(0, half), boxes.slice(half)];
@@ -445,11 +534,16 @@ export async function runAdsDaily(env, { slot, lastTry = false, dry = false, now
     type: 'flex', altText: alt,
     contents: bubble(ch, rdStr, warnings, chunks.length > 1 ? `（${i + 1}/${chunks.length}）` : '', i === chunks.length - 1, alertMode)
   }));
+  if (own.boxes.length){
+    const title = ownTargets.length === 1 ? `${ownTargets[0].c.short || ownTargets[0].c.name} 日報` : '客戶帳戶日報';
+    messages.push({ type: 'flex', altText: `${title} ${reportDate} ${reportLabel}`,
+      contents: bubble(own.boxes, rdStr, ownWarnings, '', true, false, title) });
+  }
 
-  if (dry) return { dry: true, since, clients: boxes.length, dayRows: dayRows.length, rangeRows: rangeRows.length, messages };
+  if (dry) return { dry: true, since, clients: boxes.length, own: own.boxes.length, dayRows: dayRows.length, rangeRows: rangeRows.length, messages };
   await linePush(env, messages);
   await markSent('ok');
-  return { sent: boxes.length, msgs: chunks.length };
+  return { sent: boxes.length, own: own.boxes.length, msgs: messages.length };
 }
 
 // cron 字串 → 哪個時段、是不是最後一次（wrangler.toml 的時間是 UTC）
