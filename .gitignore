@@ -15,3 +15,6 @@
 200_Reference
 100_Todo/plans
 100_Todo/drafts
+
+# Codex 設定（含 API 金鑰，不進公開倉庫）
+.codex/config.toml

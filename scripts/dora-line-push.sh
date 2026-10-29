@@ -20,6 +20,6 @@ HTTP_CODE=$(curl -s -o /tmp/dora_line_push_resp.txt -w "%{http_code}" -X POST 'h
 if [ "$HTTP_CODE" = "200" ]; then
   echo "推播成功"
 else
-  echo "推播失敗（HTTP $HTTP_CODE）：$(cat /tmp/dora_line_push_resp.txt)" >&2
+  echo "推播失敗（HTTP ${HTTP_CODE}）：$(cat /tmp/dora_line_push_resp.txt)" >&2
   exit 1
 fi

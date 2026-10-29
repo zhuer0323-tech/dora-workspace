@@ -1,0 +1,34 @@
+{
+  "hooks": {
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/Downloads/Dora專屬/000_Agent/hooks/save-snapshot.sh"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/Downloads/Dora專屬/000_Agent/hooks/write-session-end.sh"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/Downloads/Dora專屬/000_Agent/hooks/inject-context.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
