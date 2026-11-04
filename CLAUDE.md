@@ -1233,6 +1233,10 @@ HTML 覆蓋到 `100_Todo/projects/heyen-cards/index.html` → push → 等 Pages
   素材圖從粉專**公開貼文頁的 og:image** 抓 1080 像素原圖（Meta 連線縮圖只有 64–160px、預覽工具多半抓不到、帳戶沒連 IG）。
   驗收靠 PowerPoint 轉 PDF（沙盒，檔案要放 `~/Library/Containers/com.microsoft.Powerpoint/Data/`）。
   10/23 用 10/1–10/22 做了試做版 `~/Downloads/Feebees_10月結案報告_試做版.pptx`，**11 月初跑正式版**；李享家用的 `廣告結案報表` 沒動
+- ⭐ **10 月最終版（2026-11-03 確認）是之後每月結案的架構範本**：skill 資料夾 `reference_10月結案_最終定版.pptx`，26 頁
+  （新增媒體成效總覽、銷售新／舊客分頁、截圖照素材表順序、數字以她從廣告管理員匯出的 Excel 為準、觸及寫「觸及人次」、影片寫「影片播放次數」）
+- ⚠️ **結案 PPT 不要用 Google 簡報開啟再匯出**（2026-11-04 踩到）：SVG 裝飾圖全被清空、字型 Yu Gothic UI 被換成 Arial。
+  要放雲端就直接上傳 pptx；已跑版用 skill 的 `repair_google_export.py` 拿轉檔前版本修
 
 ## 其他客戶的結案 PPT：每家一個專屬工具（2026-10-30 起，第一家優逸）
 
