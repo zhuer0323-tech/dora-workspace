@@ -986,6 +986,15 @@ Graph API Explorer 與 App 後台都進不去，所以 `dora-meta-token-setup.sh
   它要的瀏覽器版本（1237）這台沒有，**`chromium.launch()` 要帶 `executablePath` 指到
   `~/Library/Caches/ms-playwright/chromium-1234/chrome-mac-arm64/Google Chrome for Testing.app/...`**，不用另外下載
 
+### 2026-11-14 修「iPhone 主畫面 App 輸入密碼後一直轉、進不去」
+- 她回報：主畫面圖示打開，輸入密碼後按鈕一直停在「登入中…」；Google 那顆按了沒反應。**手機上沒辦法重現，原因是推測的**
+- 登入有四步（載入元件 → 檢查登入狀態 → 送出帳密 → 讀資料），原本任何一步沒回應就永遠等、畫面不說話。
+  改成每一步有時限（`STEP_MS`、`withTimeout()`），逾時顯示「卡在第 N 步」
+- 推測的主因是 iPhone 主畫面 App 的 IndexedDB 不回應，Firebase 登入元件跟著卡死：啟動時先試開一次（`_idbProbe`），
+  1.5 秒沒回應就把 `window.indexedDB` 蓋成 undefined，Firebase 會自己改用 localStorage。正常裝置不受影響
+- 快取 `dora-points-v6`。**只改了獨自升級**；工作台、理財導航是同一套登入，她回報有效再照搬
+- 她再回報時先問紅字寫卡在第幾步：第 3 步＝送帳密沒回應、第 4 步＝讀資料沒回應，方向不一樣
+
 ### 2026-09-14 年度目標改版（P0＋P1＋連動＋首頁，2026-09-14 上線）
 計劃書 `100_Todo/plans/2026-09-14-獨自升級-年度目標.md`。原本第二、三批合併調整：月計畫→併進里程碑、歷史→併進回顧統計（P2）、
 我的→併進年度總覽；轉盤、刮刮卡、獎罰雙池等年度目標做完再說。
