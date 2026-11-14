@@ -17,6 +17,11 @@ import { queueReport } from './report.js';
 import { handleStock, runStockJob } from './stock.js';
 import { runAdsDaily, adsSlotOf } from './adsDaily.js';
 
+/* 2026-11-14 記帳停用：她日常記帳回到原本的 App，理財網頁只留分配、存款目標、股票。
+   true ＝LINE 不再把訊息當記帳（數字開頭、記帳字眼、$、+ 開頭都回到排任務），手機捷徑回一句已停用、不寫入。
+   改回 false 就恢復；money.js 沒動。股價與定期定額（stock.js）不受這個開關影響 */
+const MONEY_OFF = true;
+
 export default {
   async fetch(request, env, ctx){
     const url = new URL(request.url);
@@ -85,7 +90,7 @@ async function handleEvent(ev, env){
   try {
     // 「120 午餐」「記帳 120 午餐」「$120 午餐」→ 記個人帳；規則在 money.js 的 isMoneyText()。
     // 數字後面緊接日期寫法的照舊當任務，免得「8/20 漁三 結案報表」被當成花了 8 塊
-    if (isMoneyText(text)){
+    if (!MONEY_OFF && isMoneyText(text)){
       await lineReply(ev.replyToken, await addMoney(text, env, makeDb(env, env.MN_ROOM)), env);
       return;
     }
@@ -136,6 +141,9 @@ async function handleShortcut(request, env, url){
   } catch { text = body.trim(); }          // 直接送純文字也接受
 
   if (!text) return new Response('沒有內容', { status: 400 });
+
+  if (MONEY_OFF)
+    return new Response('記帳功能已停用，這筆沒有記下來。', { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
 
   try {
     const dry = url.searchParams.get('dry') === '1';     // 測試用：只回結果不寫進帳本
