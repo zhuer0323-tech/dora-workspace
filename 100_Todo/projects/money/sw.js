@@ -3,7 +3,7 @@
    反過來（快取優先）會讓你改完版還一直看到舊畫面。
    帳本資料走 Firebase 與 localStorage，不經過這裡。 */
 
-const CACHE = 'dora-money-v8';   // 2026-11-14 記帳功能收起來，只留分配、存款目標、股票
+const CACHE = 'dora-money-v9';   // 2026-11-14 圖像化改版（圓餅圖、分段橫條、銀行框與圖示）
 const SHELL = ['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
 
 self.addEventListener('install', e => {

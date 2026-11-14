@@ -352,9 +352,74 @@ body:not(.book-off) [data-plan-only]{display:none!important}
 .plnote{font-size:12.5px;color:var(--ink3);padding:6px 2px 0;line-height:1.6}
 .plnote .todo{color:var(--warn);font-weight:700}
 .card.tap{cursor:pointer}
-.aline .av .savbtn{padding:3px 9px;border-radius:99px;background:var(--pink-xl);color:var(--ink2);font-size:11px;font-weight:700;white-space:nowrap}
-.aline .av .savbtn.on{background:var(--ok);color:#fff}
+.aline .av .savbtn{padding:3px 9px;border-radius:99px;font-weight:700;white-space:nowrap}
 .arow .nm .n2.stale{color:var(--warn)}
+/* 2026-11-14 圖像化改版（總覽圓餅圖與分段橫條、分配四大項色塊、帳戶頁三大類與銀行框）。新樣式一律 x- 開頭，不跟舊的撞名 */
+:root{--c-cash:#1874ed;--c-bank:#d4a22a;--c-save:#b4065f;--c-stock:#28c2be;--c-rest:#D9CCD1}   /* 四色跑過 dataviz 驗證器，色弱也分得出來 */
+.x-ct{display:flex;align-items:center;gap:7px;font-size:15px;font-weight:800;margin-bottom:10px}
+.x-ct .ic{width:26px;height:26px;border-radius:9px;background:var(--pink-xl);display:flex;align-items:center;justify-content:center;font-size:14px;flex:none}
+.x-ct .more{margin-left:auto;font-size:12px;font-weight:600;color:var(--ink3)}
+.x-ct .tot{margin-left:auto;font-weight:800;font-variant-numeric:tabular-nums}
+.x-tb{width:100%;border-collapse:collapse;font-size:13px}
+.x-tb td,.x-tb th{padding:7px 2px;border-top:1px solid var(--line);text-align:left;vertical-align:middle}
+.x-tb tr:first-child td,.x-tb thead th{border-top:0}
+.x-tb th{font-size:11px;color:var(--ink3);font-weight:600}
+.x-tb .r{text-align:right}
+.x-tb .num{font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.x-tb .p{color:var(--ink3);font-size:11.5px;font-weight:600;white-space:nowrap}
+.x-sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.x-donut{display:flex;gap:12px;align-items:center;margin-top:10px}
+.x-donut svg{flex:none;width:112px;height:112px}
+.x-donut .x-tb{flex:1;min-width:0}
+.x-sbar{display:flex;gap:2px;height:20px;border-radius:8px;overflow:hidden;margin:10px 0 4px;background:var(--pink-xl)}
+.x-sbar i{display:block;height:100%;min-width:2px}
+.x-cap{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;color:var(--ink2)}
+.x-chip{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;border-radius:99px;padding:3px 8px;white-space:nowrap}
+.x-chip.ok{background:#E3F4EC;color:var(--ok)}
+.x-chip.todo{background:#FCEBD9;color:var(--warn)}
+.x-chip.auto{background:var(--pink-xl);color:var(--ink2)}
+.x-chip.tag{background:var(--pink-xl);color:var(--pink-d)}
+.x-goal{border:1px solid var(--line);border-radius:14px;padding:10px 11px;margin-top:8px;cursor:pointer}
+.x-goal:first-of-type{margin-top:0}
+.x-goal .gr{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13.5px;font-weight:700}
+.x-goal .track{height:9px;margin:7px 0 5px}
+.x-goal .gs{font-size:11.5px;color:var(--ink2);line-height:1.6}
+.x-goal .gs .good{color:var(--ok);font-weight:700}.x-goal .gs .todo{color:var(--warn);font-weight:700}
+.x-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:11px}
+.x-tile{background:#fff;border-radius:16px;padding:11px 6px;text-align:center;box-shadow:var(--shadow);border-top:4px solid var(--c-rest);min-width:0}
+.x-tile .e{font-size:20px;line-height:1.2}
+.x-tile .k{font-size:11.5px;color:var(--ink2);font-weight:700;margin-top:2px}
+.x-tile .v{font-size:14.5px;font-weight:800;margin-top:2px;font-variant-numeric:tabular-nums}
+.x-box{display:flex;align-items:center;gap:10px;border:1.5px solid var(--line);border-radius:16px;padding:10px 11px;margin-top:8px;cursor:pointer}
+.x-box:first-of-type{margin-top:0}
+.x-logo{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;flex:none;object-fit:contain;background:#fff}
+img.x-logo{border:1px solid var(--line)}
+.x-box .mid{flex:1;min-width:0}
+.x-box .nm{font-size:14px;font-weight:800;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.x-box .n2{font-size:11.5px;color:var(--ink3);margin-top:2px;line-height:1.55}
+.x-box .n2.stale{color:var(--warn)}
+.x-box .n2 .good{color:var(--ok);font-weight:700}.x-box .n2 .todo{color:var(--warn);font-weight:700}
+.x-box .track{height:6px;margin:6px 0 0}
+.x-box .amt{font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.x-box .amt.debt{color:var(--bad)}
+.x-logorow{display:flex;align-items:center;gap:10px}
+.x-logorow input[type=file]{flex:1;min-width:0;font-size:12px}
+.x-logorow button{padding:6px 10px;border-radius:10px;background:var(--pink-xl);color:var(--ink2);font-size:12px;font-weight:700}
+/* 分配頁：四大項各一個框，標題是色塊 */
+.x-grp{border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:10px}
+.x-grp:first-child{margin-top:0}
+.x-grp>.agh{margin:0;padding:8px 10px;background:var(--pink-xl);color:var(--ink);align-items:center;gap:7px;justify-content:flex-start}
+.x-grp>.agh .gbar{width:5px;height:18px;border-radius:3px;flex:none}
+.x-grp>.agh span{margin-left:auto;font-size:12px}
+.x-grp>.agh span b{color:var(--ink);font-size:13.5px;font-weight:800}
+.x-grp .x-in{padding:2px 10px 8px}
+.x-amt{display:flex;align-items:center;gap:3px}
+.x-amt>span{font-size:13px;font-weight:700;color:var(--ink3)}
+.aline .av .savbtn{font-size:11px;padding:3px 8px;background:#FCEBD9;color:var(--warn)}
+.aline .av .savbtn.on{background:#E3F4EC;color:var(--ok)}
+.aline .av .act.x-auto{background:var(--pink-xl);border-radius:99px;padding:3px 8px;font-weight:700;color:var(--ink2)}
+.x-pre .track{height:5px;margin:4px 0 0}
+.x-emo{flex:none;width:18px;text-align:center}
 /* 股票帳戶：持股畫面 */
 .skhead{padding:2px 2px 10px}
 .skhead .k{font-size:12px;color:var(--ink3);font-weight:600}
@@ -537,7 +602,7 @@ body.on-alloc #toast{bottom:160px}
 
 <!-- ======== 總覽 ======== -->
 <section id="pgSum" style="display:none">
-  <div class="card" id="cardNet" style="cursor:pointer">
+  <div class="card" id="cardNet" style="cursor:pointer" data-book-only>
     <h2>淨資產<span class="tiny">看每個帳戶 ›</span></h2>
     <div class="big" id="sNet">—</div>
     <div class="subline" id="sNetSub"></div>
@@ -597,6 +662,10 @@ body.on-alloc #toast{bottom:160px}
   </div>
   <div id="aBanner"></div>
   <div class="steps" id="aSteps"></div>
+  <div class="card" data-plan-only style="padding-top:6px">
+    <div class="x-sbar" id="aBar"></div>
+    <div class="x-cap"><span id="aBarL"></span><span id="aBarR"></span></div>
+  </div>
 
   <div class="card">
     <h2>① 這個月的收入<span class="tiny" id="aIncTot"></span></h2>
@@ -703,6 +772,8 @@ body.on-alloc #toast{bottom:160px}
     <div class="fld" id="acBalFld"><label id="acBalLab">目前實際餘額</label>
       <input id="acBal" type="number" inputmode="numeric" placeholder="不改就留空"></div>
     <div class="tiny" id="acBalTip"></div>
+    <div class="fld" id="acLogoFld" data-plan-only style="margin-top:12px"><label>圖示（選填，例如那家銀行的 logo；只存在你的雲端）</label>
+      <div class="x-logorow"><span id="acLogoPrev"></span><input type="file" id="acLogoFile" accept="image/*"><button type="button" id="acLogoDel">拿掉</button></div></div>
     <div id="acGoalWrap" style="margin-top:12px">
       <div class="fld"><label>存款目標（選填）</label>
         <input id="acGoal" type="number" inputmode="numeric" placeholder="例如 12345（舉例）"></div>
@@ -1021,8 +1092,9 @@ function ymShift(ym,n){
   return `${d.getFullYear()}-${pad2(d.getMonth()+1)}`;
 }
 function ymLabel(ym){ const [y,m]=ym.split('-'); return `${y} 年 ${Number(m)} 月`; }
-function money(n){ return (n<0?'-':'') + 'NT$' + Math.abs(Math.round(n)).toLocaleString('en-US'); }
-function plain(n){ return Math.abs(Math.round(n)).toLocaleString('en-US'); }
+/* 2026-11-14 她要求每個金額都要有 $：money、plain 都帶（原本 money 是 NT$、plain 沒有符號） */
+function money(n){ return (n<0?'-':'') + '$' + Math.abs(Math.round(n)).toLocaleString('en-US'); }
+function plain(n){ return '$' + Math.abs(Math.round(n)).toLocaleString('en-US'); }
 /* 分類搬家，照版本號每一版只跑一次。
    v2：舊的七類換成十類，只在「還是原本那七類、她沒改過」的時候才換
    v3：插入「預存資金」。這是系統分類，她改過清單也照插，放在固定支出後面 */
@@ -1899,58 +1971,123 @@ function saveDone(a, ym, k){
 function savedTotal(a, ym){
   return arr(a.save).reduce((s,r) => s + (saveDone(a, ym, r.k) ? Number(r.v)||0 : 0), 0);
 }
+/* 帳戶的圖示：有上傳就用圖，沒有就顯示名稱第一個字的色塊（顏色照 id 固定） */
+const LOGO_BG = ['#2F7D5B','#1F5FA8','#B8482E','#7A4FA3','#A8731F','#2B7F8C'];
+function logoHtml(a){
+  if(a.logo) return `<img class="x-logo" src="${esc(a.logo)}" alt="">`;
+  let h = 0; for(const ch of String(a.id)) h = (h * 31 + ch.charCodeAt(0)) % 9973;
+  return `<span class="x-logo" style="background:${LOGO_BG[h % LOGO_BG.length]}">${esc([...String(a.name || '?')][0])}</span>`;
+}
+/* 資產四類（圓餅圖與帳戶頁共用）：現金含電子支付；信用卡是負債，不放進圓餅 */
+function assetParts(n){
+  const sum = ts => accList().filter(a => ts.includes(a.type)).reduce((s,a) => s + (n.bal[a.id]||0), 0);
+  const has = ts => accList().some(a => ts.includes(a.type));
+  return [
+    { k:'💵 現金', v:sum(['cash','epay']), c:'--c-cash', on:has(['cash','epay']) },
+    { k:'🏦 一般銀行', v:sum(['bank']), c:'--c-bank', on:has(['bank']) },
+    { k:'🐷 存款', v:sum(['save']), c:'--c-save', on:has(['save']) },
+    { k:'📈 股票', v:sum(['stock']), c:'--c-stock', on:has(['stock']) },
+  ].filter(x => x.on);
+}
+function donutSvg(parts, total){
+  const R = 44, C = 2 * Math.PI * R, gap = 2;
+  let off = 0, h = `<circle cx="60" cy="60" r="${R}" fill="none" stroke="var(--pink-xl)" stroke-width="18"/>`;
+  parts.forEach(p => {
+    const len = total > 0 ? Math.max(0, p.v) / total * C : 0, d = Math.max(0, len - gap);
+    if(d > 0) h += `<circle cx="60" cy="60" r="${R}" fill="none" stroke="var(${p.c})" stroke-width="18"
+      stroke-dasharray="${d} ${C - d}" stroke-dashoffset="${-off}" transform="rotate(-90 60 60)"><title>${p.k} ${money(p.v)}</title></circle>`;
+    off += len;
+  });
+  return `<svg viewBox="0 0 120 120" role="img" aria-label="資產組成">${h}
+    <text x="60" y="56" text-anchor="middle" font-size="9" fill="var(--ink3)" font-weight="600">總資產</text>
+    <text x="60" y="70" text-anchor="middle" font-size="12" fill="var(--ink)" font-weight="800">${money(total)}</text></svg>`;
+}
+/* 分配的分段橫條：固定／變動／預存／儲蓄投資＋還沒分 */
+function allocParts(t){
+  return [
+    { k:'🏠 固定支出', v:t.fix, c:'--c-cash' }, { k:'🛒 變動支出', v:t.vary, c:'--c-bank' },
+    { k:'🛡️ 預存資金', v:t.pre, c:'--c-save' }, { k:'🐷 儲蓄投資', v:t.save, c:'--c-stock' },
+    { k:'還沒分', v:Math.max(0, t.left), c:'--c-rest' },
+  ];
+}
+function allocBarHtml(t){
+  return allocParts(t).filter(p => p.v > 0)
+    .map(p => `<i style="flex:${p.v};background:var(${p.c})" title="${p.k} ${money(p.v)}"></i>`).join('');
+}
 function renderPlanSum(){
   const ym = ymNow(), a = allocOf(ym), t = a ? totalsOf(a) : null, mNo = Number(ym.slice(5,7));
-  const card = (title, body, go) =>
-    `<div class="card${go ? ' tap' : ''}"${go ? ` data-go="${go}"` : ''}><h2>${title}${go ? '<span class="tiny">›</span>' : ''}</h2>${body}</div>`;
+  const card = (ic, title, body, go, more) =>
+    `<div class="card${go ? ' tap' : ''}"${go ? ` data-go="${go}"` : ''}>
+      <div class="x-ct"><span class="ic">${ic}</span>${title}${more ? `<span class="more">${more} ›</span>` : ''}</div>${body}</div>`;
+  const pctOf = (v, tot) => tot > 0 ? (Math.max(0, v) / tot * 100).toFixed(0) + '%' : '—';
+  const legend = (parts, tot) => `<table class="x-tb">${parts.map(p =>
+    `<tr><td><i class="x-sw" style="background:var(${p.c})"></i>${p.k}</td>
+     <td class="r num">${money(p.v)}</td><td class="r p">${pctOf(p.v, tot)}</td></tr>`).join('')}</table>`;
   let h = '';
 
-  // 這個月的分配
+  // 1 帳戶資產：淨資產＋圓餅圖
+  const n = netWorth(), parts = assetParts(n), ptot = parts.reduce((s,p) => s + Math.max(0, p.v), 0);
+  h += card('💰', '帳戶資產',
+    `<div class="big${n.net < 0 ? ' bad' : ''}">${money(n.net)}</div>
+     <div class="subline">淨資產　·　總資產 ${money(n.asset)}${n.debt ? `　−　信用卡未付 <b style="color:var(--bad)">${money(n.debt)}</b>` : ''}</div>
+     <div class="x-donut">${donutSvg(parts, ptot)}${legend(parts, ptot)}</div>`, 'acc', '看帳戶');
+
+  // 2 這個月的分配：分段橫條＋儲蓄投資做了沒
   if(!t || !(t.has || t.inc)){
-    h += card(`${mNo} 月的分配`, `<div class="empty">這個月還沒排分配</div>
+    h += card('🧮', `${mNo} 月的分配`, `<div class="empty">這個月還沒排分配</div>
       <button class="addline" data-go="alloc" style="width:100%">去排 ${mNo} 月的分配 ›</button>`);
   }else{
-    const cell = (k, v) => `<div style="grid-column:span 3"><div class="k">${k}</div><b>${money(v)}</b></div>`;
     const rows = arr(a.save).filter(r => Number(r.v) > 0);
     const done = rows.filter(r => saveDone(a, ym, r.k));
-    const nameOf = k => k === SAVE_ANY ? '存起來（不指定帳戶）' : (accName(k) || '（帳戶已刪）');
+    const nameOf = k => { const ac = accById(k);
+      return k === SAVE_ANY ? '🐷 不指定帳戶' : ac ? `${ACC_ICON[ac.type]||'🐷'} ${esc(ac.name)}` : '（帳戶已刪）'; };
+    const stChip = r => done.includes(r) ? '<span class="x-chip ok">✓ 已存入</span>'
+      : activeDca(r.k, ym).length ? '<span class="x-chip auto">⟳ 自動扣款</span>' : '<span class="x-chip todo">● 還沒存</span>';
     const dues = preList().map(p => ({ p, f:preInfo(p, ym, a) })).filter(x => x.f.started && x.f.left === 0 && !x.f.cyclePaid);
-    h += card(`${mNo} 月的分配`,
+    const ap = allocParts(t).filter(p => p.v > 0 || p.c !== '--c-rest');
+    h += card('🧮', `${mNo} 月的分配`,
       `<div class="big">${money(t.inc)}</div>
-       <div class="subline">這個月的收入　·　${t.left === 0 ? '都分完了' : t.left > 0 ? `還有 ${money(t.left)} 沒分` : `分超過 ${money(-t.left)}`}</div>
-       <div class="netcells">${cell('固定支出', t.fix)}${cell('變動支出', t.vary)}${cell('預存資金', t.pre)}${cell('儲蓄投資', t.save)}</div>` +
-      (rows.length ? `<div class="acclab" style="margin-top:12px">儲蓄投資　已存入 ${done.length}／${rows.length} 筆</div>` +
-        rows.map(r => { const ok = done.includes(r);
-          return `<div class="plrow"><span class="nm">${esc(nameOf(r.k))}</span>
-            <span class="st ${ok ? 'good' : 'todo'}">${ok ? '已存入 ✓' : '還沒存'}</span><b>${money(r.v)}</b></div>`; }).join('') : '') +
-      (dues.length ? `<div class="plnote"><span class="todo">這個月要繳：</span>${dues.map(x => `${esc(x.p.name)} ${money(x.f.amt)}`).join('、')}</div>` : ''),
-      'alloc');
+       <div class="subline">這個月的收入　·　${t.left === 0 ? '<b style="color:var(--ok)">都分完了 ✓</b>'
+         : t.left > 0 ? `還有 <b style="color:var(--warn)">${money(t.left)}</b> 沒分` : `<b style="color:var(--bad)">分超過 ${money(-t.left)}</b>`}</div>
+       <div class="x-sbar">${allocBarHtml(t)}</div>${legend(ap, t.inc)}` +
+      (rows.length ? `<table class="x-tb" style="margin-top:8px">
+         <thead><tr><th>儲蓄投資　已存入 ${done.length}／${rows.length}</th><th class="r">金額</th><th class="r">狀態</th></tr></thead>
+         ${rows.map(r => `<tr><td>${nameOf(r.k)}</td><td class="r num">${money(r.v)}</td><td class="r">${stChip(r)}</td></tr>`).join('')}</table>` : '') +
+      (dues.length ? `<div class="plnote"><span class="todo">⏰ 這個月要繳：</span>${dues.map(x => `${esc(x.p.name)} ${money(x.f.amt)}`).join('、')}</div>` : ''),
+      'alloc', '去分配');
   }
 
-  // 存款目標
+  // 3 存款目標：每個目標一個框
   const goals = accList().filter(x => x.type === 'save' && Number(x.goal));
-  h += card('存款目標', goals.length
-    ? goals.map(x => `<div class="plgoal"><div class="plrow"><span class="nm">${ACC_ICON.save} ${esc(x.name)}</span></div>${goalLine(x)}</div>`).join('')
+  h += card('🎯', '存款目標', goals.length
+    ? goals.map(x => { const g = goalInfo(x);
+        return `<div class="x-goal" data-acc="${esc(x.id)}">
+          <div class="gr"><span>🐷 ${esc(x.name)}</span><span>${g.pct.toFixed(0)}%</span></div>
+          <div class="track"><i class="${g.reached ? 'ok' : ''}" style="width:${g.pct}%"></i></div>
+          <div class="gs">${money(g.bal)}／${money(g.goal)}</div>
+          <div class="gs">${goalTx(g)}</div></div>`; }).join('')
     : '<div class="plnote">還沒有設目標。到「帳戶」點存款銀行，可以設要存到多少、什麼時候存到。</div>',
     goals.length ? '' : 'acc');
 
-  // 股票
+  // 4 股票現況：總市值＋每一檔
   const sk = accList().filter(x => x.type === 'stock' && hasLots(x.id)).map(x => ({ a:x, t:stockTotals(x.id) }));
   if(sk.length){
     const mv = sk.reduce((s,x) => s + x.t.mv, 0), cost = sk.reduce((s,x) => s + x.t.cost, 0);
-    const pr = sk.filter(x => x.t.pl !== null);
-    const pl = pr.reduce((s,x) => s + x.t.pl, 0);
-    const pcost = sk.reduce((s,x) => s + x.t.hs.filter(hh => hh.px).reduce((q,hh) => q + hh.amt, 0), 0);
-    const pxD = sk.map(x => x.t.pxD).filter(Boolean).sort()[0] || '';
-    h += card('股票',
+    const hs = sk.flatMap(x => x.t.hs), pr = hs.filter(x => x.px);
+    const pl = pr.reduce((s,x) => s + x.pl, 0), pcost = pr.reduce((s,x) => s + x.amt, 0);
+    const pxD = pr.map(x => x.pxD).filter(Boolean).sort()[0] || '';
+    const arrow = v => v >= 0 ? '▲' : '▼';
+    h += card('📈', '股票現況',
       `<div class="big">${money(mv)}</div>
        <div class="subline">成本 ${money(cost)}` +
-        (pr.length ? `　·　<b class="${pl >= 0 ? 'gain' : 'loss'}">${plTx(pl, pcost ? pl / pcost * 100 : 0)}</b>${pxD ? `　·　價格 ${mdOf(pxD)}` : ''}` : '　·　還沒抓到價格') + `</div>` +
-      (sk.length > 1 ? sk.map(x => `<div class="plrow" data-acc="${esc(x.a.id)}"><span class="nm">${ACC_ICON.stock} ${esc(x.a.name)}</span>
-        ${x.t.pl === null ? '' : `<span class="st ${x.t.pl >= 0 ? 'gain' : 'loss'}">${x.t.pl >= 0 ? '+' : '−'}${Math.abs(x.t.pct).toFixed(1)}%</span>`}<b>${money(x.t.mv)}</b></div>`).join('') : ''),
-      'acc');
+        (pr.length ? `　·　<b class="${pl >= 0 ? 'gain' : 'loss'}">${arrow(pl)} ${plTx(pl, pcost ? pl / pcost * 100 : 0)}</b>${pxD ? `　·　價格 ${mdOf(pxD)}` : ''}` : '　·　還沒抓到價格') + `</div>
+       <table class="x-tb" style="margin-top:8px"><thead><tr><th>持股</th><th class="r">市值</th><th class="r">賺賠</th></tr></thead>
+       ${hs.sort((x,y) => y.mv - x.mv).map(x => { const pc = x.amt ? x.pl / x.amt * 100 : 0;
+         return `<tr><td>${esc(x.name)}</td><td class="r num">${money(x.mv)}</td>
+           <td class="r num ${x.pl === null ? '' : x.pl >= 0 ? 'gain' : 'loss'}">${x.pl === null ? '—' : `${arrow(x.pl)} ${x.pl >= 0 ? '+' : '−'}${Math.abs(pc).toFixed(1)}%`}</td></tr>`; }).join('')}</table>`,
+      'acc', '看持股');
   }else{
-    h += card('股票', '<div class="plnote">還沒有持股紀錄。到「帳戶」加一個股票帳戶，點進去填持股和定期定額。</div>', 'acc');
+    h += card('📈', '股票現況', '<div class="plnote">還沒有持股紀錄。到「帳戶」加一個股票帳戶，點進去填持股和定期定額。</div>', 'acc');
   }
   $('#sPlan').innerHTML = h;
 }
@@ -2481,7 +2618,8 @@ function renderAccPage(){
   $('#nNet').textContent = money(n.net);
   $('#nNet').className = 'big' + (n.net<0 ? ' bad' : '');
   $('#nNetSub').textContent = `總資產 ${money(n.asset)}　·　負債 ${money(n.debt)}`;
-  $('#nCells').innerHTML = netCells(n);
+  $('#nCells').innerHTML = BOOK_OFF ? '' : netCells(n);
+  if(BOOK_OFF){ renderAccPlan(n); return; }
   const EMPTY = {
     daily:'還沒有現金、一般銀行或電子支付。',
     save: BOOK_OFF ? '還沒有存款銀行。按「＋ 新帳戶」加一個（類型選存款銀行），存了錢到「分配」頁按「已存入」，餘額就會加上去。'
@@ -2520,6 +2658,45 @@ function renderAccPage(){
     </div>`;
   }).join('');
 }
+/* 帳戶頁（理財規劃版，2026-11-14）：最上面 現金／銀行／股票 三格，銀行一家一個框（可以放 logo），
+   股票一個帳戶一個框，現金、電子支付、信用卡收在最下面 */
+function renderAccPlan(n){
+  const of = ts => accList().filter(a => ts.includes(a.type));
+  const sum = ts => of(ts).reduce((s,a) => s + (n.bal[a.id]||0), 0);
+  const banks = of(['bank','save']), stocks = of(['stock']), others = of(['cash','epay','card']);
+  const upd = a => { const d = accTouched(a), stale = !d || d < ymdShift(today(), -30);
+    return `<div class="n2${stale ? ' stale' : ''}">${d ? `上次更新 ${mdOf(d)}${stale ? '，該更新了' : ''}` : '還沒填過，點一下填現在的餘額'}</div>`; };
+  const tile = (e, k, v, c) => `<div class="x-tile" style="border-top-color:var(${c})"><div class="e">${e}</div><div class="k">${k}</div><div class="v">${money(v)}</div></div>`;
+  const sec = (ic, title, tot, body) => `<div class="card"><div class="x-ct"><span class="ic">${ic}</span>${title}${tot === null ? '' : `<span class="tot">${money(tot)}</span>`}</div>${body}</div>`;
+  const bankBox = a => {
+    const v = n.bal[a.id]||0, g = a.type === 'save' ? goalInfo(a) : null;
+    return `<div class="x-box" data-acc="${esc(a.id)}">${logoHtml(a)}
+      <div class="mid"><div class="nm">${esc(a.name)}<span class="x-chip tag">${a.type === 'save' ? '存款' : '日常'}</span></div>
+        ${a.type === 'bank' ? upd(a) : g ? `<div class="n2">🎯 ${g.pct.toFixed(0)}%　·　目標 ${money(g.goal)}</div>
+          <div class="track"><i class="${g.reached ? 'ok' : ''}" style="width:${g.pct}%"></i></div><div class="n2">${goalTx(g)}</div>`
+          : '<div class="n2">點一下可以設存款目標</div>'}</div>
+      <div class="amt">${money(v)}</div></div>`;
+  };
+  const stockBox = a => {
+    const v = n.bal[a.id]||0, t = hasLots(a.id) ? stockTotals(a.id) : null;
+    const n2 = !t ? '還沒填持股，點進去填' : t.pl === null ? '還沒抓到價格，市值先用成本算'
+      : `<b class="${t.pl >= 0 ? 'gain' : 'loss'}">${t.pl >= 0 ? '▲' : '▼'} ${plTx(t.pl, t.pct)}</b>　價格 ${mdOf(t.pxD)}`;
+    return `<div class="x-box" data-acc="${esc(a.id)}">${logoHtml(a)}
+      <div class="mid"><div class="nm">${esc(a.name)}</div><div class="n2">${n2}</div></div>
+      <div class="amt">${money(v)}</div></div>`;
+  };
+  const otherRow = a => { const v = n.bal[a.id]||0, debt = a.type === 'card' && v < 0;
+    return `<div class="x-box" data-acc="${esc(a.id)}"><span class="x-logo" style="background:var(--pink-xl);font-size:19px">${ACC_ICON[a.type]||'💰'}</span>
+      <div class="mid"><div class="nm">${esc(a.name)}</div>${upd(a)}</div>
+      <div class="amt${debt ? ' debt' : ''}">${debt ? '未付 ' + money(-v) : money(v)}</div></div>`; };
+  $('#nGroups').innerHTML =
+    `<div class="x-tiles">${tile('💵', '現金', sum(['cash','epay']), '--c-cash')}${tile('🏦', `銀行（${banks.length} 家）`, sum(['bank','save']), '--c-save')}${tile('📈', '股票', sum(['stock']), '--c-stock')}</div>` +
+    sec('🏦', '銀行', banks.length ? sum(['bank','save']) : null, banks.length ? banks.map(bankBox).join('')
+      : '<div class="hint">還沒有銀行帳戶。按上面「＋ 新帳戶」加一個：日常進出選一般銀行，存錢用的選存款銀行。</div>') +
+    sec('📈', '股票', stocks.length ? sum(['stock']) : null, stocks.length ? stocks.map(stockBox).join('')
+      : '<div class="hint">還沒有股票帳戶。按「＋ 新帳戶」加一個（類型選股票），再點進去填持股和定期定額。</div>') +
+    (others.length ? sec('💵', '現金與其他', null, others.map(otherRow).join('')) : '');
+}
 /* 這個帳戶最後一次有動靜是哪一天（校正餘額、轉帳、記帳都算；都沒有就看建立那天） */
 function accTouched(a){
   let d = a.openD || '';
@@ -2529,16 +2706,19 @@ function accTouched(a){
   return d > today() ? today() : d;
 }
 /* 存款銀行底下那條目標進度 */
-function goalLine(a){
-  const g = goalInfo(a); if(!g) return '';
-  let tx;
-  if(g.reached) tx = '<span class="good">達成目標了 ✓</span>';
-  else if(g.overdue) tx = `<span class="todo">過了期限，還差 ${money(g.goal - g.bal)}</span>`;
-  else if(g.due){
+function goalTx(g){
+  if(g.reached) return '<span class="good">達成目標了 ✓</span>';
+  if(g.overdue) return `<span class="todo">過了期限，還差 ${money(g.goal - g.bal)}</span>`;
+  if(g.due){
     const when = g.due.slice(0,4) === ymNow().slice(0,4) ? `${Number(g.due.slice(5,7))} 月前` : `${ymLabel(g.due)}前`;
     const got = Math.max(0, g.saved), left = Math.max(0, g.need - got);
-    tx = `${when}存到　·　這個月該存 ${money(g.need)}，已存 ${money(got)}` + (left ? `，還差 <b>${money(left)}</b>` : ' ✓');
-  }else tx = `還差 ${money(g.goal - g.bal)}（沒設期限，不算每月該存多少）`;
+    return `${when}存到　·　這個月該存 ${money(g.need)}，已存 ${money(got)}` + (left ? `，<span class="todo">還差 ${money(left)}</span>` : ' <span class="good">✓</span>');
+  }
+  return `還差 ${money(g.goal - g.bal)}（沒設期限，不算每月該存多少）`;
+}
+function goalLine(a){
+  const g = goalInfo(a); if(!g) return '';
+  const tx = goalTx(g);
   return `<div class="agoal" data-acc="${esc(a.id)}">
     <div class="track"><i class="${g.reached ? 'ok' : ''}" style="width:${g.pct}%"></i></div>
     <div class="gl"><span>已存 ${money(g.bal)}／目標 ${money(g.goal)}</span><b>${g.pct.toFixed(0)}%</b></div>
@@ -2547,6 +2727,30 @@ function goalLine(a){
 }
 
 let editingAcc = null;     // null＝新增帳戶
+/* 帳戶圖示（2026-11-14）：上傳時在瀏覽器縮成 96×96 白底、整張縮進去不裁切，存在帳戶的 logo 欄（data URI）。
+   她用哪幾家銀行是私人資訊，所以不內建任何銀行圖檔 */
+let acLogo = '';
+function drawAcLogo(){
+  $('#acLogoPrev').innerHTML = acLogo ? `<img class="x-logo" src="${esc(acLogo)}" alt="">`
+    : '<span class="x-logo" style="background:var(--pink-xl);color:var(--ink3);font-size:11px">沒有</span>';
+  $('#acLogoDel').style.display = acLogo ? '' : 'none';
+}
+$('#acLogoDel').onclick = () => { acLogo = ''; $('#acLogoFile').value = ''; drawAcLogo(); };
+$('#acLogoFile').onchange = e => {
+  const f = e.target.files && e.target.files[0]; if(!f) return;
+  const img = new Image(), url = URL.createObjectURL(f);
+  img.onload = () => {
+    const S = 96, c = document.createElement('canvas'); c.width = c.height = S;
+    const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, S, S);
+    const k = Math.min(S / img.width, S / img.height), w = img.width * k, h = img.height * k;
+    g.drawImage(img, (S - w) / 2, (S - h) / 2, w, h);
+    let out = c.toDataURL('image/webp', .85);
+    if(!out.startsWith('data:image/webp')) out = c.toDataURL('image/jpeg', .85);     // Safari 舊版不支援 webp
+    acLogo = out; URL.revokeObjectURL(url); drawAcLogo();
+  };
+  img.onerror = () => { URL.revokeObjectURL(url); toast('這個檔案不是圖片，換一張試試'); };
+  img.src = url;
+};
 function openAcc(id){
   const a = id ? accById(id) : null;
   editingAcc = a ? a.id : null;
@@ -2557,6 +2761,7 @@ function openAcc(id){
   $('#acBal').value = '';
   $('#acGoal').value = a && Number(a.goal) ? a.goal : '';
   $('#acGoalDue').value = a && a.goalDue ? a.goalDue : '';
+  acLogo = a && a.logo ? a.logo : ''; $('#acLogoFile').value = ''; drawAcLogo();
   syncAccTip();
   $('#acDel').style.display = a ? '' : 'none';
   const list = a ? Object.entries(items).map(([iid,it]) => ({ id:iid, ...it }))
@@ -2633,7 +2838,7 @@ $('#acSave').onclick = () => {
   if(!editingAcc){
     const id = 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2,5);
     const rec = { id, name:nm, type:ty, open: target || 0, openD: today() };
-    setGoal(rec);
+    setGoal(rec); if(acLogo) rec.logo = acLogo;
     settings.accs = accList().concat(rec);
     refillSaveRows();
     saveLocal(); cloudSettings(); closeM('#mAcc'); renderAll(); toast(`加好了　${nm}`);
@@ -2644,6 +2849,7 @@ $('#acSave').onclick = () => {
     toast('這個帳戶還有持股或定期定額，不能改成別的類型'); return;
   }
   a.name = nm; a.type = ty; setGoal(a);
+  if(acLogo) a.logo = acLogo; else delete a.logo;
   if(target !== null){
     const diff = Math.round(target - (accBalances()[a.id]||0));
     if(diff){
@@ -3171,7 +3377,7 @@ function renderAlloc(){
     return `<div class="aline" data-inc="${esc(r.id)}">
       <input type="checkbox" data-f="on" ${r.on!==false?'checked':''} title="算進這個月的預算">
       <select data-f="cat">${opts.map(c => `<option ${c===r.cat?'selected':''}>${esc(c)}</option>`).join('')}</select>
-      <input type="number" inputmode="numeric" data-f="amt" value="${Number(r.amt)||''}" placeholder="0" style="width:92px">
+      <label class="x-amt"><span>$</span><input type="number" inputmode="numeric" data-f="amt" value="${Number(r.amt)||''}" placeholder="0" style="width:92px"></label>
       ${BOOK_OFF ? '' : booked ? '<button class="mini gh" disabled>已記入</button>' : '<button class="mini" data-book>記入帳本</button>'}
       <button class="mini x" data-delinc title="拿掉這一行">✕</button>
     </div>`;
@@ -3185,7 +3391,9 @@ function renderAlloc(){
   const fsPrev = fixSpent(pm), fsNow = fixSpent(ym);
   const psPrev = subSpent(pm, PRE_CAT), psNow = subSpent(ym, PRE_CAT);
   const reached = ym <= ymNow();       // 還沒到的月份不提醒「還沒記」
-  const dot = c => `<i class="cdot" style="width:8px;height:8px;border-radius:99px;flex:none;background:${catColor(c)}"></i>`;
+  const CAT_EMOJI = { 飲食:'🍱', 交通:'🚌', 日用:'🧴', 娛樂:'🎬', 醫療:'💊', 人情:'🎁', 治裝:'👗', 學習:'📚', 其他:'📦' };
+  const dot = c => BOOK_OFF && CAT_EMOJI[c] ? `<span class="x-emo">${CAT_EMOJI[c]}</span>`
+    : `<i class="cdot" style="width:8px;height:8px;border-radius:99px;flex:none;background:${catColor(c)}"></i>`;
   // 名字是輸入框，點下去直接改。data-ren：cat 分類／fix 固定支出細項／acc 存款銀行
   const nameBox = (type, key, val, max) =>
     `<input class="ren" data-ren="${type}" data-old="${esc(key)}" value="${esc(val)}" maxlength="${max}" title="點一下改名">`;
@@ -3194,7 +3402,7 @@ function renderAlloc(){
      data-ov 的那幾格打字時會重算要不要標紅；預存、儲蓄投資不標紅（ov:false） */
   /* 記帳收起來之後沒有「實際」可以比：金額框下面只在需要時放一顆按鈕（o.btn：已存入／這期繳好了） */
   const av = (g, k, v, act, o = {}) =>
-    `<div class="av"><input type="number" inputmode="numeric" data-g="${g}" data-k="${esc(k)}" value="${v||''}" placeholder="0">` +
+    `<div class="av"><label class="x-amt"><span>$</span><input type="number" inputmode="numeric" data-g="${g}" data-k="${esc(k)}" value="${v||''}" placeholder="0"></label>` +
     (BOOK_OFF ? (o.btn || '') :
     `<span class="act" ${o.ov === false ? '' : `data-ov="${g}" data-k="${esc(k)}" data-v="${act}"`}>${o.tx ?? '實際 ' + plain(act)}</span>`) + `</div>`;
   const last = tx => BOOK_OFF ? '' : `<span class="n2">${tx}</span>`;      // 「上月實際…」那行小字
@@ -3234,9 +3442,9 @@ function renderAlloc(){
   const payBtn = p => {
     if(!BOOK_OFF || !reached) return '';
     const f = preInfo(p, ym, a), mine = Number((p.paid || {})[ym]) || 0;
-    if(mine) return `<button class="savbtn on" data-pay="${esc(p.id)}">已繳 ${plain(mine)} ✓</button>`;
+    if(mine) return `<button class="savbtn on" data-pay="${esc(p.id)}">✓ 已繳 ${plain(mine)}</button>`;
     if(f.started && !f.cyclePaid && (f.left === 0 || (f.amt > 0 && f.now >= f.amt)))
-      return `<button class="savbtn" data-pay="${esc(p.id)}">這期繳好了</button>`;
+      return `<button class="savbtn" data-pay="${esc(p.id)}">● 這期繳好了？</button>`;
     return '';
   };
   const preRow = p => `<div class="aline"><div class="nm">
@@ -3250,12 +3458,12 @@ function renderAlloc(){
       const on = saveDone(a, ym, r.k);
       return `<div class="aline"><div class="nm"><b>🐷 ${esc(r.name)}</b>
         <span class="n2">還沒有專用的帳戶也可以先排</span></div>${av('save', r.k, v, 0, { ov:false, tx:'—',
-          btn: v || on ? `<button class="savbtn${on ? ' on' : ''}" data-saved="${esc(r.k)}">${on ? '已存入 ✓' : '已存入？'}</button>` : '' })}${noX}</div>`;
+          btn: v || on ? `<button class="savbtn${on ? ' on' : ''}" data-saved="${esc(r.k)}">${on ? '✓ 已存入' : '● 已存入？'}</button>` : '' })}${noX}</div>`;
     }
     const on = saveDone(a, ym, r.k), auto = r.type === 'stock' && activeDca(r.k, ym).length > 0;
     // 股票有定期定額的：雲端記了就自動顯示已扣款，不用她按
-    const btn = auto ? `<span class="act">${on ? '已扣款 ✓' : '等雲端自動記'}</span>`
-      : `<button class="savbtn${on ? ' on' : ''}" data-saved="${esc(r.k)}">${on ? '已存入 ✓' : '已存入？'}</button>`;
+    const btn = auto ? (on ? '<span class="savbtn on">✓ 已扣款</span>' : '<span class="act x-auto">⟳ 等雲端自動記</span>')
+      : `<button class="savbtn${on ? ' on' : ''}" data-saved="${esc(r.k)}">${on ? '✓ 已存入' : '● 已存入？'}</button>`;
     const hint = saveHint(r, ym).replace(/^　·　/, '');
     return `<div class="aline"><div class="nm">
         <div class="nmrow">${ACC_ICON[r.type]||'🐷'} ${nameBox('acc', r.k, r.name, 8)}</div>
@@ -3265,8 +3473,11 @@ function renderAlloc(){
   const addRow = (type, ph, max) =>
     `<div class="addrow"><input data-addin="${type}" placeholder="${ph}" maxlength="${max}"><button data-addbtn="${type}">加</button></div>`;
   // 大項標題：預算小計、實際小計（數字在 renderAllocSummary 填）
-  const gh = (name, id) => `<div class="agh">${name}<span>預算 <b id="aSub${id}"></b>` +
+  const GH = { Fix:['🏠','--c-cash'], Vary:['🛒','--c-bank'], Pre:['🛡️','--c-save'], Save:['🐷','--c-stock'] };
+  const gh = (name, id) => `<div class="agh">` + (BOOK_OFF ? `<i class="gbar" style="background:var(${GH[id][1]})"></i>${GH[id][0]} ` : '') + `${name}<span>${BOOK_OFF ? '' : '預算 '}<b id="aSub${id}"></b>` +
     (!BOOK_OFF ? `　實際 <b id="aAct${id}"></b>` : id === 'Save' ? `　已存入 <b id="aAct${id}"></b>` : '') + `</span></div>`;
+  // 四大項各包成一個框（標題色塊＋裡面的每一行），不記帳的版本才包
+  const grp = (head, body) => BOOK_OFF ? `<div class="x-grp">${head}<div class="x-in">${body}</div></div>` : head + body;
   const hasFix   = settings.cats.includes(FIXED_CAT);
   const hasPre   = settings.cats.includes(PRE_CAT);
   const lifeCats = settings.cats.filter(c => !SYS_CATS.includes(c));
@@ -3274,18 +3485,18 @@ function renderAlloc(){
   const plainFix = hasFix && (!(fixList().length || insts.length) || getLine(a,'cat',FIXED_CAT) > 0 || (!BOOK_OFF && fsNow.none > 0));
   const plainPre = hasPre && (getLine(a,'cat',PRE_CAT) > 0 || (!BOOK_OFF && psNow.none > 0));
   $('#aLines').innerHTML =
-    (hasFix ? gh('固定支出', 'Fix') +
+    (hasFix ? grp(gh('固定支出', 'Fix'),
        fixList().map(fixRow).join('') + insts.map(instRow).join('') + (plainFix ? catRow(FIXED_CAT) : '') +
        addRow('fix', '新增固定支出細項，例如 電話費', 8) +
-       '<button class="addline" data-newinst>＋ 新增分期付款</button>' : '') +
-    gh('變動支出', 'Vary') + lifeCats.map(catRow).join('') +
-    addRow('cat', '新增變動支出分類', 6) +
-    (hasPre ? gh('預存資金', 'Pre') +
+       '<button class="addline" data-newinst>＋ 新增分期付款</button>') : '') +
+    grp(gh('變動支出', 'Vary'), lifeCats.map(catRow).join('') +
+    addRow('cat', '新增變動支出分類', 6)) +
+    (hasPre ? grp(gh('預存資金', 'Pre'),
        (preList().length ? '' : '<div class="aempty">保險、稅金這種幾個月才繳一次的加進來，每個月先存一點，繳的那個月就不會爆預算。</div>') +
        preList().map(preRow).join('') + (plainPre ? catRow(PRE_CAT) : '') +
-       '<button class="addline" data-newpre>＋ 新增預存項目</button>' : '') +
-    gh('儲蓄投資', 'Save') + saveRows().map(saveRow).join('') +
-    '<button class="addline" data-newsave>＋ 新增存款或股票帳戶</button>';
+       '<button class="addline" data-newpre>＋ 新增預存項目</button>') : '') +
+    grp(gh('儲蓄投資', 'Save'), saveRows().map(saveRow).join('') +
+    '<button class="addline" data-newsave>＋ 新增存款或股票帳戶</button>');
   renderAllocSummary();
 }
 
@@ -3330,7 +3541,16 @@ function renderAllocSummary(){
   setTx('#aSubPre', t.pre);   setTx('#aActPre', cp);
   setTx('#aSubSave', t.save); setTx('#aActSave', saved);
   // 預存項目的「已存多少」會跟著這個月的預算變，打字時也要更新
-  preList().forEach(p => { const el = $(`#aLines [data-pre="${CSS.escape(p.id)}"]`); if(el) el.innerHTML = preStatus(p, ym, a); });
+  preList().forEach(p => { const el = $(`#aLines [data-pre="${CSS.escape(p.id)}"]`); if(!el) return;
+    const f = preInfo(p, ym, a), pc = f.amt > 0 ? Math.max(0, Math.min(100, f.now / f.amt * 100)) : 0;
+    el.classList.toggle('x-pre', BOOK_OFF);
+    el.innerHTML = preStatus(p, ym, a) + (BOOK_OFF && f.started ? `<div class="track"><i style="width:${pc}%;background:var(--c-save)"></i></div>` : ''); });
+  // 最上面那條分段橫條
+  if(BOOK_OFF){
+    $('#aBar').innerHTML = allocBarHtml(t);
+    $('#aBarL').textContent = `已分 ${money(t.used)}`;
+    $('#aBarR').textContent = `收入 ${money(t.inc)}`;
+  }
 
   // 四個步驟
   const s1 = t.inc > 0, s3 = s1 && t.used > 0 && t.left === 0, s4 = s3 && t.done;
