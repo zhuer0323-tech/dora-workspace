@@ -168,6 +168,32 @@ main{max-width:760px;margin:0 auto;padding:6px 16px calc(40px + env(safe-area-in
 .znav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:64px;padding:0;font-size:30px;background:rgba(255,255,255,.14);color:#fff;border-radius:12px}
 .znav.prev{left:calc(8px + env(safe-area-inset-left))} .znav.next{right:calc(8px + env(safe-area-inset-right))}
 .zhint{color:rgba(255,255,255,.72);font-size:12px;text-align:center;padding:8px 14px calc(12px + env(safe-area-inset-bottom))}
+/* 填寫範例 */
+details.ex{border:2px dashed var(--pink);border-radius:var(--r);background:#fff;overflow:hidden}
+details.ex summary{list-style:none;cursor:pointer;background:var(--pink-l);color:var(--pink-d);font-weight:700;padding:10px 14px;display:flex;align-items:center}
+details.ex summary::-webkit-details-marker{display:none}
+details.ex summary::after{content:"展開 ▾";margin-left:auto;font-weight:400;font-size:12px}
+details.ex[open] summary::after{content:"收起 ▴"}
+.exrow{display:flex;flex-direction:column;gap:2px;padding:9px 14px;border-top:1px solid var(--line)}
+.exrow small{font-size:11px;color:var(--ink3)}
+.exrow .v{font-weight:600}
+.exrow .tip{font-size:11.5px;color:var(--pink-d);background:var(--pink-xl);border-radius:8px;padding:3px 8px;align-self:flex-start}
+.shot{width:84px;height:104px;border-radius:10px;background:#fff;border:1.5px solid var(--line);padding:6px;display:flex;flex-direction:column;gap:3px;font-size:9px;color:var(--ink2);position:relative;flex:0 0 auto}
+.shot i{display:block;height:50px;border-radius:6px;background:linear-gradient(135deg,#F7B5C6,#E57399)}
+.shot b{font-size:9px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shot .ring{position:absolute;left:3px;right:3px;top:3px;height:74px;border:2px solid #E05263;border-radius:7px}
+/* 確認視窗、注意事項 */
+.warnbox{margin-top:12px;background:var(--pink-xl);border:1.5px solid var(--pink-l);border-radius:12px;padding:10px 12px;font-weight:700;color:var(--pink-d);line-height:1.6}
+.sumbox{display:flex;gap:10px;background:#fff;border-radius:14px;box-shadow:var(--shadow);padding:10px;margin-top:10px}
+.sumbox .kv{font-size:13px;flex:1;min-width:0}
+.sumbox .kv dd{word-break:break-all}
+.btn2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.btn2 button{padding:11px 6px}
+.rules ol{margin:8px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.fee{margin-top:12px;background:#fff;border-radius:12px;box-shadow:var(--shadow);overflow:hidden;font-size:13px}
+.fee div{display:flex;justify-content:space-between;padding:6px 12px;border-top:1px solid var(--line)}
+.fee div:first-child{border-top:0;background:var(--pink-xl);font-weight:700;color:var(--pink-d)}
+.linkbtn{background:none;padding:6px;color:var(--pink-d);font-weight:600;font-size:13px;width:100%}
 #toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:#fff;
   padding:10px 16px;border-radius:12px;font-size:14px;z-index:40;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw}
 #toast.on{opacity:1}
@@ -252,6 +278,19 @@ const CUR = { KRW:{ sym:'₩', name:'韓元' }, JPY:{ sym:'¥', name:'日圓' } 
 const DEF_CFG = { cardPct:1.5, tiers:[
   { max:300, fix:50 }, { max:600, fix:90 }, { max:1000, fix:120 }, { max:2000, pct:15 }, { pct:12 } ] };
 const ST = { wait:'待確認', got:'買到了', part:'部分買到', none:'沒買到' };
+// 下單注意事項預設內容（團主在「設定」可改，存 cfg.rules；一行一條）
+const DEF_RULES = [
+  '一件商品許一次願，請附截圖或照片，品牌和商品圖一定要清楚拍到',
+  '許願或加入商品送出後，除非現場沒有販售/缺貨，恕不取消；規格、備註可以自己修改，數量只能增加',
+  '收單截止後就不能再新增或修改',
+  '代購以現場實際買到為準，缺貨或限購會標「沒買到」，沒買到不收費',
+  '報價＝商品台幣成本＋海外刷卡手續費 1.5%＋代購費（級距見下表）',
+  '收單期間看到的金額是預估，結單後依實際刷卡入帳匯率算出確定金額',
+  '結單後會公布付款方式，請依公告時間付款，付款後安排交貨',
+  '代購商品除瑕疵外不接受退換；液體、易碎品可能因航空或行李規定無法代購',
+  '有任何問題直接私訊我'
+].join('\n');
+const CONFIRM_MSG = '請再次確認訂單資訊！<br>送出訂單後，除非沒有販售/缺貨，恕不取消唷～';
 const AV_COLORS = ['#E57399','#7FB6E0','#6FC79A','#F2B24B','#B38AD6','#E0896B'];
 // 截圖上傳畫質：長邊像素、JPEG 品質（雲端規則擋單張 1,200,000 字元，改大要一起改）
 const IMG_MAX = 1600, IMG_Q = .8;
@@ -457,8 +496,52 @@ function noticeCard(t){
   return sec('公告') + `<div class="card"><div class="ch"><span class="chip ${open?'c-open':'c-closed'}">${open?'收單中':'已收單'}</span><span class="sp"></span>
       <span class="hint" style="font-weight:400">${esc(closeText(t))}</span></div>
     <div class="cb">${t.notice ? `<div class="notice">${esc(t.notice)}</div>` : '<div class="hint">團主還沒寫公告。</div>'}
-    <div class="rate">${esc(rateText(t))}${isFinal(t) ? '' : '。金額是預估，刷卡入帳後會改成實際匯率。'}</div></div></div>`;
+    <div class="rate">${esc(rateText(t))}${isFinal(t) ? '' : '。金額是預估，刷卡入帳後會改成實際匯率。'}</div>
+    <button class="linkbtn" data-act="rulesShow">查看下單注意事項 ›</button></div></div>`;
 }
+
+/* ---------- 下單注意事項 ---------- */
+const rulesText = () => (typeof S.cfg?.rules === 'string' && S.cfg.rules.trim()) ? S.cfg.rules : DEF_RULES;
+const showFee = () => S.cfg?.feeTable !== false;
+function feeRows(){
+  const tiers = Array.isArray(S.cfg?.tiers) ? S.cfg.tiers : DEF_CFG.tiers;
+  let prev = 0;
+  return tiers.map(x => {
+    const n = v => (+v).toLocaleString('en-US');
+    const a = x.max == null ? `NT$${n(prev + 1)} 以上` : prev === 0 ? `NT$${n(x.max)} 以下` : `NT$${n(prev + 1)}～${n(x.max)}`;
+    if(x.max != null) prev = +x.max;
+    return [a, x.fix != null ? `每件 $${n(x.fix)}` : `成本的 ${x.pct}%`];
+  });
+}
+function rulesBody(){
+  const lines = rulesText().split('\n').map(s => s.replace(/^\s*(\d+[.、．]|[-・•])\s*/, '').trim()).filter(Boolean);
+  return `<div class="rules"><ol>${lines.map(s => `<li>${esc(s)}</li>`).join('')}</ol>
+    ${showFee() ? `<div class="fee"><div><span>單件台幣成本</span><span>代購費</span></div>${feeRows().map(([a,b]) => `<div><span>${a}</span><span>${b}</span></div>`).join('')}</div>` : ''}</div>`;
+}
+function rulesKey(){ let h = 0; const s = rulesText() + (showFee() ? JSON.stringify(feeRows()) : ''); for(const c of s) h = (h * 31 + c.charCodeAt(0)) | 0; return 'v' + h; }
+function rulesModal(first){
+  const t = curTrip();
+  openModal(`${t ? `<span class="chip c-pink">${esc(t.name)}</span>` : ''}<h3 style="margin-top:6px">訂購下單注意事項</h3>
+    <div class="hint">下單前請花一分鐘看完</div>${rulesBody()}
+    ${first ? `<div class="btn2"><button class="ghost" data-act="close">稍後再看</button><button class="pri" data-act="rulesOk">我知道了，開始許願</button></div>`
+            : `<div class="btn2" style="grid-template-columns:1fr"><button class="pri" data-act="close">關閉</button></div>`}`);
+}
+function maybeRules(){
+  if(role !== 'friend' || !tripList().length) return;
+  if(ls.get('dg_rules_ack') !== rulesKey()) rulesModal(true);
+}
+
+/* ---------- 送出前確認 ---------- */
+let _cf = null;   // { ok: async fn, back: fn }
+function confirmModal(title, inner, ok, back){
+  _cf = { ok, back };
+  openModal(`<h3>${title}</h3>${inner}<div class="warnbox">${CONFIRM_MSG}</div>
+    <div class="err" id="cfErr"></div>
+    <div class="btn2"><button class="ghost" data-act="cfBack">返回，再次確認訂單</button><button class="pri" data-act="cfOk">沒錯，確認訂單！</button></div>`);
+}
+// 確認視窗裡的縮圖：點了直接看這一組，不靠 GAL（視窗開著時畫面可能重畫）
+let _cfImgs = [];
+const sumThumb = imgs => { _cfImgs = imgs; return imgs.length ? `<div class="thumbs"><div class="tw"><img src="${imgs[0]}" data-zcf="0" alt="">${imgs.length > 1 ? `<span class="more">${imgs.length} 張</span>` : ''}</div></div>` : ''; };
 const wallItems = t_id => Object.entries(S.wall?.[t_id] || {}).sort((a,b) => (b[1].ts||0) - (a[1].ts||0));
 function priceLine(price, t){
   const q = quote(price, t);
@@ -482,8 +565,9 @@ function viewWall(){
       const n = +(mine[wid]?.qty || 0);
       if(it.soldOut) foot = `<div><span class="chip c-gray">已售完</span>${n ? ` <span class="chip c-pink">你訂了 ${n}</span>` : ''}</div>`;
       else if(!open) foot = `<div>${n ? `<span class="chip c-pink">你訂了 ${n}</span>` : `<span class="chip c-gray">已收單</span>`}</div>`;
-      else foot = n ? `<div class="qty"><button data-act="cart" data-id="${wid}" data-d="-1" aria-label="減一">−</button><b>${n}</b><button data-act="cart" data-id="${wid}" data-d="1" aria-label="加一">＋</button></div>`
-                    : `<button class="pri addbtn sm" data-act="cart" data-id="${wid}" data-d="1">＋ 加入</button>`;
+      // 送出後恕不取消：沒有「−」，只能再加，每次都要確認
+      else foot = n ? `<div class="bar" style="margin-top:6px"><span class="chip c-pink">你訂了 ${n}</span><span class="sp"></span><button class="sm" data-act="cart" data-id="${wid}">＋ 再加</button></div>`
+                    : `<button class="pri addbtn sm" data-act="cart" data-id="${wid}">＋ 加入</button>`;
     } else {
       let ppl = 0, cnt = 0;
       Object.values(S.orders?.[tid] || {}).forEach(o => { const q = +(o.c?.[wid]?.qty || 0); if(q){ ppl++; cnt += q; } });
@@ -521,12 +605,22 @@ function viewWish(){
   const t = curTrip(), open = isOpen(t);
   const ws = linesOf(tid, me).filter(l => l.kind === 'w');
   let h = sec('許一個願') + `<div class="card"><div class="cb">
-    <p class="hint" style="margin:0 0 10px">一件商品許一次願：上傳截圖、寫品名和數量就好。團主在當地看到會幫你確認，買到了再報價。</p>
-    <button class="pri" data-act="wishNew" ${open?'':'disabled'} style="width:100%">${open ? '＋ 我要許願' : '已收單，不能再許願'}</button></div></div>`;
-  h += sec('我的許願', ws.length ? `${ws.length} 件・點截圖可放大` : '');
+    <p class="hint" style="margin:0 0 10px">一件商品許一次願。照下面的範例填，團主在當地比較好找。</p>
+    <button class="pri" data-act="wishNew" ${open?'':'disabled'} style="width:100%">${open ? '＋ 我要許願' : '已收單，不能再許願'}</button>
+    <button class="linkbtn" data-act="rulesShow">查看下單注意事項 ›</button></div></div>`;
+  h += sec('填寫範例', '照這樣寫最好找') + `<details class="ex" ${ws.length ? '' : 'open'}><summary>範例</summary>
+    <div class="exrow" style="flex-direction:row;gap:12px;align-items:center;border-top:0">
+      <div class="shot"><i></i><b>ROM&amp;○ 絲絨唇釉</b><span>03 玫瑰豆沙</span><span class="ring"></span></div>
+      <div style="display:flex;flex-direction:column;gap:2px"><small style="font-size:11px;color:var(--ink3)">截圖或照片</small><div style="font-weight:600">官網、IG 截圖或現場照片</div><span class="tip" style="font-size:11.5px;color:var(--pink-d);background:var(--pink-xl);border-radius:8px;padding:3px 8px">品牌和商品圖一定要清楚拍到</span></div></div>
+    <div class="exrow"><small>品名</small><div class="v">ROM&amp;○ 絲絨霧面唇釉</div><span class="tip">品牌＋品名，不要只寫「唇釉」</span></div>
+    <div class="exrow"><small>數量</small><div class="v">2</div></div>
+    <div class="exrow"><small>顏色、尺寸、規格</small><div class="v">03 玫瑰豆沙</div><span class="tip">衣服鞋子寫尺寸，保養品寫容量</span></div>
+    <div class="exrow"><small>備註</small><div class="v">Olive Young 有賣；03 沒貨的話 05 也可以</div><span class="tip">在哪買、沒貨時可以換什麼</span></div>
+  </details>`;
+  h += sec('我的許願', ws.length ? `${ws.length} 件・送出後恕不取消` : '');
   if(!ws.length) return h + `<div class="card empty">還沒有許願</div>`;
   h += `<div class="card">` + ws.map(l => lineHtml(l, t,
-    open ? `<div class="bar" style="padding-left:68px"><button class="sm" data-act="wishEdit" data-id="${l.id}">修改</button><button class="sm" data-act="wishDel" data-id="${l.id}">刪除</button></div>` : '')).join('') + `</div>`;
+    open ? `<div class="bar" style="padding-left:68px"><button class="sm" data-act="wishEdit" data-id="${l.id}">修改規格／備註</button><span class="hint">要取消請私訊團主</span></div>` : '')).join('') + `</div>`;
   return h;
 }
 
@@ -667,7 +761,13 @@ function viewSet(){
     <div id="tierRows">${tiers.map(x => tierRow(x)).join('')}</div>
     <div class="hint" style="margin-top:6px">最後一級「成本上限」留空＝以上全部。</div>
     <div class="bar" style="margin-top:10px"><button class="sm" data-act="tierAdd">＋ 加一級</button><span class="sp"></span><button class="pri" data-act="cfgSave">儲存</button></div></div></div>`;
-  h += sec('給朋友的連結') + `<div class="card"><div class="cb"><div class="hint">把這個網址丟到群組，朋友自己報名就行。</div>
+  h += sec('下單注意事項', '每一趟共用') + `<div class="card"><div class="cb">
+    <div class="hint">朋友登入後會跳出來，按「我知道了」之後不再跳；你改了內容，會再跳一次。一行一條，會自動編號。</div>
+    <textarea id="cRules" rows="11" style="margin-top:8px;font-size:14px">${esc(rulesText())}</textarea>
+    <label class="chk" style="margin-top:10px"><input type="checkbox" id="cFee" ${showFee() ? 'checked' : ''}>最後附上代購費級距表（照上面的級距自動產生）</label>
+    <div class="bar" style="margin-top:12px"><button class="sm" data-act="rulesReset">換回預設</button><span class="sp"></span><button data-act="rulesPreview">預覽彈窗</button><button class="pri" data-act="rulesSave">儲存</button></div>
+    <div class="hint" style="margin-top:6px">預覽看到的是已儲存的內容。</div></div></div>`;
+  h += sec('給朋友的連結') +`<div class="card"><div class="cb"><div class="hint">把這個網址丟到群組，朋友自己報名就行。</div>
     <div class="bar" style="margin-top:8px;flex-wrap:nowrap"><input readonly value="${esc(location.origin + location.pathname)}"><button class="sm pri" data-act="copyLink">複製</button></div>
     <div class="hint" style="margin-top:8px">朋友忘記密碼：告訴 Claude 暱稱，請它幫忙重設。</div></div></div>`;
   return h;
@@ -713,19 +813,36 @@ document.addEventListener('change', async e => {
   $('#pics').innerHTML = picsHtml(max);
 });
 
-function wishForm(id){
-  const w = id ? (S.orders?.[tid]?.[me]?.w?.[id] || {}) : {};
-  _pics = imgsOf(w.imgs);
+// draft：從確認視窗按「返回」時，帶回剛剛填的內容
+function wishForm(id, draft){
+  const w = draft || (id ? (S.orders?.[tid]?.[me]?.w?.[id] || {}) : {});
+  const oldQty = id ? +(S.orders?.[tid]?.[me]?.w?.[id]?.qty || 1) : 1;
+  _pics = draft ? [...draft.imgs] : imgsOf(w.imgs);
   openModal(`<h3>${id ? '修改許願' : '我要許願'}</h3>
-    <label>截圖或照片（最多 3 張，點一下可放大）</label><div class="pics" id="pics">${picsHtml(3)}</div>
-    <label for="wName">品名</label><input id="wName" value="${esc(w.name || '')}" placeholder="例如：○○ 唇釉">
-    <div class="ctl" style="padding-left:0;grid-template-columns:1fr 1fr"><div><div class="mini">數量</div><input id="wQty" inputmode="numeric" value="${w.qty || 1}"></div>
-      <div><div class="mini">最高可接受（台幣，選填）</div><input id="wMax" inputmode="numeric" value="${w.maxTwd ?? ''}"></div></div>
-    <label for="wSpec">顏色、尺寸、規格</label><input id="wSpec" value="${esc(w.spec || '')}" placeholder="例如：03 號色">
-    <label for="wNote">備註（在哪裡買、找不到可以換什麼）</label><textarea id="wNote" rows="3">${esc(w.note || '')}</textarea>
+    <div class="rate" style="margin-top:8px">${id ? `送出後恕不取消：可以改規格、備註、補照片，數量只能增加（原本 ${oldQty}）。` : '不知道怎麼填？關掉這個視窗，看頁面上的「填寫範例」。'}</div>
+    <label>截圖或照片（最多 3 張，品牌和商品圖一定要清楚）</label><div class="pics" id="pics">${picsHtml(3)}</div>
+    <label for="wName">品名</label><input id="wName" value="${esc(w.name || '')}" placeholder="例如：ROM&○ 絲絨霧面唇釉">
+    <label for="wQty">數量</label><input id="wQty" inputmode="numeric" value="${w.qty || 1}">
+    <label for="wSpec">顏色、尺寸、規格</label><input id="wSpec" value="${esc(w.spec || '')}" placeholder="例如：03 玫瑰豆沙／M 號／50ml">
+    <label for="wNote">備註</label><textarea id="wNote" rows="3" placeholder="例如：Olive Young 有賣；沒貨的話 05 也可以">${esc(w.note || '')}</textarea>
     <div class="err" id="mErr"></div>
-    <div class="row2"><button class="ghost" data-act="close">取消</button><button class="pri" data-act="wishSave" data-id="${id || ''}">送出</button></div>`);
+    <div class="row2"><button class="ghost" data-act="close">取消</button><button class="pri" data-act="wishNext" data-id="${id || ''}">下一步：確認訂單</button></div>`);
 }
+function wallConfirm(wid, q){
+  const it = S.wall?.[tid]?.[wid] || {}, t = curTrip(), n = +(S.orders?.[tid]?.[me]?.c?.[wid]?.qty || 0);
+  const qt = quote(it.price, t);
+  _cfQty = q;
+  confirmModal(n ? '確認再加' : '確認加入訂單', `<div class="sumbox">${sumThumb(it.img ? [it.img] : [])}<div style="flex:1;min-width:0">
+      <div style="font-weight:700">${esc(it.name)}</div>${it.spec ? `<div class="hint">${esc(it.spec)}</div>` : ''}
+      <div style="color:var(--pink-d);font-weight:700">${qt ? twd(qt.unit) : '待報價'} <span class="hint" style="font-weight:400">${num(it.price) != null ? CUR[t.cur].sym + (+it.price).toLocaleString('en-US') : ''}${isFinal(t) ? '' : '（預估）'}</span></div>
+      <div class="qty" style="margin-top:6px"><button data-act="cfQty" data-d="-1" data-id="${wid}" aria-label="減一">−</button><b>${q}</b><button data-act="cfQty" data-d="1" data-id="${wid}" aria-label="加一">＋</button></div>
+      <div class="hint">${n ? `你已經訂了 ${n}，這次再加 ${q}，合計 ${n + q}` : '在這裡選好數量再確認'}</div></div></div>`,
+    async () => { const cur = +(S.orders?.[tid]?.[me]?.c?.[wid]?.qty || 0);
+      await put(`orders/${tid}/${me}/c/${wid}`, { qty: Math.min(99, cur + _cfQty), ts: S.orders?.[tid]?.[me]?.c?.[wid]?.ts || Date.now() });
+      toast('加進你的訂單了'); },
+    null);
+}
+let _cfQty = 1;
 function wallForm(wid, pre){
   const it = wid ? (S.wall?.[tid]?.[wid] || {}) : (pre || {});
   _pics = it.img ? [it.img] : [];
@@ -747,6 +864,8 @@ document.addEventListener('click', async e => {
   if(z){ const [g, i] = z.dataset.zoom.split(':').map(Number); if(GAL[g]) zoomOpen(GAL[g], i); return; }
   const zp = e.target.closest('[data-zpics]');
   if(zp){ zoomOpen([..._pics], +zp.dataset.zpics); return; }
+  const zc = e.target.closest('[data-zcf]');
+  if(zc){ zoomOpen([..._cfImgs], 0); return; }
   const b = e.target.closest('[data-act]'); if(!b) return;
   const act = b.dataset.act, id = b.dataset.id, t = curTrip();
   try{
@@ -754,26 +873,39 @@ document.addEventListener('click', async e => {
     case 'close': closeModal(); break;
     case 'picDel': _pics.splice(+b.dataset.i, 1); $('#pics').innerHTML = picsHtml(_picMax); break;
 
-    case 'cart': {
-      const n = Math.max(0, +(S.orders?.[tid]?.[me]?.c?.[id]?.qty || 0) + +b.dataset.d);
-      if(n) await put(`orders/${tid}/${me}/c/${id}`, { qty:n, ts:S.orders?.[tid]?.[me]?.c?.[id]?.ts || Date.now() });
-      else await del(`orders/${tid}/${me}/c/${id}`);
-      if(+b.dataset.d > 0 && n === 1) toast('加進你的訂單了');
+    case 'rulesShow': rulesModal(false); break;
+    case 'rulesOk': ls.set('dg_rules_ack', rulesKey()); closeModal(); break;
+    case 'rulesPreview': rulesModal(true); break;
+
+    case 'cart': wallConfirm(id, 1); break;
+    case 'cfQty': { _cfQty = Math.min(99, Math.max(1, _cfQty + +b.dataset.d)); wallConfirm(id, _cfQty); break; }
+    case 'cfBack': { const f = _cf?.back; _cf = null; if(f) f(); else closeModal(); break; }
+    case 'cfOk': {
+      if(!_cf) break;
+      b.disabled = true; b.textContent = '送出中…';
+      try{ await _cf.ok(); _cf = null; closeModal(); }
+      catch(err){ $('#cfErr').textContent = errMsg(err); b.disabled = false; b.textContent = '沒錯，確認訂單！'; }
       break; }
 
     case 'wishNew': wishForm(); break;
     case 'wishEdit': wishForm(id); break;
-    case 'wishDel':
-      if(_delArm !== id){ _delArm = id; b.textContent = '再按一次刪除'; setTimeout(() => { _delArm = ''; }, 3000); break; }
-      await del(`orders/${tid}/${me}/w/${id}`); toast('刪掉了'); break;
-    case 'wishSave': {
+    case 'wishNext': {
       const name = $('#wName').value.trim(), qty = Math.min(99, Math.max(1, parseInt($('#wQty').value) || 1));
-      if(!name && !_pics.length){ $('#mErr').textContent = '至少放一張截圖或寫品名'; break; }
-      const wid = id || newId(), old = S.orders?.[tid]?.[me]?.w?.[wid] || {};
-      b.disabled = true; b.textContent = '送出中…';
-      await put(`orders/${tid}/${me}/w/${wid}`, { name: name || '（看截圖）', qty, spec:$('#wSpec').value.trim(), note:$('#wNote').value.trim(),
-        maxTwd: num($('#wMax').value), imgs:_pics, ts: old.ts || Date.now() });
-      closeModal(); toast(id ? '改好了' : '許願成功！'); break; }
+      if(!_pics.length){ $('#mErr').textContent = '請放至少一張截圖或照片（品牌和商品圖要清楚）'; break; }
+      if(!name){ $('#mErr').textContent = '請寫品名（品牌＋品名）'; break; }
+      const old = id ? S.orders?.[tid]?.[me]?.w?.[id] : null;
+      if(old && qty < +old.qty){ $('#mErr').textContent = `送出後數量只能增加，原本是 ${old.qty}`; break; }
+      const draft = { name, qty, spec:$('#wSpec').value.trim(), note:$('#wNote').value.trim(), imgs:[..._pics] };
+      confirmModal(id ? '確認修改許願' : '確認許願訂單', `<div class="sumbox">${sumThumb(draft.imgs)}<dl class="kv">
+          <dt>品名</dt><dd>${esc(draft.name)}</dd><dt>數量</dt><dd><b>${draft.qty}</b></dd>
+          ${draft.spec ? `<dt>規格</dt><dd>${esc(draft.spec)}</dd>` : ''}${draft.note ? `<dt>備註</dt><dd>${esc(draft.note)}</dd>` : ''}</dl></div>`,
+        async () => {
+          const wid = id || newId(), o = S.orders?.[tid]?.[me]?.w?.[wid] || {};
+          await put(`orders/${tid}/${me}/w/${wid}`, { ...draft, ts: o.ts || Date.now() });
+          toast(id ? '改好了' : '許願成功！');
+        },
+        () => wishForm(id, draft));
+      break; }
 
     case 'wallNew': wallForm(); break;
     case 'wallEdit': wallForm(id); break;
@@ -833,7 +965,14 @@ document.addEventListener('click', async e => {
       }).sort((a,b) => (a.max ?? Infinity) - (b.max ?? Infinity));
       if(!tiers.length){ toast('至少要一級'); break; }
       if(tiers[tiers.length-1].max != null) delete tiers[tiers.length-1].max;   // 最後一級一律「以上全部」
-      await put('cfg', { cardPct: num($('#cPct').value) ?? 1.5, tiers }); toast('存好了'); break; }
+      // 分開寫，才不會把注意事項洗掉
+      await put('cfg/cardPct', num($('#cPct').value) ?? 1.5); await put('cfg/tiers', tiers); toast('存好了'); break; }
+    case 'rulesSave': {
+      const v = $('#cRules').value.trim();
+      await put('cfg/rules', v && v !== DEF_RULES ? v : null);
+      await put('cfg/feeTable', $('#cFee').checked ? null : false);
+      toast('存好了，朋友下次打開會再跳一次'); break; }
+    case 'rulesReset': $('#cRules').value = DEF_RULES; toast('換回預設內容，按儲存才會生效'); break;
     case 'copyLink':
       try{ await navigator.clipboard.writeText(location.origin + location.pathname); toast('複製好了'); }catch(err){ toast('請長按網址複製'); }
       break;
@@ -924,6 +1063,7 @@ async function start(user){
   whoami();
   $('#gate').hidden = true; $('#app').hidden = false;
   render();
+  maybeRules();
   loadRate().then(() => { syncTripRates(); render(); });
 }
 function whoami(){ $('#whoami').textContent = role === 'owner' ? '團主模式' : `你是 ${myNick || '朋友'}`; }
