@@ -1,0 +1,885 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>代購許願池</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<meta name="theme-color" content="#E2637F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="代購許願池">
+<style>
+:root{
+  --bg:#FFF6F3; --card:#fff; --ink:#3A2A2E; --sub:#8A7378; --line:#F0DEDB;
+  --main:#E2637F; --main2:#FCE3E8; --mint:#2E8B6E; --mint2:#E2F4EE;
+  --warn:#C9682A; --warn2:#FDEEDF; --gray2:#F3EEEE;
+  --r:16px; --sh:0 2px 10px rgba(120,60,70,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+  -webkit-text-size-adjust:100%;font-size:15px;line-height:1.5}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;border-radius:12px;padding:10px 14px;background:var(--gray2)}
+button.pri{background:var(--main);color:#fff;font-weight:600}
+button.ghost{background:transparent;border:1.5px solid var(--line)}
+button.sm{padding:6px 10px;font-size:13px;border-radius:10px}
+button:disabled{opacity:.45;cursor:default}
+input,select,textarea{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--main)}
+textarea{resize:vertical;min-height:80px}
+label{display:block;font-size:13px;color:var(--sub);margin:12px 0 4px}
+.hint{font-size:12px;color:var(--sub)}
+.err{color:#C0392B;font-size:14px;min-height:20px;margin-top:8px}
+[hidden]{display:none!important}
+
+/* 登入 */
+#gate{max-width:380px;margin:0 auto;padding:56px 16px 40px}
+#gate h1{font-size:28px;margin:0 0 4px;text-align:center}
+#gate .lead{text-align:center;color:var(--sub);margin:0 0 24px}
+.gbox{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:18px}
+.row2{display:flex;gap:8px;margin-top:16px}
+.row2>*{flex:1}
+details.owner{margin-top:28px;text-align:center}
+details.owner summary{color:var(--sub);font-size:13px;cursor:pointer;list-style:none}
+details.owner .gbox{margin-top:10px;text-align:left}
+
+/* 主畫面 */
+header{position:sticky;top:0;z-index:5;background:rgba(255,246,243,.94);backdrop-filter:blur(8px);
+  padding:calc(10px + env(safe-area-inset-top)) 16px 0}
+.top{display:flex;align-items:center;gap:8px;max-width:760px;margin:0 auto}
+.top h2{font-size:18px;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top select{width:auto;max-width:48%;padding:6px 10px;font-size:14px}
+.who{font-size:12px;color:var(--sub);white-space:nowrap}
+nav{display:flex;gap:6px;max-width:760px;margin:10px auto 0;overflow-x:auto;padding-bottom:10px;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{flex:0 0 auto;background:transparent;border-radius:999px;padding:7px 14px;color:var(--sub)}
+nav button.on{background:var(--main);color:#fff;font-weight:600}
+main{max-width:760px;margin:0 auto;padding:6px 16px calc(40px + env(safe-area-inset-bottom))}
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:16px;margin:12px 0}
+.card h3{margin:0 0 8px;font-size:16px}
+.chip{display:inline-block;font-size:12px;padding:2px 9px;border-radius:999px;background:var(--gray2);color:var(--sub);vertical-align:middle}
+.chip.open{background:var(--mint2);color:var(--mint)}
+.chip.closed{background:var(--warn2);color:var(--warn)}
+.chip.main{background:var(--main2);color:var(--main)}
+.notice{white-space:pre-wrap;margin-top:8px}
+.rate{font-size:13px;color:var(--sub);margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.empty{text-align:center;color:var(--sub);padding:28px 8px}
+.bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sp{flex:1}
+
+/* 商品牆 */
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+@media(min-width:620px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.item{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;display:flex;flex-direction:column}
+.item .ph{aspect-ratio:1/1;background:var(--gray2);display:flex;align-items:center;justify-content:center;color:var(--sub);font-size:30px}
+.item .ph img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in}
+.item .bd{padding:10px 12px 12px;display:flex;flex-direction:column;gap:4px;flex:1}
+.item .nm{font-weight:600;line-height:1.35}
+.item .sp2{font-size:12px;color:var(--sub)}
+.item .pr{margin-top:auto;padding-top:6px}
+.item .pr b{font-size:17px;color:var(--main)}
+.item .pr span{font-size:12px;color:var(--sub);margin-left:4px}
+.item.sold{opacity:.55}
+.qty{display:flex;align-items:center;gap:6px;margin-top:6px}
+.qty button{width:36px;height:36px;padding:0;font-size:18px;border-radius:10px}
+.qty b{min-width:24px;text-align:center}
+.addbtn{width:100%;margin-top:6px}
+
+/* 訂單列 */
+.line{display:flex;flex-wrap:wrap;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+.line .lctl{flex-basis:100%;margin-top:-4px}
+@media(min-width:620px){.line .ctl{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.line:first-of-type{border-top:0}
+.thumbs{display:flex;gap:4px;flex:0 0 auto}
+.thumbs img,.th0{width:58px;height:58px;border-radius:10px;object-fit:cover;background:var(--gray2);cursor:zoom-in;display:flex;align-items:center;justify-content:center;color:var(--sub)}
+.line .info{flex:1;min-width:0}
+.line .nm{font-weight:600}
+.line .meta{font-size:12px;color:var(--sub);white-space:pre-wrap}
+.line .amt{text-align:right;white-space:nowrap;font-size:14px}
+.line .amt b{font-size:15px}
+.st{font-size:12px;padding:1px 8px;border-radius:999px;display:inline-block;margin-top:4px}
+.st.wait{background:var(--gray2);color:var(--sub)}
+.st.got{background:var(--mint2);color:var(--mint)}
+.st.part{background:var(--warn2);color:var(--warn)}
+.st.none{background:#F6E1E1;color:#B04545;text-decoration:none}
+.ctl{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.ctl input,.ctl select{padding:7px 9px;font-size:14px;border-radius:10px}
+.ctl .full{grid-column:1/-1}
+.mini{font-size:11px;color:var(--sub);margin-bottom:2px}
+.sum{display:flex;justify-content:space-between;align-items:baseline;padding-top:12px;margin-top:6px;border-top:2px solid var(--line)}
+.sum b{font-size:22px;color:var(--main)}
+.brk{font-size:12px;color:var(--sub)}
+.person{border-left:4px solid var(--main2)}
+.person h3{display:flex;align-items:center;gap:8px}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.kpi{background:var(--card);border-radius:14px;box-shadow:var(--sh);padding:12px}
+.kpi .mini{font-size:12px}
+.kpi b{font-size:18px}
+.chk{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:14px;color:var(--ink)}
+.chk input{width:20px;height:20px;accent-color:var(--main)}
+.tiers .tr{display:grid;grid-template-columns:1.2fr 1fr 1fr 32px;gap:6px;margin-top:6px;align-items:center}
+.tiers .tr input,.tiers .tr select{padding:7px 8px;font-size:14px}
+
+/* 視窗 */
+.modal{position:fixed;inset:0;background:rgba(40,20,25,.42);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--bg);width:100%;max-width:520px;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;
+  padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+@media(min-width:620px){.modal{align-items:center}.sheet{border-radius:20px}}
+.sheet h3{margin:0 0 4px}
+.pics{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.pics .p{position:relative}
+.pics img{width:76px;height:76px;object-fit:cover;border-radius:12px;display:block}
+.pics .x{position:absolute;top:-6px;right:-6px;width:24px;height:24px;padding:0;border-radius:50%;background:#3A2A2E;color:#fff;font-size:13px}
+.pics .addp{width:76px;height:76px;border:2px dashed var(--line);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--sub);font-size:26px;cursor:pointer;background:#fff}
+#zoom{position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:30;display:flex;align-items:center;justify-content:center;padding:16px}
+#zoom img{max-width:100%;max-height:100%;border-radius:8px}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#3A2A2E;color:#fff;
+  padding:10px 16px;border-radius:12px;font-size:14px;z-index:40;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw}
+#toast.on{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- 登入 -->
+<div id="gate">
+  <h1>代購許願池</h1>
+  <p class="lead">用暱稱和 6 位數字密碼進來</p>
+  <form class="gbox" id="fForm" autocomplete="on">
+    <label for="fNick" style="margin-top:0">暱稱</label>
+    <input id="fNick" maxlength="20" autocomplete="username" placeholder="例如：小美">
+    <label for="fPass">密碼（6 位數字）</label>
+    <input id="fPass" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="current-password" placeholder="••••••">
+    <div class="row2">
+      <button type="submit" class="pri" id="fLogin">登入</button>
+      <button type="button" class="ghost" id="fSign">第一次報名</button>
+    </div>
+    <p class="hint" style="margin:12px 0 0">第一次來請按「第一次報名」，自己設一組 6 位數字密碼。換手機時用同一組暱稱和密碼登入，就看得到原本的單。</p>
+  </form>
+  <div class="err" id="gateErr"></div>
+  <details class="owner">
+    <summary>團主登入</summary>
+    <div class="gbox">
+      <button type="button" class="pri" id="gBtn" style="width:100%">用 Google 登入</button>
+      <form id="oForm" style="margin-top:8px">
+        <label for="oEmail">或用 email 與密碼</label>
+        <input id="oEmail" type="email" autocomplete="username">
+        <input id="oPass" type="password" autocomplete="current-password" style="margin-top:6px">
+        <button type="submit" class="ghost" style="width:100%;margin-top:8px">登入</button>
+      </form>
+    </div>
+  </details>
+</div>
+
+<!-- 主畫面 -->
+<div id="app" hidden>
+  <header>
+    <div class="top">
+      <h2 id="tripName">代購許願池</h2>
+      <select id="tripSel" hidden></select>
+    </div>
+    <nav id="tabs"></nav>
+  </header>
+  <main id="main"></main>
+  <div style="text-align:center;padding:0 16px 30px">
+    <span class="who" id="whoami"></span> · <button class="sm ghost" id="outBtn">登出</button>
+  </div>
+</div>
+
+<div id="modal" class="modal" hidden><div class="sheet" id="sheet"></div></div>
+<div id="zoom" hidden><img alt=""></div>
+<div id="toast"></div>
+
+<script type="module">
+/* ============================================================
+   代購許願池
+   - 朋友：暱稱＋6 位數字密碼（背後是 Firebase 的 email 帳號，email 由暱稱算出來，不是真的信箱）
+   - 團主：跟工作台同一個帳號登入，看得到全部
+   - 資料：Firebase 同專案的獨立節點 ROOM，規則見計劃書；朋友只讀得到自己的訂單
+   - 程式碼在公開倉庫：朋友名字、訂單、收款資訊都只存在雲端，這裡不寫任何真資料
+   ============================================================ */
+const ROOM = 'dg_r4n8w2qk';                 // 改名要同步改 Firebase 規則
+const FRIEND_DOMAIN = '@dg.invalid';        // 朋友帳號的假 email 結尾
+const OWNER_HASH = '5d0e25f26b9be53c3a58a198657847c71c08407af36fe8df409ace6993bd2b4a';
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAWOXPFBmb-lU90dpBOq2B8Gn7LsR2p-jM",
+  authDomain: "busan-trip-2026-201f8.firebaseapp.com",
+  databaseURL: "https://busan-trip-2026-201f8-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "busan-trip-2026-201f8",
+  storageBucket: "busan-trip-2026-201f8.firestorage.app",
+  messagingSenderId: "300878890409",
+  appId: "1:300878890409:web:c80543dc5c43f6d81bb0b8"
+};
+const CUR = { KRW:{ sym:'₩', name:'韓元' }, JPY:{ sym:'¥', name:'日圓' } };
+// 代購費級距：成本（台幣，四捨五入後）≤ max 就用這一級；最後一級沒有 max
+const DEF_CFG = { cardPct:1.5, tiers:[
+  { max:300, fix:50 }, { max:600, fix:90 }, { max:1000, fix:120 }, { max:2000, pct:15 }, { pct:12 } ] };
+const ST = { wait:'待確認', got:'買到了', part:'部分買到', none:'沒買到' };
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = v => (v === '' || v == null || isNaN(+v)) ? null : +v;
+const twd = n => '$' + Math.round(n).toLocaleString('en-US');
+const ymd = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+const ls = { get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
+             set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} } };
+function toast(t){ const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove('on'), 2200); }
+async function sha256hex(s){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(s||'').trim().toLowerCase()));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
+}
+const normNick = s => String(s||'').normalize('NFKC').trim().replace(/\s+/g,' ');
+async function nickEmail(nick){ return 'u' + (await sha256hex(normNick(nick))).slice(0, 24) + FRIEND_DOMAIN; }
+
+/* ---------- 狀態 ---------- */
+let S = { trips:{}, cfg:DEF_CFG, wall:{}, users:{}, orders:{} };
+let role = null, me = null, myNick = '';
+let tid = ls.get('dg_tid') || '';
+let tab = null;
+let liveRate = {};
+let fb = null;            // {db, ref, set, remove, update}
+
+/* ---------- 匯率 ---------- */
+async function loadRate(){
+  try{ const c = JSON.parse(ls.get('dg_rate') || 'null'); if(c && c.d === ymd()){ liveRate = c.r; return; } }catch(e){}
+  try{
+    const j = await (await fetch('https://open.er-api.com/v6/latest/TWD')).json();
+    if(j.result === 'success'){ liveRate = { KRW:j.rates.KRW, JPY:j.rates.JPY }; ls.set('dg_rate', JSON.stringify({ d:ymd(), r:liveRate })); }
+  }catch(e){ console.warn('rate', e); }
+}
+// 一律存「1 台幣換多少外幣」
+const rateOf = t => t ? (num(t.rateFinal) || num(t.rate?.v) || num(liveRate[t.cur])) : null;
+const isFinal = t => !!num(t?.rateFinal);
+function rateText(t){
+  const r = rateOf(t); if(!r) return '匯率還沒抓到';
+  const c = CUR[t.cur]?.name || t.cur;
+  const tag = isFinal(t) ? '刷卡入帳匯率（確定）' : `預估匯率${t.rate?.d ? '（' + t.rate.d.slice(5).replace('-','/') + ' 更新）' : ''}`;
+  return `${tag}：1 台幣 ≈ ${r.toFixed(2)} ${c}（1 ${c} ≈ ${(1/r).toFixed(4)} 台幣）`;
+}
+// 同步自動匯率到雲端（只有團主寫得進去）
+function syncTripRates(){
+  if(role !== 'owner') return;
+  Object.entries(S.trips).forEach(([id, t]) => {
+    if(isFinal(t) || t.rate?.d === ymd() || !liveRate[t.cur]) return;
+    put(`trips/${id}/rate`, { v:liveRate[t.cur], d:ymd() });
+  });
+}
+
+/* ---------- 計價 ---------- */
+function tierOf(cost){
+  const c = Math.round(cost);
+  const tiers = Array.isArray(S.cfg?.tiers) ? S.cfg.tiers : DEF_CFG.tiers;
+  return tiers.find(x => x.max == null || c <= +x.max) || tiers[tiers.length-1];
+}
+function quote(local, t, feeOv){
+  const p = num(local), r = rateOf(t);
+  if(p == null || !r) return null;
+  const cost = p / r;
+  const card = cost * (num(S.cfg?.cardPct) ?? DEF_CFG.cardPct) / 100;
+  let fee;
+  if(num(feeOv) != null) fee = num(feeOv);
+  else { const x = tierOf(cost); fee = x.fix != null ? +x.fix : cost * (+x.pct) / 100; }
+  return { cost, card, fee, unit: Math.round(cost + card + fee) };
+}
+function linesOf(t_id, uid){
+  const o = S.orders?.[t_id]?.[uid] || {}, a = o.a || {}, out = [];
+  Object.entries(o.w || {}).forEach(([id, w]) => {
+    const ad = a['w_'+id] || {};
+    out.push({ key:'w_'+id, kind:'w', id, name:w.name, spec:w.spec, note:w.note, qty:+w.qty||1, maxTwd:w.maxTwd,
+      imgs:Array.isArray(w.imgs) ? w.imgs : Object.values(w.imgs||{}), price:ad.price, st:ad.st||'wait', got:ad.got, feeOv:ad.feeOv, ts:w.ts||0 });
+  });
+  Object.entries(o.c || {}).forEach(([wid, c]) => {
+    const it = S.wall?.[t_id]?.[wid] || {}, ad = a['c_'+wid] || {};
+    out.push({ key:'c_'+wid, kind:'c', id:wid, name:it.name || '（已下架的商品）', spec:[it.spec, c.opt].filter(Boolean).join('・'),
+      qty:+c.qty||1, imgs:it.img ? [it.img] : [], price:it.price, st:ad.st||'wait', got:ad.got, feeOv:ad.feeOv, ts:c.ts||0 });
+  });
+  return out.sort((x,y) => x.ts - y.ts);
+}
+const billQty = l => l.st === 'got' ? l.qty : l.st === 'part' ? (num(l.got) || 0) : l.st === 'none' ? 0 : l.qty;
+function orderTotal(t_id, uid){
+  const t = S.trips[t_id], ls_ = linesOf(t_id, uid);
+  let total = 0, noPrice = 0, wait = 0;
+  ls_.forEach(l => {
+    if(l.st === 'wait') wait++;
+    const q = billQty(l); if(!q) return;
+    const qt = quote(l.price, t, l.feeOv);
+    if(!qt){ noPrice++; return; }
+    total += qt.unit * q;
+  });
+  const final = isFinal(t) && !wait && !noPrice;
+  return { total, noPrice, wait, final, lines:ls_ };
+}
+
+/* ---------- 趟次 ---------- */
+const tripList = () => Object.entries(S.trips || {})
+  .filter(([,t]) => role === 'owner' || !t.hidden)
+  .sort((a,b) => (a[1].ts||0) - (b[1].ts||0));
+const curTrip = () => S.trips?.[tid];
+const isOpen = t => !!t && !(num(t.closeMs) && Date.now() >= num(t.closeMs));
+function closeText(t){
+  if(!num(t.closeMs)) return '收單中';
+  const d = new Date(+t.closeMs), w = '日一二三四五六'[d.getDay()];
+  const s = `${d.getMonth()+1}/${d.getDate()}（${w}）${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  if(!isOpen(t)) return `已在 ${s} 收單`;
+  const days = Math.ceil((+t.closeMs - Date.now()) / 86400000);
+  return `收單到 ${s}${days <= 1 ? '，今天截止' : `，還有 ${days} 天`}`;
+}
+
+/* ---------- 寫入 ---------- */
+function put(path, val){
+  if(!fb) return Promise.reject(new Error('還沒連上'));
+  return fb.set(fb.ref(fb.db, `${ROOM}/${path}`), val).catch(e => { console.error(path, e); toast(errMsg(e)); throw e; });
+}
+const del = path => put(path, null);
+function errMsg(e){
+  const m = String(e?.message || e);
+  if(m.includes('PERMISSION_DENIED') || m.includes('permission')) return '存不進去：可能已經收單了';
+  return '存檔失敗，確認網路後再試一次';
+}
+
+/* ---------- 畫面 ---------- */
+const TABS = {
+  friend: [['wall','商品牆'], ['wish','我要許願'], ['mine','我的訂單']],
+  owner:  [['wall','商品牆'], ['people','依人看訂單'], ['buy','採購清單'], ['pay','收款交貨'], ['set','設定']]
+};
+let _pending = false;
+function busy(){ const a = document.activeElement; return a && $('#main').contains(a) && /INPUT|TEXTAREA|SELECT/.test(a.tagName); }
+document.addEventListener('focusout', () => setTimeout(() => { if(_pending && !busy()){ _pending = false; render(); } }, 0));
+
+function render(){
+  if(busy()){ _pending = true; return; }
+  const trips = tripList();
+  if(!S.trips?.[tid] || (role !== 'owner' && S.trips[tid].hidden)) tid = trips.length ? trips[trips.length-1][0] : '';
+  const sel = $('#tripSel');
+  sel.hidden = trips.length < 2;
+  sel.innerHTML = trips.map(([id,t]) => `<option value="${id}" ${id===tid?'selected':''}>${esc(t.name)}</option>`).join('');
+  $('#tripName').textContent = curTrip()?.name || '代購許願池';
+  const tabs = TABS[role];
+  if(!tabs.some(x => x[0] === tab)) tab = tabs[0][0];
+  $('#tabs').innerHTML = tabs.map(([k,n]) => `<button data-tab="${k}" class="${k===tab?'on':''}">${n}</button>`).join('');
+  const t = curTrip();
+  let h = '';
+  if(!t) h = role === 'owner' && tab === 'set' ? viewSet() :
+    role === 'owner' ? `<div class="card empty">還沒有開團。到「設定」新增一趟（例如：12 月首爾）。</div>`
+                     : `<div class="card empty">團主還沒開團，晚點再來看看。</div>`;
+  else h = ({ wall:viewWall, wish:viewWish, mine:viewMine, people:viewPeople, buy:viewBuy, pay:viewPay, set:viewSet })[tab]();
+  $('#main').innerHTML = h;
+}
+$('#tabs').onclick = e => { const b = e.target.closest('[data-tab]'); if(!b) return; tab = b.dataset.tab; ls.set('dg_tab_'+role, tab); render(); scrollTo(0,0); };
+$('#tripSel').onchange = e => { tid = e.target.value; ls.set('dg_tid', tid); render(); };
+
+function noticeCard(t){
+  const open = isOpen(t);
+  return `<div class="card">
+    <div class="bar"><span class="chip ${open?'open':'closed'}">${open?'收單中':'已收單'}</span><span class="hint">${esc(closeText(t))}</span></div>
+    ${t.notice ? `<div class="notice">${esc(t.notice)}</div>` : ''}
+    <div class="rate">${esc(rateText(t))}${isFinal(t) ? '' : '。金額是預估，刷卡入帳後會改成實際匯率。'}</div>
+  </div>`;
+}
+function wallItems(t_id){
+  return Object.entries(S.wall?.[t_id] || {}).sort((a,b) => (b[1].ts||0) - (a[1].ts||0));
+}
+function priceLine(price, t){
+  const q = quote(price, t);
+  if(num(price) == null) return `<div class="pr"><span>待報價</span></div>`;
+  return `<div class="pr">${q ? `<b>${twd(q.unit)}</b>` : ''}<span>${CUR[t.cur]?.sym||''}${(+price).toLocaleString('en-US')}</span></div>`;
+}
+function phHtml(img){ return img ? `<img src="${img}" data-zoom alt="">` : '🛍️'; }
+
+function viewWall(){
+  const t = curTrip(), open = isOpen(t), items = wallItems(tid);
+  let h = noticeCard(t);
+  if(role === 'owner') h += `<div class="bar" style="margin-top:4px"><span class="hint">朋友在這裡按「＋」就會加進他自己的訂單。牆上不會顯示是誰許的願。</span><span class="sp"></span><button class="pri" data-act="wallNew">＋ 發布商品</button></div>`;
+  if(!items.length) return h + `<div class="card empty">${role==='owner' ? '還沒有商品。按「發布商品」，或到「依人看訂單」把朋友的許願上架。' : '團主還沒放商品，可以先到「我要許願」貼截圖。'}</div>`;
+  const mine = role === 'friend' ? (S.orders?.[tid]?.[me]?.c || {}) : {};
+  h += `<div class="grid">` + items.map(([wid, it]) => {
+    let foot = '';
+    if(role === 'friend'){
+      const n = +(mine[wid]?.qty || 0);
+      if(it.soldOut) foot = `<span class="chip">已售完</span>${n ? ` <span class="chip main">你訂了 ${n}</span>` : ''}`;
+      else if(!open) foot = n ? `<span class="chip main">你訂了 ${n}</span>` : `<span class="chip">已收單</span>`;
+      else foot = n ? `<div class="qty"><button data-act="cart" data-id="${wid}" data-d="-1">−</button><b>${n}</b><button data-act="cart" data-id="${wid}" data-d="1">＋</button></div>`
+                    : `<button class="pri addbtn sm" data-act="cart" data-id="${wid}" data-d="1">＋ 加入</button>`;
+    } else {
+      let ppl = 0, cnt = 0;
+      Object.values(S.orders?.[tid] || {}).forEach(o => { const q = +(o.c?.[wid]?.qty || 0); if(q){ ppl++; cnt += q; } });
+      foot = `<div class="sp2">${ppl ? `${ppl} 人、共 ${cnt} 件` : '還沒人加'}${it.soldOut ? '・已售完' : ''}</div>
+        <div class="bar" style="margin-top:6px"><button class="sm" data-act="wallEdit" data-id="${wid}">編輯</button><button class="sm" data-act="wallSold" data-id="${wid}">${it.soldOut?'恢復接單':'售完'}</button></div>`;
+    }
+    return `<div class="item ${it.soldOut?'sold':''}"><div class="ph">${phHtml(it.img)}</div><div class="bd">
+      <div class="nm">${esc(it.name)}</div>${it.spec ? `<div class="sp2">${esc(it.spec)}</div>` : ''}${it.desc ? `<div class="sp2">${esc(it.desc)}</div>` : ''}
+      ${priceLine(it.price, t)}${foot}</div></div>`;
+  }).join('') + `</div>`;
+  return h;
+}
+
+function lineHtml(l, t, ctl){
+  const thumbs = l.imgs.length ? l.imgs.slice(0,2).map(s => `<img src="${s}" data-zoom alt="">`).join('') : `<div class="th0">🛍️</div>`;
+  const q = quote(l.price, t, l.feeOv), bq = billQty(l);
+  const amt = num(l.price) == null ? `<span class="hint">待報價</span>`
+    : !q ? '' : l.st === 'none' ? `<span class="hint">不收費</span>`
+    : `<b>${twd(q.unit * bq)}</b><div class="brk">${twd(q.unit)} × ${bq}</div>`;
+  const meta = [l.spec, l.kind === 'c' ? '商品牆' : '', num(l.maxTwd) ? `最高可接受 ${twd(l.maxTwd)}` : '', l.note].filter(Boolean).join('・');
+  return `<div class="line"><div class="thumbs">${thumbs}</div><div class="info">
+    <div class="nm">${esc(l.name)} <span class="hint">× ${l.qty}</span></div>
+    ${meta ? `<div class="meta">${esc(meta)}</div>` : ''}
+    <span class="st ${l.st}">${ST[l.st]}${l.st==='part' ? ` ${num(l.got)||0} 件` : ''}</span>
+    </div><div class="amt">${amt}</div>${ctl ? `<div class="lctl">${ctl}</div>` : ''}</div>`;
+}
+
+/* ----- 朋友：許願 ----- */
+function viewWish(){
+  const t = curTrip(), open = isOpen(t);
+  const ws = linesOf(tid, me).filter(l => l.kind === 'w');
+  let h = `<div class="card"><h3>想買什麼？貼截圖給我</h3>
+    <p class="hint" style="margin:0 0 10px">一件商品許一次願：上傳截圖、寫品名和數量就好。我在當地看到會幫你確認，買到了再報價。</p>
+    <button class="pri" data-act="wishNew" ${open?'':'disabled'} style="width:100%">${open ? '＋ 我要許願' : '已收單，不能再許願'}</button></div>`;
+  if(!ws.length) return h + `<div class="empty">還沒有許願</div>`;
+  h += `<div class="card"><h3>我的許願（${ws.length}）</h3>` + ws.map(l => lineHtml(l, t,
+    open ? `<div class="bar" style="margin-top:6px"><button class="sm" data-act="wishEdit" data-id="${l.id}">修改</button><button class="sm" data-act="wishDel" data-id="${l.id}">刪除</button></div>` : '')).join('') + `</div>`;
+  return h;
+}
+
+/* ----- 朋友：我的訂單 ----- */
+function payBlock(t, uid){
+  const p = S.orders?.[tid]?.[uid]?.pay || {};
+  return `<div class="bar" style="margin-top:8px">
+    <span class="chip ${p.paid?'open':''}">${p.paid ? '已付款' + (p.paidAt ? ' ' + p.paidAt.slice(5).replace('-','/') : '') : '還沒付款'}</span>
+    <span class="chip ${p.deliv?'open':''}">${p.deliv ? '已交貨' + (p.delivAt ? ' ' + p.delivAt.slice(5).replace('-','/') : '') : '還沒交貨'}</span></div>
+    ${p.ship ? `<div class="hint" style="margin-top:6px">交貨方式：${esc(p.ship)}</div>` : ''}`;
+}
+function viewMine(){
+  const t = curTrip(), o = orderTotal(tid, me);
+  if(!o.lines.length) return noticeCard(t) + `<div class="card empty">還沒有東西。到「商品牆」按＋，或到「我要許願」貼截圖。</div>`;
+  let h = `<div class="card"><h3>我的訂單</h3>` + o.lines.map(l => lineHtml(l, t)).join('') +
+    `<div class="sum"><span>${o.final ? '應付金額' : '目前預估'}</span><b>${twd(o.total)}</b></div>
+     <div class="hint" style="margin-top:6px">${o.final ? '已用實際刷卡匯率計算，這是確定金額。'
+       : [o.wait ? `${o.wait} 件還在等團主確認` : '', o.noPrice ? `${o.noPrice} 件還沒報價（沒算進去）` : '', isFinal(t) ? '' : '匯率是預估，刷卡入帳後會再更新'].filter(Boolean).join('；') + '。'}</div>
+     <div class="hint">報價＝商品台幣成本＋海外刷卡手續費 ${num(S.cfg?.cardPct) ?? 1.5}%＋代購費；手續費依發卡銀行規定為準。</div></div>`;
+  h += `<div class="card"><h3>付款與交貨</h3>${t.payInfo ? `<div class="notice">${esc(t.payInfo)}</div>` : '<div class="hint">團主結單後會公布付款方式。</div>'}${payBlock(t, me)}</div>`;
+  return h;
+}
+
+/* ----- 團主：一行的控制項 ----- */
+function ownerCtl(uid, l, t){
+  const base = `orders/${tid}/${uid}/a/${l.key}`;
+  const auto = (() => { const q = quote(l.price, t); return q ? Math.round(q.fee) : ''; })();
+  return `<div class="ctl">
+    ${l.kind === 'w' ? `<div><div class="mini">當地價格（${CUR[t.cur]?.name}）</div><input inputmode="decimal" data-set="${base}/price" value="${l.price ?? ''}" placeholder="單價"></div>`
+                     : `<div><div class="mini">當地價格</div><input disabled value="${l.price ?? ''}" title="到商品牆改"></div>`}
+    <div><div class="mini">狀態</div><select data-set="${base}/st">${Object.entries(ST).map(([k,n]) => `<option value="${k}" ${k===l.st?'selected':''}>${n}</option>`).join('')}</select></div>
+    ${l.st === 'part' ? `<div><div class="mini">買到幾件</div><input inputmode="numeric" data-set="${base}/got" value="${l.got ?? ''}"></div>` : ''}
+    <div><div class="mini">代購費（自動 ${auto === '' ? '—' : '$'+auto}）</div><input inputmode="decimal" data-set="${base}/feeOv" value="${l.feeOv ?? ''}" placeholder="特例才填"></div>
+    ${l.kind === 'w' ? `<div class="full"><button class="sm ghost" data-act="toWall" data-uid="${uid}" data-id="${l.id}">上架到商品牆（大家可跟團）</button></div>` : ''}
+  </div>`;
+}
+const nickOf = uid => S.users?.[uid]?.nick || '（沒有暱稱）';
+const peopleOf = t_id => Object.keys(S.orders?.[t_id] || {}).filter(uid => linesOf(t_id, uid).length)
+  .sort((a,b) => nickOf(a).localeCompare(nickOf(b), 'zh-Hant'));
+
+function viewPeople(){
+  const t = curTrip(), ppl = peopleOf(tid);
+  if(!ppl.length) return `<div class="card empty">還沒有人下單。把網址丟到群組，朋友報名後就會出現在這裡。</div>`;
+  return `<p class="hint">價格填當地幣別的單價；狀態選「買到了」才會算錢，「沒買到」不收費。改完點別的地方就會自動存。</p>` +
+    ppl.map(uid => { const o = orderTotal(tid, uid);
+      return `<div class="card person"><h3>${esc(nickOf(uid))}<span class="sp"></span><span class="hint">${o.final?'確定':'預估'}</span> ${twd(o.total)}</h3>` +
+        o.lines.map(l => lineHtml(l, t, ownerCtl(uid, l, t))).join('') + `</div>`; }).join('');
+}
+
+function viewBuy(){
+  const t = curTrip(), items = wallItems(tid);
+  let h = `<p class="hint">在當地照這張清單買。商品牆的商品可以一次標「全部買到」，買不夠的再到下面每個人那一行改「部分買到」。</p>`;
+  const rows = items.map(([wid, it]) => {
+    const who = Object.keys(S.orders?.[tid] || {}).filter(uid => +(S.orders[tid][uid].c?.[wid]?.qty || 0));
+    if(!who.length) return '';
+    const total = who.reduce((s, uid) => s + +S.orders[tid][uid].c[wid].qty, 0);
+    return `<div class="card"><div class="line" style="padding-top:0"><div class="thumbs">${it.img ? `<img src="${it.img}" data-zoom alt="">` : '<div class="th0">🛍️</div>'}</div>
+      <div class="info"><div class="nm">${esc(it.name)}</div><div class="meta">${esc(it.spec || '')}</div>
+      <div style="font-size:18px;font-weight:700;margin-top:2px">要買 ${total} 件</div></div>
+      <div class="amt">${num(it.price) != null ? CUR[t.cur].sym + (+it.price).toLocaleString('en-US') : '待報價'}</div></div>
+      <div class="bar"><button class="sm" data-act="bulk" data-id="${wid}" data-st="got">全部買到</button><button class="sm" data-act="bulk" data-id="${wid}" data-st="none">全部沒買到</button><button class="sm" data-act="bulk" data-id="${wid}" data-st="wait">改回待確認</button></div>
+      ${who.map(uid => { const l = linesOf(tid, uid).find(x => x.key === 'c_'+wid);
+        return `<div class="bar" style="margin-top:8px;font-size:14px"><span style="flex:1">${esc(nickOf(uid))}・${l.qty} 件${l.spec && l.spec !== it.spec ? '・' + esc(l.spec) : ''}</span>
+          <select style="width:auto;padding:5px 8px;font-size:13px" data-set="orders/${tid}/${uid}/a/${l.key}/st">${Object.entries(ST).map(([k,n]) => `<option value="${k}" ${k===l.st?'selected':''}>${n}</option>`).join('')}</select>
+          ${l.st==='part' ? `<input style="width:64px;padding:5px 8px;font-size:13px" inputmode="numeric" placeholder="件數" data-set="orders/${tid}/${uid}/a/${l.key}/got" value="${l.got ?? ''}">` : ''}</div>`; }).join('')}
+    </div>`;
+  }).join('');
+  h += rows || '';
+  const wishes = [];
+  peopleOf(tid).forEach(uid => linesOf(tid, uid).filter(l => l.kind === 'w').forEach(l => wishes.push([uid, l])));
+  if(wishes.length){
+    wishes.sort((a,b) => (a[1].st === 'wait' ? 0 : 1) - (b[1].st === 'wait' ? 0 : 1));
+    h += `<div class="card"><h3>個別許願（${wishes.length}）</h3>` +
+      wishes.map(([uid, l]) => lineHtml({ ...l, note:[nickOf(uid), l.note].filter(Boolean).join('・') }, t, ownerCtl(uid, l, t))).join('') + `</div>`;
+  }
+  if(!rows && !wishes.length) h += `<div class="card empty">還沒有要買的東西</div>`;
+  return h;
+}
+
+function reconText(uid){
+  const t = curTrip(), o = orderTotal(tid, uid);
+  const got = o.lines.filter(l => billQty(l) > 0), none = o.lines.filter(l => l.st === 'none');
+  const out = [`【${t.name} 代購對帳】${nickOf(uid)}`, ''];
+  got.forEach(l => { const q = quote(l.price, t, l.feeOv);
+    out.push(`・${l.name}${l.spec ? `（${l.spec}）` : ''} × ${billQty(l)}　${q ? twd(q.unit * billQty(l)) : '待報價'}`); });
+  if(none.length) out.push('', '沒買到：' + none.map(l => l.name).join('、'));
+  out.push('', `合計：NT${twd(o.total)}${o.final ? '' : '（預估）'}`, rateText(t));
+  out.push(`報價＝台幣成本＋刷卡手續費 ${num(S.cfg?.cardPct) ?? 1.5}%＋代購費`);
+  if(t.payInfo) out.push('', t.payInfo);
+  return out.join('\n');
+}
+function viewPay(){
+  const t = curTrip(), ppl = peopleOf(tid);
+  if(!ppl.length) return `<div class="card empty">還沒有人下單</div>`;
+  let all = 0, paid = 0, notDeliv = 0;
+  const rows = ppl.map(uid => { const o = orderTotal(tid, uid), p = S.orders[tid][uid].pay || {};
+    all += o.total; if(p.paid) paid += o.total; if(!p.deliv && o.total) notDeliv++;
+    return `<div class="card person"><h3>${esc(nickOf(uid))}<span class="sp"></span>${twd(o.total)} <span class="hint">${o.final?'確定':'預估'}</span></h3>
+      ${o.final ? '' : `<div class="hint">${[o.wait ? `${o.wait} 件待確認` : '', o.noPrice ? `${o.noPrice} 件沒價格` : '', isFinal(t) ? '' : '還沒填實際匯率'].filter(Boolean).join('、')}</div>`}
+      <label class="chk"><input type="checkbox" data-chk="orders/${tid}/${uid}/pay/paid" data-day="orders/${tid}/${uid}/pay/paidAt" ${p.paid?'checked':''}>已付款${p.paidAt ? `（${p.paidAt}）` : ''}</label>
+      <label class="chk"><input type="checkbox" data-chk="orders/${tid}/${uid}/pay/deliv" data-day="orders/${tid}/${uid}/pay/delivAt" ${p.deliv?'checked':''}>已交貨${p.delivAt ? `（${p.delivAt}）` : ''}</label>
+      <input data-set="orders/${tid}/${uid}/pay/ship" value="${esc(p.ship || '')}" placeholder="交貨方式（面交、7-11 店到店、單號…）" style="margin-top:4px">
+      <div class="bar" style="margin-top:8px"><button class="sm pri" data-act="copy" data-uid="${uid}">複製對帳文字</button><button class="sm" data-act="preview" data-uid="${uid}">看內容</button></div></div>`; }).join('');
+  return `<div class="kpis"><div class="kpi"><div class="mini">總應收</div><b>${twd(all)}</b></div>
+    <div class="kpi"><div class="mini">已收</div><b style="color:var(--mint)">${twd(paid)}</b></div>
+    <div class="kpi"><div class="mini">未收</div><b style="color:var(--warn)">${twd(all - paid)}</b></div></div>
+    <p class="hint">${isFinal(t) ? '已用刷卡入帳匯率計算。' : '還沒填實際匯率，金額是預估；刷卡入帳後到「設定」填匯率。'}還沒交貨 ${notDeliv} 人。</p>` + rows;
+}
+
+/* ----- 團主：設定 ----- */
+function viewSet(){
+  const t = curTrip();
+  const dt = t && num(t.closeMs) ? (d => `${ymd(d)}T${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`)(new Date(+t.closeMs)) : '';
+  let h = `<div class="bar" style="margin-top:6px"><span class="sp"></span><button class="pri" data-act="tripNew">＋ 新增一趟</button></div>`;
+  if(t){
+    const c = CUR[t.cur]?.name;
+    h += `<div class="card" id="tripForm"><h3>這一趟：${esc(t.name)}</h3>
+      <label>名稱</label><input id="tName" value="${esc(t.name)}">
+      <label>當地幣別</label><select id="tCur">${Object.entries(CUR).map(([k,v]) => `<option value="${k}" ${k===t.cur?'selected':''}>${v.name}</option>`).join('')}</select>
+      <label>收單截止時間</label><input id="tClose" type="datetime-local" value="${dt}">
+      <div class="hint">過了這個時間，朋友就不能再許願、加商品或修改。留空＝一直收單。</div>
+      <label>公告（收單、結單、出發回國日期、注意事項）</label><textarea id="tNotice" rows="5" placeholder="例如：12/5 晚上收單，12/20 回國後結單，月底前面交">${esc(t.notice || '')}</textarea>
+      <label>付款資訊（朋友在「我的訂單」看得到，複製對帳文字也會帶上）</label><textarea id="tPay" rows="3" placeholder="匯款帳號、轉帳方式">${esc(t.payInfo || '')}</textarea>
+      <label class="chk" style="margin-top:12px"><input type="checkbox" id="tHidden" ${t.hidden?'checked':''}>先不讓朋友看到這一趟</label>
+      <div class="bar" style="margin-top:12px"><button class="pri" data-act="tripSave">儲存</button><button data-act="closeNow">現在立刻收單</button></div></div>`;
+    h += `<div class="card"><h3>匯率</h3><div class="hint">${esc(rateText(t))}</div>
+      <label>刷卡入帳後，填實際匯率（1 ${c} ＝ 幾台幣）</label>
+      <input id="rFinal" inputmode="decimal" value="${num(t.rateFinal) ? (1/+t.rateFinal).toFixed(6) : ''}" placeholder="例如 0.0234">
+      <div class="hint" style="margin-top:8px">或用帳單算：刷了多少${c}、入帳多少台幣</div>
+      <div class="ctl"><input id="rFor" inputmode="decimal" placeholder="${c}金額"><input id="rTwd" inputmode="decimal" placeholder="入帳台幣"></div>
+      <div class="bar" style="margin-top:10px"><button class="pri" data-act="rateSave">套用實際匯率</button>${num(t.rateFinal) ? '<button data-act="rateClear">改回自動匯率</button>' : ''}</div></div>`;
+  }
+  const cfg = S.cfg || DEF_CFG, tiers = Array.isArray(cfg.tiers) ? cfg.tiers : DEF_CFG.tiers;
+  h += `<div class="card tiers"><h3>代購費與手續費（每一趟共用）</h3>
+    <label>海外刷卡手續費（%）</label><input id="cPct" inputmode="decimal" value="${cfg.cardPct ?? 1.5}">
+    <label>代購費級距（看單件台幣成本）</label>
+    <div class="tr hint"><span>成本上限</span><span>算法</span><span>金額或 %</span><span></span></div>
+    <div id="tierRows">${tiers.map(x => tierRow(x)).join('')}</div>
+    <div class="hint">最後一級「成本上限」留空＝以上全部。</div>
+    <div class="bar" style="margin-top:10px"><button class="sm" data-act="tierAdd">＋ 加一級</button><span class="sp"></span><button class="pri" data-act="cfgSave">儲存</button></div></div>`;
+  h += `<div class="card"><h3>給朋友的連結</h3><div class="hint">把這個網址丟到群組，朋友自己報名就行。</div>
+    <div class="bar" style="margin-top:8px"><input readonly value="${esc(location.origin + location.pathname)}"><button class="sm pri" data-act="copyLink">複製</button></div>
+    <div class="hint" style="margin-top:8px">朋友忘記密碼：告訴 Claude 暱稱，請它幫忙重設。</div></div>`;
+  return h;
+}
+const tierRow = x => `<div class="tr"><input inputmode="decimal" class="tMax" value="${x.max ?? ''}" placeholder="以上">
+  <select class="tType"><option value="fix" ${x.fix!=null?'selected':''}>每件固定</option><option value="pct" ${x.fix==null?'selected':''}>成本 %</option></select>
+  <input inputmode="decimal" class="tVal" value="${x.fix ?? x.pct ?? ''}"><button class="sm" data-act="tierDel">✕</button></div>`;
+
+/* ---------- 視窗 ---------- */
+function openModal(html){ $('#sheet').innerHTML = html; $('#modal').hidden = false; }
+function closeModal(){ $('#modal').hidden = true; $('#sheet').innerHTML = ''; }
+$('#modal').onclick = e => { if(e.target.id === 'modal') closeModal(); };
+
+let _pics = [], _picMax = 3;
+function picsHtml(max){
+  _picMax = max;
+  return _pics.map((s,i) => `<div class="p"><img src="${s}" alt=""><button type="button" class="x" data-act="picDel" data-i="${i}">✕</button></div>`).join('') +
+    (_pics.length < max ? `<label class="addp">＋<input type="file" accept="image/*" ${max>1?'multiple':''} hidden data-pics="${max}"></label>` : '');
+}
+// 手機上先縮小再上傳：長邊 1000px、JPEG
+function shrink(file){
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      const k = Math.min(1, 1000 / Math.max(img.width, img.height));
+      const c = document.createElement('canvas'); c.width = Math.round(img.width*k); c.height = Math.round(img.height*k);
+      const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url); res(c.toDataURL('image/jpeg', .72));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('這張圖讀不到')); };
+    img.src = url;
+  });
+}
+document.addEventListener('change', async e => {
+  const f = e.target.closest('[data-pics]'); if(!f) return;
+  const max = +f.dataset.pics;
+  for(const file of [...f.files].slice(0, max - _pics.length)){
+    try{ _pics.push(await shrink(file)); }catch(err){ toast(err.message); }
+  }
+  $('#pics').innerHTML = picsHtml(max);
+});
+
+function wishForm(id){
+  const w = id ? (S.orders?.[tid]?.[me]?.w?.[id] || {}) : {};
+  _pics = Array.isArray(w.imgs) ? [...w.imgs] : Object.values(w.imgs || {});
+  openModal(`<h3>${id ? '修改許願' : '我要許願'}</h3>
+    <label>截圖或照片（最多 3 張）</label><div class="pics" id="pics">${picsHtml(3)}</div>
+    <label>品名</label><input id="wName" value="${esc(w.name || '')}" placeholder="例如：○○ 唇釉">
+    <div class="ctl"><div><div class="mini">數量</div><input id="wQty" inputmode="numeric" value="${w.qty || 1}"></div>
+      <div><div class="mini">最高可接受（台幣，選填）</div><input id="wMax" inputmode="numeric" value="${w.maxTwd ?? ''}"></div></div>
+    <label>顏色、尺寸、規格</label><input id="wSpec" value="${esc(w.spec || '')}" placeholder="例如：03 號色">
+    <label>備註（在哪裡買、找不到可以換什麼）</label><textarea id="wNote" rows="3">${esc(w.note || '')}</textarea>
+    <div class="err" id="mErr"></div>
+    <div class="row2"><button class="ghost" data-act="close">取消</button><button class="pri" data-act="wishSave" data-id="${id || ''}">送出</button></div>`);
+}
+function wallForm(wid, pre){
+  const it = wid ? (S.wall?.[tid]?.[wid] || {}) : (pre || {});
+  _pics = it.img ? [it.img] : [];
+  const t = curTrip();
+  openModal(`<h3>${wid ? '編輯商品' : '發布商品'}</h3>
+    <label>照片</label><div class="pics" id="pics">${picsHtml(1)}</div>
+    <label>品名</label><input id="iName" value="${esc(it.name || '')}">
+    <label>規格（選填）</label><input id="iSpec" value="${esc(it.spec || '')}" placeholder="例如：有 3 色，備註寫想要哪色">
+    <label>當地價格（${CUR[t.cur]?.name}，選填，可之後再填）</label><input id="iPrice" inputmode="decimal" value="${it.price ?? ''}">
+    <label>說明（選填）</label><textarea id="iDesc" rows="3">${esc(it.desc || '')}</textarea>
+    <div class="err" id="mErr"></div>
+    <div class="row2">${wid ? `<button class="ghost" data-act="wallDel" data-id="${wid}">刪除</button>` : '<button class="ghost" data-act="close">取消</button>'}<button class="pri" data-act="wallSave" data-id="${wid || ''}">儲存</button></div>`);
+}
+
+/* ---------- 點擊 ---------- */
+let _delArm = '';
+document.addEventListener('click', async e => {
+  const z = e.target.closest('[data-zoom]');
+  if(z){ $('#zoom img').src = z.src; $('#zoom').hidden = false; return; }
+  if(e.target.closest('#zoom')){ $('#zoom').hidden = true; return; }
+  const b = e.target.closest('[data-act]'); if(!b) return;
+  const act = b.dataset.act, id = b.dataset.id, t = curTrip();
+  try{
+  switch(act){
+    case 'close': closeModal(); break;
+    case 'picDel': _pics.splice(+b.dataset.i, 1); $('#pics').innerHTML = picsHtml(_picMax); break;
+
+    case 'cart': {
+      const n = Math.max(0, +(S.orders?.[tid]?.[me]?.c?.[id]?.qty || 0) + +b.dataset.d);
+      if(n) await put(`orders/${tid}/${me}/c/${id}`, { qty:n, ts:S.orders?.[tid]?.[me]?.c?.[id]?.ts || Date.now() });
+      else await del(`orders/${tid}/${me}/c/${id}`);
+      if(+b.dataset.d > 0 && n === 1) toast('加進你的訂單了');
+      break; }
+
+    case 'wishNew': wishForm(); break;
+    case 'wishEdit': wishForm(id); break;
+    case 'wishDel':
+      if(_delArm !== id){ _delArm = id; b.textContent = '再按一次刪除'; setTimeout(() => { _delArm = ''; }, 3000); break; }
+      await del(`orders/${tid}/${me}/w/${id}`); toast('刪掉了'); break;
+    case 'wishSave': {
+      const name = $('#wName').value.trim(), qty = Math.max(1, parseInt($('#wQty').value) || 1);
+      if(!name && !_pics.length){ $('#mErr').textContent = '至少放一張截圖或寫品名'; break; }
+      const wid = id || newId(), old = S.orders?.[tid]?.[me]?.w?.[wid] || {};
+      b.disabled = true; b.textContent = '送出中…';
+      await put(`orders/${tid}/${me}/w/${wid}`, { name: name || '（看截圖）', qty, spec:$('#wSpec').value.trim(), note:$('#wNote').value.trim(),
+        maxTwd: num($('#wMax').value), imgs:_pics, ts: old.ts || Date.now() });
+      closeModal(); toast(id ? '改好了' : '許願成功！'); break; }
+
+    case 'wallNew': wallForm(); break;
+    case 'wallEdit': wallForm(id); break;
+    case 'wallSold': await put(`wall/${tid}/${id}/soldOut`, S.wall[tid][id].soldOut ? null : true); break;
+    case 'wallDel':
+      if(_delArm !== id){ _delArm = id; b.textContent = '再按一次刪除'; setTimeout(() => { _delArm = ''; }, 3000); break; }
+      await del(`wall/${tid}/${id}`); closeModal(); toast('刪掉了；朋友已加的那幾筆會顯示「已下架」'); break;
+    case 'wallSave': {
+      const name = $('#iName').value.trim(); if(!name){ $('#mErr').textContent = '要寫品名'; break; }
+      const wid = id || newId(), old = S.wall?.[tid]?.[wid] || {};
+      await put(`wall/${tid}/${wid}`, { ...old, name, spec:$('#iSpec').value.trim(), price:num($('#iPrice').value),
+        desc:$('#iDesc').value.trim(), img:_pics[0] || null, ts: old.ts || Date.now() });
+      closeModal(); toast('上架了'); break; }
+    case 'toWall': {
+      const w = S.orders[tid][b.dataset.uid].w[id], ad = S.orders[tid][b.dataset.uid].a?.['w_'+id] || {};
+      const imgs = Array.isArray(w.imgs) ? w.imgs : Object.values(w.imgs || {});
+      wallForm(null, { name:w.name, spec:w.spec, price:ad.price, img:imgs[0] }); break; }
+
+    case 'bulk':
+      for(const uid of Object.keys(S.orders?.[tid] || {})){
+        if(+(S.orders[tid][uid].c?.[id]?.qty || 0)) await put(`orders/${tid}/${uid}/a/c_${id}/st`, b.dataset.st === 'wait' ? null : b.dataset.st);
+      }
+      toast('改好了'); break;
+
+    case 'copy': await navigator.clipboard.writeText(reconText(b.dataset.uid)); toast('複製好了，貼到 LINE 就行'); break;
+    case 'preview': openModal(`<h3>對帳文字</h3><div class="notice card" style="font-size:14px">${esc(reconText(b.dataset.uid))}</div>
+      <div class="row2"><button class="ghost" data-act="close">關閉</button><button class="pri" data-act="copy" data-uid="${b.dataset.uid}">複製</button></div>`); break;
+
+    case 'tripNew': {
+      const nid = newId();
+      await put(`trips/${nid}`, { name:'新的一趟', cur:'KRW', ts:Date.now(), hidden:true });
+      tid = nid; ls.set('dg_tid', tid); toast('新增了，先改名稱與幣別；準備好再取消「先不讓朋友看到」'); break; }
+    case 'tripSave': {
+      const v = $('#tClose').value;
+      await put(`trips/${tid}`, { ...t, name:$('#tName').value.trim() || '未命名', cur:$('#tCur').value,
+        closeMs: v ? new Date(v).getTime() : null, notice:$('#tNotice').value.trim(), payInfo:$('#tPay').value.trim(),
+        hidden: $('#tHidden').checked || null, rate: $('#tCur').value === t.cur ? (t.rate || null) : null });
+      toast('存好了'); break; }
+    case 'closeNow': await put(`trips/${tid}/closeMs`, Date.now()); toast('已收單'); break;
+    case 'rateSave': {
+      let x = num($('#rFinal').value);
+      const f = num($('#rFor').value), w = num($('#rTwd').value);
+      if(f && w) x = w / f;
+      if(!x || x <= 0){ toast('先填匯率，或填刷卡金額與入帳台幣'); break; }
+      await put(`trips/${tid}/rateFinal`, 1 / x); toast('套用了，全部金額改成確定'); break; }
+    case 'rateClear': await put(`trips/${tid}/rateFinal`, null); toast('改回自動匯率'); break;
+    case 'tierAdd': $('#tierRows').insertAdjacentHTML('beforeend', tierRow({ pct:'' })); break;
+    case 'tierDel': b.closest('.tr').remove(); break;
+    case 'cfgSave': {
+      const tiers = [...document.querySelectorAll('#tierRows .tr')].map(r => {
+        const max = num(r.querySelector('.tMax').value), v = num(r.querySelector('.tVal').value) ?? 0;
+        const o = r.querySelector('.tType').value === 'fix' ? { fix:v } : { pct:v };
+        if(max != null) o.max = max; return o;
+      }).sort((a,b) => (a.max ?? Infinity) - (b.max ?? Infinity));
+      if(!tiers.length){ toast('至少要一級'); break; }
+      if(tiers[tiers.length-1].max != null) delete tiers[tiers.length-1].max;   // 最後一級一律「以上全部」
+      await put('cfg', { cardPct: num($('#cPct').value) ?? 1.5, tiers }); toast('存好了'); break; }
+    case 'copyLink': await navigator.clipboard.writeText(location.origin + location.pathname); toast('複製好了'); break;
+  }
+  }catch(err){ console.error(err); b.disabled = false; }
+});
+
+// 團主在列表上直接改的欄位：離開輸入框就存
+document.addEventListener('change', async e => {
+  const el = e.target;
+  if(el.dataset.set){
+    let v = el.value.trim();
+    if(/\/(price|got|feeOv)$/.test(el.dataset.set)) v = num(v);
+    if(/\/st$/.test(el.dataset.set) && v === 'wait') v = null;
+    if(v === '') v = null;
+    await put(el.dataset.set, v).catch(()=>{});
+    if(/\/st$/.test(el.dataset.set)) render();
+  }
+  if(el.dataset.chk){
+    await put(el.dataset.chk, el.checked || null).catch(()=>{});
+    await put(el.dataset.day, el.checked ? ymd() : null).catch(()=>{});
+  }
+});
+
+/* ---------- Firebase ---------- */
+const STEP_MS = { load:20000, state:6000, sign:20000, data:20000 };
+function withTimeout(p, ms, msg){
+  let t; const late = new Promise((_, rej) => { t = setTimeout(() => rej(new Error(msg)), ms); });
+  return Promise.race([p, late]).finally(() => clearTimeout(t));
+}
+// iPhone 主畫面 App 偶爾 IndexedDB 不回應，登入元件會跟著卡死：1.5 秒沒回應就讓 Firebase 改用 localStorage
+const _idbProbe = new Promise(res => {
+  let done = false; const fin = ok => { if(done) return; done = true; res(ok); };
+  try{
+    if(typeof indexedDB !== 'object' || !indexedDB){ fin(true); return; }
+    const rq = indexedDB.open('dora-idb-probe');
+    rq.onsuccess = () => { try{ rq.result.close(); }catch(e){} fin(true); };
+    rq.onerror = () => fin(false); rq.onblocked = () => fin(false);
+  }catch(e){ fin(false); }
+  setTimeout(() => fin(false), 1500);
+}).then(ok => { if(!ok) try{ Object.defineProperty(window, 'indexedDB', { value:undefined, configurable:true }); }catch(e){} });
+
+let _mods = null;
+async function mods(){
+  if(_mods) return _mods;
+  await _idbProbe;
+  const [a, au, d] = await withTimeout(Promise.all([
+    import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js'),
+    import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js'),
+    import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js') ]),
+    STEP_MS.load, '載入太久沒回應，確認網路後再試一次（卡在第 1 步）');
+  const app = a.getApps()[0] || a.initializeApp(FIREBASE_CONFIG);
+  return _mods = { a, au, d, app, auth: au.getAuth(app) };
+}
+async function currentUser(){
+  const { au, auth } = await mods();
+  return withTimeout(new Promise(res => { const un = au.onAuthStateChanged(auth, u => { un(); res(u); }); }), STEP_MS.state, 'state')
+    .catch(e => { if(e.message !== 'state') throw e; return null; });
+}
+async function start(user){
+  const { au, d, app, auth } = await mods();
+  const owner = await sha256hex(user.email) === OWNER_HASH;
+  if(!owner && !String(user.email || '').endsWith(FRIEND_DOMAIN)){ await au.signOut(auth); throw new Error('這個帳號不能用，請用暱稱登入'); }
+  role = owner ? 'owner' : 'friend'; me = user.uid;
+  tab = ls.get('dg_tab_' + role);
+  const db = d.getDatabase(app);
+  fb = { db, ref:d.ref, set:d.set };
+  const R = p => d.ref(db, `${ROOM}/${p}`);
+  const first = [];
+  const listen = (p, fn) => first.push(new Promise((res, rej) => d.onValue(R(p), s => { fn(s.exists() ? s.val() : null); res(); render(); }, err => { console.error(p, err); rej(err); })));
+  if(owner){
+    listen('', v => { v = v || {}; S = { trips:v.trips||{}, cfg:v.cfg||DEF_CFG, wall:v.wall||{}, users:v.users||{}, orders:v.orders||{} }; syncTripRates(); });
+  } else {
+    const attached = new Set();
+    listen('cfg', v => { S.cfg = v || DEF_CFG; });
+    listen('wall', v => { S.wall = v || {}; });
+    listen(`users/${me}`, v => { S.users = { [me]: v || {} }; myNick = v?.nick || myNick; whoami(); });
+    listen('trips', v => {
+      S.trips = v || {};
+      Object.keys(S.trips).forEach(id => {
+        if(attached.has(id)) return; attached.add(id);
+        d.onValue(R(`orders/${id}/${me}`), s => { S.orders[id] = { [me]: s.exists() ? s.val() : {} }; render(); }, err => console.warn(err));
+      });
+    });
+  }
+  await withTimeout(Promise.all(first), STEP_MS.data, '讀資料太久沒回應，確認網路後再試一次（卡在第 4 步）');
+  window._signOut = () => au.signOut(auth).then(() => location.reload());
+  whoami();
+  $('#gate').hidden = true; $('#app').hidden = false;
+  render();
+  loadRate().then(() => { syncTripRates(); render(); });
+}
+function whoami(){ $('#whoami').textContent = role === 'owner' ? '團主模式' : `你是 ${myNick || '朋友'}`; }
+$('#outBtn').onclick = () => window._signOut ? window._signOut() : location.reload();
+
+function authErr(e, signup){
+  const m = String(e?.message || e || '');
+  if(m.includes('email-already-in-use')) return '這個暱稱已經有人用了。如果是你，請按「登入」；不是的話換一個暱稱。';
+  if(m.includes('invalid-credential') || m.includes('wrong-password') || m.includes('user-not-found'))
+    return signup ? '報名失敗，再試一次' : '暱稱或密碼不對。第一次來請按「第一次報名」。';
+  if(m.includes('too-many-requests')) return '試太多次了，過幾分鐘再試';
+  if(m.includes('network-request-failed')) return '連不上網路，確認有網路再試一次';
+  return m || '登入失敗，再試一次';
+}
+async function friendGo(signup){
+  const nick = normNick($('#fNick').value), pass = $('#fPass').value.trim();
+  $('#gateErr').textContent = '';
+  if(!nick){ $('#gateErr').textContent = '請填暱稱'; return; }
+  if(!/^\d{6}$/.test(pass)){ $('#gateErr').textContent = '密碼要剛好 6 位數字'; return; }
+  const btn = signup ? $('#fSign') : $('#fLogin'), txt = btn.textContent;
+  btn.disabled = true; btn.textContent = '處理中…';
+  try{
+    const { au, d, app, auth } = await mods();
+    const email = await nickEmail(nick);
+    const cred = await withTimeout(signup ? au.createUserWithEmailAndPassword(auth, email, pass) : au.signInWithEmailAndPassword(auth, email, pass),
+      STEP_MS.sign, '送出太久沒回應，再試一次（卡在第 3 步）');
+    myNick = nick;
+    if(signup) await d.set(d.ref(d.getDatabase(app), `${ROOM}/users/${cred.user.uid}`), { nick, ts:Date.now() });
+    await start(cred.user);
+  }catch(e){ $('#gateErr').textContent = authErr(e, signup); }
+  btn.disabled = false; btn.textContent = txt;
+}
+$('#fForm').onsubmit = e => { e.preventDefault(); friendGo(false); };
+$('#fSign').onclick = () => friendGo(true);
+$('#gBtn').onclick = async () => {
+  $('#gateErr').textContent = '';
+  try{ const { au, auth } = await mods(); const r = await au.signInWithPopup(auth, new au.GoogleAuthProvider()); await start(r.user); }
+  catch(e){ $('#gateErr').textContent = authErr(e); }
+};
+$('#oForm').onsubmit = async e => {
+  e.preventDefault(); $('#gateErr').textContent = '';
+  try{ const { au, auth } = await mods(); const r = await au.signInWithEmailAndPassword(auth, $('#oEmail').value.trim(), $('#oPass').value); await start(r.user); }
+  catch(err){ $('#gateErr').textContent = authErr(err); }
+};
+
+(async () => {
+  try{ const u = await currentUser(); if(u) await start(u); }
+  catch(e){ $('#gateErr').textContent = e.message; }
+})();
+setInterval(() => { if(!$('#app').hidden) render(); }, 60000);   // 截止倒數、收單時間到自動鎖
+
+if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(e => console.warn('sw', e));
+</script>
+</body>
+</html>

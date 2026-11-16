@@ -1,0 +1,17 @@
+{
+  "name": "代購許願池",
+  "short_name": "代購",
+  "description": "代購許願、跟團與對帳",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFF6F3",
+  "theme_color": "#E2637F",
+  "lang": "zh-Hant",
+  "icons": [
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
