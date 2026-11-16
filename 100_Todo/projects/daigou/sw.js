@@ -1,6 +1,6 @@
 /* 代購許願池的離線支援：網路優先，抓不到才用快取（快取優先會讓改版後一直看到舊畫面）。
    訂單資料走 Firebase，不經過這裡。 */
-const CACHE = 'dora-daigou-v1';
+const CACHE = 'dora-daigou-v2';
 const SHELL = ['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
