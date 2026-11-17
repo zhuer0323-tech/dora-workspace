@@ -72,6 +72,14 @@ CAROUSEL_MIN, CAROUSEL_MAX = 5, 6   # 2026-10-09：首頁封面、末頁結尾 C
 OWNER_REMIND_DAYS = 2           # 等朱兒確認的稿，離發布日剩這幾天還沒確認就再推一次 LINE（每篇一次）
 AGENT_HUB_URL = 'https://zhuer0323-tech.github.io/dora-workspace/agent-hub/'
 # 2026-11-17 題目卡：小兔寫全文前先交題目卡給朱兒勾（計劃書 2026-11-17-禾言社群-內容品質改善.md）
+# 2026-11-17 下午朱兒決定「一個月只看一次」（計劃書 2026-11-17-禾言社群-聚焦與一月一看.md）：
+# 每月自動排題、直接建任務，小兔寫完直接進等做圖，不經過試讀、校稿、等你確認、題目卡；整月寫完推一則 LINE。
+# 改回 False 就恢復四關流程（舊程式都還在）。
+SIMPLE_FLOW = True
+TOPIC_CARD_ON = False   # 題目卡（上午做的），SIMPLE_FLOW 下關掉
+SERIES = ('平台新消息', '後台常見設錯', '數字怎麼看')   # 2026-11-17 三個固定系列，網頁兩處要手動對齊
+OLD_TYPES = ('觀點/趨勢', '教學/新手', '日常/節慶', '廣告顧問陪跑')
+HY_URL = 'https://zhuer0323-tech.github.io/dora-workspace/heyen-social/'
 TOPIC_REMIND_DAYS = 5   # 離發布日剩這幾天還沒勾，再推一次 LINE（每篇一次）
 TOPIC_AUTO_DAYS = 4     # 剩這幾天還沒勾，就用第一個開頭直接寫，並 LINE 告知（之後在「等你確認」還能退回）
 DESIGN_WINDOW_DAYS = 3          # 審閱通過後不馬上做圖，等到離發布日剩這幾天才交給小蝶（2026-08-26 她要求）
@@ -178,7 +186,7 @@ TITLE_NOTE = """標題候選：
 MAKER_PROMPT = """你是「小兔」，禾言數位行銷社群規劃團隊的寫手。
 2026-10-08 起你**自己定方向、自己寫**：原本小梟的單篇規劃併給你了，方向不會再在傳話中跑掉。
 這次要交**三份東西**：主張卡 PLAN、正式貼文 Caption、給小蝶用的圖卡腳本 Card Plan。
-交出去之後，小梟會用外行老闆的眼光試讀（只看封面和 Caption 前三句），再由小狐校稿。
+{flow_note}
 
 這篇的類型：{type_label}
 標題：{title}
@@ -337,6 +345,12 @@ CTA 小字：
 
 三個區塊以外不要寫任何字。如果方向不清楚、判斷不出怎麼下筆，在回覆最開頭寫一行：
 NEED_HUMAN: <原因>，然後結束。"""
+
+FLOW_NOTE_FULL = "交出去之後，小梟會用外行老闆的眼光試讀（只看封面和 Caption 前三句），再由小狐校稿。"
+FLOW_NOTE_SIMPLE = ("交出去之後**沒有人再審**：文案直接進規劃表給朱兒看一遍，接著就做圖。"
+                    "所以交之前一定要照好貼文手冊四章自己嚴格檢查一次（系列寫法、字數、開頭兩行、比喻、括號註解、符號、數字出處），"
+                    "她希望看一遍就能直接用。")
+
 
 TOPIC_PROMPT = """你是「小兔」，禾言數位行銷社群規劃團隊的寫手。
 這次**先不要寫全文**，只交一張「題目卡」給朱兒勾選。她選定方向、開頭之後，你下一輪才寫全文。
@@ -599,10 +613,10 @@ GROUP_CHAT_PROMPT = """你是「小梟」，禾言數位行銷社群規劃團隊
 如果她這次講的話是**明確要團隊產出一篇貼文**（要你們新寫一篇、重寫某篇、換方向改寫），
 在你的回覆最後另起一行，照這個格式輸出一行派工指令（前面不要加任何符號或說明）：
 
-PARTY_TASK: {{"title": "這篇的標題", "type": "四類其中之一", "brief": "要寫什麼、方向是什麼、要避開什麼，寫清楚一點讓小兔看得懂"}}
+PARTY_TASK: {{"title": "這篇的標題", "type": "三個系列其中之一", "brief": "要寫什麼、方向是什麼、要避開什麼，寫清楚一點讓小兔看得懂"}}
 
 規則：
-- type 只能是：觀點/趨勢、教學/新手、日常/節慶、廣告顧問陪跑
+- type 只能是：平台新消息、後台常見設錯、數字怎麼看（2026-11-17 起的三個固定系列）
 - **只有她明確要求產出貼文才輸出這一行**。她只是在交代原則、講方向、問進度、聊天、
   或說「以後排到這類再照這樣走」，都不要輸出——寧可不派，也不要冒出她沒要的任務。
 - 一次最多派一篇。
@@ -884,7 +898,7 @@ def days_to_post(task):
 
 def needs_topic_card(task):
     """第一輪、還沒勾過、也還沒交過題目卡，而且離發布日還夠久，才走題目卡。"""
-    if task.get('round', 0) or task.get('topicPick') or task.get('skipTopic'):
+    if not TOPIC_CARD_ON or task.get('round', 0) or task.get('topicPick') or task.get('skipTopic'):
         return False
     left = days_to_post(task)
     return left is None or left > TOPIC_AUTO_DAYS
@@ -1221,6 +1235,7 @@ def process_task(cfg, tok, task):
             transcript_block=transcript_block, revision_note=revision_note,
             card_type_note=card_type_note(card_type),
             topic_block=topic_block(task),
+            flow_note=FLOW_NOTE_SIMPLE if SIMPLE_FLOW else FLOW_NOTE_FULL,
             edit_samples=recent_human_edits(cfg, tok, skip_tid=tid))
     elif stage == 'reading':
         role, allowed, timeout = 'planner', BASE_ALLOWED, TIMEOUT
@@ -1318,7 +1333,7 @@ def process_task(cfg, tok, task):
         # 2026-09-18 起小兔交兩份：Caption 進規劃表的 ig 欄，Card Plan 另存給小蝶。
         # 舊格式（沒有標記）整份會被當成 caption，行為跟以前一樣。
         caption, card_plan = parse_maker_output(out)
-        patch = {'stage': 'reading', 'updatedAt': now_ms}
+        patch = {'stage': 'awaiting_window' if SIMPLE_FLOW else 'reading', 'updatedAt': now_ms}
         plan = parse_plan(out)
         if plan:
             patch['plan'] = plan
@@ -1336,6 +1351,8 @@ def process_task(cfg, tok, task):
                 hy_patch['cardPlan'] = card_plan
                 hy_patch['cardText'] = card_plan_text(card_plan)
             db_patch(cfg, tok, HY_ROOM, f'posts/{task["hySocialId"]}', hy_patch)
+        if SIMPLE_FLOW:
+            notify_written(cfg, tok, task)
     elif role == 'reviewer':
         verdict = parse_verdict(out)
         if verdict == '通過':
@@ -1407,7 +1424,7 @@ def parse_group_task(out):
         return None, cleaned
     if not isinstance(spec, dict) or not (spec.get('title') or '').strip():
         return None, cleaned
-    if spec.get('type') not in ('觀點/趨勢', '教學/新手', '日常/節慶', '廣告顧問陪跑'):
+    if spec.get('type') not in SERIES + OLD_TYPES:
         spec['type'] = '其他'
     return spec, cleaned
 
@@ -1484,6 +1501,13 @@ def check_design_window(cfg, tok):
             continue  # 沒填發布日就先不推，留給她自己在網頁上處理
         if (pd - today).days <= DESIGN_WINDOW_DAYS:
             t = dict(t); t['id'] = tid
+            # 一月一看：她在規劃表把不要的整篇刪掉，這篇就不做圖、直接結束
+            if t.get('hySocialId') and not db_get(cfg, tok, HY_ROOM, f'posts/{t["hySocialId"]}'):
+                # 不能用 set_stage：它會順手寫規劃表那張卡，等於把她刪掉的貼文又生回來
+                db_patch(cfg, tok, ROOM, f'tasks/{tid}', {'stage': 'done', 'cancelled': True,
+                                                          'updatedAt': int(time.time() * 1000)})
+                print(f"{time.strftime('%F %T')} {tid} 規劃表已刪除，不做圖")
+                continue
             set_stage(cfg, tok, t, {'stage': 'designing', 'updatedAt': int(time.time() * 1000)})
             print(f"{time.strftime('%F %T')} {tid} 進入製圖窗口，推進到 designing")
 
@@ -1510,6 +1534,38 @@ def check_owner_reminder(cfg, tok):
         line_push(cfg, f'⏰「{t.get("title","")}」{when}，還在等你確認，確認後小蝶才會開始做圖：\n{AGENT_HUB_URL}?task={tid}')
         print(f"{time.strftime('%F %T')} 推確認提醒 / {t.get('title','')}")
         return   # 一輪只推一則
+
+
+def notify_written(cfg, tok, task):
+    """一月一看：同一批（task.batch＝月份）全部寫完才推一則 LINE；不是整批建的任務就一篇推一則。"""
+    batch = task.get('batch')
+    if not batch:
+        line_push(cfg, f'📝「{task.get("title","")}」寫好了（{task.get("postDate","")} 發），到規劃表看一遍：\n{HY_URL}\n'
+                       f'想改字直接改，發布前 {DESIGN_WINDOW_DAYS} 天會照你改過的版本做圖')
+        return
+    tasks = db_get(cfg, tok, ROOM, 'tasks') or {}
+    mine = [t for t in tasks.values() if isinstance(t, dict) and t.get('batch') == batch]
+    if any(t.get('stage') in ('planning', 'making', 'reading', 'reviewing') for t in mine):
+        return
+    prop = db_get(cfg, tok, ROOM, f'proposals/{batch}') or {}
+    if prop.get('notified'):
+        return
+    db_patch(cfg, tok, ROOM, f'proposals/{batch}', {'notified': True})
+    y, m = batch.split('-')
+    line_push(cfg, f'📝 {int(m)} 月禾言社群 {len(mine)} 篇寫好了，到規劃表看一遍：\n{HY_URL}\n\n'
+                   f'想改字直接在規劃表改，不要的整篇刪掉，不用按確認。\n發布前 {DESIGN_WINDOW_DAYS} 天會照你改過的版本自動做圖')
+
+
+def create_batch_tasks(cfg, tok, target_key, items):
+    """一月一看：題目排好直接建任務（不等朱兒按採用）。"""
+    now_ms = int(time.time() * 1000)
+    for it in items:
+        tid = db_post(cfg, tok, ROOM, 'tasks', {
+            'title': it.get('title', ''), 'type': it.get('type', ''), 'postDate': it.get('date', ''), 'goal': '',
+            'brief': (it.get('angle') or '') + (f'（為什麼想看：{it["why"]}）' if it.get('why') else ''),
+            'stage': 'making', 'round': 0, 'batch': target_key, 'createdAt': now_ms, 'updatedAt': now_ms})
+        db_post(cfg, tok, ROOM, f'messages/{tid}', {
+            'role': 'planner', 'text': f'（{target_key} 自動排題）{it.get("angle") or it.get("title","")}', 'createdAt': now_ms})
 
 
 def check_topic_reminder(cfg, tok):
@@ -1641,6 +1697,8 @@ def check_design_due(cfg, tok):
             continue
         if not (p.get('ig') or '').strip():
             continue                      # 沒文案不能做圖
+        if p.get('noDesign'):
+            continue                      # 2026-11-17：她決定收掉、只當備用稿的，不自動做圖
         if (p.get('link') or '').strip():
             continue                      # 已經有圖卡了
         stage = p.get('agentStage')
@@ -1711,59 +1769,37 @@ def check_publish_reminder(cfg, tok):
         return   # 一輪只推一則，避免一次七則洗版
 
 
-PROPOSAL_PROMPT = """你是「小梟」，禾言數位行銷社群規劃團隊的讀者代表，也負責排每月內容建議。現在要規劃 {target_month} \
-整個月的社群貼文主題建議（不是單篇，是一整個月的清單），先給朱兒確認過，她點頭才會正式建立任務。
+PROPOSAL_PROMPT = """你是「小梟」，禾言數位行銷社群規劃團隊的規劃。現在要排 {target_month} 整個月的禾言社群貼文。
+排好之後會直接交給小兔寫，朱兒只會在整個月寫完後看一次，所以題目要一次排準。
 
-禾言的社群節奏規則：
-- 一週一篇，固定週二發布；當月如果有重要節慶，可以在節慶當天加開一篇
-- 每個月至少一篇「廣告顧問陪跑」類型（這條線最直接帶詢價）
-- 「教學/新手」類型不要超過整月篇數的一半
-- 不同類型要交錯排，不要同一類型連續兩篇；有時效性的節慶/檔期主題要排在對的日期附近，
-  不要為了交錯硬搬
-- 上網查一下 {target_month} 有沒有重要的行銷相關節慶或檔期，有的話排進去
+## 先讀（2026-11-17 起的定位，**一切以這份為準**）
+`200_Reference/writing-samples/禾言社群-好貼文手冊.md` 第 1 章：
+- 說話對象：**自己在投廣告的人**（老闆本人或小編，自己開後台在投）
+- 只寫三個系列，類型欄只能填這三個：
+  - 平台新消息（2 篇）：Meta／Google／LINE **有正式公告**的改變。上網查最近一兩個月的官方公告，查不到就不排
+  - 後台常見設錯（1～2 篇）：陪跑、接手帳戶最常看到的設定錯誤
+  - 數字怎麼看（1 篇）：一次只講一個數字或一個判斷
+- 一個月 4～5 篇，**每週二一篇**（{target_month}的週二日期你自己算），三個系列交錯排，同系列不要連著兩週
+- 不排純祝福的節慶貼文；當月有檔期（雙 11、母親節之類），寫成實用版放進系列裡、排在檔期前
+- 不排陪跑宣傳文
+- 朱兒參考的 IG 帳號 drama_mamahow：看最多的就是平台新消息，只學方向，不抄題目
 
-這個月＋上個月已經在禾言規劃表裡的內容（**這個月要規劃的內容不要跟這些話題重複**）：
+這個月＋上個月已經在禾言規劃表裡的內容（**不要撞題**）：
 {existing_posts}
 
-## 老闆關心清單（2026-10-20 起，**題目一律從這裡出發**）
-
-朱兒說：題目方向要先站在老闆、品牌經營者的角度想——他們想看差異、新資訊、怎麼做，
-也想看踩雷經驗、花錢前的判斷、破解迷思、同行在做什麼。什麼話題會讓他停下來看？
-不是從「禾言想講什麼」或「平台出了什麼新功能」出發。下面是整理好的老闆真實問題：
+## 題材庫：老闆關心清單
+只挑「自己在投廣告的人」會遇到的那幾條；「朱兒拿掉的」不要用。
 
 {boss_list}
 
-用這份清單的規則：
-- 每一篇都要對應清單裡的**一條問題**，寫在「為什麼想看」那欄（老闆的困擾是什麼、看完他得到什麼）
-- **標「⭐ 朱兒點過頭」的優先用**；「朱兒拿掉的」那幾條不要排
-- 標「已寫過」的要照它建議的新切角，不要重講一次
-- 內容種類要混著用（差異、新資訊、怎麼做、踩雷、判斷、迷思……），不要整個月都是「怎麼做」
+{group_notes}
+## 輸出格式（每篇一行，用全形｜分隔，不要換別的符號）
+N. 日期=YYYY-MM-DD｜類型=三個系列其中之一｜標題=XXX｜方向=一句話說明這篇唯一的判斷｜為什麼想看=自己在投的人遇到什麼、看完能做什麼
 
-## 好題目的樣子（2026-11-17 起，先讀 `200_Reference/writing-samples/禾言社群-好貼文手冊.md` 第 1 章）
-
-朱兒指定參考 IG 帳號 drama_mamahow 的**內容方向**：看最多的是「平台剛改了什麼、對老闆的生意有什麼影響」
-（某種廣告要併掉、某類素材放寬、新的廣告版位出現），其次是「老闆深信但其實不對的想法」。
-- 每個月至少一篇**平台新消息**：上網查 Meta／Google／LINE 最近一兩個月真的有公告的改變，
-  寫清楚哪個平台、改了什麼、什麼時候；查不到官方說法就不排
-- **不排名詞教學**（「什麼是學習期」「認識廣告目標」），老闆不會為了學名詞停下來
-- 每個標題都要能寫成一句老闆會講的話
-- 只學方向，不抄對方的題目
-
-{group_notes}**先訂一個當月主軸**（2026-10-08 朱兒說方向太散、沒有重點）：
-從清單挑這個月最多老闆在意的那個焦慮（例如「錢有沒有白花」「有量沒生意」），
-4-6 篇都要圍繞這個主軸，從不同角度切進去，不要每篇各講各的。
-節慶篇可以例外，但盡量也跟主軸扯得上關係。
-你是讀者代表，挑主軸跟題目時用老闆的眼光想：這個月他會不會想點進來看？
-
-請規劃 {target_month} 這個月的貼文，抓 4-6 篇，{target_month}的週二日期你自己算出來。
-第一行寫主軸，接著每篇輸出一行，格式固定（用全形｜分隔，不要換別的符號）：
-主軸=一句話
-N. 日期=YYYY-MM-DD｜類型=XXX｜標題=XXX｜方向=一句話說明這篇要寫什麼｜為什麼想看=對應清單哪條問題、老闆看完得到什麼
-
-「方向」那欄要寫得出**這篇的單一主張**（一篇只講一件事），不是列一個大主題。
-**標題用老闆的語言**：講出他的困擾、他會得到什麼、或一個他不知道的差異。
-只寫大主題（「認識轉換追蹤」）、只有專業名詞、從功能名稱開頭的標題都不行。
-可以參考清單裡「可以切的題目」，但不要照抄。
+- 平台新消息那幾篇，「方向」裡要寫出是哪個平台、哪個公告、大約什麼時候
+- **標題寫成自己在投的人會講的一句話**（例如「訊息廣告一直沒人問？先看歡迎訊息有沒有設」），
+  不要只寫大主題、只有專業名詞
+- 一篇只講一件事
 
 只輸出這個清單，不要加開場白或其他說明文字，不要用 markdown。"""
 
@@ -1976,6 +2012,17 @@ def run_monthly_proposal(cfg, tok, target_key):
         return
     items = parse_proposal_items(out)
     theme = parse_proposal_theme(out)
+    if SIMPLE_FLOW:
+        if items:
+            db_patch(cfg, tok, ROOM, f'proposals/{target_key}', {
+                'status': 'approved', 'auto': True, 'items': items, 'theme': theme, 'rawText': out, 'createdAt': now_ms})
+            create_batch_tasks(cfg, tok, target_key, items)
+            print(f"{time.strftime('%F %T')} {target_key} 自動建了 {len(items)} 篇任務")
+        else:
+            db_patch(cfg, tok, ROOM, f'proposals/{target_key}', {
+                'status': 'pending', 'items': [], 'rawText': out, 'createdAt': now_ms})
+            line_push(cfg, f'⚠️ {target_month_label} 的禾言題目排不出來（格式解析失敗），到 agent-hub 看一下原始內容')
+        return
     db_patch(cfg, tok, ROOM, f'proposals/{target_key}', {
         'status': 'pending', 'items': items, 'theme': theme, 'rawText': out, 'createdAt': now_ms})
     if items:
@@ -2114,6 +2161,8 @@ def run_round(cfg, tok):
             return
         run_monthly_proposal(cfg, tok2, target)
         return
+    if SIMPLE_FLOW:
+        return   # 一月一看：不做定期稽核，免得小幫手改掉她在規劃表上改好的文案
     audit_candidate = check_audit_scan(cfg, tok)
     if audit_candidate:
         run_audit_one(cfg, tok2, *audit_candidate)

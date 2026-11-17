@@ -12,6 +12,7 @@
   --ink:#5B3C46; --ink2:#8C6B76; --ink3:#B79AA4;
   --line:#F6DCE4;
   --view:#9C8FD8; --teach:#7FB6E0; --life:#FFB86B; --coach:#6FC79A;
+  --news:#E0769A; --fix:#3FA7A0; --num:#C99A2E;  /* 2026-11-17 三個固定系列 */
   --shadow:0 2px 10px rgba(232,150,178,.13);
   --shadow-l:0 6px 22px rgba(232,150,178,.20);
   --r:18px;
@@ -62,6 +63,7 @@ header.top .sub{font-size:12px;color:var(--ink3);margin-left:2px;font-weight:400
 .chip{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap}
 .t-view{background:var(--view)}  .t-teach{background:var(--teach)}
 .t-life{background:var(--life)}  .t-coach{background:var(--coach)}
+.t-news{background:var(--news)}  .t-fix{background:var(--fix)}  .t-num{background:var(--num)}
 .t-etc{background:var(--ink3)}
 
 /* ---------- 月曆上方的議題統計 ---------- */
@@ -113,6 +115,7 @@ header.top .sub{font-size:12px;color:var(--ink3);margin-left:2px;font-weight:400
 .cal .ev.done .t{text-decoration:line-through}
 .ev.c-view{border-left-color:var(--view)}  .ev.c-teach{border-left-color:var(--teach)}
 .ev.c-life{border-left-color:var(--life)}  .ev.c-coach{border-left-color:var(--coach)}
+.ev.c-news{border-left-color:var(--news)}  .ev.c-fix{border-left-color:var(--fix)}  .ev.c-num{border-left-color:var(--num)}
 .ev.c-etc{border-left-color:var(--ink3)}
 
 /* ---------- 卡片 ---------- */
@@ -261,8 +264,10 @@ td.editing{background:#fff !important}
       <div style="flex:1;min-width:130px">
         <label>內容類型</label>
         <select id="fType">
+          <option>平台新消息</option><option>後台常見設錯</option><option>數字怎麼看</option>
+          <optgroup label="舊類型（2026-11-17 前）">
           <option>觀點/趨勢</option><option>教學/新手</option>
-          <option>日常/節慶</option><option>廣告顧問陪跑</option><option>其他</option>
+          <option>日常/節慶</option><option>廣告顧問陪跑</option></optgroup><option>其他</option>
         </select>
       </div>
     </div>
@@ -341,7 +346,10 @@ const LS_KEY = 'hy_social_posts';
 
 /* 內容類型（2026-08-13 改成這四類 ＋ 其他）
    class 選擇器用英文 slug，因為名稱裡有斜線 */
+/* 2026-11-17 改成三個固定系列（跟自己在投廣告的人說話）。舊四類保留給舊貼文，不搬資料 */
+const SERIES = ['平台新消息','後台常見設錯','數字怎麼看'];
 const SLUG = {
+  '平台新消息':'news', '後台常見設錯':'fix', '數字怎麼看':'num',
   '觀點/趨勢':'view', '教學/新手':'teach',
   '日常/節慶':'life', '廣告顧問陪跑':'coach', '其他':'etc'
 };
@@ -1055,7 +1063,7 @@ function renderCalStats(){
   const list = monthPosts();
   const c = {};
   list.forEach(([,p]) => { const t = SLUG[p.type] ? p.type : '其他'; c[t] = (c[t]||0) + 1; });
-  const cells = Object.keys(SLUG).map(t => `
+  const cells = Object.keys(SLUG).filter(t => SERIES.includes(t) || c[t]).map(t => `
     <div class="statcell">
       <div class="sn"><span class="dotc t-${slugOf(t)}"></span>${t}</div>
       <div class="sv">${c[t] || 0}</div>
@@ -1408,7 +1416,7 @@ function openEdit(id){
   editId = id;
   const p = posts[id] || {};
   $('#fDate').value = p.date || ymd(cur.y,cur.m,1);
-  $('#fType').value = SLUG[p.type] ? p.type : '教學/新手';
+  $('#fType').value = SLUG[p.type] ? p.type : '平台新消息';
   $('#fTitle').value = p.title || '';
   $('#fGoal').value = p.goal || '';
   $('#fIg').value = p.ig || '';

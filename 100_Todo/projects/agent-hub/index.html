@@ -301,10 +301,9 @@ nav.tabs .tb.on .cnt{background:rgba(255,255,255,.3)}
 
     <label>內容類型</label>
     <div class="typegrid" id="typeSeg">
-      <button class="on" data-v="觀點/趨勢">觀點/趨勢</button>
-      <button data-v="教學/新手">教學/新手</button>
-      <button data-v="日常/節慶">日常/節慶</button>
-      <button data-v="廣告顧問陪跑">廣告顧問陪跑</button>
+      <button class="on" data-v="平台新消息">平台新消息</button>
+      <button data-v="後台常見設錯">後台常見設錯</button>
+      <button data-v="數字怎麼看">數字怎麼看</button>
     </div>
 
     <div class="row2">
@@ -957,7 +956,7 @@ function renderAll(){
 }
 
 /* ---------- 新任務表單 ---------- */
-let newType = '觀點/趨勢';
+let newType = '平台新消息';
 function nextTuesday(){
   const d = new Date();
   const add = (9 - d.getDay()) % 7 || 7; // 0=週日…2=週二；今天週二也跳到下週二
