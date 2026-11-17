@@ -162,6 +162,13 @@ nav.tabs .tb.on .cnt{background:rgba(255,255,255,.3)}
 .waitbox .wr{font-size:13px;color:#78350F;white-space:pre-wrap;margin-bottom:8px}
 .waitbox textarea{width:100%;border-radius:10px;background:#fff;border:1px solid #FDE68A;padding:8px;font-size:13px;min-height:56px;margin-bottom:8px}
 .waitbox .btns{display:flex;gap:8px;flex-wrap:wrap}
+.topicbox .tq{font-size:12.5px;color:#78350F;margin-bottom:6px}
+.topicbox input.tt{width:100%;border-radius:10px;background:#fff;border:1px solid #FDE68A;padding:8px;font-size:14px;font-weight:700;margin-bottom:8px}
+.topicbox label.op{display:flex;gap:8px;align-items:flex-start;background:#fff;border:1px solid #FDE68A;border-radius:10px;padding:9px 10px;margin-bottom:6px;font-size:13px;color:var(--ink);cursor:pointer;white-space:pre-wrap}
+.topicbox label.op input{margin-top:3px;flex:none}
+.topicbox label.op:has(input:checked){border-color:var(--s-wait);box-shadow:0 0 0 2px #FDE68A}
+.card .ccode.topic{color:#fff;background:var(--s-wait)}
+.cd-awaiting_topic,.b-awaiting_topic{background:var(--s-wait)}
 .planbox{background:#fff;border:1px solid #FDE68A;border-radius:10px;padding:10px;font-size:12.5px;color:var(--ink2);white-space:pre-wrap;margin-bottom:8px}
 .waitbox a.lk{color:#92400E;font-weight:700}
 .wbtn{padding:8px 14px;border-radius:10px;font-size:12.5px;font-weight:700}
@@ -371,11 +378,12 @@ const PERSONA = {
 const ROLE_ORDER = ['maker','planner','reviewer','designer'];
 const STAGE_OF_ROLE = {planner:'reading', maker:'making', reviewer:'reviewing', designer:'designing'};
 const DESIGN_WINDOW_DAYS = 3; // 跟 dora-agent-hub-runner.py 的 DESIGN_WINDOW_DAYS 對齊，純顯示用
-const STAGE_ORDER = ['making','reading','reviewing','designing','waiting_human','done'];
+const STAGE_ORDER = ['awaiting_topic','making','reading','reviewing','designing','waiting_human','done'];
 // awaiting_window（待製圖窗口）不獨立開一欄，併進「製圖中」欄；
 // awaiting_owner（小狐通過、等你確認定稿）併進「待你確認」欄。卡片上都用小標籤區分
 // planning 是 2026-10-08 以前的舊階段，引擎撞到會直接轉成 making
-const STAGE_LABEL = {planning:'規劃中', making:'撰寫中', reading:'試讀中', reviewing:'校稿中',
+// awaiting_topic（2026-11-17）：小兔交了題目卡、等你挑開頭，勾完才寫全文
+const STAGE_LABEL = {awaiting_topic:'題目卡', planning:'規劃中', making:'撰寫中', reading:'試讀中', reviewing:'校稿中',
   awaiting_owner:'等你確認定稿', awaiting_window:'待製圖窗口',
   designing:'製圖中', waiting_human:'待你確認', done:'已完成'};
 const ROLE_META = {
@@ -569,7 +577,7 @@ function renderBoard(){
         : stage==='waiting_human' ? (t.stage==='waiting_human'||t.stage==='awaiting_owner') : t.stage===stage)
       .sort((a,b)=>(a.postDate||'').localeCompare(b.postDate||'') || (b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0));
     const respRole = Object.keys(STAGE_OF_ROLE).find(r=>STAGE_OF_ROLE[r]===stage);
-    const dropOk = stage!=='waiting_human'; // 待你確認欄有自己的確認/定稿按鈕，不開放拖放進出
+    const dropOk = stage!=='waiting_human' && stage!=='awaiting_topic'; // 待你確認欄有自己的確認/定稿按鈕，不開放拖放進出
     return `<div class="col" data-stage="${stage}" data-dropok="${dropOk}">
       <h3><span class="cdot cd-${stage}"></span>${STAGE_LABEL[stage]}<span class="cnt">${items.length}</span></h3>
       ${items.map(t=>{
@@ -578,13 +586,14 @@ function renderBoard(){
         // 「待你確認」的卡多數不給拖（那個狀態需要特定欄位），
         // 但如果是她自己手動拖過去的（manualMove），還是讓她能再拖去別欄改主意，
         // 不然拖錯一次就卡住只能走完整套確認流程才能重選
-        const draggable = t.stage!=='waiting_human' || t.waitingKind==='manualMove';
+        const draggable = (t.stage!=='waiting_human' && t.stage!=='awaiting_topic') || t.waitingKind==='manualMove';
         return `<div class="card" data-id="${t.id}" ${draggable?'data-draggable="true"':''}>
           <div class="cardtop">
             ${t.postDate?`<span class="cdate">${esc(dateShort(t.postDate))}</span>`:'<span class="cdate">未定日</span>'}
             ${code?`<span class="ccode">${esc(code)}</span>`:''}
             ${t.stage==='awaiting_window'?'<span class="ccode wait">⏳待窗口</span>':''}
             ${t.stage==='awaiting_owner'?'<span class="ccode owner">📝等你確認定稿</span>':''}
+            ${t.stage==='awaiting_topic'?'<span class="ccode topic">🙋挑一個開頭</span>':''}
           </div>
           <div class="tt">${esc(t.title)||'（小兔撰寫中，還沒有標題）'}</div>
           <div class="meta">${p?`<span class="av" style="background:var(--pink-xl)">${p.avatar}</span>`:''}
@@ -692,6 +701,7 @@ function renderTaskDetail(){
   const msgs = Object.values(messages[selectedTask]||{}).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
 
   const stepsDef = [
+    {key:'awaiting_topic', label:'題目卡', role:null, icon:'🙋'},
     {key:'making', label:'撰寫', role:'maker'},
     {key:'reading', label:'試讀', role:'planner'},
     {key:'reviewing', label:'校稿', role:'reviewer'},
@@ -699,7 +709,9 @@ function renderTaskDetail(){
     {key:'designing', label:'製圖', role:'designer'},
     {key:'done', label:'完成', role:null},
   ];
-  const stepKeyOf = stage => stage==='awaiting_window' ? 'designing' : stage==='planning' ? 'making' : stage;
+  const topicPending = !t.round && !t.topicPick && !t.skipTopic;
+  const stepKeyOf = stage => stage==='awaiting_window' ? 'designing'
+    : (stage==='planning'||stage==='making') ? (topicPending ? 'awaiting_topic' : 'making') : stage;
   const curIdx = t.stage==='waiting_human'
     ? stepsDef.findIndex(s=>s.key===stepKeyOf(t.resumeStage||'making'))
     : stepsDef.findIndex(s=>s.key===stepKeyOf(t.stage));
@@ -721,12 +733,32 @@ function renderTaskDetail(){
   }).join('') + '</div>';
 
   if(t.stage==='planning'||t.stage==='making'||t.stage==='reading'||t.stage==='reviewing'||t.stage==='designing'){
-    const roleName = PERSONA[Object.keys(STAGE_OF_ROLE).find(r=>STAGE_OF_ROLE[r]===stepKeyOf(t.stage))].name;
+    const sk = stepKeyOf(t.stage)==='awaiting_topic' ? 'making' : stepKeyOf(t.stage);
+    const roleName = PERSONA[Object.keys(STAGE_OF_ROLE).find(r=>STAGE_OF_ROLE[r]===sk)].name
+      + (stepKeyOf(t.stage)==='awaiting_topic' ? '（題目卡）' : '');
     const workingTxt = t.processingRole ? `${roleName}正在處理，已經進行 ${elapsedText(t.processingStartedAt)}`
       : `排隊中，等${roleName}輪到這篇（每分鐘檢查一次，一次只處理一件）`;
     html += `<div class="working"><span class="sp"></span>${workingTxt}</div>`;
   } else if(t.stage==='awaiting_window'){
     html += `<div class="working"><span class="sp"></span>文案已定稿，等接近發布日（${DESIGN_WINDOW_DAYS} 天內）小蝶會自動開始做圖，不用你操作</div>`;
+  }
+
+  if(t.stage==='awaiting_topic'){
+    const c = t.topicCard || {};
+    const ops = c.openings || [];
+    html += `<div class="waitbox topicbox">
+      <div class="wt">🐰 小兔交了題目卡，挑一個開頭就開始寫全文</div>
+      <div class="tq">題目（可以直接改）</div>
+      <input class="tt" id="topicTitle" value="${esc(t.title||c.title||'')}">
+      ${c.question?`<div class="tq"><b>回答老闆的問題：</b>${esc(c.question)}</div>`:''}
+      ${c.takeaway?`<div class="tq"><b>看完帶走：</b>${esc(c.takeaway)}</div>`:''}
+      <div class="tq" style="margin-top:8px"><b>開頭兩行（IG 只露出這兩行）</b></div>
+      ${ops.map((o,i)=>`<label class="op"><input type="radio" name="topicOp" value="${i}" ${i===0?'checked':''}><span>${esc(o.replace(/／/g,'\n'))}</span></label>`).join('')}
+      <textarea id="replyText" placeholder="想補充的方向（選填）。要換方向的話寫在這裡，再按「換一個方向」"></textarea>
+      <div class="btns">
+        <button class="wbtn p" id="btnTopicOk">就這個，開始寫</button>
+        <button class="wbtn g" id="btnTopicRedo">換一個方向</button>
+      </div></div>`;
   }
 
   if(t.stage==='awaiting_owner'){
@@ -823,6 +855,32 @@ function renderTaskDetail(){
       await dbUpdate(dbRef(db, `${ROOM}/tasks/${selectedTask}`), {stage:'awaiting_window', round: 0, updatedAt: Date.now()});
       await dbPush(dbRef(db, `${ROOM}/messages/${selectedTask}`), {
         role:'system', text:`你選擇採用目前版本，定稿，已經寫進禾言社群規劃，發布前 ${DESIGN_WINDOW_DAYS} 天內小蝶會開始做圖卡。`, createdAt: Date.now()});
+    };
+  }
+  if($('#btnTopicOk')){
+    $('#btnTopicOk').onclick = async () => {
+      const sel = document.querySelector('input[name="topicOp"]:checked');
+      const i = sel ? Number(sel.value) : 0;
+      const title = ($('#topicTitle').value||'').trim();
+      const note = getReply();
+      const patch = {stage:'making', updatedAt: Date.now(),
+        topicPick:{i, title, note: note||null, at: Date.now()}};
+      if(title) patch.title = title;
+      await dbUpdate(dbRef(db, `${ROOM}/tasks/${selectedTask}`), patch);
+      if(title && t.hySocialId) await dbUpdate(dbRef(db, `hy_social_r7n3k8/posts/${t.hySocialId}`), {title});
+      await syncHyStage('making');
+      const op = ((t.topicCard||{}).openings||[])[i] || '';
+      await dbPush(dbRef(db, `${ROOM}/messages/${selectedTask}`), {
+        role:'human', text:`✅ 題目卡選好了：${title}\n開頭：${op}${note?`\n補充：${note}`:''}`, createdAt: Date.now()});
+    };
+  }
+  if($('#btnTopicRedo')){
+    $('#btnTopicRedo').onclick = async () => {
+      const note = getReply();
+      if(!note){ replyEl.placeholder='先寫一下想換成什麼方向，小兔才知道怎麼改'; replyEl.style.borderColor='#C2603F'; replyEl.focus(); return; }
+      await dbUpdate(dbRef(db, `${ROOM}/tasks/${selectedTask}`), {stage:'making', topicRedo: note, updatedAt: Date.now()});
+      await syncHyStage('making');
+      await dbPush(dbRef(db, `${ROOM}/messages/${selectedTask}`), {role:'human', text:`🔄 換一個方向：${note}`, createdAt: Date.now()});
     };
   }
   if($('#btnOwnerOk')){
