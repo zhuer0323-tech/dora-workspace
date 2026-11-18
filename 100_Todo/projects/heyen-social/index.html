@@ -67,6 +67,8 @@ header.top .sub{font-size:12px;color:var(--ink3);margin-left:2px;font-weight:400
 .t-etc{background:var(--ink3)}
 
 /* ---------- 月曆上方的議題統計 ---------- */
+.monththeme{background:#fff;border:1px solid var(--line,#F3D4DE);border-left:4px solid var(--news);border-radius:12px;padding:10px 14px;margin-bottom:10px;font-size:14px}
+.monththeme b{color:var(--news)}
 .statwrap{display:grid;gap:8px;margin-bottom:12px;
   grid-template-columns:repeat(2,1fr)}
 @media(min-width:640px){.statwrap{grid-template-columns:repeat(4,1fr)}}
@@ -249,6 +251,7 @@ td.editing{background:#fff !important}
 </div>
 
 <div id="viewCal">
+  <div class="monththeme" id="calTheme" hidden></div>
   <div class="statwrap" id="calStats"></div>
   <div class="calwrap"><div class="cal" id="cal"></div></div>
 </div>
@@ -1059,7 +1062,16 @@ function renderStat(){
 }
 
 /* 月曆上方的議題統計，照她試算表最上面那塊：每一類各排幾篇 */
+/* 每月主題（2026-11-17）：背景程式排題時寫進 themes/{YYYY-MM}，三個系列都圍繞它 */
+let themes = {};
+function renderTheme(){
+  const el = $('#calTheme'); if(!el) return;
+  const t = themes[`${cur.y}-${pad(cur.m)}`];
+  el.hidden = !t;
+  if(t) el.innerHTML = `<b>本月主題</b>　${esc(t)}`;
+}
 function renderCalStats(){
+  renderTheme();
   const list = monthPosts();
   const c = {};
   list.forEach(([,p]) => { const t = SLUG[p.type] ? p.type : '其他'; c[t] = (c[t]||0) + 1; });
@@ -1648,6 +1660,7 @@ async function initFirebase(interactive){
   }
   saveLocal(); renderAll();
 
+  onValue(ref(_db, `${ROOM}/themes`), s => { themes = s.exists() ? s.val() : {}; renderTheme(); });
   onValue(ref(_db, `${ROOM}/posts`), s => {
     const v = s.exists() ? s.val() : {};
     if(JSON.stringify(v) === JSON.stringify(posts)) return;

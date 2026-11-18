@@ -774,10 +774,13 @@ def run_claude(prompt, allowed=BASE_ALLOWED, timeout=TIMEOUT, model=None):
     # 2026-08-27 踩過的坑：額度用完時 claude -p 仍會回傳 0 且印出這句提示，不是丟例外，
     # 結果被當成正常回覆寫進任務訊息裡，規劃/製作/審閱三個角色被污染了一輪都沒人發現。
     # 這句訊息很固定，直接抓字串當成失敗處理。
-    if "hit your session limit" in out or "hit your weekly limit" in out or "usage limit" in out.lower():
+    # 2026-11-17 又踩到：訊息變成「You've hit your 5-hour limit」，舊字串比對不到，被當成一般失敗、三篇標錯誤。
+    # 改成只要有「hit your … limit」就算額度用完（stdout、stderr 都看）
+    quota_txt = out + ' ' + (p.stderr or '')
+    if re.search(r"hit your [\w -]*limit", quota_txt, re.I) or "usage limit" in quota_txt.lower():
         # 2026-09-09 改成專屬例外：額度用完是「整套系統都不能動」，不是「這件事失敗了」。
         # 之前用一般的 RuntimeError，結果任務被標成錯誤、稽核每分鐘重試（那天空轉了 50 次）。
-        raise QuotaExhausted(out[:200])
+        raise QuotaExhausted(quota_txt.strip()[:200])
     # 2026-11-17 踩過的坑：10/21 清晨登入失效，claude -p 印出「Failed to authenticate…」，
     # 這句被當成小梟、小兔的回覆寫進四篇任務，四篇一路卡到 11/17 才發現。
     # 登入失效或程式回傳非 0，一律當失敗，不能把輸出當回覆。
@@ -1556,13 +1559,14 @@ def notify_written(cfg, tok, task):
                    f'想改字直接在規劃表改，不要的整篇刪掉，不用按確認。\n發布前 {DESIGN_WINDOW_DAYS} 天會照你改過的版本自動做圖')
 
 
-def create_batch_tasks(cfg, tok, target_key, items):
+def create_batch_tasks(cfg, tok, target_key, items, theme=''):
     """一月一看：題目排好直接建任務（不等朱兒按採用）。"""
     now_ms = int(time.time() * 1000)
     for it in items:
         tid = db_post(cfg, tok, ROOM, 'tasks', {
             'title': it.get('title', ''), 'type': it.get('type', ''), 'postDate': it.get('date', ''), 'goal': '',
-            'brief': (it.get('angle') or '') + (f'（為什麼想看：{it["why"]}）' if it.get('why') else ''),
+            'brief': (f'（本月主題：{theme}）' if theme else '') + (it.get('angle') or '')
+                     + (f'（為什麼想看：{it["why"]}）' if it.get('why') else ''),
             'stage': 'making', 'round': 0, 'batch': target_key, 'createdAt': now_ms, 'updatedAt': now_ms})
         db_post(cfg, tok, ROOM, f'messages/{tid}', {
             'role': 'planner', 'text': f'（{target_key} 自動排題）{it.get("angle") or it.get("title","")}', 'createdAt': now_ms})
@@ -1793,7 +1797,14 @@ PROPOSAL_PROMPT = """你是「小梟」，禾言數位行銷社群規劃團隊�
 {boss_list}
 
 {group_notes}
-## 輸出格式（每篇一行，用全形｜分隔，不要換別的符號）
+## 先訂本月主題（2026-11-17 朱兒定）
+4～5 篇都要圍繞**同一個主題**，讓讀者一個月連著看是一條線（例如 12 月「年底檔期怎麼投才不浪費」）。
+- 主題從「自己在投廣告的人這個月最會碰到的事」挑：當月檔期、季節性的成本變化、平台剛上的大改變
+- 三個系列都從主題切進去；平台新消息要跟主題扯得上才排，扯不上的新消息寧可換題
+- 主題寫成一句話，讀者看得懂、不用專業名詞
+
+## 輸出格式（第一行是主題，接著每篇一行，用全形｜分隔，不要換別的符號）
+主題=一句話
 N. 日期=YYYY-MM-DD｜類型=三個系列其中之一｜標題=XXX｜方向=一句話說明這篇唯一的判斷｜為什麼想看=自己在投的人遇到什麼、看完能做什麼
 
 - 平台新消息那幾篇，「方向」裡要寫出是哪個平台、哪個公告、大約什麼時候
@@ -1860,6 +1871,9 @@ AUDIT_PROMPT = """你是「小梟」，禾言數位行銷社群規劃團隊的�
 
 
 def parse_proposal_theme(out):
+    m0 = re.search(r'^\s*主題\s*[=＝]\s*(.+)$', out or '', re.M)
+    if m0:
+        return m0.group(1).strip()
     m = re.search(r'^\s*主軸[=＝：:]\s*(.+)$', out or '', re.M)
     return m.group(1).strip() if m else ''
 
@@ -2016,7 +2030,9 @@ def run_monthly_proposal(cfg, tok, target_key):
         if items:
             db_patch(cfg, tok, ROOM, f'proposals/{target_key}', {
                 'status': 'approved', 'auto': True, 'items': items, 'theme': theme, 'rawText': out, 'createdAt': now_ms})
-            create_batch_tasks(cfg, tok, target_key, items)
+            create_batch_tasks(cfg, tok, target_key, items, theme)
+            if theme:
+                db_patch(cfg, tok, HY_ROOM, 'themes', {target_key: theme})   # 規劃表月曆上方顯示
             print(f"{time.strftime('%F %T')} {target_key} 自動建了 {len(items)} 篇任務")
         else:
             db_patch(cfg, tok, ROOM, f'proposals/{target_key}', {
